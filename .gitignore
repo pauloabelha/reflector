@@ -5,6 +5,9 @@
 !.env-example
 
 # Cache
+.venv/
+dist/
+*.egg-info/
 .ruff_cache/
 .mypy_cache/
 **/__pycache__/

@@ -1,0 +1,26 @@
+# Evaluation
+
+The first gate is submission validity, not score:
+
+- package imports without development dependencies;
+- no network outside the official Kaggle gateway;
+- legal action for every active observation;
+- clean official environment advancement and termination;
+- deterministic export from the same symbolic source;
+- bounded runtime and memory.
+
+The baseline suite contains unit policy tests, official adapter tests, an
+official `Swarm` integration run, exporter contract tests, and a
+network-disabled packaged smoke test.
+
+Research descendants will additionally report completion and RHAE score, action
+efficiency, resets, failed experiments, runtime, peak memory, planner
+expansions, prediction accuracy, schema/concept description length, reuse,
+duplicates, contradictions, orphans, replay savings, regression retention,
+transformed-holdout performance, and improvement over their parent.
+
+Required ablations are: no synthetic concepts, no counterfactual replay, no
+schema-complexity pressure, no hierarchy pressure, score-only evolution, no LLM
+mutation, and flat versus typed concepts. An abstraction is accepted only when
+its measured benefit pays for its added complexity without breaking the Kaggle
+gate.

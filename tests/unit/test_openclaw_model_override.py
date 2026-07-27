@@ -12,6 +12,8 @@ from unittest.mock import MagicMock
 import pytest
 from arcengine import FrameData, GameState
 
+pytest.importorskip("openai", reason="OpenClaw is a development-only optional agent")
+
 from agents.templates.openclaw_agent import openclaw_agent as oc_module
 from agents.templates.openclaw_agent.openclaw_agent import OpenClaw
 

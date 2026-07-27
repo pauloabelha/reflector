@@ -9,6 +9,8 @@ and is exercised here without spinning up a real gateway.
 import pytest
 from arcengine import GameAction
 
+pytest.importorskip("openai", reason="OpenClaw is a development-only optional agent")
+
 from agents.templates.openclaw_agent.openclaw_agent import OpenClaw
 
 

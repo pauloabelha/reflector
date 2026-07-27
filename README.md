@@ -1,137 +1,85 @@
-# ARC-AGI-3-Agents
+# Reflector
 
-## Quickstart
+Reflector is a Kaggle-first platform for evolving purely symbolic agents on
+ARC-AGI-3. It is built directly on the official
+[ARC-AGI-3-Agents](https://github.com/arcprize/ARC-AGI-3-Agents) starter.
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if not aready installed.
+> Do not build a separate prototype and retrofit Kaggle compatibility later.
+> Kaggle compatibility is the foundational architectural constraint from the
+> first commit.
 
-1. Clone the ARC-AGI-3-Agents repo and enter the directory.
+The first descendant is intentionally small. It converts an official ARC frame
+into an immutable symbolic observation, selects only from the reported legal
+actions, uses a deterministic rare-color centroid for complex click actions,
+and runs with no LLM, internet, remote service, database, or web server.
 
-```bash
-git clone https://github.com/arcprize/ARC-AGI-3-Agents.git
-cd ARC-AGI-3-Agents
-```
+## Verified baseline
 
-2. Copy .env.example to .env
+The same `reflector.SymbolicPolicy` powers the official local adapter and the
+generated Kaggle notebook. The baseline currently passes:
 
-```bash
-cp .env.example .env
-```
+- the official `Arcade` local environment and `Swarm` lifecycle;
+- five levels of the official toolkit's deterministic `bt11` fixture;
+- a self-contained Kaggle overlay/notebook export;
+- a clean subprocess with a disabled Linux network namespace;
+- initialization, observation receipt, legal action selection, environment
+  advancement, scorecard closure, and clean termination.
 
-3. Get an API key from the [ARC-AGI-3 Website](https://three.arcprize.org/) and set it as an environment variable in your .env file.
+## Setup
 
-```bash
-export ARC_API_KEY="your_api_key_here"
-```
-
-4. Run the random agent (generates random actions) against the ls20 game.
-
-```bash
-uv run main.py --agent=random --game=ls20
-```
-
-For more information, see the [documentation](https://three.arcprize.org/docs#quick-start) or the [tutorial video](https://youtu.be/xEVg9dcJMkw).
-
-## Changelog
-## [0.9.3] - 2026-01-29
-**Note: This will be a breaking change is you use the fields outline below**
-
-### Added
-- `FrameData` had two field names changes. 
-  - `score` changed to `levels_completed`
-  - `win_score` changed to `win_levels`
-- Updated to use the new [ARC-AGI](https://github.com/arcprize/ARC-AGI) tool
-  - Allows local execution of environments
-  - Allows the creation of your own environments, see [Creating an Environment](https://docs.arcprize.org/add_game)
-  - If you want to continue to use the online API/Replays set `ONLINE_ONLY` to `True` in `.env.example`
-
-## [0.9.2] - 2025-08-19
-
-### Added
-- `available_actions` to `FrameData`
-- `ACTION7` as possible `GameAction`
-
-## [0.9.1] - 2025-07-18
-
-Initial Release
-
-## Observability (Optional)
-
-[AgentOps](https://agentops.ai/) is an observability platform designed for providing real-time monitoring, debugging, and analytics for your agent's behavior, helping you understand how your agents perform and make decisions.
-
-### Installation
-
-AgentOps is already included as an optional dependency in this project. To install it:
+Reflector requires Python 3.12, matching the current starter and toolkit.
 
 ```bash
-uv sync --extra agentops
+python3 -m venv .venv
+.venv/bin/pip install -e '.[dev]'
+.venv/bin/pytest
 ```
 
-Or if you're installing manually:
+Run the permanent offline compatibility check:
 
 ```bash
-pip install -U agentops
+.venv/bin/kaggle_smoke_test
 ```
 
-### Getting Your API Key
-
-1. Visit [app.agentops.ai](https://app.agentops.ai) and create an account if you haven't already
-2. Once logged in, click on "New Project" to create a project for your ARC-AGI-3 agents
-3. Give your project a meaningful name (e.g., "ARC-AGI-3-Agents")
-4. After creating the project, you'll see your project dashboard
-5. Click on the "API Keys" tab on the left side & copy the API key
-
-### Configuration
-
-1. Add your AgentOps API key to your `.env` file:
+Export the Kaggle artifacts:
 
 ```bash
-AGENTOPS_API_KEY=aos_your_api_key_here
+.venv/bin/reflector-kaggle export --output dist
 ```
 
-2. The AgentOps integration is automatically initialized when you run an agent. The tracing decorator `@trace_agent_session` is already applied to agent execution methods in the codebase.
+This produces:
 
-3. When you run your agent, you'll see AgentOps initialization messages and session URLs in the console:
+- `dist/reflector-kaggle-overlay.zip`, the inference-only source overlay;
+- `dist/reflector-kaggle-submission.ipynb`, a self-contained notebook that
+  embeds that exact overlay and uses the competition-provided starter/wheels.
+
+For a local official-harness run:
 
 ```bash
-🖇 AgentOps: Session Replay for your-agent-name: https://app.agentops.ai/sessions?trace_id=xxxxx
+OPERATION_MODE=offline \
+ENVIRONMENTS_DIR=tests/fixtures/official_toolkit \
+RECORDINGS_DIR=recordings \
+.venv/bin/python -c \
+  'from agents import Swarm; Swarm("reflector", "http://localhost:8001", ["bt11"]).main()'
 ```
 
-4. Click on the session URL to view real-time traces of your agent's execution. You can also view the traces in the AgentOps dashboard by locating the trace ID in the "Traces" tab.
+## Governing invariant
 
-### Using AgentOps with Custom Agents
+Every accepted agent descendant must remain directly exportable as an offline
+ARC-AGI-3 Kaggle submission without architectural translation or manual
+rewriting. Development-only evolution, analysis, persistence, and UI code may
+consume the symbolic package but may never be imported by its Kaggle path.
 
-If you're creating a custom agent, the tracing is automatically applied through the `@trace_agent_session` decorator on the `main()` method. No additional code changes are needed.
+See [KAGGLE.md](KAGGLE.md), [ARCHITECTURE.md](ARCHITECTURE.md),
+[THEORY.md](THEORY.md), and [EVALUATION.md](EVALUATION.md).
 
-## Contest Submission
+## Status
 
-To submit your agent for the ARC-AGI-3 competition, please use this form: https://forms.gle/wMLZrEFGDh33DhzV9.
-
-## Contributing
-
-We welcome contributions! To contribute to ARC-AGI-3-Agents, please follow these steps:
-
-1.  Fork the repository and create a new branch for your feature or bugfix.
-2.  Make your changes and ensure that all tests pass, you are welcome to add more tests for your specific fixes.
-3.  This project uses `ruff` for linting and formatting. Please set up the pre-commit hooks to ensure your contributions match the project's style.
-    ```bash
-    pip install pre-commit
-    pre-commit install
-    ```
-4.  Write clear commit messages describing your changes.
-5.  Open a pull request with a description of your changes and the motivation behind them.
-
-If you have questions or need help, feel free to open an issue.
-
-## Tests
-
-To run the tests, you will need to have `pytest` installed. Run the tests like this:
-
-```bash
-pytest
-```
-
-For more information on tests, please see the [tests documentation](https://three.arcprize.org/docs#testing).
+The end-to-end Kaggle-compatible symbolic baseline exists. Deeper schema
+induction, synthetic concepts, reflecting abstraction, epistemic compression,
+population evolution, and the replay UI are subsequent evidence-driven layers;
+they must preserve the invariant above.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT. The retained official starter code is also MIT licensed.

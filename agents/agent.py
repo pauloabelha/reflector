@@ -54,6 +54,7 @@ class Agent(ABC):
         self.game_id = game_id
         self.guid = ""
         self.agent_name = agent_name
+        self.action_counter = 0
         self.tags = tags or []
         self.frames = [FrameData(levels_completed=0)]
         self._cleanup = True
