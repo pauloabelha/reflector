@@ -2,6 +2,50 @@
 
 Run date: 2026-07-27.
 
+## V4 conclusion
+
+The narrow transformation-composition claim is **supported** on its untouched
+confirmation split. After identical forced observations of four cardinal
+translations and one goal demonstration, the Kaggle-exportable transformation
+descendant composed those learned operations to solve unseen spatial layouts
+at the oracle action minimum.
+
+This is causal evidence for executable transformation composition on one
+synthetic family. It is not an ARC-AGI-3 score. The represented inverse
+partners and finite comparison laws are structural checks, not evidence of
+transfer to an unobserved inverse, causal use of morphisms, general
+category-theoretic cognition, or official-game generalization.
+
+## V4 untouched confirmation set
+
+The single run used paired seeds 90,000–90,029 after freeze commit `304ab0b`
+and passed all ten frozen criteria:
+
+| Preregistered criterion | Result |
+| --- | --- |
+| All actions legal | Pass: 100% |
+| Identical training histories | Pass within every paired seed |
+| Isolated transformation completion | Pass: 100% |
+| Default full-policy completion | Pass: 100% |
+| Transformation minus ablation efficiency | Pass: +1.0000, 95% bootstrap CI [1.0000, 1.0000] |
+| Transformation minus ablation first-attempt accuracy | Pass: +0.7833, 95% CI [0.6800, 0.8833] |
+| Four primitive transformations constructed | Pass |
+| Every primitive has a represented inverse partner | Pass |
+| Finite typed comparison laws | Pass |
+| Multi-step composed plans operative | Pass |
+
+Both transformation descendants completed every run in the 26-action oracle
+minimum. The no-transformation descendant never won and averaged 23.70%
+completion within the 96-action budget.
+
+The canonical report is
+[`validation-v4-holdout.json`](validation-v4-holdout.json), file SHA-256
+`e9fb12623c7dc98c03250cdaa977d689be62a02c01938d6c24a47e34ffbd4c25`
+and embedded result SHA-256
+`e2ac8daa5b8ffa6f20d7f877c9cd75c9d2bb9fc6d25bfcf44f211b0bf8351235`.
+The frozen protocol, claim boundary, and development result are recorded in
+[`VALIDATION_V4.md`](VALIDATION_V4.md).
+
 ## V3 conclusion
 
 The narrow constructive-accommodation claim is **supported** on its untouched

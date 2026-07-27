@@ -49,19 +49,22 @@ causal effect for this narrow mechanism under one synthetic perturbation
 family. It does not yet modify planning or justify a claim of general
 equilibration.
 
-These compiled controllers and structures are not yet a higher knowing level.
-The current equilibration layer records contradiction and conditional
-accommodation, but it does not yet construct general negations, transformations
-and their reversals, or operative relations among transformations. Those
-mechanisms must be validated causally before entering the overlay.
+`TransformationSystem` reflects repeated movement schemas into MDL-positive
+translation operators. After level-advance evidence grounds adjacency as an
+operative goal, a bounded breadth-first planner composes those operators in
+future layouts. Validation v4 shows a causal control effect for this narrow
+composition mechanism on one synthetic family. It also represents observed
+inverse partners and can exhaust a finite bounded state graph for calibrated
+possible/impossible reachability.
 
-The proposed higher-order substrate has two explicitly separate graphs. A
-transformation graph represents state-changing operators and their temporal
-composition. A comparison graph represents typed mappings between
-transformations and structural composition of compatible mappings. Existing
-schema families are similarity groups, not arrows in that comparison graph.
-No category terminology is warranted until finite identity and associativity
-laws are executable and tested.
+The higher-order substrate keeps two explicitly separate structures. The
+transformation set contains state-changing operators and executable temporal
+composition. The comparison graph contains typed mappings between
+transformations and structural composition of compatible mappings. Its finite
+endpoint, identity, closure, and associativity checks pass, but these laws are
+structural evidence only: morphisms do not yet improve action selection, and
+category-theoretic cognition is not claimed. Existing schema families remain
+similarity groups rather than arrows in the comparison graph.
 
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
 questions, plans, decisions, and concept births used during inference. It also
@@ -79,8 +82,9 @@ SQLite store, API server, or frontend. `tests/integration/test_kaggle_contract.p
 enforces the current inference closure.
 
 The Kaggle closure contains symbolic values, perception, schemas, typed
-structural credit, reflecting abstraction, causal and temporal hypotheses,
-planning, dependency graphs, mind, policy, and trace types. Evaluation,
+structural credit, transformations and comparisons, reflecting abstraction,
+causal and temporal hypotheses, planning, dependency graphs, mind, policy, and
+trace types. Evaluation,
 compression analysis, transforms,
 experiment persistence, population selection, mutation providers, sandbox
 orchestration, evolver, and CLI modules remain outside it.

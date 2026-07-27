@@ -106,17 +106,18 @@ Run the latest preregistered synthetic mechanism benchmark:
 ```bash
 .venv/bin/reflector validate --suite v3 --seed-start 60000 --seeds 30 \
   --output validation-v3-holdout.json
+.venv/bin/reflector validate --suite v4 --seed-start 90000 --seeds 30 \
+  --output validation-v4-holdout.json
 ```
 
 This benchmark compares the deployed policy with ablations and simple
 baselines. It is explicitly not an ARC score; see
-[`VALIDATION_V3.md`](VALIDATION_V3.md) for its frozen claim boundary and
+[`VALIDATION_V4.md`](VALIDATION_V4.md) for the latest frozen claim boundary and
 criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for the original
-falsification plus the v2 and v3 confirmation results. V3 supports a narrow
-conditional-accommodation claim under identical training histories; it is not
-evidence of general equilibration or official-game generalization. The
-remaining higher-order construction tests are tracked in
-[`VALIDATION_V3_DESIGN.md`](VALIDATION_V3_DESIGN.md).
+falsification plus the v2–v4 confirmation results. V3 supports narrow
+conditional accommodation; v4 supports executable transformation composition
+under identical training histories. Neither is evidence of general
+equilibration, category-theoretic cognition, or official-game generalization.
 
 Run a reproducible population evaluation (network isolation is on by default):
 
@@ -173,7 +174,10 @@ MDL-positive schema families and concept types, and evidence-gated symbolic
 language versions, including a compositional ℤ₄ orientation operator when
 repeated rotation evidence pays its cost. Accepted concepts become later schema
 terms, language operators normalize later events, and family confidence feeds
-the bounded planner. Development tooling measures recoverable
+the bounded planner. Evidence-backed translations now compile into explicit
+operator objects used by a bounded spatial planner; the inference trace also
+exposes represented inverses, finite modal reachability, and a typed comparison
+graph with executable finite law checks. Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained
 genomes, transformed trace holdouts, reproducible experiment manifests,

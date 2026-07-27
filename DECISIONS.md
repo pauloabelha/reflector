@@ -202,3 +202,22 @@ prediction contradiction can construct an evidenced shared context condition
 that improves intervention in novel layouts. General equilibration,
 psychological fidelity, arbitrary ontology invention, transformation reversal,
 morphism composition, and official ARC generalization remain unvalidated.
+
+## 2026-07-27 — Accept executable transformation composition, not categories
+
+Validation v4 froze the implementation and criteria in commit `304ab0b`, then
+ran seeds 90,000–90,029 once. All policies received identical forced primitive
+and goal-demonstration histories. The isolated transformation descendant and
+default policy solved every unseen layout at the 26-action oracle minimum;
+the otherwise identical no-transformation descendant never won.
+First-attempt intervention accuracy improved by 0.7833 (95% paired bootstrap
+CI [0.6800, 0.8833]) and efficiency by 1.0 (CI [1.0, 1.0]).
+
+Learned translation objects and their bounded composition are therefore
+accepted into the operative Kaggle path. The separate typed comparison graph
+passes finite endpoint, identity, closure, and associativity checks, and all
+four learned primitives have observed inverse partners. These are structural
+facts, not causal evidence for morphisms or transfer to an unobserved inverse.
+Modal reachability has finite unit coverage but no held-out causal validation.
+Category-theoretic cognition and official ARC generalization remain
+unvalidated.
