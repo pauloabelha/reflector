@@ -101,6 +101,19 @@ Generate, replay, evaluate, and compare deterministic traces:
 .venv/bin/reflector graph /tmp/reflector-trace.json
 ```
 
+Run the preregistered synthetic mechanism benchmark:
+
+```bash
+.venv/bin/reflector validate --seed-start 10000 --seeds 30 \
+  --output validation-results-holdout.json
+```
+
+This benchmark compares the deployed policy with ablations and simple
+baselines. It is explicitly not an ARC score; see
+[`VALIDATION.md`](VALIDATION.md) for its fixed claim boundary and criteria, and
+[`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for the current mixed result
+and failures.
+
 Run a reproducible population evaluation (network isolation is on by default):
 
 ```bash

@@ -113,10 +113,8 @@ class SchemaStore:
         schema.support += 1
         return schema
 
-    def action_value(self, action_id: int) -> float:
-        trials = self.action_trials.get(action_id, 0)
-        if not trials:
-            return 0.0
+    @staticmethod
+    def _result_value(result: tuple[str, ...]) -> float:
         weights = {
             "level_advanced": 100.0,
             "state_changed": 5.0,
@@ -128,14 +126,67 @@ class SchemaStore:
             "no_observed_change": -0.5,
         }
         total = 0.0
-        for event, count in self.action_events.get(action_id, {}).items():
+        for event in result:
             kind = event.split("(", 1)[0]
-            total += weights.get(kind, 0.0) * count
+            total += weights.get(kind, 0.0)
             if "GAME_OVER" in event:
-                total -= 100.0 * count
+                total -= 100.0
             if "WIN" in event:
-                total += 200.0 * count
-        return total / trials
+                total += 200.0
+        return total
+
+    def action_value(self, action_id: int) -> float:
+        trials = self.action_trials.get(action_id, 0)
+        if not trials:
+            return 0.0
+        return sum(
+            self._result_value((event,)) * count
+            for event, count in self.action_events.get(action_id, {}).items()
+        ) / trials
+
+    @staticmethod
+    def _environment_context(
+        context: tuple[Atom, ...],
+    ) -> tuple[Atom, ...]:
+        return tuple(
+            atom for atom in context if atom.predicate != "synthetic_item"
+        )
+
+    def contextual_trials(
+        self, action_id: int, context: tuple[Atom, ...]
+    ) -> int:
+        environment = self._environment_context(context)
+        return sum(
+            schema.support
+            for schema in self.schemas.values()
+            if schema.action_id == action_id
+            and self._environment_context(schema.context) == environment
+        )
+
+    def contextual_action_value(
+        self, action_id: int, context: tuple[Atom, ...]
+    ) -> float:
+        """Prefer empirical effects in the current symbolic scene.
+
+        Global action value is a transfer prior only until the first local
+        observation. After that, contradictory local evidence must be able to
+        defeat a control that happened to work in a different context.
+        """
+
+        environment = self._environment_context(context)
+        matching = [
+            schema
+            for schema in self.schemas.values()
+            if schema.action_id == action_id
+            and self._environment_context(schema.context) == environment
+        ]
+        support = sum(schema.support for schema in matching)
+        if not support:
+            return self.action_value(action_id)
+        return sum(
+            self._result_value(schema.result) * schema.support
+            for schema in matching
+        ) / support
 
     def event_probability(self, action_id: int, event_kind: str) -> float:
         trials = self.action_trials.get(action_id, 0)

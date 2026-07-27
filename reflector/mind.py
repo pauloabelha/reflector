@@ -200,9 +200,12 @@ class SymbolicMind:
         )
 
         scored: list[tuple[float, int, float, float, float, float]] = []
+        context = (
+            self._last_scene.context() if self._last_scene is not None else ()
+        )
         for action in legal_actions:
-            trials = self.schemas.action_trials.get(action, 0)
-            predicted = self.schemas.action_value(action)
+            trials = self.schemas.contextual_trials(action, context)
+            predicted = self.schemas.contextual_action_value(action, context)
             information = 1.0 / math.sqrt(trials + 1)
             experiment = experiment_by_action.get(action)
             experiment_bonus = (
@@ -215,6 +218,7 @@ class SymbolicMind:
                 if self.last_plan is not None
                 and self.last_plan.actions
                 and self.last_plan.actions[0] == action
+                and (trials == 0 or predicted > 0.0)
                 else 0.0
             )
             score = (

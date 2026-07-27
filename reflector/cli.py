@@ -10,6 +10,7 @@ from contextlib import redirect_stdout
 from importlib import import_module
 from pathlib import Path
 
+from .benchmark import run_validation
 from .compression import analyze_redundancy, counterfactual_replay, replay_policy
 from .deployment import CONFIG_ENV
 from .evaluation import compare_traces, evaluate_ablations, evaluate_trace
@@ -127,6 +128,11 @@ def main() -> None:
     evolution_ablations = commands.add_parser("evolution-ablations")
     evolution_ablations.add_argument("--db", type=Path, required=True)
     evolution_ablations.add_argument("--experiment", required=True)
+
+    validate = commands.add_parser("validate")
+    validate.add_argument("--seeds", type=int, default=30)
+    validate.add_argument("--seed-start", type=int, default=0)
+    validate.add_argument("--output", type=Path)
 
     official_run = commands.add_parser("official-run")
     official_run.add_argument("games", nargs="+")
@@ -277,6 +283,15 @@ def main() -> None:
                 store.evaluated(args.experiment)
             )
         print(json.dumps(payload, indent=2))
+    elif args.command == "validate":
+        payload = run_validation(args.seeds, args.seed_start)
+        rendered = json.dumps(payload, indent=2)
+        if args.output is not None:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(rendered + "\n", encoding="utf-8")
+            print(args.output)
+        else:
+            print(rendered)
     elif args.command == "official-run":
         if args.config is not None:
             raw_config = json.loads(args.config.read_text(encoding="utf-8"))

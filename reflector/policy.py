@@ -28,6 +28,8 @@ class SymbolicPolicy:
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
         self._last_update: MindUpdate | None = None
+        self._decision_epoch = 0
+        self._last_ingested_epoch = -1
 
     def is_done(self, observation: Observation) -> bool:
         return observation.state == self.TERMINAL
@@ -40,12 +42,17 @@ class SymbolicPolicy:
         action after WIN.
         """
 
-        if observation == self._last_observation and self._last_update is not None:
+        if (
+            observation == self._last_observation
+            and self._last_update is not None
+            and self._last_ingested_epoch == self._decision_epoch
+        ):
             return self._last_update
         self.observations_seen += 1
         update = self.mind.ingest(observation, self._previous_decision)
         self._last_observation = observation
         self._last_update = update
+        self._last_ingested_epoch = self._decision_epoch
         if self.is_done(observation):
             self.trace.finish(observation, update.scene, update.transition)
         return update
@@ -58,6 +65,7 @@ class SymbolicPolicy:
             decision = self._record(Decision(self.RESET, reason="reset-required"))
             self._append_trace(observation, decision, update)
             self._previous_decision = decision
+            self._decision_epoch += 1
             return decision
 
         legal = tuple(
@@ -82,6 +90,7 @@ class SymbolicPolicy:
             decision = self._record(Decision(action_id, reason=reason))
         self._append_trace(observation, decision, update)
         self._previous_decision = decision
+        self._decision_epoch += 1
         return decision
 
     def _append_trace(

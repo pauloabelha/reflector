@@ -2,6 +2,7 @@ from reflector import (
     Atom,
     ConceptStore,
     Event,
+    MindConfig,
     Observation,
     SchemaStore,
     SymbolicPolicy,
@@ -97,3 +98,48 @@ def test_terminal_observation_is_learned_without_an_outgoing_action() -> None:
         event.kind == "level_advanced"
         for event in policy.trace.terminal_transition.result
     )
+
+
+def test_identical_observation_after_a_new_action_is_learned_once() -> None:
+    policy = SymbolicPolicy()
+    unchanged = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1,),
+        frame=((0, 0), (0, 0)),
+    )
+
+    policy.choose_action(unchanged)
+    policy.observe(unchanged)
+    assert policy.mind.schemas.action_trials == {1: 1}
+
+    # The adapter presents the same received frame to choose_action after
+    # append_frame. That delivery is not a second environment transition.
+    policy.choose_action(unchanged)
+    assert policy.mind.schemas.action_trials == {1: 1}
+
+    # A new environment response after the second action is a real transition,
+    # even when its pixels and metadata are byte-for-byte identical.
+    policy.observe(unchanged)
+    policy.observe(unchanged)
+    assert policy.mind.schemas.action_trials == {1: 2}
+
+
+def test_policy_uses_context_to_reject_a_globally_successful_action() -> None:
+    policy = SymbolicPolicy(config=MindConfig(enable_experiments=False))
+    left = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((2, 0, 0), (0, 0, 0), (0, 0, 0)),
+    )
+    advanced_right = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((0, 0, 0), (0, 0, 0), (0, 0, 2)),
+        levels_completed=1,
+    )
+
+    assert policy.choose_action(left).action_id == 1
+    assert policy.choose_action(advanced_right).action_id == 1
+    # Action 1 now has strong global success evidence, but the unchanged
+    # right-hand context is evidence that it is locally wrong.
+    assert policy.choose_action(advanced_right).action_id == 2

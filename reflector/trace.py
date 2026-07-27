@@ -17,7 +17,7 @@ from .symbolic import (
 )
 
 TRACE_FORMAT_VERSION = 2
-AGENT_VERSION = "reflector-symbolic-v5"
+AGENT_VERSION = "reflector-symbolic-v6"
 
 
 @dataclass(frozen=True, slots=True)
