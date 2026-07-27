@@ -42,6 +42,14 @@ contradictions, negations, accommodation, and structural reorganization while
 keeping temporal procedures distinct from operative relations among
 transformations. It must be validated causally before entering the overlay.
 
+The proposed higher-order substrate has two explicitly separate graphs. A
+transformation graph represents state-changing operators and their temporal
+composition. A comparison graph represents typed mappings between
+transformations and structural composition of compatible mappings. Existing
+schema families are similarity groups, not arrows in that comparison graph.
+No category terminology is warranted until finite identity and associativity
+laws are executable and tested.
+
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
 questions, plans, decisions, and concept births used during inference. It also
 records the complete deployed `MindConfig`, so a selected population descendant

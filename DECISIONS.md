@@ -149,3 +149,19 @@ structures, support composition and reversal, test possible/impossible/
 necessary reachability, and operate on learned structures as explicit inputs.
 `VALIDATION_V3_DESIGN.md` records the proposed falsification suite before code
 is written.
+
+## 2026-07-27 — Compare transformations explicitly before claiming categories
+
+Piaget's *Morphisms and Categories* supplies a concrete candidate for the
+missing knowing-level object. Operatory transformations change contents;
+morphisms compare contents or transformations; higher morphismic operations
+compose the comparisons themselves. Reflector currently has transformations,
+temporal procedures, and similarity-based families, but no typed mapping
+between learned transformations.
+
+The next representation should therefore distinguish a transformation system
+from a comparison graph. A comparison must expose source, target, preserved
+relations, and typed composition. Category-theoretic terminology is prohibited
+until represented identities and composition pass closure, endpoint,
+associativity, and identity tests. This follows Papert's own warning against
+using the mathematics as superficial metaphor.

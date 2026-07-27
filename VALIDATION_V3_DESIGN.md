@@ -81,6 +81,33 @@ The crucial ablation preserves every controller and procedure but removes
 access to their serialized structure. A positive effect against that ablation
 is the minimum evidence that the mechanism is more than a control hierarchy.
 
+### 6. Morphism composition
+
+The agent observes several transformations over different contents and must
+learn typed comparisons between their source/result structures. A held-out task
+requires composing two compatible comparisons; neither the resulting mapping
+nor a corresponding action sequence appears during training.
+
+The accepted finite comparison structure must expose:
+
+- transformation objects;
+- mappings with explicit domains and codomains;
+- rejection of mismatched compositions;
+- identity mappings;
+- closed composition for the tested cases;
+- identity and associativity checks.
+
+Required ablations:
+
+- similarity-based schema families without mappings;
+- isolated mappings without composition;
+- temporal procedure composition without comparison objects;
+- untyped composition.
+
+Success means a small executable comparison algebra improved held-out
+prediction or control. It does not justify claiming that general category
+theory explains cognition.
+
 ## Evidence records required before execution
 
 Each proposed higher-order construction must serialize:
@@ -89,6 +116,7 @@ Each proposed higher-order construction must serialize:
 - construction operator;
 - projected representation;
 - reorganized representation;
+- typed source and target for comparison structures;
 - predicted new capability;
 - positive and negative applicability evidence;
 - contradictions encountered;

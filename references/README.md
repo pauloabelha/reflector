@@ -16,6 +16,10 @@ not treat them as authority for claims the implementation has not measured.
   Reexamined*, MIT/LCS/TR-563, 1993. The implementation report is used
   especially for its distinction between reproduced internal structures and
   demonstrated goal-directed behavior.
+- Jean Piaget, Gil Henriques, and Edgar Ascher, *Morphisms and Categories:
+  Comparing and Transforming*, translated and edited by Terrance Brown, 1992.
+  The locally consulted file is a 25-page excerpt containing Papert's preface,
+  Piaget's introduction, and the opening of Chapter 1, not the complete book.
 - Jean Piaget et al., [Studies in Reflecting
   Abstraction](https://www.routledge.com/Studies-in-Reflecting-Abstraction/Campell/p/book/9781138877375),
   English translation of *Recherches sur l'abstraction réfléchissante* (1977).
@@ -34,3 +38,5 @@ The current derived decisions and explicit non-equivalences are in
 The broader primary/peer-reviewed online sweep and its ranked implementation
 consequences are in
 [`AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md`](AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md).
+The transformation/morphism distinction and its executable category-law gate
+are in [`MORPHISMS_CATEGORIES_NOTES.md`](MORPHISMS_CATEGORIES_NOTES.md).

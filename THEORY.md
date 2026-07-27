@@ -116,6 +116,14 @@ structure that relates transformations, and distinguish either of those from
 making that operative organization an explicit object of further cognition.
 Reflector does not yet meet the last criterion.
 
+Piaget's morphism account suggests what such an object could be. A
+transformation changes or generates symbolic content; a morphism compares
+transformations without changing their contents; and a higher construction
+composes those mappings. Reflector currently learns transformations and
+temporally composes some of them as procedures, but schema-family grouping is
+not yet a typed mapping and procedure execution is not composition of
+morphisms.
+
 Piaget's equilibration account also requires more than confidence-weighted
 learning. Empirical observables and inferred coordinations must constrain one
 another continuously; contradictions and negations must be represented; and a
@@ -165,4 +173,6 @@ and
 [references/REFLECTING_ABSTRACTION_NOTES.md](references/REFLECTING_ABSTRACTION_NOTES.md)
 and
 [references/AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md](references/AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md)
+and
+[references/MORPHISMS_CATEGORIES_NOTES.md](references/MORPHISMS_CATEGORIES_NOTES.md)
 for the source-to-contract maps and limits on their use.
