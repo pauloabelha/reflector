@@ -110,6 +110,19 @@ procedures, but does not yet perform opportunistic proximity search with
 separate estimates of time, reliability, cost, controller degradation, and
 repair.
 
+The current procedures are temporal controllers, not higher knowing levels.
+Authoritative treatments distinguish a goal-directed procedure from the
+structure that relates transformations, and distinguish either of those from
+making that operative organization an explicit object of further cognition.
+Reflector does not yet meet the last criterion.
+
+Piaget's equilibration account also requires more than confidence-weighted
+learning. Empirical observables and inferred coordinations must constrain one
+another continuously; contradictions and negations must be represented; and a
+resistant observation should sometimes reorganize the model rather than merely
+lower a statistic. A source-derived v3 design makes this the next falsifiable
+mechanism.
+
 Recoverable epistemic redundancy currently counts repeated action-effect
 rediscovery, equivalent schemas across contexts, repeated plan computation, and
 concept evidence that existed before compilation. Counterfactual replay injects
@@ -150,4 +163,6 @@ See [references/README.md](references/README.md) for primary links and
 [references/SCHEMA_MECHANISM_NOTES.md](references/SCHEMA_MECHANISM_NOTES.md)
 and
 [references/REFLECTING_ABSTRACTION_NOTES.md](references/REFLECTING_ABSTRACTION_NOTES.md)
+and
+[references/AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md](references/AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md)
 for the source-to-contract maps and limits on their use.

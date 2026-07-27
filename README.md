@@ -114,6 +114,11 @@ baselines. It is explicitly not an ARC score; see
 criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for both the
 original falsification and the v2 confirmation result.
 
+The next mechanism is deliberately still a design, not a result:
+[`VALIDATION_V3_DESIGN.md`](VALIDATION_V3_DESIGN.md) proposes tests that
+separate temporal control compression from equilibration and higher-order
+construction before implementation begins.
+
 Run a reproducible population evaluation (network isolation is on by default):
 
 ```bash

@@ -131,3 +131,21 @@ projection/reorganization records, inversion tests, abstraction-specific
 negative evidence, and degradable erroneous abstractions remain future work.
 Language nesting alone must not be described as reflected abstraction or
 metareflection. See `references/REFLECTING_ABSTRACTION_NOTES.md`.
+
+## 2026-07-27 — The next research gate is equilibration, not a larger macro
+
+The authoritative online survey changes the next implementation priority.
+Piaget's own equilibration account requires continuous interaction between
+observables and coordinations, explicit use of negations, and structural
+reorganization when a perturbation resists the current model. Inhelder and
+Piaget distinguish temporal procedures from atemporal systems of
+transformations. Campbell and Bickhard add the decisive warning that a control
+hierarchy is not a knowing hierarchy.
+
+Therefore Reflector will not claim higher-order reflection by adding deeper
+procedures. The next benchmarked mechanism should instead record
+contradictions and accommodation, distinguish procedures from operative
+structures, support composition and reversal, test possible/impossible/
+necessary reachability, and operate on learned structures as explicit inputs.
+`VALIDATION_V3_DESIGN.md` records the proposed falsification suite before code
+is written.

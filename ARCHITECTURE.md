@@ -26,15 +26,21 @@ search over learned event operators toward the current `level_advanced` goal
 and reports every expansion. Its proposal is one scored input to action
 selection, not an unbounded side channel.
 
-`AbstractionStore` performs three bounded reflection passes after transition
+`AbstractionStore` performs bounded compilation passes after transition
 learning. It groups cross-context schemas by action/result predicates, groups
-synthetic concepts by evidence-backed kind, and detects rotation vocabularies
-that can be represented by an orientation algebra. It retains only
-description-positive structures and records their evidence, residual cost, and
-language ancestry. Retained concepts compile into future schema contexts,
-accepted language operators normalize future events, and family reliability is
-available to the bounded planner. The store is part of the shared Kaggle
-closure.
+synthetic concepts by evidence-backed kind, detects rotation vocabularies that
+can be represented by an orientation algebra, and compiles repeated successful
+trajectories into procedures. It retains only description-positive structures
+and records their evidence, residual cost, and language ancestry. Retained
+concepts compile into future schema contexts, accepted language operators
+normalize future events, family reliability informs transfer, and procedures
+can supply bounded plans. The store is part of the shared Kaggle closure.
+
+These compiled controllers and structures are not yet a higher knowing level.
+The next proposed inference mechanism is an equilibration layer that records
+contradictions, negations, accommodation, and structural reorganization while
+keeping temporal procedures distinct from operative relations among
+transformations. It must be validated causally before entering the overlay.
 
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
 questions, plans, decisions, and concept births used during inference. It also

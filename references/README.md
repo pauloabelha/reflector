@@ -31,3 +31,6 @@ and record only derived implementation decisions that can be tested.
 The current derived decisions and explicit non-equivalences are in
 [`SCHEMA_MECHANISM_NOTES.md`](SCHEMA_MECHANISM_NOTES.md) and
 [`REFLECTING_ABSTRACTION_NOTES.md`](REFLECTING_ABSTRACTION_NOTES.md).
+The broader primary/peer-reviewed online sweep and its ranked implementation
+consequences are in
+[`AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md`](AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md).
