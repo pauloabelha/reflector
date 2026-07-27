@@ -115,3 +115,19 @@ actions, and Reflector's functional concepts are not yet his synthetic items.
 Behavioral completion and efficiency ablations—not the presence of symbolic
 structures—are the acceptance test. The source-to-contract mapping is recorded
 in `references/SCHEMA_MECHANISM_NOTES.md`.
+
+## 2026-07-27 — Compression does not define reflecting abstraction
+
+Piaget's projection/reflection distinction adds a stricter acceptance boundary.
+The six serialized layers are engineering strata, not developmental stages.
+An MDL-positive structure becomes a reflecting-abstraction candidate only when
+it derives from coordinated actions, projects them into a higher-order
+representation, reorganizes them into a new operation, and has a measurable
+effect such as transfer, composition, or reversibility.
+
+Schema families and procedures have initial transfer evidence from validation
+v2; the orientation algebra has structural composition evidence. Explicit
+projection/reorganization records, inversion tests, abstraction-specific
+negative evidence, and degradable erroneous abstractions remain future work.
+Language nesting alone must not be described as reflected abstraction or
+metareflection. See `references/REFLECTING_ABSTRACTION_NOTES.md`.

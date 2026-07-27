@@ -30,13 +30,13 @@ schemas yield cross-context schema families; concepts yield typed parents;
 repeated concrete rotation predicates can yield a compositional orientation
 operator; and repeated successful trajectories can compile into evidence-gated
 procedures. Each structure records its members, evidence, raw and compiled
-description length, complexity, and utility. This is reflecting abstraction in
-the repository's explicit engineering sense, not a claim that Piaget's full
-developmental account has been reproduced.
+description length, complexity, and utility. These are operational candidates
+for reflecting abstraction, not a claim that Piaget's developmental account
+has been reproduced.
 
 ## Operational reflecting abstraction
 
-Reflector separates six serializable levels:
+Reflector separates six serializable engineering strata:
 
 1. observations become objects, attributes, and bounded relations such as
    `left_of`, `above`, `aligned_x`, `aligned_y`, and `touching`;
@@ -64,6 +64,15 @@ pressure. Schema-family savings are additionally weighted by empirical
 reliability. Non-positive proposals are discarded. Dependency edges connect each
 accepted abstraction to the schemas or concepts that paid for it. A language
 version is appended only when the accepted operator set changes.
+
+These strata are not Piagetian developmental stages. Under the stronger
+source-derived criterion, compression is evidence of economy but is not
+sufficient evidence of reflecting abstraction. A qualifying construction must
+project a coordination of actions into a higher-order representation,
+reorganize it there, and demonstrate a new behavioral or structural capacity
+such as transfer, composition, differentiation with reintegration, or
+reversibility. Reflector currently records evidence and dependencies but does
+not yet serialize projection and reorganization as separate operations.
 
 Accepted structures are compiled forward rather than merely displayed.
 Functional concepts whose defining action applies become `synthetic_item`
@@ -125,6 +134,12 @@ on/off/unknown state, implicit activation, and duration. The name is retained as
 an implementation-level functional concept, and this non-equivalence is a
 tracked research gap.
 
+Likewise, the current language-history hierarchy is not by itself evidence of
+Piaget's reflected abstraction or metareflection. Those claims require
+independently tested comparisons and reorganizations among products of earlier
+abstraction; representational nesting alone does not establish a developmental
+level.
+
 Piaget's *Studies in Reflecting Abstraction* motivates construction from
 coordinated relationships among prior structures. Reflector translates that
 direction into evidence-bearing compilation passes; it does not infer that an
@@ -133,4 +148,6 @@ abstraction.
 
 See [references/README.md](references/README.md) for primary links and
 [references/SCHEMA_MECHANISM_NOTES.md](references/SCHEMA_MECHANISM_NOTES.md)
-for the source-to-contract map and limits on its use.
+and
+[references/REFLECTING_ABSTRACTION_NOTES.md](references/REFLECTING_ABSTRACTION_NOTES.md)
+for the source-to-contract maps and limits on their use.

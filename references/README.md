@@ -21,10 +21,13 @@ not treat them as authority for claims the implementation has not measured.
   English translation of *Recherches sur l'abstraction réfléchissante* (1977).
   Reflector borrows the direction of constructing knowledge from coordinated
   relationships among prior structures, not a claim of psychological fidelity.
+  The locally consulted file contains only the front matter and Campbell's
+  26-page theoretical introduction, not the complete book.
 
 The repository does not redistribute copyrighted book or thesis files. Add
 locally obtained research material under `references/local/`, which is ignored,
 and record only derived implementation decisions that can be tested.
 
 The current derived decisions and explicit non-equivalences are in
-[`SCHEMA_MECHANISM_NOTES.md`](SCHEMA_MECHANISM_NOTES.md).
+[`SCHEMA_MECHANISM_NOTES.md`](SCHEMA_MECHANISM_NOTES.md) and
+[`REFLECTING_ABSTRACTION_NOTES.md`](REFLECTING_ABSTRACTION_NOTES.md).
