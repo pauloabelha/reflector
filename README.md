@@ -55,6 +55,20 @@ This produces:
 - `dist/reflector-kaggle-submission.ipynb`, a self-contained notebook that
   embeds that exact overlay and uses the competition-provided starter/wheels.
 
+An accepted population descendant is exported without policy translation:
+
+```bash
+.venv/bin/reflector-kaggle export \
+  --config candidate.json --output dist
+.venv/bin/reflector-kaggle smoke-test --config candidate.json
+```
+
+Run the current competition-readiness audit:
+
+```bash
+.venv/bin/reflector-prize-audit
+```
+
 For a local official-harness run:
 
 ```bash
@@ -130,7 +144,8 @@ rewriting. Development-only evolution, analysis, persistence, and UI code may
 consume the symbolic package but may never be imported by its Kaggle path.
 
 See [KAGGLE.md](KAGGLE.md), [ARCHITECTURE.md](ARCHITECTURE.md),
-[THEORY.md](THEORY.md), and [EVALUATION.md](EVALUATION.md).
+[THEORY.md](THEORY.md), [EVALUATION.md](EVALUATION.md), and
+[PRIZE_READINESS.md](PRIZE_READINESS.md).
 
 ## Status
 
@@ -152,4 +167,7 @@ local replay and population-analysis UI is operational.
 
 ## License
 
-MIT. The retained official starter code is also MIT licensed.
+Reflector-authored material is dual-licensed MIT-0 or CC BY 4.0. Retained
+official starter material remains MIT licensed. See [LICENSE](LICENSE),
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and
+[OPEN_SOURCE_AI.md](OPEN_SOURCE_AI.md).

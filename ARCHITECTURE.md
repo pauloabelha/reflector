@@ -37,9 +37,10 @@ available to the bounded planner. The store is part of the shared Kaggle
 closure.
 
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
-questions, plans, decisions, and concept births used during inference. Replay,
-compression analysis, and evaluation consume those records without a parallel
-agent implementation.
+questions, plans, decisions, and concept births used during inference. It also
+records the complete deployed `MindConfig`, so a selected population descendant
+cannot silently replay as the default agent. Replay, compression analysis, and
+evaluation consume those records without a parallel agent implementation.
 
 The Kaggle artifact is an overlay, not a fork. It contains the shared package,
 the thin adapter, and a minimal agent registry. The notebook extracts those

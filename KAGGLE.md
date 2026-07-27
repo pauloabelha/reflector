@@ -62,13 +62,20 @@ completed level score is the squared human/agent action ratio with a 1.15 cap,
 game scores are weighted by 1-indexed level, and the total is the mean over all
 games. Unplayed games therefore matter.
 
-The research brief pins a conservative six-hour CPU/GPU execution budget.
-Kaggle exposes some detailed hardware, memory, storage, and runtime settings
-only after competition entry; re-check the authenticated Rules and notebook
-settings before every submitted version. Reflector's baseline is CPU-only,
-contains no model artifacts, and completes its smoke run in under one second,
-so it is far below known limits. No later component may assume that unused
+The current code-competition limit is nine hours for either CPU or GPU
+notebooks, with internet disabled and a 20,480 MB submission limit. Kaggle has
+added RTX 6000 `g4-standard-48` machines to this competition's pool. Reflector's
+baseline is CPU-only, contains no model artifacts, and completes its smoke run
+in under one second, but only a full 110-game Kaggle rerun establishes
+competition runtime compliance. No later component may assume that unused
 headroom is stable.
+
+Kaggle permits one submission per day, two final submissions, and teams of at
+most eight. The safety cutoff for accepting the rules is October 26, 2026 at
+11:59 UTC, the team-merger deadline is October 26 at 23:59 UTC, and final
+submissions close November 2 at 23:59 UTC. See
+[PRIZE_READINESS.md](PRIZE_READINESS.md) and refresh the dated rule snapshot
+before each submission.
 
 Primary references:
 
@@ -86,6 +93,17 @@ Primary references:
 
 The notebook embeds the overlay bytes generated from the same checked-out
 `reflector` package used locally. It does not paste or reimplement policy logic.
+To export an accepted evolved descendant, pass either its `MindConfig` JSON or
+serialized `Candidate` JSON:
+
+```bash
+.venv/bin/reflector-kaggle export \
+  --config candidate.json --output dist
+.venv/bin/reflector-kaggle smoke-test --config candidate.json
+```
+
+The config is validated and embedded as `REFLECTOR_CONFIG_JSON`; the official
+adapter loads it through the same `SymbolicPolicy` used in experiments.
 Upload or copy the generated notebook into the competition, attach the
 competition data source, keep internet disabled, commit it, and submit that
 committed version.
@@ -117,3 +135,13 @@ The inference allowlist includes `reflector/abstraction.py`. Its schema-family,
 concept-type, and language-reflection passes operate only on bounded in-memory
 symbolic stores; they add no package, network, database, or filesystem
 dependency.
+
+## Prize eligibility
+
+Technical Kaggle compatibility does not establish prize eligibility. Run
+`.venv/bin/reflector-prize-audit` and complete the manual account, public
+repository, public notebook, identity, data-security, and full-rerun gates in
+[PRIZE_READINESS.md](PRIZE_READINESS.md). Reflector-authored material is
+available under MIT-0 or CC BY 4.0, while retained starter material remains
+MIT; provenance and the absence of neural weights are documented in
+[OPEN_SOURCE_AI.md](OPEN_SOURCE_AI.md).

@@ -4,10 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reflector"
-version = "0.7.0"
+version = "0.8.0"
 description = "Kaggle-first symbolic ARC-AGI-3 research platform"
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT-0 OR CC-BY-4.0"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 dependencies = [
     "arc-agi==0.9.9",
     "python-dotenv>=1.0,<2",
@@ -38,6 +40,7 @@ agentops = [
 reflector = "reflector.cli:main"
 reflector-kaggle = "reflector.kaggle:main"
 kaggle_smoke_test = "reflector.kaggle:smoke_test"
+reflector-prize-audit = "reflector.prize:main"
 
 [tool.mypy]
 strict = true

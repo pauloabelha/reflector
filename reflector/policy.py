@@ -24,7 +24,7 @@ class SymbolicPolicy:
         self.observations_seen = 0
         self.action_counts: dict[int, int] = {}
         self.mind = SymbolicMind(config)
-        self.trace = EpisodeTrace()
+        self.trace = EpisodeTrace(mind_config=self.mind.config.to_dict())
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
         self._last_update: MindUpdate | None = None

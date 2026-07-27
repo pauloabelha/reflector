@@ -5,6 +5,7 @@ from typing import Any
 from arcengine import FrameData, GameAction, GameState
 
 from reflector import Observation, SymbolicPolicy
+from reflector.deployment import deployed_config
 from reflector.trace import AGENT_VERSION
 
 from ..agent import Agent
@@ -17,7 +18,7 @@ class ReflectorAgent(Agent):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.policy = SymbolicPolicy()
+        self.policy = SymbolicPolicy(deployed_config())
 
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
         return latest_frame.state is GameState.WIN

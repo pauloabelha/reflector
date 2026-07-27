@@ -1,9 +1,11 @@
+import json
 from unittest.mock import MagicMock
 
 import pytest
 from arcengine import FrameData, GameAction, GameState
 
 from agents.templates.reflector_agent import ReflectorAgent
+from reflector.deployment import CONFIG_ENV
 
 
 @pytest.mark.unit
@@ -33,3 +35,22 @@ def test_official_adapter_selects_available_action() -> None:
     assert not agent.is_done([frame], frame)
     frame.state = GameState.WIN
     assert agent.is_done([frame], frame)
+
+
+@pytest.mark.unit
+def test_official_adapter_loads_packaged_symbolic_genome(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        CONFIG_ENV,
+        json.dumps({"planner_max_expansions": 17}),
+    )
+    agent = ReflectorAgent(
+        card_id="test-card",
+        game_id="test-game",
+        agent_name="reflector",
+        ROOT_URL="http://localhost",
+        record=False,
+        arc_env=MagicMock(),
+    )
+    assert agent.policy.mind.config.planner_max_expansions == 17

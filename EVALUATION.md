@@ -91,4 +91,7 @@ tests establish internal compilation and reuse, not cross-game transfer.
 `reflector official-run` is the authoritative local score path. It invokes the
 unchanged official `Swarm`/`Arcade` lifecycle and emits the toolkit scorecard
 (including ARC/RHAE score and completed levels) beside Reflector's trace and
-resource metrics. Trace replay never fabricates an official score.
+resource metrics. The trace format stores the complete deployed `MindConfig`;
+deterministic
+replay and structural metrics therefore evaluate the submitted descendant,
+not an implicit default genome. Trace replay never fabricates an official score.

@@ -14,9 +14,12 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+from .mind import MindConfig
+
 ROOT = Path(__file__).resolve().parents[1]
 OVERLAY_FILES = (
     "reflector/__init__.py",
+    "reflector/deployment.py",
     "reflector/symbolic.py",
     "reflector/perception.py",
     "reflector/schemas.py",
@@ -40,27 +43,42 @@ def build_overlay() -> bytes:
     return buffer.getvalue()
 
 
-def export_submission(output_dir: Path) -> tuple[Path, Path]:
+def export_submission(
+    output_dir: Path,
+    config: MindConfig | None = None,
+) -> tuple[Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     overlay = build_overlay()
+    deployed = config or MindConfig()
     zip_path = output_dir / "reflector-kaggle-overlay.zip"
     zip_path.write_bytes(overlay)
     notebook_path = output_dir / "reflector-kaggle-submission.ipynb"
     notebook_path.write_text(
-        json.dumps(_notebook(base64.b64encode(overlay).decode("ascii")), indent=2),
+        json.dumps(
+            _notebook(
+                base64.b64encode(overlay).decode("ascii"),
+                deployed,
+            ),
+            indent=2,
+        ),
         encoding="utf-8",
     )
     return zip_path, notebook_path
 
 
-def _notebook(encoded_overlay: str) -> dict[str, object]:
+def _notebook(
+    encoded_overlay: str,
+    config: MindConfig | None = None,
+) -> dict[str, object]:
+    deployed = config or MindConfig()
     cells = [
         {
             "cell_type": "markdown",
             "metadata": {},
             "source": [
                 "# Reflector: symbolic ARC-AGI-3 baseline\n",
-                "Generated from the official ARC-AGI-3 Agents starter contract.",
+                "Generated from the official ARC-AGI-3 Agents starter contract.\n",
+                "The serialized symbolic genome is embedded in this notebook.",
             ],
         },
         {
@@ -79,7 +97,7 @@ def _notebook(encoded_overlay: str) -> dict[str, object]:
             "execution_count": None,
             "metadata": {},
             "outputs": [],
-            "source": _submission_cell(encoded_overlay),
+            "source": _submission_cell(encoded_overlay, deployed),
         },
     ]
     return {
@@ -97,7 +115,16 @@ def _notebook(encoded_overlay: str) -> dict[str, object]:
     }
 
 
-def _submission_cell(encoded_overlay: str) -> list[str]:
+def _submission_cell(
+    encoded_overlay: str,
+    config: MindConfig | None = None,
+) -> list[str]:
+    deployed = config or MindConfig()
+    encoded_config = json.dumps(
+        deployed.to_dict(),
+        sort_keys=True,
+        separators=(",", ":"),
+    )
     source = f'''import base64
 import os
 import shutil
@@ -108,6 +135,7 @@ from pathlib import Path
 
 working = Path("/kaggle/working")
 starter = working / "ARC-AGI-3-Agents"
+os.environ["REFLECTOR_CONFIG_JSON"] = {encoded_config!r}
 if os.getenv("KAGGLE_IS_COMPETITION_RERUN"):
     subprocess.run(
         ["curl", "--fail", "--retry", "999", "--retry-all-errors",
@@ -147,7 +175,8 @@ else:
     return source.splitlines(keepends=True)
 
 
-def smoke_test() -> None:
+def smoke_test(config: MindConfig | None = None) -> None:
+    deployed = config or MindConfig()
     with tempfile.TemporaryDirectory(prefix="reflector-kaggle-smoke-") as raw:
         clean = Path(raw)
         starter = clean / "ARC-AGI-3-Agents"
@@ -172,6 +201,11 @@ def smoke_test() -> None:
         env = {
             "PATH": os.environ.get("PATH", ""),
             "PYTHONPATH": str(starter),
+            "REFLECTOR_CONFIG_JSON": json.dumps(
+                deployed.to_dict(),
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
             "MPLBACKEND": "agg",
             "MPLCONFIGDIR": str(clean / "matplotlib"),
             "XDG_CONFIG_HOME": str(clean / "config"),
@@ -192,18 +226,40 @@ def smoke_test() -> None:
         print(result.stdout.strip())
 
 
+def _load_config(path: Path) -> MindConfig:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("deployment config must be a JSON object")
+    candidate_config = value.get("config", value)
+    if not isinstance(candidate_config, dict):
+        raise ValueError("candidate config must be a JSON object")
+    return MindConfig.from_dict(candidate_config)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="reflector-kaggle")
     subcommands = parser.add_subparsers(dest="command", required=True)
     export = subcommands.add_parser("export")
     export.add_argument("--output", type=Path, default=ROOT / "dist")
-    subcommands.add_parser("smoke-test")
+    export.add_argument(
+        "--config",
+        type=Path,
+        help="MindConfig JSON or serialized Candidate JSON to deploy",
+    )
+    smoke = subcommands.add_parser("smoke-test")
+    smoke.add_argument(
+        "--config",
+        type=Path,
+        help="MindConfig JSON or serialized Candidate JSON to deploy",
+    )
     args = parser.parse_args()
     if args.command == "export":
-        paths = export_submission(args.output)
+        config = _load_config(args.config) if args.config is not None else None
+        paths = export_submission(args.output, config)
         print("\n".join(str(path) for path in paths))
     else:
-        smoke_test()
+        config = _load_config(args.config) if args.config is not None else None
+        smoke_test(config)
 
 
 if __name__ == "__main__":

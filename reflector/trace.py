@@ -16,8 +16,8 @@ from .symbolic import (
     Transition,
 )
 
-TRACE_FORMAT_VERSION = 1
-AGENT_VERSION = "reflector-symbolic-v4"
+TRACE_FORMAT_VERSION = 2
+AGENT_VERSION = "reflector-symbolic-v5"
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,6 +129,7 @@ class EpisodeTrace:
 
     format_version: int = TRACE_FORMAT_VERSION
     agent_version: str = AGENT_VERSION
+    mind_config: dict[str, bool | int | float] = field(default_factory=dict)
     steps: list[TraceStep] = field(default_factory=list)
     terminal_observation: Observation | None = None
     terminal_scene: Scene | None = None
@@ -153,6 +154,7 @@ class EpisodeTrace:
         return {
             "format_version": self.format_version,
             "agent_version": self.agent_version,
+            "mind_config": self.mind_config,
             "steps": [step.to_dict() for step in self.steps],
             "terminal": (
                 {
@@ -180,6 +182,7 @@ class EpisodeTrace:
         trace = cls(
             format_version=value["format_version"],
             agent_version=value["agent_version"],
+            mind_config=dict(value.get("mind_config", {})),
         )
         for raw_step in value["steps"]:
             trace.append(TraceStep.from_dict(raw_step))
@@ -215,7 +218,8 @@ class EpisodeTrace:
         return cls.from_dict(raw)
 
     def replay(
-        self, policy_factory: Callable[[], Any]
+        self,
+        policy_factory: Callable[[], Any] | None = None,
     ) -> tuple[dict[str, Any], ...]:
         """Re-run policy decisions over recorded observations.
 
@@ -223,7 +227,18 @@ class EpisodeTrace:
         reports decision mismatches rather than mutating the original trace.
         """
 
-        policy = policy_factory()
+        if policy_factory is None:
+            from .mind import MindConfig
+            from .policy import SymbolicPolicy
+
+            config = (
+                MindConfig.from_dict(self.mind_config)
+                if self.mind_config
+                else MindConfig()
+            )
+            policy: Any = SymbolicPolicy(config)
+        else:
+            policy = policy_factory()
         output: list[dict[str, Any]] = []
         for step in self.steps:
             actual = policy.choose_action(step.observation)

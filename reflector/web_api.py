@@ -34,7 +34,16 @@ def analyze_trace(
 ) -> dict[str, Any]:
     """Reconstruct the symbolic state at every recorded decision."""
 
-    policy = SymbolicPolicy(config)
+    deployed = (
+        config
+        if config is not None
+        else (
+            MindConfig.from_dict(trace.mind_config)
+            if trace.mind_config
+            else MindConfig()
+        )
+    )
+    policy = SymbolicPolicy(deployed)
     steps: list[dict[str, Any]] = []
     for step in trace.steps:
         actual = policy.choose_action(step.observation)
@@ -107,7 +116,11 @@ def branch_replay(
 
     if not 0 <= from_step < len(trace.steps):
         raise ValueError("from_step is outside the trace")
-    config_value = MindConfig().to_dict()
+    config_value = (
+        dict(trace.mind_config)
+        if trace.mind_config
+        else MindConfig().to_dict()
+    )
     config_value.update(patch)
     config = MindConfig.from_dict(config_value)
     analysis = analyze_trace(trace, config)

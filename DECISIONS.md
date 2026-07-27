@@ -88,3 +88,14 @@ accepted orientation vocabulary normalizes later rotation events, and reliable
 schema families supply abstract effects and confidence to bounded planning.
 This is the first operative reuse loop; it is not evidence of held-out transfer
 or macro-action learning.
+
+## 2026-07-27 — Target the code track and linked Paper Prize
+
+The strongest current fit is a valid ARC-AGI-3 Kaggle code entry linked to the
+Paper Prize. The symbolic thesis aligns with theory, novelty, universality, and
+completeness, while current single-fixture evidence is not competitive-score
+evidence. Selected `MindConfig` genomes now embed directly in the Kaggle
+notebook. Reflector contributions are offered under MIT-0 or CC BY 4.0;
+upstream starter code remains MIT. Account eligibility, public publication,
+all-public-game evaluation, and a scored Kaggle rerun remain explicit manual
+gates.

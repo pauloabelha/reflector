@@ -11,6 +11,7 @@ from importlib import import_module
 from pathlib import Path
 
 from .compression import analyze_redundancy, counterfactual_replay, replay_policy
+from .deployment import CONFIG_ENV
 from .evaluation import compare_traces, evaluate_ablations, evaluate_trace
 from .evolver import (
     descendants,
@@ -131,6 +132,11 @@ def main() -> None:
     official_run.add_argument("games", nargs="+")
     official_run.add_argument("--environments-dir", type=Path, required=True)
     official_run.add_argument("--recordings-dir", type=Path, required=True)
+    official_run.add_argument(
+        "--config",
+        type=Path,
+        help="MindConfig JSON or serialized Candidate JSON to deploy",
+    )
 
     web = commands.add_parser("web")
     web.add_argument("trace", type=Path)
@@ -150,7 +156,7 @@ def main() -> None:
         args.output.write_text(trace.to_json() + "\n", encoding="utf-8")
         print(args.output)
     elif args.command == "replay":
-        report = load_trace(args.trace).replay(SymbolicPolicy)
+        report = load_trace(args.trace).replay()
         print(json.dumps(report, indent=2))
     elif args.command == "evaluate":
         print(json.dumps(evaluate_trace(load_trace(args.trace)).to_dict(), indent=2))
@@ -272,6 +278,18 @@ def main() -> None:
             )
         print(json.dumps(payload, indent=2))
     elif args.command == "official-run":
+        if args.config is not None:
+            raw_config = json.loads(args.config.read_text(encoding="utf-8"))
+            if not isinstance(raw_config, dict):
+                parser.error("--config must contain a JSON object")
+            selected_config = raw_config.get("config", raw_config)
+            if not isinstance(selected_config, dict):
+                parser.error("candidate config must be a JSON object")
+            os.environ[CONFIG_ENV] = json.dumps(
+                MindConfig.from_dict(selected_config).to_dict(),
+                sort_keys=True,
+                separators=(",", ":"),
+            )
         os.environ["OPERATION_MODE"] = "offline"
         os.environ["ENVIRONMENTS_DIR"] = str(args.environments_dir.resolve())
         os.environ["RECORDINGS_DIR"] = str(args.recordings_dir.resolve())

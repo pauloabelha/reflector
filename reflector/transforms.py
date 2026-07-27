@@ -48,6 +48,7 @@ def color_holdout(trace: EpisodeTrace, seed: int) -> EpisodeTrace:
     transformed = EpisodeTrace(
         format_version=trace.format_version,
         agent_version=trace.agent_version,
+        mind_config=dict(trace.mind_config),
     )
     for step in trace.steps:
         transformed.append(

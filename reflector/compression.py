@@ -50,7 +50,16 @@ class CounterfactualReplayResult:
 def replay_policy(
     trace: EpisodeTrace, config: MindConfig | None = None
 ) -> SymbolicPolicy:
-    policy = SymbolicPolicy(config)
+    deployed = (
+        config
+        if config is not None
+        else (
+            MindConfig.from_dict(trace.mind_config)
+            if trace.mind_config
+            else MindConfig()
+        )
+    )
+    policy = SymbolicPolicy(deployed)
     for step in trace.steps:
         policy.choose_action(step.observation)
     if trace.terminal_observation is not None:

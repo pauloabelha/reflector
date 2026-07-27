@@ -49,9 +49,17 @@ class TraceMetrics:
 
 def evaluate_trace(
     trace: EpisodeTrace,
-    policy_factory: Callable[[], SymbolicPolicy] = SymbolicPolicy,
+    policy_factory: Callable[[], SymbolicPolicy] | None = None,
 ) -> TraceMetrics:
-    policy = policy_factory()
+    policy = (
+        policy_factory()
+        if policy_factory is not None
+        else SymbolicPolicy(
+            MindConfig.from_dict(trace.mind_config)
+            if trace.mind_config
+            else MindConfig()
+        )
+    )
     matches = 0
     resets = 0
     transitions = 0

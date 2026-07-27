@@ -1,0 +1,38 @@
+{
+  "audit_date": "2026-07-27",
+  "competition_id": 133724,
+  "competition_slug": "arc-prize-2026-paper-track",
+  "rules_url": "https://www.kaggle.com/competitions/arc-prize-2026-paper-track/rules",
+  "overview_url": "https://www.kaggle.com/competitions/arc-prize-2026-paper-track/overview",
+  "final_submission_deadline_utc": "2026-11-09T23:59:00Z",
+  "operational_safety_deadline_utc": "2026-11-08T23:59:00Z",
+  "max_team_size": 8,
+  "team_must_match_linked_code_submission": true,
+  "max_submissions_per_team": 1,
+  "winner_license": "CC-BY-4.0",
+  "requires_identity_verification": true,
+  "writeup_word_limit": 1500,
+  "required_assets": [
+    "Kaggle Writeup with selected ARC-AGI-3 track",
+    "Media Gallery with cover image",
+    "Attached public Kaggle notebook",
+    "ARC-AGI-3 submission ID"
+  ],
+  "optional_assets": [
+    "Public project link or public PDF"
+  ],
+  "rubric_categories": [
+    "Accuracy",
+    "Universality",
+    "Progress",
+    "Theory",
+    "Completeness",
+    "Novelty"
+  ],
+  "notes": [
+    "The Paper Track is a hackathon and permits exactly one submitted Writeup per team.",
+    "A draft or unsubmitted Writeup is not eligible.",
+    "The ARC Prize summary lists November 8, but the binding Kaggle overview and metadata list November 9 at 23:59 UTC. Use November 8 as the operational safety deadline.",
+    "The linked ARC-AGI-3 notebook must be public and the Paper Track team must exactly match the code-track team."
+  ]
+}

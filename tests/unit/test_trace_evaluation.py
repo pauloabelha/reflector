@@ -1,4 +1,4 @@
-from reflector import EpisodeTrace, SymbolicPolicy
+from reflector import EpisodeTrace, MindConfig, SymbolicPolicy
 from reflector.cli import demo_trace
 from reflector.evaluation import compare_traces, evaluate_trace
 
@@ -29,3 +29,20 @@ def test_trace_metrics_and_variant_comparison() -> None:
     assert metrics.deterministic_replay_rate == 1.0
     report = compare_traces({"baseline": trace, "descendant": trace})
     assert tuple(report) == ("baseline", "descendant")
+
+
+def test_trace_replays_the_exact_deployed_genome() -> None:
+    policy = SymbolicPolicy(
+        MindConfig(
+            planner_max_expansions=17,
+            information_weight=2.5,
+        )
+    )
+    for step in demo_trace().steps:
+        policy.choose_action(step.observation)
+
+    restored = EpisodeTrace.from_json(policy.trace.to_json())
+    assert restored.mind_config["planner_max_expansions"] == 17
+    assert restored.mind_config["information_weight"] == 2.5
+    assert all(item["matches"] for item in restored.replay())
+    assert evaluate_trace(restored).deterministic_replay_rate == 1.0

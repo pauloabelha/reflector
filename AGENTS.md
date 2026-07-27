@@ -49,6 +49,11 @@ advance it, close the scorecard, and exit.
 - An accepted abstraction must remain on an operative path: compiled concept
   terms, normalized language events, or bounded planning evidence. Preserve
   the raw evidence and do not claim cross-game transfer from internal reuse.
+- Every selected descendant must be exported by serializing its validated
+  `MindConfig` into the notebook. Never copy or rewrite candidate policy logic.
+- Prize claims require the current rules snapshot, a public participant-owned
+  repository, a public Kaggle notebook, a scored rerun, and held-out public
+  evaluation. A fixture or smoke-test score is never a leaderboard score.
 
 ## Official compatibility
 

@@ -1,9 +1,11 @@
 import ast
+import base64
 import io
 import json
 import zipfile
 
 from reflector.kaggle import OVERLAY_FILES, build_overlay, export_submission
+from reflector.mind import MindConfig
 
 
 def test_overlay_contains_only_inference_path() -> None:
@@ -58,3 +60,24 @@ def test_export_preserves_kaggle_contract(tmp_path) -> None:
     assert "ARC-AGI-3-Agents" in source
     assert "--agent\", \"reflector" in source
     assert "submission.parquet" in source
+
+
+def test_export_embeds_selected_symbolic_genome(tmp_path) -> None:
+    config = MindConfig(
+        planner_max_expansions=17,
+        information_weight=2.5,
+    )
+    overlay, notebook = export_submission(tmp_path, config)
+    payload = json.loads(notebook.read_text())
+    source = "\n".join(
+        "".join(cell.get("source", [])) for cell in payload["cells"]
+    )
+    encoded_config = json.dumps(
+        config.to_dict(),
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    assert f"os.environ[\"REFLECTOR_CONFIG_JSON\"] = {encoded_config!r}" in source
+
+    embedded = source.split('base64.b64decode("', 1)[1].split('")', 1)[0]
+    assert base64.b64decode(embedded) == overlay.read_bytes()
