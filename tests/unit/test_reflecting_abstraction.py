@@ -253,3 +253,69 @@ def test_schema_family_reliability_is_reused_by_bounded_planner() -> None:
     assert plan is not None
     assert plan.actions == (3,)
     assert plan.confidence == family.reliability
+
+
+def test_repeated_successful_sequence_becomes_an_executable_procedure() -> None:
+    schemas = SchemaStore()
+    abstractions = AbstractionStore()
+    contexts = tuple(
+        (
+            Atom("state", ("NOT_FINISHED",)),
+            Atom("object_count", (str(stage + 1),)),
+            Atom(
+                "object_signature",
+                ("2", str(stage + 1), str(stage), "0", "1", "1"),
+            ),
+        )
+        for stage in range(3)
+    )
+    created: tuple[str, ...] = ()
+    index = 0
+    for _repeat in range(2):
+        for stage, (context, action) in enumerate(
+            zip(contexts, (1, 2, 3), strict=True)
+        ):
+            transition = Transition(
+                before_index=index,
+                after_index=index + 1,
+                context=context,
+                action_id=action,
+                action_data=(),
+                result=(
+                    Event("level_advanced", "game")
+                    if stage == 2
+                    else Event("frame_changed")
+                ,),
+            )
+            schema = schemas.observe(transition)
+            created = (
+                *created,
+                *abstractions.observe_procedure(
+                    transition, schema.schema_id, max_steps=3
+                ),
+            )
+            index += 1
+
+    assert created
+    procedure = next(iter(abstractions.procedures.values()))
+    assert procedure.actions == (1, 2, 3)
+    assert procedure.support == 2
+    assert procedure.evidence
+    assert procedure.utility > 0
+    moved_context = (
+        Atom("state", ("NOT_FINISHED",)),
+        Atom("object_count", ("2",)),
+        Atom("object_signature", ("2", "2", "9", "9", "1", "1")),
+    )
+    match = abstractions.procedure_match(moved_context, (1, 2, 3))
+    assert match is not None
+    assert match[0] == (2, 3)
+    graph = DependencyGraph.build(
+        schemas, ConceptStore(), HypothesisStore(), abstractions
+    )
+    assert graph.nodes[procedure.procedure_id] == "procedure"
+    assert any(
+        edge.source == procedure.procedure_id
+        and edge.relation == "compiled_from"
+        for edge in graph.edges
+    )

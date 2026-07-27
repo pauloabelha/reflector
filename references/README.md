@@ -11,7 +11,11 @@ not treat them as authority for claims the implementation has not measured.
 - Gary L. Drescher, [Made-Up Minds: A Constructivist Approach to Artificial
   Intelligence](https://mitpress.mit.edu/9780262041201/made-up-minds/), MIT
   Press, 1991. The publisher description and book motivate empirical concept
-  extension and marginal attribution.
+  extension, marginal attribution, synthetic items, and composite actions.
+- Robert Matthew Ramstad, *A Constructivist Approach to Artificial Intelligence
+  Reexamined*, MIT/LCS/TR-563, 1993. The implementation report is used
+  especially for its distinction between reproduced internal structures and
+  demonstrated goal-directed behavior.
 - Jean Piaget et al., [Studies in Reflecting
   Abstraction](https://www.routledge.com/Studies-in-Reflecting-Abstraction/Campell/p/book/9781138877375),
   English translation of *Recherches sur l'abstraction réfléchissante* (1977).
@@ -21,3 +25,6 @@ not treat them as authority for claims the implementation has not measured.
 The repository does not redistribute copyrighted book or thesis files. Add
 locally obtained research material under `references/local/`, which is ignored,
 and record only derived implementation decisions that can be tested.
+
+The current derived decisions and explicit non-equivalences are in
+[`SCHEMA_MECHANISM_NOTES.md`](SCHEMA_MECHANISM_NOTES.md).

@@ -83,9 +83,9 @@ def analyze_redundancy(
 ) -> RedundancyReport:
     observed = transitions(trace)
     signatures = Counter(
-        (item.action_id, event)
+        (item.action_id, event.kind)
         for item in observed
-        for event in item.result_signature()
+        for event in item.result
     )
     repeated_rediscoveries = sum(max(0, count - 1) for count in signatures.values())
 

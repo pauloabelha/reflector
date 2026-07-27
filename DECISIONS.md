@@ -99,3 +99,19 @@ notebook. Reflector contributions are offered under MIT-0 or CC BY 4.0;
 upstream starter code remains MIT. Account eligibility, public publication,
 all-public-game evaluation, and a scored Kaggle rerun remain explicit manual
 gates.
+
+## 2026-07-27 — Predictions, value, exploration, and control stay separate
+
+Reading Drescher's *Made-Up Minds* and Ramstad's MIT/LCS/TR-563 sharpened the
+module boundary. Schemas estimate consequences and causal dependence; official
+progress supplies goal value; sensory novelty supplies only epistemic pressure;
+and the planner selects actions. Hidden global action fallback was removed so
+disabling abstraction actually removes cross-context transfer. Repeated
+successful trajectories can compile into evidence-bearing, MDL-positive
+procedures, while negative current-context evidence gates global plans.
+
+This controller is only a bounded approximation of Drescher's composite
+actions, and Reflector's functional concepts are not yet his synthetic items.
+Behavioral completion and efficiency ablations—not the presence of symbolic
+structures—are the acceptance test. The source-to-contract mapping is recorded
+in `references/SCHEMA_MECHANISM_NOTES.md`.

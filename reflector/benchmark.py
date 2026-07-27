@@ -159,6 +159,104 @@ class SequenceGame:
             self._progress = 0
 
 
+def _novel_frame(
+    position: tuple[int, int], color: int
+) -> tuple[tuple[int, ...], ...]:
+    grid = [[0] * 9 for _ in range(9)]
+    grid[position[1]][position[0]] = color
+    return tuple(tuple(row) for row in grid)
+
+
+class NovelContextGame:
+    """Invariant control over contexts not revisited within the game."""
+
+    family = "novel_context_transfer"
+
+    def __init__(self, seed: int) -> None:
+        rng = random.Random(seed)
+        positions = [(x, y) for y in range(1, 8) for x in range(1, 8)]
+        rng.shuffle(positions)
+        self._positions = positions[:16]
+        actions = [1, 2, 3, 4]
+        rng.shuffle(actions)
+        self._targets = {2: actions[0], 3: actions[1]}
+        self._colors = tuple(2 + index % 2 for index in range(16))
+        self.total_levels = len(self._positions)
+        self.oracle_actions = self.total_levels
+        self._level = 0
+        self._won = False
+
+    def observation(self) -> Observation:
+        position = self._positions[min(self._level, self.total_levels - 1)]
+        color = self._colors[min(self._level, self.total_levels - 1)]
+        return Observation.create(
+            state="WIN" if self._won else "NOT_FINISHED",
+            available_actions=() if self._won else (1, 2, 3, 4),
+            frame=_novel_frame(position, color),
+            levels_completed=self._level,
+        )
+
+    def step(self, decision: Decision) -> None:
+        if decision.action_id == self._targets[self._colors[self._level]]:
+            self._level += 1
+            self._won = self._level == self.total_levels
+
+
+class TransferSequenceGame:
+    """A recurring abstract procedure amid novel absolute layouts."""
+
+    family = "procedure_transfer"
+
+    def __init__(self, seed: int) -> None:
+        rng = random.Random(seed)
+        actions = [1, 2, 3, 4]
+        rng.shuffle(actions)
+        self._sequence = tuple(actions[:3])
+        positions = [
+            (1, 1),
+            (4, 1),
+            (7, 1),
+            (1, 4),
+            (7, 4),
+            (1, 7),
+            (4, 7),
+            (7, 7),
+        ]
+        rng.shuffle(positions)
+        self._markers = positions
+        self.total_levels = len(positions)
+        self.oracle_actions = self.total_levels * len(self._sequence)
+        self._level = 0
+        self._progress = 0
+        self._won = False
+
+    def _frame(self) -> tuple[tuple[int, ...], ...]:
+        grid = [[0] * 9 for _ in range(9)]
+        marker = self._markers[min(self._level, self.total_levels - 1)]
+        grid[marker[1]][marker[0]] = 2
+        for offset in range(self._progress):
+            grid[4][3 + offset] = 4
+        return tuple(tuple(row) for row in grid)
+
+    def observation(self) -> Observation:
+        return Observation.create(
+            state="WIN" if self._won else "NOT_FINISHED",
+            available_actions=() if self._won else (1, 2, 3, 4),
+            frame=self._frame(),
+            levels_completed=self._level,
+        )
+
+    def step(self, decision: Decision) -> None:
+        if decision.action_id == self._sequence[self._progress]:
+            self._progress += 1
+            if self._progress == len(self._sequence):
+                self._progress = 0
+                self._level += 1
+                self._won = self._level == self.total_levels
+        else:
+            self._progress = 0
+
+
 class SeededRandomPolicy:
     def __init__(self, seed: int) -> None:
         self._rng = random.Random(seed)
@@ -297,6 +395,13 @@ FAMILIES = (
     "temporal_sequence",
 )
 
+FAMILIES_V2 = (
+    "novel_context_transfer",
+    "contextual_control",
+    "rare_object_click",
+    "procedure_transfer",
+)
+
 
 def _policy(name: str, seed: int) -> BenchmarkPolicy:
     if name == "full":
@@ -336,6 +441,10 @@ def _game(family: str, seed: int) -> DiagnosticGame:
         return ClickGame(seed)
     if family == "temporal_sequence":
         return SequenceGame(seed)
+    if family == "novel_context_transfer":
+        return NovelContextGame(seed)
+    if family == "procedure_transfer":
+        return TransferSequenceGame(seed)
     raise ValueError(f"unknown family: {family}")
 
 
@@ -345,6 +454,8 @@ def _budget(family: str) -> int:
         "contextual_control": 36,
         "rare_object_click": 24,
         "temporal_sequence": 128,
+        "novel_context_transfer": 56,
+        "procedure_transfer": 160,
     }[family]
 
 
@@ -389,15 +500,23 @@ def _bootstrap_difference(
     )
 
 
-def run_validation(seed_count: int = 30, seed_start: int = 0) -> dict[str, object]:
+def run_validation(
+    seed_count: int = 30,
+    seed_start: int = 0,
+    *,
+    suite: str = "v1",
+) -> dict[str, object]:
     if seed_count < 2:
         raise ValueError("seed_count must be at least 2")
     if seed_start < 0:
         raise ValueError("seed_start must be non-negative")
+    if suite not in {"v1", "v2"}:
+        raise ValueError("suite must be v1 or v2")
+    families = FAMILIES if suite == "v1" else FAMILIES_V2
     results = [
         run_one(policy, family, seed)
         for policy in POLICY_NAMES
-        for family in FAMILIES
+        for family in families
         for seed in range(seed_start, seed_start + seed_count)
     ]
     grouped: dict[tuple[str, str], list[RunResult]] = {}
@@ -434,6 +553,22 @@ def run_validation(seed_count: int = 30, seed_start: int = 0) -> dict[str, objec
     )
     contextual = mean(values("full", "completion", "contextual_control"))
     click = mean(values("full", "completion", "rare_object_click"))
+    procedure_family = (
+        "temporal_sequence" if suite == "v1" else "procedure_transfer"
+    )
+    temporal = mean(values("full", "completion", procedure_family))
+    planning = _bootstrap_difference(
+        values("full", "efficiency", procedure_family),
+        values("no_planning", "efficiency", procedure_family),
+    )
+    transfer = (
+        _bootstrap_difference(
+            values("full", "efficiency", "novel_context_transfer"),
+            values("no_abstraction", "efficiency", "novel_context_transfer"),
+        )
+        if suite == "v2"
+        else (0.0, 0.0, 0.0)
+    )
     all_legal = all(item.legal for item in results)
     criteria = {
         "all_actions_legal": all_legal,
@@ -443,6 +578,16 @@ def run_validation(seed_count: int = 30, seed_start: int = 0) -> dict[str, objec
         "contextual_completion_at_least_0_75": contextual >= 0.75,
         "rare_click_completion_at_least_0_95": click >= 0.95,
     }
+    if suite == "v2":
+        criteria.update(
+            {
+                "procedure_completion_at_least_0_90": temporal >= 0.90,
+                "planning_improves_procedure_efficiency_ci": planning[1] > 0.0,
+                "abstraction_improves_novel_transfer_efficiency_ci": (
+                    transfer[1] > 0.0
+                ),
+            }
+        )
     causal_supported = all(
         criteria[name]
         for name in (
@@ -462,12 +607,12 @@ def run_validation(seed_count: int = 30, seed_start: int = 0) -> dict[str, objec
         else "not_supported"
     )
     payload: dict[str, object] = {
-        "benchmark": "reflector_symbolic_diagnostics_v1",
+        "benchmark": f"reflector_symbolic_diagnostics_{suite}",
         "claim_scope": "synthetic interactive mechanism tests; not an ARC score",
         "seed_start": seed_start,
         "seed_count": seed_count,
         "policies": list(POLICY_NAMES),
-        "families": list(FAMILIES),
+        "families": list(families),
         "aggregates": aggregates,
         "paired_differences": {
             "full_minus_seeded_random_completion": {
@@ -481,6 +626,14 @@ def run_validation(seed_count: int = 30, seed_start: int = 0) -> dict[str, objec
             "full_minus_no_abstraction_efficiency": {
                 "mean": abstraction[0],
                 "ci95": [abstraction[1], abstraction[2]],
+            },
+            "full_minus_no_planning_procedure_efficiency": {
+                "mean": planning[0],
+                "ci95": [planning[1], planning[2]],
+            },
+            "full_minus_no_abstraction_novel_transfer_efficiency": {
+                "mean": transfer[0],
+                "ci95": [transfer[1], transfer[2]],
             },
         },
         "criteria": criteria,

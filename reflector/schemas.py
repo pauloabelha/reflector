@@ -114,15 +114,22 @@ class SchemaStore:
         return schema
 
     @staticmethod
-    def _result_value(result: tuple[str, ...]) -> float:
+    def result_value(result: tuple[str, ...]) -> float:
+        """Return external-goal utility, not mere sensory novelty.
+
+        Object and frame changes remain predicted effects for planning, but
+        they are not rewards by themselves. Treating any pixel change as
+        utility creates repeatable novelty traps in interactive environments.
+        """
+
         weights = {
             "level_advanced": 100.0,
-            "state_changed": 5.0,
-            "object_appeared": 2.0,
-            "object_disappeared": 2.0,
-            "object_moved": 1.0,
-            "area_changed": 1.0,
-            "frame_changed": 0.25,
+            "state_changed": 0.0,
+            "object_appeared": 0.0,
+            "object_disappeared": 0.0,
+            "object_moved": 0.0,
+            "area_changed": 0.0,
+            "frame_changed": 0.0,
             "no_observed_change": -0.5,
         }
         total = 0.0
@@ -140,7 +147,7 @@ class SchemaStore:
         if not trials:
             return 0.0
         return sum(
-            self._result_value((event,)) * count
+            self.result_value((event,)) * count
             for event, count in self.action_events.get(action_id, {}).items()
         ) / trials
 
@@ -164,13 +171,17 @@ class SchemaStore:
         )
 
     def contextual_action_value(
-        self, action_id: int, context: tuple[Atom, ...]
+        self,
+        action_id: int,
+        context: tuple[Atom, ...],
+        *,
+        transfer_value: float = 0.0,
     ) -> float:
         """Prefer empirical effects in the current symbolic scene.
 
-        Global action value is a transfer prior only until the first local
-        observation. After that, contradictory local evidence must be able to
-        defeat a control that happened to work in a different context.
+        Cross-context transfer is supplied explicitly by a retained
+        abstraction. Raw global action averages are not silently treated as an
+        abstraction because doing so makes the abstraction ablation invalid.
         """
 
         environment = self._environment_context(context)
@@ -182,9 +193,9 @@ class SchemaStore:
         ]
         support = sum(schema.support for schema in matching)
         if not support:
-            return self.action_value(action_id)
+            return transfer_value
         return sum(
-            self._result_value(schema.result) * schema.support
+            self.result_value(schema.result) * schema.support
             for schema in matching
         ) / support
 

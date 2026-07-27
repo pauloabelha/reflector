@@ -8,7 +8,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from .schemas import ConceptStore, Schema, SchemaStore, SyntheticConcept
-from .symbolic import Event, Transition
+from .symbolic import Atom, Event, Transition, canonical_atoms
 
 _ROTATION = re.compile(r"^rotated_(0|90|180|270|360)$")
 
@@ -88,6 +88,35 @@ class LanguageVersion:
         return asdict(self)
 
 
+@dataclass(frozen=True, slots=True)
+class ProcedureAbstraction:
+    """A repeated goal-reaching context/action sequence."""
+
+    procedure_id: str
+    goal: str
+    contexts: tuple[tuple[str, ...], ...]
+    actions: tuple[int, ...]
+    evidence: tuple[str, ...]
+    support: int
+    confidence: float
+    raw_description_length: int
+    compiled_description_length: int
+    complexity: int
+    utility: float
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
+class _ProcedureCandidate:
+    goal: str
+    contexts: tuple[tuple[str, ...], ...]
+    actions: tuple[int, ...]
+    evidence: set[str]
+    support: int = 0
+
+
 @dataclass(slots=True)
 class AbstractionStore:
     """Reflect over learned structures without arbitrary code generation."""
@@ -96,6 +125,7 @@ class AbstractionStore:
     schema_families: dict[str, SchemaFamily] = field(default_factory=dict)
     concept_types: dict[str, ConceptType] = field(default_factory=dict)
     language_operators: dict[str, LanguageOperator] = field(default_factory=dict)
+    procedures: dict[str, ProcedureAbstraction] = field(default_factory=dict)
     language_history: list[LanguageVersion] = field(
         default_factory=lambda: [
             LanguageVersion(
@@ -107,6 +137,12 @@ class AbstractionStore:
                 utility=0.0,
             )
         ]
+    )
+    _procedure_candidates: dict[str, _ProcedureCandidate] = field(
+        default_factory=dict
+    )
+    _trajectory: list[tuple[tuple[str, ...], int, str]] = field(
+        default_factory=list
     )
 
     def reflect(
@@ -126,6 +162,199 @@ class AbstractionStore:
             | set(self.language_operators)
         )
         return tuple(sorted(after - before))
+
+    def action_transfer_value(
+        self,
+        action_id: int,
+        schemas: SchemaStore,
+        context: tuple[Atom, ...],
+    ) -> float:
+        """Compile accepted schema families into an unseen-context prior."""
+
+        current = {atom.text() for atom in context}
+        newest_by_result: dict[tuple[str, ...], SchemaFamily] = {}
+        for family in self.schema_families.values():
+            required = {
+                term
+                for term in family.shared_context
+                if not term.startswith("synthetic_item(")
+            }
+            if (
+                family.action_id != action_id
+                or family.utility <= 0
+                or "level_advanced" not in family.result_predicates
+                or not required.issubset(current)
+            ):
+                continue
+            previous = newest_by_result.get(family.result_predicates)
+            if previous is None or (
+                family.support,
+                family.utility,
+                family.family_id,
+            ) > (
+                previous.support,
+                previous.utility,
+                previous.family_id,
+            ):
+                newest_by_result[family.result_predicates] = family
+        member_ids = {
+            schema_id
+            for family in newest_by_result.values()
+            for schema_id in family.member_schemas
+        }
+        members = [
+            schemas.schemas[schema_id]
+            for schema_id in member_ids
+            if schema_id in schemas.schemas
+        ]
+        support = sum(schema.support for schema in members)
+        if not support:
+            return 0.0
+        return sum(
+            schemas.result_value(schema.result) * schema.support
+            for schema in members
+        ) / support
+
+    @staticmethod
+    def abstract_context(context: tuple[Atom, ...]) -> tuple[str, ...]:
+        """Remove incidental object identity and absolute position."""
+
+        abstract: list[Atom] = []
+        for atom in context:
+            if atom.predicate in {
+                "state",
+                "object_count",
+                "color_present",
+                "action_available",
+            }:
+                abstract.append(atom)
+            elif (
+                atom.predicate == "object_signature"
+                and len(atom.arguments) == 6
+            ):
+                abstract.append(
+                    Atom(
+                        "object_type",
+                        (
+                            atom.arguments[0],
+                            atom.arguments[1],
+                            atom.arguments[4],
+                            atom.arguments[5],
+                        ),
+                    )
+                )
+        return tuple(atom.text() for atom in canonical_atoms(abstract))
+
+    def observe_procedure(
+        self,
+        transition: Transition,
+        schema_id: str,
+        *,
+        max_steps: int,
+    ) -> tuple[str, ...]:
+        """Compile repeated successful trajectories into executable macros."""
+
+        kinds = {event.kind for event in transition.result}
+        if kinds == {"no_observed_change"}:
+            return ()
+        self._trajectory.append(
+            (
+                self.abstract_context(transition.context),
+                transition.action_id,
+                schema_id,
+            )
+        )
+        self._trajectory = self._trajectory[-max_steps:]
+        if "level_advanced" not in kinds:
+            if any(event.kind == "state_changed" for event in transition.result):
+                self._trajectory.clear()
+            return ()
+
+        contexts = tuple(item[0] for item in self._trajectory)
+        actions = tuple(item[1] for item in self._trajectory)
+        evidence = {item[2] for item in self._trajectory}
+        if len(actions) < 2:
+            self._trajectory.clear()
+            return ()
+        raw_key = "|".join(
+            (
+                "level_advanced",
+                *(f"{'/'.join(context)}=>{action}" for context, action in zip(
+                    contexts, actions, strict=True
+                )),
+            )
+        )
+        procedure_id = _identifier("procedure", raw_key)
+        candidate = self._procedure_candidates.get(procedure_id)
+        if candidate is None:
+            candidate = _ProcedureCandidate(
+                goal="level_advanced",
+                contexts=contexts,
+                actions=actions,
+                evidence=set(),
+            )
+            self._procedure_candidates[procedure_id] = candidate
+        candidate.support += 1
+        candidate.evidence.update(evidence)
+        self._trajectory.clear()
+
+        raw_unit = len(raw_key)
+        complexity = raw_unit + 8
+        raw = raw_unit * candidate.support
+        compiled = round(
+            self.complexity_pressure * complexity
+        ) + candidate.support * len(actions) * 2
+        utility = raw - compiled
+        if utility <= 0:
+            return ()
+        is_new = procedure_id not in self.procedures
+        self.procedures[procedure_id] = ProcedureAbstraction(
+            procedure_id=procedure_id,
+            goal=candidate.goal,
+            contexts=candidate.contexts,
+            actions=candidate.actions,
+            evidence=tuple(sorted(candidate.evidence)),
+            support=candidate.support,
+            confidence=(candidate.support + 1) / (candidate.support + 2),
+            raw_description_length=raw,
+            compiled_description_length=compiled,
+            complexity=complexity,
+            utility=utility,
+        )
+        return (procedure_id,) if is_new else ()
+
+    def procedure_match(
+        self,
+        context: tuple[Atom, ...],
+        legal_actions: tuple[int, ...],
+    ) -> tuple[tuple[int, ...], float, str] | None:
+        """Return the strongest accepted procedure suffix for this context."""
+
+        abstract = self.abstract_context(context)
+        matches: list[
+            tuple[float, float, int, str, tuple[int, ...]]
+        ] = []
+        for procedure in self.procedures.values():
+            for index, candidate_context in enumerate(procedure.contexts):
+                suffix = procedure.actions[index:]
+                if (
+                    candidate_context == abstract
+                    and suffix
+                    and suffix[0] in legal_actions
+                ):
+                    matches.append(
+                        (
+                            procedure.confidence,
+                            procedure.utility,
+                            procedure.support,
+                            procedure.procedure_id,
+                            suffix,
+                        )
+                    )
+        if not matches:
+            return None
+        confidence, _utility, _support, procedure_id, suffix = max(matches)
+        return suffix, confidence, procedure_id
 
     def normalize_transition(self, transition: Transition) -> Transition:
         """Express future rotation evidence in an accepted compositional DSL."""
@@ -338,6 +567,13 @@ class AbstractionStore:
                 for item in sorted(
                     self.language_operators.values(),
                     key=lambda value: value.operator_id,
+                )
+            ],
+            "procedures": [
+                item.to_dict()
+                for item in sorted(
+                    self.procedures.values(),
+                    key=lambda value: value.procedure_id,
                 )
             ],
             "language_history": [

@@ -14,6 +14,7 @@ from .planning import Goal, Plan, SymbolicPlanner
 from .schemas import ConceptStore, SchemaStore, SyntheticConcept
 from .symbolic import (
     Decision,
+    Event,
     Observation,
     Scene,
     Transition,
@@ -116,11 +117,18 @@ class SymbolicMind:
         self.last_experiment: Experiment | None = None
         self.last_plan: Plan | None = None
         self._last_scene: Scene | None = None
+        self._seen_frame_digests: set[str] = set()
 
     def ingest(
         self, observation: Observation, previous_decision: Decision | None
     ) -> MindUpdate:
         scene, events = self.tracker.perceive(observation)
+        if (
+            self._last_scene is not None
+            and scene.frame_digest not in self._seen_frame_digests
+        ):
+            events = (*events, Event("novel_state_reached"))
+        self._seen_frame_digests.add(scene.frame_digest)
         transition = None
         new_concepts: tuple[SyntheticConcept, ...] = ()
         new_hypotheses: tuple[str, ...] = ()
@@ -149,8 +157,14 @@ class SymbolicMind:
                 action_data=transition.action_data,
                 result=transition.result,
             )
-            self.schemas.observe(transition)
+            schema = self.schemas.observe(transition)
             new_hypotheses = self.hypotheses.observe(transition, self.schemas)
+            if self.config.enable_reflecting_abstraction:
+                new_abstractions = self.abstractions.observe_procedure(
+                    transition,
+                    schema.schema_id,
+                    max_steps=self.config.planner_max_depth,
+                )
             if self.config.enable_concepts:
                 before = set(self.concepts.concepts)
                 self.concepts.reflect(self.schemas)
@@ -160,8 +174,15 @@ class SymbolicMind:
                     if concept_id not in before
                 )
             if self.config.enable_reflecting_abstraction:
-                new_abstractions = self.abstractions.reflect(
-                    self.schemas, self.concepts
+                new_abstractions = tuple(
+                    sorted(
+                        set(new_abstractions)
+                        | set(
+                            self.abstractions.reflect(
+                                self.schemas, self.concepts
+                            )
+                        )
+                    )
                 )
         self._last_scene = scene
         return MindUpdate(
@@ -187,8 +208,25 @@ class SymbolicMind:
         )
         experiment_by_action = {item.action_id: item for item in experiments}
         self.last_experiment = experiments[0] if experiments else None
+        context = (
+            self._last_scene.context() if self._last_scene is not None else ()
+        )
+        procedure = (
+            self.abstractions.procedure_match(context, legal_actions)
+            if self.config.enable_planning
+            and self.config.enable_reflecting_abstraction
+            else None
+        )
         self.last_plan = (
-            self.planner.plan(
+            Plan(
+                goal=Goal("level_advanced", priority=1.0),
+                actions=procedure[0],
+                predicted_events=("level_advanced",),
+                confidence=procedure[1],
+                expansions=0,
+            )
+            if procedure is not None
+            else self.planner.plan(
                 Goal("level_advanced", priority=1.0),
                 legal_actions,
                 self.schemas,
@@ -199,13 +237,23 @@ class SymbolicMind:
             else None
         )
 
-        scored: list[tuple[float, int, float, float, float, float]] = []
-        context = (
-            self._last_scene.context() if self._last_scene is not None else ()
-        )
+        scored: list[
+            tuple[float, int, float, float, float, float, float]
+        ] = []
         for action in legal_actions:
             trials = self.schemas.contextual_trials(action, context)
-            predicted = self.schemas.contextual_action_value(action, context)
+            transfer_value = (
+                self.abstractions.action_transfer_value(
+                    action, self.schemas, context
+                )
+                if self.config.enable_reflecting_abstraction
+                else 0.0
+            )
+            predicted = self.schemas.contextual_action_value(
+                action,
+                context,
+                transfer_value=transfer_value,
+            )
             information = 1.0 / math.sqrt(trials + 1)
             experiment = experiment_by_action.get(action)
             experiment_bonus = (
@@ -213,17 +261,25 @@ class SymbolicMind:
                 if experiment
                 else 0.0
             )
+            epistemic_progress = self.schemas.event_probability(
+                action, "novel_state_reached"
+            )
             plan_bonus = (
                 self.config.plan_weight * self.last_plan.confidence
                 if self.last_plan is not None
                 and self.last_plan.actions
                 and self.last_plan.actions[0] == action
-                and (trials == 0 or predicted > 0.0)
+                and (
+                    procedure is not None
+                    or trials == 0
+                    or predicted > 0.0
+                )
                 else 0.0
             )
             score = (
                 predicted
                 + information * self.config.information_weight
+                + epistemic_progress * self.config.information_weight
                 + experiment_bonus
                 + plan_bonus
                 - action / 1000.0
@@ -234,6 +290,7 @@ class SymbolicMind:
                     -action,
                     predicted,
                     information,
+                    epistemic_progress,
                     experiment_bonus,
                     plan_bonus,
                 )
@@ -243,6 +300,7 @@ class SymbolicMind:
             negative_action,
             predicted,
             information,
+            epistemic_progress,
             experiment_bonus,
             plan_bonus,
         ) = max(scored)
@@ -250,6 +308,7 @@ class SymbolicMind:
         reason = (
             f"schema-selection:value={predicted:.3f},"
             f"information={information:.3f},"
+            f"epistemic_progress={epistemic_progress:.3f},"
             f"experiment={experiment_bonus:.3f},plan={plan_bonus:.3f},"
             f"score={score:.3f}"
         )

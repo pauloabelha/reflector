@@ -132,6 +132,7 @@ def main() -> None:
     validate = commands.add_parser("validate")
     validate.add_argument("--seeds", type=int, default=30)
     validate.add_argument("--seed-start", type=int, default=0)
+    validate.add_argument("--suite", choices=("v1", "v2"), default="v1")
     validate.add_argument("--output", type=Path)
 
     official_run = commands.add_parser("official-run")
@@ -284,7 +285,11 @@ def main() -> None:
             )
         print(json.dumps(payload, indent=2))
     elif args.command == "validate":
-        payload = run_validation(args.seeds, args.seed_start)
+        payload = run_validation(
+            args.seeds,
+            args.seed_start,
+            suite=args.suite,
+        )
         rendered = json.dumps(payload, indent=2)
         if args.output is not None:
             args.output.parent.mkdir(parents=True, exist_ok=True)

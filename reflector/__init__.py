@@ -5,6 +5,7 @@ from .abstraction import (
     ConceptType,
     LanguageOperator,
     LanguageVersion,
+    ProcedureAbstraction,
     SchemaFamily,
 )
 from .causal import (
@@ -49,6 +50,7 @@ __all__ = [
     "ObjectState",
     "Observation",
     "Plan",
+    "ProcedureAbstraction",
     "Scene",
     "Schema",
     "SchemaFamily",

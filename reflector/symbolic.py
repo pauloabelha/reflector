@@ -134,18 +134,23 @@ class Scene:
                 "state",
                 "object_count",
                 "color_present",
-                "color",
-                "area",
-                "centroid",
-                "shape_size",
                 "action_available",
-                "left_of",
-                "above",
-                "aligned_x",
-                "aligned_y",
-                "touching",
             }
         }
+        for item in self.objects:
+            reusable.add(
+                Atom(
+                    "object_signature",
+                    (
+                        str(item.color),
+                        str(item.area),
+                        str(item.centroid[0]),
+                        str(item.centroid[1]),
+                        str(item.bbox[2] - item.bbox[0] + 1),
+                        str(item.bbox[3] - item.bbox[1] + 1),
+                    ),
+                )
+            )
         return tuple(sorted(reusable))
 
     def to_dict(self) -> dict[str, Any]:

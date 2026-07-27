@@ -104,15 +104,15 @@ Generate, replay, evaluate, and compare deterministic traces:
 Run the preregistered synthetic mechanism benchmark:
 
 ```bash
-.venv/bin/reflector validate --seed-start 10000 --seeds 30 \
-  --output validation-results-holdout.json
+.venv/bin/reflector validate --suite v2 --seed-start 30000 --seeds 30 \
+  --output validation-v2-holdout.json
 ```
 
 This benchmark compares the deployed policy with ablations and simple
 baselines. It is explicitly not an ARC score; see
-[`VALIDATION.md`](VALIDATION.md) for its fixed claim boundary and criteria, and
-[`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for the current mixed result
-and failures.
+[`VALIDATION_V2.md`](VALIDATION_V2.md) for its frozen claim boundary and
+criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for both the
+original falsification and the v2 confirmation result.
 
 Run a reproducible population evaluation (network isolation is on by default):
 
@@ -174,9 +174,12 @@ redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained
 genomes, transformed trace holdouts, reproducible experiment manifests,
 SQLite lineage, Pareto selection, optional provider-neutral mutation proposals,
-and sandboxed population evaluation. Transfer-validated macro planning, broader
-relational languages, and true environment holdouts remain. The first complete
-local replay and population-analysis UI is operational.
+and sandboxed population evaluation. Evidence-gated procedures and
+context-sharing schema families now pass their preregistered synthetic v2
+efficiency ablations. This is mechanism evidence, not an ARC score.
+Drescher-faithful synthetic items, a full opportunistic composite-action
+controller, broader relational languages, and true environment holdouts remain.
+The first complete local replay and population-analysis UI is operational.
 
 ## License
 

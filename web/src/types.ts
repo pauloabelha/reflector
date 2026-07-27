@@ -123,10 +123,25 @@ export interface LanguageVersion {
   utility: number;
 }
 
+export interface ProcedureAbstraction {
+  procedure_id: string;
+  goal: string;
+  contexts: string[][];
+  actions: number[];
+  evidence: string[];
+  support: number;
+  confidence: number;
+  raw_description_length: number;
+  compiled_description_length: number;
+  complexity: number;
+  utility: number;
+}
+
 export interface AbstractionState {
   schema_families: SchemaFamily[];
   concept_types: ConceptType[];
   language_operators: LanguageOperator[];
+  procedures: ProcedureAbstraction[];
   language_history: LanguageVersion[];
 }
 

@@ -95,6 +95,16 @@ class DependencyGraph:
                             operator.operator_id, "compiled_from", evidence
                         )
                     )
+            for procedure in abstractions.procedures.values():
+                graph.nodes[procedure.procedure_id] = "procedure"
+                for evidence in procedure.evidence:
+                    graph.edges.add(
+                        DependencyEdge(
+                            procedure.procedure_id,
+                            "compiled_from",
+                            evidence,
+                        )
+                    )
             for version in abstractions.language_history:
                 graph.nodes[version.version_id] = "language_version"
                 if version.parent_id is not None:

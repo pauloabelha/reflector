@@ -26,6 +26,7 @@ def test_trace_metrics_and_variant_comparison() -> None:
     assert metrics.contradictory_schemas >= 0
     assert metrics.dead_schemas >= 0
     assert metrics.orphan_concepts == 0
+    assert metrics.procedure_count >= 0
     assert metrics.deterministic_replay_rate == 1.0
     report = compare_traces({"baseline": trace, "descendant": trace})
     assert tuple(report) == ("baseline", "descendant")

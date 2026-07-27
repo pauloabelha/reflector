@@ -2,9 +2,45 @@
 
 Run date: 2026-07-27.
 
-## Conclusion
+## V2 conclusion
 
-The current broad Reflector thesis is **not validated**. The final synthetic
+The v2 synthetic mechanism claim is **supported** on its untouched confirmation
+split. The same Kaggle-exportable policy completes all four diagnostic families
+and its learned abstractions and procedures have positive causal efficiency
+effects under preregistered ablations.
+
+This is evidence for the mechanisms on known synthetic task families. It is not
+an ARC-AGI-3 score, a claim of general intelligence, or evidence of transfer to
+an unseen official game.
+
+## V2 untouched confirmation set
+
+The run used paired seeds 30,000–30,029 and passed all nine frozen criteria:
+
+| Preregistered criterion | Result |
+| --- | --- |
+| All actions legal | Pass: 100% |
+| Full minus random completion | Pass: +0.5250, 95% bootstrap CI [0.4616, 0.5941] |
+| Full minus score-only completion | Pass: +0.5972, 95% CI [0.5250, 0.6670] |
+| Full minus no-abstraction efficiency | Pass: +0.1538, 95% CI [0.1242, 0.1828] |
+| Contextual completion | Pass: 100% |
+| Rare-object-click completion | Pass: 100% |
+| Procedure completion | Pass: 100% |
+| Full minus no-planning procedure efficiency | Pass: +0.1874, 95% CI [0.1803, 0.1944] |
+| Full minus no-abstraction novel-transfer efficiency | Pass: +0.3429, 95% CI [0.3245, 0.3599] |
+
+The canonical report is
+[`validation-v2-holdout.json`](validation-v2-holdout.json), file SHA-256
+`420bea3da401d1aa621b6c648fc68441f73d626544e55c94cad15c6dc62c81b0`
+and embedded result SHA-256
+`c3642664307cd4239569b27d205fb3f7ddc69764de8bb709acf7e31bca5766f2`.
+The protocol, including the development-time confound that caused the task
+revision before confirmation, is recorded in
+[`VALIDATION_V2.md`](VALIDATION_V2.md).
+
+## V1 conclusion
+
+The original broad Reflector thesis was **not validated**. Its final synthetic
 holdout verdict is `mixed`: the same Kaggle-exportable policy passes legality
 and determinism checks, beats random and a score-only controller, and solves
 the invariant-control, contextual-control, and rare-object-click diagnostics.
@@ -13,7 +49,7 @@ zero causal efficiency effect relative to disabling it.
 
 These are synthetic mechanism results, not ARC-AGI-3 scores.
 
-## Untouched confirmation set
+## V1 untouched confirmation set
 
 The final run used paired seeds 10,000–10,029 (960 total runs):
 
@@ -37,7 +73,7 @@ The canonical report is
 [`validation-results-holdout.json`](validation-results-holdout.json), SHA-256
 `337fa3878ef6d3edad3ad0b12290c635b3ce047180b4c4b8562dca70326758e6`.
 
-## Failure-driven development trail
+## V1 failure-driven development trail
 
 The first seed-0–29 run found that byte-identical observations after distinct
 actions were being discarded. It returned `not_supported`
@@ -53,7 +89,7 @@ development result
 (`b418e477d697e045a6a6bae080d97c0740cb99e25f7d5b7b05bc2e5992b11a25`).
 No code or threshold changed after the seed-10,000 holdout was viewed.
 
-## Interpreted failure
+## V1 interpreted failure
 
 The temporal agent gets trapped by actions that cause visual events without
 advancing a level. Its hand-written action utility values movement and frame

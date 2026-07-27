@@ -33,6 +33,7 @@ class TraceMetrics:
     schema_family_count: int
     concept_type_count: int
     language_operator_count: int
+    procedure_count: int
     causal_hypotheses: int
     temporal_hypotheses: int
     mean_schema_reliability: float
@@ -161,6 +162,7 @@ def evaluate_trace(
         language_operator_count=len(
             policy.mind.abstractions.language_operators
         ),
+        procedure_count=len(policy.mind.abstractions.procedures),
         causal_hypotheses=len(policy.mind.hypotheses.causal),
         temporal_hypotheses=len(policy.mind.hypotheses.temporal),
         mean_schema_reliability=reliability,
@@ -177,6 +179,10 @@ def evaluate_trace(
             + sum(
                 item.utility
                 for item in policy.mind.abstractions.language_operators.values()
+            )
+            + sum(
+                item.utility
+                for item in policy.mind.abstractions.procedures.values()
             )
         ),
         planner_expansions=sum(
