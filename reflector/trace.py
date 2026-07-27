@@ -16,8 +16,8 @@ from .symbolic import (
     Transition,
 )
 
-TRACE_FORMAT_VERSION = 2
-AGENT_VERSION = "reflector-symbolic-v7"
+TRACE_FORMAT_VERSION = 3
+AGENT_VERSION = "reflector-symbolic-v8"
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,6 +30,7 @@ class TraceStep:
     new_concepts: tuple[str, ...] = ()
     new_hypotheses: tuple[str, ...] = ()
     new_abstractions: tuple[str, ...] = ()
+    new_assessments: tuple[str, ...] = ()
     experiment: str | None = None
     plan_actions: tuple[int, ...] = ()
     planner_expansions: int = 0
@@ -48,6 +49,7 @@ class TraceStep:
             "new_concepts": list(self.new_concepts),
             "new_hypotheses": list(self.new_hypotheses),
             "new_abstractions": list(self.new_abstractions),
+            "new_assessments": list(self.new_assessments),
             "experiment": self.experiment,
             "plan_actions": list(self.plan_actions),
             "planner_expansions": self.planner_expansions,
@@ -117,6 +119,7 @@ class TraceStep:
             new_concepts=tuple(value["new_concepts"]),
             new_hypotheses=tuple(value.get("new_hypotheses", ())),
             new_abstractions=tuple(value.get("new_abstractions", ())),
+            new_assessments=tuple(value.get("new_assessments", ())),
             experiment=value.get("experiment"),
             plan_actions=tuple(value.get("plan_actions", ())),
             planner_expansions=value.get("planner_expansions", 0),

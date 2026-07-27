@@ -11,6 +11,7 @@ from .causal import Experiment, HypothesisStore
 from .graph import DependencyGraph
 from .perception import SceneTracker
 from .planning import Goal, Plan, SymbolicPlanner
+from .reinforcement import StructuralCreditLedger
 from .schemas import ConceptStore, SchemaStore, SyntheticConcept
 from .symbolic import (
     Decision,
@@ -29,6 +30,7 @@ class MindUpdate:
     new_concepts: tuple[SyntheticConcept, ...]
     new_hypotheses: tuple[str, ...]
     new_abstractions: tuple[str, ...]
+    new_assessments: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,6 +109,7 @@ class SymbolicMind:
             ),
         )
         self.hypotheses = HypothesisStore()
+        self.reinforcement = StructuralCreditLedger()
         self.abstractions = AbstractionStore(
             complexity_pressure=self.config.hierarchy_complexity_pressure
         )
@@ -133,6 +136,7 @@ class SymbolicMind:
         new_concepts: tuple[SyntheticConcept, ...] = ()
         new_hypotheses: tuple[str, ...] = ()
         new_abstractions: tuple[str, ...] = ()
+        new_assessments: tuple[str, ...] = ()
         if self._last_scene is not None and previous_decision is not None:
             transition = self.tracker.transition(
                 self._last_scene,
@@ -157,6 +161,18 @@ class SymbolicMind:
                 action_data=transition.action_data,
                 result=transition.result,
             )
+            # Freeze the forecast before the observed transition updates any
+            # schema.  This prevents hindsight from masquerading as
+            # prediction and gives contradiction a structural target.
+            prediction = self.schemas.predict(
+                transition.action_id,
+                transition.context,
+            )
+            assessment_id = self.reinforcement.assess(
+                transition,
+                prediction,
+            )
+            new_assessments = (assessment_id,)
             schema = self.schemas.observe(transition)
             new_hypotheses = self.hypotheses.observe(transition, self.schemas)
             if self.config.enable_reflecting_abstraction:
@@ -184,6 +200,18 @@ class SymbolicMind:
                         )
                     )
                 )
+                integrated = self.reinforcement.integrate(
+                    (
+                        family.action_id,
+                        family.result_predicates,
+                        family.shared_context,
+                        family.support,
+                    )
+                    for family in self.abstractions.schema_families.values()
+                )
+                new_assessments = tuple(
+                    sorted(set(new_assessments) | set(integrated))
+                )
         self._last_scene = scene
         return MindUpdate(
             scene,
@@ -191,6 +219,7 @@ class SymbolicMind:
             new_concepts,
             new_hypotheses,
             new_abstractions,
+            new_assessments,
         )
 
     def select_action(self, legal_actions: tuple[int, ...]) -> tuple[int, str]:
@@ -326,6 +355,7 @@ class SymbolicMind:
             "concepts": self.concepts.to_dict(),
             "hypotheses": self.hypotheses.to_dict(),
             "abstractions": self.abstractions.to_dict(),
+            "structural_credit": self.reinforcement.to_dict(),
             "last_experiment": (
                 self.last_experiment.to_dict()
                 if self.last_experiment is not None

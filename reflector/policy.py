@@ -114,6 +114,7 @@ class SymbolicPolicy:
                 ),
                 new_hypotheses=update.new_hypotheses,
                 new_abstractions=update.new_abstractions,
+                new_assessments=update.new_assessments,
                 experiment=(
                     self.mind.last_experiment.question
                     if self.mind.last_experiment is not None

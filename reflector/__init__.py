@@ -18,7 +18,18 @@ from .graph import DependencyEdge, DependencyGraph
 from .mind import MindConfig, SymbolicMind
 from .planning import Goal, Plan, SymbolicPlanner
 from .policy import SymbolicPolicy
-from .schemas import ConceptStore, Schema, SchemaStore, SyntheticConcept
+from .reinforcement import (
+    StructuralAssessment,
+    StructuralCreditLedger,
+    StructuralEligibility,
+)
+from .schemas import (
+    ConceptStore,
+    Schema,
+    SchemaPrediction,
+    SchemaStore,
+    SyntheticConcept,
+)
 from .symbolic import (
     Atom,
     Decision,
@@ -53,10 +64,14 @@ __all__ = [
     "ProcedureAbstraction",
     "Scene",
     "Schema",
+    "SchemaPrediction",
     "SchemaFamily",
     "SchemaStore",
     "SymbolicMind",
     "SymbolicPlanner",
+    "StructuralAssessment",
+    "StructuralCreditLedger",
+    "StructuralEligibility",
     "SymbolicPolicy",
     "SyntheticConcept",
     "TemporalHypothesis",

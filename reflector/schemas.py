@@ -72,6 +72,30 @@ class SyntheticConcept:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class SchemaPrediction:
+    """A proposition-level forecast frozen before an outcome is observed."""
+
+    action_id: int
+    result: tuple[str, ...]
+    evidence: tuple[str, ...]
+    evidence_contexts: tuple[tuple[str, ...], ...]
+    support: int
+    confidence: float
+    transferred: bool
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "action_id": self.action_id,
+            "result": list(self.result),
+            "evidence": list(self.evidence),
+            "evidence_contexts": [list(item) for item in self.evidence_contexts],
+            "support": self.support,
+            "confidence": self.confidence,
+            "transferred": self.transferred,
+        }
+
+
 @dataclass(slots=True)
 class SchemaStore:
     """Online schema induction with global action-effect attribution."""
@@ -198,6 +222,65 @@ class SchemaStore:
             self.result_value(schema.result) * schema.support
             for schema in matching
         ) / support
+
+    def predict(
+        self,
+        action_id: int,
+        context: tuple[Atom, ...],
+        *,
+        minimum_confidence: float = 0.5,
+    ) -> SchemaPrediction | None:
+        """Freeze the best supported result forecast before observing it.
+
+        Exact-context evidence is preferred.  If none exists, repeated
+        action/result evidence may transfer as a deliberately marked
+        hypothesis so a perturbation can expose a missing validity condition.
+        """
+
+        environment = self._environment_context(context)
+        candidates = [
+            schema
+            for schema in self.schemas.values()
+            if schema.action_id == action_id
+            and schema.reliability >= minimum_confidence
+        ]
+        exact = [
+            schema
+            for schema in candidates
+            if self._environment_context(schema.context) == environment
+        ]
+        selected = exact or candidates
+        if not selected:
+            return None
+
+        grouped: dict[tuple[str, ...], list[Schema]] = {}
+        for schema in selected:
+            grouped.setdefault(schema.result, []).append(schema)
+        result, members = max(
+            grouped.items(),
+            key=lambda item: (
+                sum(schema.support for schema in item[1]),
+                sum(schema.confirmations for schema in item[1]),
+                item[0],
+            ),
+        )
+        support = sum(schema.support for schema in members)
+        opportunities = sum(schema.opportunities for schema in members)
+        confirmations = sum(schema.confirmations for schema in members)
+        return SchemaPrediction(
+            action_id=action_id,
+            result=result,
+            evidence=tuple(sorted(schema.schema_id for schema in members)),
+            evidence_contexts=tuple(
+                sorted(
+                    tuple(atom.text() for atom in schema.context)
+                    for schema in members
+                )
+            ),
+            support=support,
+            confidence=(confirmations + 1) / (opportunities + 2),
+            transferred=not bool(exact),
+        )
 
     def event_probability(self, action_id: int, event_kind: str) -> float:
         trials = self.action_trials.get(action_id, 0)

@@ -36,6 +36,15 @@ concepts compile into future schema contexts, accepted language operators
 normalize future events, family reliability informs transfer, and procedures
 can supply bounded plans. The store is part of the shared Kaggle closure.
 
+`StructuralCreditLedger` compares each proposition-level schema prediction
+with the next outcome before that outcome updates the schema store. It keeps
+external goal events, epistemic events, confirmations, contradictions, and
+unpredicted effects as typed fields and carries a bounded eligibility trace
+that names both proposition and licensing schema. This prevents hindsight
+scoring and preserves the evidence needed for later accommodation. The ledger
+currently records candidate structural responses; it does not yet modify
+planning or justify a claim of successful equilibration.
+
 These compiled controllers and structures are not yet a higher knowing level.
 The next proposed inference mechanism is an equilibration layer that records
 contradictions, negations, accommodation, and structural reorganization while
@@ -65,9 +74,10 @@ symbolic package must never depend outward on an evolver, LLM, trace analyzer,
 SQLite store, API server, or frontend. `tests/integration/test_kaggle_contract.py`
 enforces the current inference closure.
 
-The Kaggle closure contains symbolic values, perception, schemas, reflecting
-abstraction, causal and temporal hypotheses, planning, dependency graphs, mind,
-policy, and trace types. Evaluation, compression analysis, transforms,
+The Kaggle closure contains symbolic values, perception, schemas, typed
+structural credit, reflecting abstraction, causal and temporal hypotheses,
+planning, dependency graphs, mind, policy, and trace types. Evaluation,
+compression analysis, transforms,
 experiment persistence, population selection, mutation providers, sandbox
 orchestration, evolver, and CLI modules remain outside it.
 Future inference mechanisms must be added to the explicit overlay allowlist

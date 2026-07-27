@@ -165,3 +165,22 @@ relations, and typed composition. Category-theoretic terminology is prohibited
 until represented identities and composition pass closure, endpoint,
 associativity, and identity tests. This follows Papert's own warning against
 using the mathematics as superficial metaphor.
+
+## 2026-07-27 — Reinforcement updates evidence structures, not one currency
+
+The supplied Sutton and Barto PDF makes the boundary unusually explicit: the
+book studies learning after state, action, and reward representations have
+been selected, while calling construction of improved state representations
+an unclear and open problem. It also treats cumulative scalar reward as the
+formalization of all goals. This is a productive engineering reduction, not a
+complete constructivist account.
+
+Reflector therefore retains online interaction, pre-outcome prediction,
+experimentation, models, planning, and bounded delayed credit, but records
+external progress, proposition confirmation/contradiction, epistemic novelty,
+and structural response as separate channels. A delayed structural trace names
+the proposition and schema responsible; it is not a discounted scalar return.
+The initial ledger is an evidence substrate only. Its `differentiate`,
+`specialize`, and `integrate` records do not yet prove accommodation or alter
+control. Those claims require the equal-return intervention and perturbation
+ablations preregistered in `VALIDATION_V3_DESIGN.md`.
