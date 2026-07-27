@@ -42,14 +42,18 @@ external goal events, epistemic events, confirmations, contradictions, and
 unpredicted effects as typed fields and carries a bounded eligibility trace
 that names both proposition and licensing schema. This prevents hindsight
 scoring and preserves the evidence needed for later accommodation. The ledger
-currently records candidate structural responses; it does not yet modify
-planning or justify a claim of successful equilibration.
+constructs MDL-positive conditional proposition amendments from repeated
+disequilibria, retains their evidence and history, and makes applicable
+goal-relevant amendments operative in action selection. Validation v3 shows a
+causal effect for this narrow mechanism under one synthetic perturbation
+family. It does not yet modify planning or justify a claim of general
+equilibration.
 
 These compiled controllers and structures are not yet a higher knowing level.
-The next proposed inference mechanism is an equilibration layer that records
-contradictions, negations, accommodation, and structural reorganization while
-keeping temporal procedures distinct from operative relations among
-transformations. It must be validated causally before entering the overlay.
+The current equilibration layer records contradiction and conditional
+accommodation, but it does not yet construct general negations, transformations
+and their reversals, or operative relations among transformations. Those
+mechanisms must be validated causally before entering the overlay.
 
 The proposed higher-order substrate has two explicitly separate graphs. A
 transformation graph represents state-changing operators and their temporal

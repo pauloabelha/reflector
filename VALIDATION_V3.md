@@ -1,6 +1,6 @@
 # Reflector validation protocol v3
 
-Status: frozen after development. Confirmation seeds have not been viewed.
+Status: frozen protocol executed once on the untouched confirmation split.
 
 V3 tests the narrow claim that proposition-level contradiction can construct
 an operative context condition that improves a later intervention. It does not
@@ -103,3 +103,18 @@ Frozen confirmation:
 .venv/bin/reflector validate --suite v3 --seed-start 60000 --seeds 30 \
   --output validation-v3-holdout.json
 ```
+
+## Untouched confirmation result
+
+All criteria passed on seeds 60,000–60,029 without post-freeze changes.
+Constructive accommodation improved paired efficiency by `0.06816` (95%
+bootstrap CI `[0.05266, 0.08348]`) and first-attempt intervention accuracy by
+`0.21250` (CI `[0.16667, 0.26250]`). Every policy received the same forced
+training actions and progress history. Both the isolated constructive
+descendant and the default full policy completed every run.
+
+The canonical report is `validation-v3-holdout.json`, with embedded canonical
+payload SHA-256
+`4d9a1a164521dbd8670d94c745b8d9969b6e0661b22200f9285cbb3f4787d53b`.
+No implementation, budget, baseline, threshold, or statistic was changed after
+the confirmation report was viewed.

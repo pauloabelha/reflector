@@ -2,6 +2,46 @@
 
 Run date: 2026-07-27.
 
+## V3 conclusion
+
+The narrow constructive-accommodation claim is **supported** on its untouched
+confirmation split. After identical forced action and scalar-progress
+histories, a Kaggle-exportable symbolic descendant constructed an evidenced
+condition over proposition-level prediction errors and used it to improve
+first-attempt interventions in unseen layouts.
+
+This validates conditional accommodation on one synthetic family. It does not
+establish general equilibration, autonomous invention of arbitrary ontologies,
+psychological fidelity, or ARC-AGI-3 generalization.
+
+## V3 untouched confirmation set
+
+The run used paired seeds 60,000–60,029 and passed all frozen criteria:
+
+| Preregistered criterion | Result |
+| --- | --- |
+| All actions legal | Pass: 100% |
+| Identical training histories | Pass within every paired seed |
+| Isolated constructive completion | Pass: 100% |
+| Default full-policy completion | Pass: 100% |
+| Constructive minus fixed-ontology efficiency | Pass: +0.0682, 95% bootstrap CI [0.0527, 0.0835] |
+| Constructive minus fixed-ontology first-attempt accuracy | Pass: +0.2125, 95% CI [0.1667, 0.2625] |
+| Evidenced conditions and target condition constructed | Pass |
+| Fixed ontology exposes no operative accommodations | Pass |
+
+The full default agent averaged 18.33 actions against an oracle minimum of 16;
+the isolated constructive descendant averaged 19.17 and its fixed-ontology
+ablation 20.87. The training action sequence and progress history were
+identical across all six policies.
+
+The canonical report is
+[`validation-v3-holdout.json`](validation-v3-holdout.json), file SHA-256
+`02ec3f7943cf87bbe065148df7770a133fccb2309fe5f7ec3522bf0a7ef7cf50`
+and embedded result SHA-256
+`4d9a1a164521dbd8670d94c745b8d9969b6e0661b22200f9285cbb3f4787d53b`.
+The frozen protocol and development result are recorded in
+[`VALIDATION_V3.md`](VALIDATION_V3.md).
+
 ## V2 conclusion
 
 The v2 synthetic mechanism claim is **supported** on its untouched confirmation

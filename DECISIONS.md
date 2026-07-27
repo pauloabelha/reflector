@@ -184,3 +184,21 @@ The initial ledger is an evidence substrate only. Its `differentiate`,
 `specialize`, and `integrate` records do not yet prove accommodation or alter
 control. Those claims require the equal-return intervention and perturbation
 ablations preregistered in `VALIDATION_V3_DESIGN.md`.
+
+## 2026-07-27 — Accept conditional accommodation, not general equilibration
+
+Validation v3 forced all policies through identical training actions and
+scalar-progress histories, varied every absolute layout and barrier position,
+and reserved seeds 60,000–60,029 until the code and criteria were committed.
+On that untouched split, enabling conditional accommodation improved
+first-attempt intervention accuracy over the otherwise identical fixed-ontology
+descendant by 0.2125 (95% paired bootstrap CI [0.1667, 0.2625]) and efficiency
+by 0.0682 (CI [0.0527, 0.0835]). All policies remained legal, and the default
+full agent completed every run.
+
+Conditional proposition amendments are therefore accepted into the operative
+Kaggle inference path. The accepted claim is deliberately narrow: repeated
+prediction contradiction can construct an evidenced shared context condition
+that improves intervention in novel layouts. General equilibration,
+psychological fidelity, arbitrary ontology invention, transformation reversal,
+morphism composition, and official ARC generalization remain unvalidated.

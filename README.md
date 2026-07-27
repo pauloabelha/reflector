@@ -101,23 +101,22 @@ Generate, replay, evaluate, and compare deterministic traces:
 .venv/bin/reflector graph /tmp/reflector-trace.json
 ```
 
-Run the preregistered synthetic mechanism benchmark:
+Run the latest preregistered synthetic mechanism benchmark:
 
 ```bash
-.venv/bin/reflector validate --suite v2 --seed-start 30000 --seeds 30 \
-  --output validation-v2-holdout.json
+.venv/bin/reflector validate --suite v3 --seed-start 60000 --seeds 30 \
+  --output validation-v3-holdout.json
 ```
 
 This benchmark compares the deployed policy with ablations and simple
 baselines. It is explicitly not an ARC score; see
-[`VALIDATION_V2.md`](VALIDATION_V2.md) for its frozen claim boundary and
-criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for both the
-original falsification and the v2 confirmation result.
-
-The next mechanism is deliberately still a design, not a result:
-[`VALIDATION_V3_DESIGN.md`](VALIDATION_V3_DESIGN.md) proposes tests that
-separate temporal control compression from equilibration and higher-order
-construction before implementation begins.
+[`VALIDATION_V3.md`](VALIDATION_V3.md) for its frozen claim boundary and
+criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for the original
+falsification plus the v2 and v3 confirmation results. V3 supports a narrow
+conditional-accommodation claim under identical training histories; it is not
+evidence of general equilibration or official-game generalization. The
+remaining higher-order construction tests are tracked in
+[`VALIDATION_V3_DESIGN.md`](VALIDATION_V3_DESIGN.md).
 
 Run a reproducible population evaluation (network isolation is on by default):
 
