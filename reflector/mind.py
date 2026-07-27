@@ -12,7 +12,13 @@ from .graph import DependencyGraph
 from .perception import SceneTracker
 from .planning import Goal, Plan, SymbolicPlanner
 from .schemas import ConceptStore, SchemaStore, SyntheticConcept
-from .symbolic import Decision, Observation, Scene, Transition
+from .symbolic import (
+    Decision,
+    Observation,
+    Scene,
+    Transition,
+    canonical_atoms,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +133,22 @@ class SymbolicMind:
                 previous_decision.data,
                 events,
             )
+            transition = self.abstractions.normalize_transition(transition)
+            transition = Transition(
+                before_index=transition.before_index,
+                after_index=transition.after_index,
+                context=canonical_atoms(
+                    (
+                        *transition.context,
+                        *self.concepts.context_atoms(
+                            transition.action_id
+                        ),
+                    )
+                ),
+                action_id=transition.action_id,
+                action_data=transition.action_data,
+                result=transition.result,
+            )
             self.schemas.observe(transition)
             new_hypotheses = self.hypotheses.observe(transition, self.schemas)
             if self.config.enable_concepts:
@@ -171,6 +193,7 @@ class SymbolicMind:
                 legal_actions,
                 self.schemas,
                 self.hypotheses,
+                self.abstractions,
             )
             if self.config.enable_planning
             else None

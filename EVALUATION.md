@@ -83,6 +83,11 @@ selection and excludes descendants proposed by the optional LLM provider.
 An abstraction is accepted only when its measured benefit pays for its added
 complexity without breaking the Kaggle gate.
 
+Reuse is tested at the operative boundary: later schemas must contain retained
+synthetic terms, post-adoption rotation transitions must use the compositional
+operator, and family reliability must change bounded plan confidence. These
+tests establish internal compilation and reuse, not cross-game transfer.
+
 `reflector official-run` is the authoritative local score path. It invokes the
 unchanged official `Swarm`/`Arcade` lifecycle and emits the toolkit scorecard
 (including ARC/RHAE score and completed levels) beside Reflector's trace and

@@ -41,6 +41,20 @@ class DependencyGraph:
                 graph.edges.add(
                     DependencyEdge(concept.concept_id, "supported_by", evidence)
                 )
+        for schema in schemas.schemas.values():
+            for atom in schema.context:
+                if (
+                    atom.predicate == "synthetic_item"
+                    and atom.arguments
+                    and atom.arguments[0] in concepts.concepts
+                ):
+                    graph.edges.add(
+                        DependencyEdge(
+                            schema.schema_id,
+                            "uses",
+                            atom.arguments[0],
+                        )
+                    )
         for causal_hypothesis in hypotheses.causal.values():
             graph.nodes[causal_hypothesis.hypothesis_id] = "causal_hypothesis"
             for schema in schemas.schemas.values():

@@ -202,6 +202,18 @@ class ConceptStore:
     complexity_pressure: float = 1.0
     require_counterfactual_utility: bool = True
 
+    def context_atoms(self, action_id: int) -> tuple[Atom, ...]:
+        """Compile retained functional concepts into later schema contexts."""
+
+        action_term = f"action({action_id})"
+        return tuple(
+            Atom("synthetic_item", (concept.concept_id,))
+            for concept in sorted(
+                self.concepts.values(), key=lambda item: item.concept_id
+            )
+            if action_term in concept.definition
+        )
+
     def reflect(self, schemas: SchemaStore) -> tuple[SyntheticConcept, ...]:
         proposals: list[SyntheticConcept] = []
         for action_id, events in sorted(schemas.action_events.items()):

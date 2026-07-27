@@ -139,7 +139,9 @@ hypotheses, explicit experiment questions, bounded event-goal planning, and
 utility-gated synthetic concepts. It now derives bounded spatial relations,
 MDL-positive schema families and concept types, and evidence-gated symbolic
 language versions, including a compositional ℤ₄ orientation operator when
-repeated rotation evidence pays its cost. Development tooling measures recoverable
+repeated rotation evidence pays its cost. Accepted concepts become later schema
+terms, language operators normalize later events, and family confidence feeds
+the bounded planner. Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained
 genomes, transformed trace holdouts, reproducible experiment manifests,

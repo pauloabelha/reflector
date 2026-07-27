@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from .schemas import ConceptStore, Schema, SchemaStore, SyntheticConcept
+from .symbolic import Event, Transition
 
 _ROTATION = re.compile(r"^rotated_(0|90|180|270|360)$")
 
@@ -125,6 +126,37 @@ class AbstractionStore:
             | set(self.language_operators)
         )
         return tuple(sorted(after - before))
+
+    def normalize_transition(self, transition: Transition) -> Transition:
+        """Express future rotation evidence in an accepted compositional DSL."""
+
+        if not any(
+            operator.name == "orientation_delta"
+            for operator in self.language_operators.values()
+        ):
+            return transition
+        normalized: list[Event] = []
+        for event in transition.result:
+            match = _ROTATION.match(event.kind)
+            if match is None:
+                normalized.append(event)
+                continue
+            angle = int(match.group(1)) % 360
+            normalized.append(
+                Event(
+                    "orientation_delta",
+                    event.subject,
+                    (str(angle // 90), *event.arguments),
+                )
+            )
+        return Transition(
+            before_index=transition.before_index,
+            after_index=transition.after_index,
+            context=transition.context,
+            action_id=transition.action_id,
+            action_data=transition.action_data,
+            result=tuple(normalized),
+        )
 
     def _reflect_schema_families(self, schemas: SchemaStore) -> None:
         groups: dict[tuple[int, tuple[str, ...]], list[Schema]] = {}

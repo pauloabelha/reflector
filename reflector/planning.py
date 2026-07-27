@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .causal import HypothesisStore
 from .schemas import SchemaStore
+
+if TYPE_CHECKING:
+    from .abstraction import AbstractionStore
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,6 +51,7 @@ class SymbolicPlanner:
         legal_actions: tuple[int, ...],
         schemas: SchemaStore,
         hypotheses: HypothesisStore,
+        abstractions: AbstractionStore | None = None,
     ) -> Plan | None:
         self.last_expansions = 0
         frontier: list[tuple[tuple[int, ...], frozenset[str], float]] = [
@@ -70,6 +74,14 @@ class SymbolicPlanner:
                     }
                     if not effects:
                         effects = set(schemas.event_kinds(action))
+                    if abstractions is not None:
+                        effects.update(
+                            predicate
+                            for family in abstractions.schema_families.values()
+                            if family.action_id == action
+                            and family.reliability >= 0.5
+                            for predicate in family.result_predicates
+                        )
                     action_confidence = max(
                         (
                             hypothesis.confidence
@@ -80,6 +92,19 @@ class SymbolicPlanner:
                         ),
                         default=0.25 if effects else 0.0,
                     )
+                    if abstractions is not None:
+                        action_confidence = max(
+                            action_confidence,
+                            max(
+                                (
+                                    family.reliability
+                                    for family in abstractions.schema_families.values()
+                                    if family.action_id == action
+                                    and set(family.result_predicates) & effects
+                                ),
+                                default=0.0,
+                            ),
+                        )
                     expanded = set(achieved) | effects
                     # Apply learned temporal implications as abstract operators.
                     changed = True

@@ -31,7 +31,10 @@ learning. It groups cross-context schemas by action/result predicates, groups
 synthetic concepts by evidence-backed kind, and detects rotation vocabularies
 that can be represented by an orientation algebra. It retains only
 description-positive structures and records their evidence, residual cost, and
-language ancestry. The store is part of the shared Kaggle closure.
+language ancestry. Retained concepts compile into future schema contexts,
+accepted language operators normalize future events, and family reliability is
+available to the bounded planner. The store is part of the shared Kaggle
+closure.
 
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
 questions, plans, decisions, and concept births used during inference. Replay,

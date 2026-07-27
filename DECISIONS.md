@@ -80,3 +80,11 @@ count reuse, equivalent schemas, conflicting results, low-reliability schemas,
 and concepts with missing evidence. Sandbox wall time and Python allocation
 peaks are reported as machine-local diagnostics; deterministic operation and
 description measures remain the stable comparison basis.
+
+## 2026-07-27 — Accepted abstractions compile into future inference
+
+Retained functional concepts become synthetic terms in later schema contexts,
+accepted orientation vocabulary normalizes later rotation events, and reliable
+schema families supply abstract effects and confidence to bounded planning.
+This is the first operative reuse loop; it is not evidence of held-out transfer
+or macro-action learning.

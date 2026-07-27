@@ -4,8 +4,10 @@ from reflector import (
     ConceptStore,
     DependencyGraph,
     Event,
+    Goal,
     HypothesisStore,
     SchemaStore,
+    SymbolicPlanner,
     SymbolicPolicy,
     Transition,
 )
@@ -183,3 +185,71 @@ def test_deployed_policy_can_invent_orientation_operator_from_frames() -> None:
     metrics = evaluate_trace(policy.trace)
     assert metrics.language_operator_count == 1
     assert metrics.abstraction_description_savings > 0
+    assert any(
+        event.kind == "orientation_delta"
+        for step in policy.trace.steps
+        if step.incoming_transition is not None
+        for event in step.incoming_transition.result
+    )
+
+
+def test_retained_concept_becomes_a_later_schema_term() -> None:
+    policy = SymbolicPolicy()
+    for index in range(6):
+        policy.choose_action(
+            Observation.create(
+                state="NOT_FINISHED",
+                available_actions=(1,),
+                frame=(
+                    ((2, 0), (0, 0))
+                    if index % 2 == 0
+                    else ((0, 2), (0, 0))
+                ),
+            )
+        )
+    concept_id = next(
+        concept.concept_id
+        for concept in policy.mind.concepts.concepts.values()
+        if "frame_changed(scene)" in concept.definition
+    )
+    compiled_schemas = [
+        schema
+        for schema in policy.mind.schemas.schemas.values()
+        if Atom("synthetic_item", (concept_id,)) in schema.context
+    ]
+    assert compiled_schemas
+    graph = policy.mind.snapshot()["dependency_graph"]
+    assert {
+        "source": compiled_schemas[0].schema_id,
+        "relation": "uses",
+        "target": concept_id,
+    } in graph["edges"]
+
+
+def test_schema_family_reliability_is_reused_by_bounded_planner() -> None:
+    schemas = SchemaStore()
+    for index, relation in enumerate(("left_of", "above")):
+        _observe(
+            schemas,
+            index=index,
+            context=(
+                Atom("state", ("NOT_FINISHED",)),
+                Atom(relation, ("switch", "exit")),
+            ),
+            action=3,
+            event=Event("level_advanced", "game"),
+        )
+    abstractions = AbstractionStore(complexity_pressure=0.0)
+    abstractions.reflect(schemas, ConceptStore())
+    family = next(iter(abstractions.schema_families.values()))
+    planner = SymbolicPlanner()
+    plan = planner.plan(
+        goal=Goal("level_advanced"),
+        legal_actions=(3, 4),
+        schemas=schemas,
+        hypotheses=HypothesisStore(),
+        abstractions=abstractions,
+    )
+    assert plan is not None
+    assert plan.actions == (3,)
+    assert plan.confidence == family.reliability

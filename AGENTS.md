@@ -46,6 +46,9 @@ advance it, close the scorecard, and exit.
 - Never score a transition using predictions learned from that same transition.
   Runtime and allocation measurements are diagnostics and must not be presented
   as deterministic across machines.
+- An accepted abstraction must remain on an operative path: compiled concept
+  terms, normalized language events, or bounded planning evidence. Preserve
+  the raw evidence and do not claim cross-game transfer from internal reuse.
 
 ## Official compatibility
 

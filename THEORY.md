@@ -61,11 +61,18 @@ reliability. Non-positive proposals are discarded. Dependency edges connect each
 accepted abstraction to the schemas or concepts that paid for it. A language
 version is appended only when the accepted operator set changes.
 
-The compositional operator currently reduces representation length and exposes
-an algebra to later planners; it does not yet transform raw frames or prove
-transfer to a held-out game. Schema families similarly compile repeated
-structure but are not yet macro-actions. Those are measured future steps, not
-implied capabilities.
+Accepted structures are compiled forward rather than merely displayed.
+Functional concepts whose defining action applies become `synthetic_item`
+terms in later schema contexts. Once the orientation operator is accepted,
+later concrete rotation events are stored as
+`orientation_delta(object,k)`. Reliable schema families contribute their
+abstract result predicates and confidence to the same bounded planner used by
+the Kaggle policy.
+
+This closes an internal reuse loop, but does not prove transfer to a held-out
+game or action savings. Schema families are abstract predictive operators, not
+macro-actions, and concept terms currently encode availability for their
+defining action rather than a complete latent-state semantics.
 
 ## Current operational approximations
 
