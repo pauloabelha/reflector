@@ -21,10 +21,14 @@ class TraceMetrics:
     failed_experiments: int
     schema_count: int
     concept_count: int
+    schema_family_count: int
+    concept_type_count: int
+    language_operator_count: int
     causal_hypotheses: int
     temporal_hypotheses: int
     mean_schema_reliability: float
     schema_description_length: int
+    abstraction_description_savings: int
     planner_expansions: int
     recoverable_redundancy: int
     counterfactual_replay_savings: int
@@ -86,10 +90,29 @@ def evaluate_trace(
         failed_experiments=failed_experiments,
         schema_count=len(schemas),
         concept_count=len(policy.mind.concepts.concepts),
+        schema_family_count=len(policy.mind.abstractions.schema_families),
+        concept_type_count=len(policy.mind.abstractions.concept_types),
+        language_operator_count=len(
+            policy.mind.abstractions.language_operators
+        ),
         causal_hypotheses=len(policy.mind.hypotheses.causal),
         temporal_hypotheses=len(policy.mind.hypotheses.temporal),
         mean_schema_reliability=reliability,
         schema_description_length=description_length,
+        abstraction_description_savings=round(
+            sum(
+                item.utility
+                for item in policy.mind.abstractions.schema_families.values()
+            )
+            + sum(
+                item.utility
+                for item in policy.mind.abstractions.concept_types.values()
+            )
+            + sum(
+                item.utility
+                for item in policy.mind.abstractions.language_operators.values()
+            )
+        ),
         planner_expansions=sum(
             step.planner_expansions for step in policy.trace.steps
         ),
@@ -119,6 +142,10 @@ ABLATIONS: dict[str, MindConfig] = {
     ),
     "no_experiments": MindConfig(enable_experiments=False),
     "no_planning": MindConfig(enable_planning=False),
+    "no_hierarchy_pressure": MindConfig(
+        hierarchy_complexity_pressure=0.0
+    ),
+    "flat_concepts": MindConfig(enable_reflecting_abstraction=False),
 }
 
 

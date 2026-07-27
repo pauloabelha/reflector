@@ -24,6 +24,7 @@ class Candidate:
     parent_id: str | None = None
     generation: int = 0
     rationale: str = "root"
+    mutation_source: str = "root"
 
     @classmethod
     def create(
@@ -32,12 +33,14 @@ class Candidate:
         parent_id: str | None = None,
         generation: int = 0,
         rationale: str = "root",
+        mutation_source: str = "root",
     ) -> "Candidate":
         identity = {
             "config": config.to_dict(),
             "parent_id": parent_id,
             "generation": generation,
             "rationale": rationale,
+            "mutation_source": mutation_source,
         }
         return cls(
             _stable_id("candidate", identity),
@@ -45,6 +48,7 @@ class Candidate:
             parent_id,
             generation,
             rationale,
+            mutation_source,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -54,6 +58,7 @@ class Candidate:
             "parent_id": self.parent_id,
             "generation": self.generation,
             "rationale": self.rationale,
+            "mutation_source": self.mutation_source,
         }
 
     @classmethod
@@ -64,6 +69,7 @@ class Candidate:
             parent_id=value.get("parent_id"),
             generation=value["generation"],
             rationale=value["rationale"],
+            mutation_source=value.get("mutation_source", "unknown"),
         )
 
 
@@ -76,6 +82,7 @@ class Fitness:
     mean_schema_reliability: float
     planner_expansions: int
     schema_description_length: int
+    abstraction_description_savings: int = 0
 
     def to_dict(self) -> dict[str, int | float]:
         return asdict(self)
@@ -91,6 +98,7 @@ class Fitness:
             self.mean_schema_reliability,
             -self.planner_expansions,
             -self.schema_description_length,
+            self.abstraction_description_savings,
         )
         theirs = (
             other.levels_advanced,
@@ -98,6 +106,7 @@ class Fitness:
             other.mean_schema_reliability,
             -other.planner_expansions,
             -other.schema_description_length,
+            other.abstraction_description_savings,
         )
         return all(left >= right for left, right in zip(mine, theirs)) and any(
             left > right for left, right in zip(mine, theirs)

@@ -55,6 +55,7 @@ def analyze_trace(
                 "predictions": _action_predictions(policy, actual.action_id),
                 "new_concepts": list(step.new_concepts),
                 "new_hypotheses": list(step.new_hypotheses),
+                "new_abstractions": list(step.new_abstractions),
                 "experiment": step.experiment,
                 "plan_actions": list(step.plan_actions),
                 "planner_expansions": step.planner_expansions,

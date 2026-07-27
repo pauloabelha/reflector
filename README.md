@@ -85,6 +85,8 @@ Run a reproducible population evaluation (network isolation is on by default):
   /tmp/reflector-trace.json --db /tmp/reflector-experiments.sqlite
 .venv/bin/reflector evolve \
   /tmp/reflector-trace.json --db /tmp/reflector-evolution.sqlite
+.venv/bin/reflector evolution-ablations \
+  --db /tmp/reflector-evolution.sqlite --experiment EXPERIMENT_ID
 ```
 
 `evolve` uses deterministic mutations unless an OpenAI-compatible JSON endpoint
@@ -125,13 +127,16 @@ See [KAGGLE.md](KAGGLE.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 
 The end-to-end Kaggle baseline now includes online schemas, causal and temporal
 hypotheses, explicit experiment questions, bounded event-goal planning, and
-utility-gated synthetic concepts. Development tooling measures recoverable
+utility-gated synthetic concepts. It now derives bounded spatial relations,
+MDL-positive schema families and concept types, and evidence-gated symbolic
+language versions, including a compositional ℤ₄ orientation operator when
+repeated rotation evidence pays its cost. Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained
 genomes, transformed trace holdouts, reproducible experiment manifests,
 SQLite lineage, Pareto selection, optional provider-neutral mutation proposals,
 and sandboxed population evaluation. Richer relations, hierarchy/language
-reflection, and true environment holdouts remain. The first complete local
+transfer-validated macro planning and true environment holdouts remain. The first complete local
 replay and population-analysis UI is operational.
 
 ## License

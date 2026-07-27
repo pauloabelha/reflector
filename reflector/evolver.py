@@ -48,6 +48,7 @@ def descendants(
                 parent_id=parent.candidate_id,
                 generation=parent.generation + 1,
                 rationale=proposal.rationale,
+                mutation_source=type(provider).__name__,
             )
         )
     return tuple(output)
@@ -96,3 +97,39 @@ def run_experiment(
 
 def root_candidate(config: MindConfig | None = None) -> Candidate:
     return Candidate.create(config or MindConfig())
+
+
+def evaluate_evolution_ablations(
+    evaluated: Iterable[tuple[Candidate, Fitness]],
+) -> dict[str, tuple[str, ...]]:
+    """Compare Pareto selection, score-only pressure, and no-LLM mutation."""
+
+    entries = tuple(evaluated)
+    full = tuple(
+        candidate.candidate_id
+        for candidate, _fitness in pareto_archive(entries)
+    )
+    best_score = max(
+        (fitness.levels_advanced for _candidate, fitness in entries),
+        default=0,
+    )
+    score_only = tuple(
+        sorted(
+            candidate.candidate_id
+            for candidate, fitness in entries
+            if fitness.levels_advanced == best_score
+        )
+    )
+    without_llm = tuple(
+        (candidate, fitness)
+        for candidate, fitness in entries
+        if candidate.mutation_source != "OpenAICompatibleMutationProvider"
+    )
+    return {
+        "pareto": full,
+        "score_only_evolution": score_only,
+        "no_llm_mutation": tuple(
+            candidate.candidate_id
+            for candidate, _fitness in pareto_archive(without_llm)
+        ),
+    }

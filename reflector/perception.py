@@ -20,6 +20,8 @@ from .symbolic import (
 class SceneTracker:
     """Convert grids into symbolic scenes while preserving object identity."""
 
+    MAX_RELATION_PAIRS = 2048
+
     def __init__(self) -> None:
         self._index = 0
         self._next_object = 1
@@ -110,6 +112,12 @@ class SceneTracker:
                             sum(xs) // len(points),
                             sum(ys) // len(points),
                         ),
+                        shape=tuple(
+                            sorted(
+                                (px - min(xs), py - min(ys))
+                                for px, py in points
+                            )
+                        ),
                     )
                 )
         return tuple(
@@ -146,6 +154,7 @@ class SceneTracker:
                     area=component.area,
                     bbox=component.bbox,
                     centroid=component.centroid,
+                    shape=component.shape,
                 )
             )
         return tuple(sorted(assigned, key=lambda obj: obj.object_id))
@@ -182,8 +191,49 @@ class SceneTracker:
                         "centroid",
                         (obj.object_id, str(obj.centroid[0]), str(obj.centroid[1])),
                     ),
+                    Atom(
+                        "shape_size",
+                        (
+                            obj.object_id,
+                            str(obj.bbox[2] - obj.bbox[0] + 1),
+                            str(obj.bbox[3] - obj.bbox[1] + 1),
+                        ),
+                    ),
                 )
             )
+        relation_pairs = 0
+        for index, left in enumerate(objects):
+            for right in objects[index + 1 :]:
+                if relation_pairs >= SceneTracker.MAX_RELATION_PAIRS:
+                    break
+                relation_pairs += 1
+                left_id, right_id = left.object_id, right.object_id
+                if left.bbox[2] < right.bbox[0]:
+                    facts.append(Atom("left_of", (left_id, right_id)))
+                elif right.bbox[2] < left.bbox[0]:
+                    facts.append(Atom("left_of", (right_id, left_id)))
+                if left.bbox[3] < right.bbox[1]:
+                    facts.append(Atom("above", (left_id, right_id)))
+                elif right.bbox[3] < left.bbox[1]:
+                    facts.append(Atom("above", (right_id, left_id)))
+                if left.centroid[0] == right.centroid[0]:
+                    facts.append(Atom("aligned_x", (left_id, right_id)))
+                if left.centroid[1] == right.centroid[1]:
+                    facts.append(Atom("aligned_y", (left_id, right_id)))
+                horizontal_gap = max(
+                    0,
+                    max(left.bbox[0], right.bbox[0])
+                    - min(left.bbox[2], right.bbox[2])
+                    - 1,
+                )
+                vertical_gap = max(
+                    0,
+                    max(left.bbox[1], right.bbox[1])
+                    - min(left.bbox[3], right.bbox[3])
+                    - 1,
+                )
+                if horizontal_gap + vertical_gap == 0:
+                    facts.append(Atom("touching", tuple(sorted((left_id, right_id)))))
         return canonical_atoms(facts)
 
     @staticmethod
@@ -211,6 +261,9 @@ class SceneTracker:
                         (str(left.area), str(right.area)),
                     )
                 )
+            rotation = SceneTracker._rotation(left.shape, right.shape)
+            if rotation is not None:
+                events.append(Event(f"rotated_{rotation}", object_id))
         if after.levels_completed > before.levels_completed:
             events.append(
                 Event(
@@ -224,6 +277,28 @@ class SceneTracker:
         if after.frame_digest != before.frame_digest:
             events.append(Event("frame_changed"))
         return tuple(sorted(set(events)))
+
+    @staticmethod
+    def _rotation(
+        before: tuple[tuple[int, int], ...],
+        after: tuple[tuple[int, int], ...],
+    ) -> int | None:
+        if not before or before == after or len(before) != len(after):
+            return None
+        transformed = before
+        for quarter_turn in range(1, 4):
+            height = max(y for _x, y in transformed) + 1
+            transformed = tuple(
+                sorted((height - 1 - y, x) for x, y in transformed)
+            )
+            min_x = min(x for x, _y in transformed)
+            min_y = min(y for _x, y in transformed)
+            transformed = tuple(
+                sorted((x - min_x, y - min_y) for x, y in transformed)
+            )
+            if transformed == after:
+                return quarter_turn * 90
+        return None
 
     @staticmethod
     def _digest(frame: Iterable[Iterable[int]]) -> str:

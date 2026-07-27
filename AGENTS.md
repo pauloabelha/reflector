@@ -40,6 +40,9 @@ advance it, close the scorecard, and exit.
   environment rollouts.
 - Do not hardcode solutions for public game IDs. Mechanisms may encode general
   priors only and must earn complexity through evaluation.
+- A schema family, concept type, or language operator must retain member
+  evidence, raw/compiled description cost, positive utility, and dependency
+  edges. Do not promote a symbolic label or regex match by itself.
 
 ## Official compatibility
 

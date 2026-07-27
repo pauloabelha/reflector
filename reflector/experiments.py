@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .population import Candidate, Fitness, pareto_archive
-from .trace import EpisodeTrace
+from .trace import AGENT_VERSION, EpisodeTrace
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,7 +41,7 @@ class ExperimentManifest:
             "seed": seed,
             "trace_hashes": trace_hashes,
             "holdout_seeds": holdout_seeds,
-            "agent_version": "reflector-symbolic-v2",
+            "agent_version": AGENT_VERSION,
         }
         digest = hashlib.sha256(
             json.dumps(identity, sort_keys=True).encode()
@@ -52,7 +52,7 @@ class ExperimentManifest:
             seed=seed,
             trace_hashes=trace_hashes,
             holdout_seeds=holdout_seeds,
-            agent_version="reflector-symbolic-v2",
+            agent_version=AGENT_VERSION,
             created_at=datetime.now(timezone.utc).isoformat(),
         )
 

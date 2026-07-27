@@ -61,3 +61,13 @@ frontend compiles to browser-native modules with no runtime framework, CDN,
 remote font, telemetry, or separate data model. Recorded-observation branches
 are labeled trace-only until an official environment snapshot mechanism can
 generate genuine counterfactual outcomes.
+
+## 2026-07-27 — Higher-order abstractions are evidence-bearing compilations
+
+Schema families, concept types, and language operators are immutable symbolic
+records with member evidence, raw and compiled description length, complexity,
+and utility. The first language reflection recognizes repeated quarter-turn
+predicates and adopts an orientation algebra only when at least three elements
+and enough repeated support make the compiled representation shorter. This is
+an operational approximation, not a claim of full Piagetian abstraction or
+held-out transfer.

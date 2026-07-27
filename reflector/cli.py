@@ -9,7 +9,12 @@ from pathlib import Path
 
 from .compression import analyze_redundancy, counterfactual_replay, replay_policy
 from .evaluation import compare_traces, evaluate_ablations, evaluate_trace
-from .evolver import descendants, root_candidate, run_experiment
+from .evolver import (
+    descendants,
+    evaluate_evolution_ablations,
+    root_candidate,
+    run_experiment,
+)
 from .experiments import ExperimentStore
 from .graph import DependencyGraph
 from .mind import MindConfig
@@ -115,6 +120,10 @@ def main() -> None:
     lineage.add_argument("--experiment", required=True)
     lineage.add_argument("--candidate")
 
+    evolution_ablations = commands.add_parser("evolution-ablations")
+    evolution_ablations.add_argument("--db", type=Path, required=True)
+    evolution_ablations.add_argument("--experiment", required=True)
+
     web = commands.add_parser("web")
     web.add_argument("trace", type=Path)
     web.add_argument("--db", type=Path)
@@ -163,6 +172,7 @@ def main() -> None:
             policy.mind.schemas,
             policy.mind.concepts,
             policy.mind.hypotheses,
+            policy.mind.abstractions,
         )
         print(json.dumps(dependency_graph.to_dict(), indent=2))
     elif args.command == "population-evaluate":
@@ -246,6 +256,12 @@ def main() -> None:
                     }
                     for candidate, fitness in pareto_archive(evaluated)
                 ]
+        print(json.dumps(payload, indent=2))
+    elif args.command == "evolution-ablations":
+        with ExperimentStore(args.db) as store:
+            payload = evaluate_evolution_ablations(
+                store.evaluated(args.experiment)
+            )
         print(json.dumps(payload, indent=2))
     else:
         serve(

@@ -20,6 +20,7 @@ export interface SceneObject {
   area: number;
   bbox: [number, number, number, number];
   centroid: [number, number];
+  shape: [number, number][];
 }
 
 export interface Scene {
@@ -72,10 +73,68 @@ export interface Graph {
   edges: { source: string; relation: string; target: string }[];
 }
 
+export interface SchemaFamily {
+  family_id: string;
+  action_id: number;
+  result_predicates: string[];
+  member_schemas: string[];
+  shared_context: string[];
+  support: number;
+  reliability: number;
+  raw_description_length: number;
+  compiled_description_length: number;
+  complexity: number;
+  utility: number;
+}
+
+export interface ConceptType {
+  type_id: string;
+  name: string;
+  kind: string;
+  children: string[];
+  evidence: string[];
+  support: number;
+  raw_description_length: number;
+  compiled_description_length: number;
+  complexity: number;
+  utility: number;
+}
+
+export interface LanguageOperator {
+  operator_id: string;
+  name: string;
+  signature: string;
+  algebra: string;
+  replaces: string[];
+  evidence: string[];
+  support: number;
+  raw_description_length: number;
+  compiled_description_length: number;
+  complexity: number;
+  utility: number;
+}
+
+export interface LanguageVersion {
+  version_id: string;
+  parent_id: string | null;
+  operators: string[];
+  evidence: string[];
+  description_length: number;
+  utility: number;
+}
+
+export interface AbstractionState {
+  schema_families: SchemaFamily[];
+  concept_types: ConceptType[];
+  language_operators: LanguageOperator[];
+  language_history: LanguageVersion[];
+}
+
 export interface SymbolicState {
   schemas: { schemas: Schema[]; action_trials: Record<string, number> };
   concepts: { concepts: Concept[] };
   hypotheses: { causal: Hypothesis[]; temporal: Hypothesis[] };
+  abstractions: AbstractionState;
   last_experiment: Record<string, Json> | null;
   last_plan: {
     actions: number[];
@@ -102,6 +161,7 @@ export interface ReplayStep {
   predictions: { event: string; probability: number }[];
   new_concepts: string[];
   new_hypotheses: string[];
+  new_abstractions: string[];
   experiment: string | null;
   plan_actions: number[];
   planner_expansions: number;
@@ -142,6 +202,7 @@ export interface CandidateRecord {
     parent_id: string | null;
     generation: number;
     rationale: string;
+    mutation_source: string;
   };
   fitness: {
     levels_advanced: number;
@@ -149,6 +210,7 @@ export interface CandidateRecord {
     mean_schema_reliability: number;
     planner_expansions: number;
     schema_description_length: number;
+    abstraction_description_savings: number;
   } | null;
   details: Record<string, Json> | null;
   pareto: boolean;

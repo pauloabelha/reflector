@@ -2,6 +2,7 @@ import type {
   BranchReport,
   CandidateRecord,
   Concept,
+  ConceptType,
   ExperimentReport,
   Graph,
   Hypothesis,
@@ -9,6 +10,7 @@ import type {
   Replay,
   ReplayStep,
   Schema,
+  SchemaFamily,
 } from "./types.js";
 
 const COLORS = [
@@ -151,6 +153,7 @@ function timeline(): string {
           "timeline-node",
           index === current ? "selected" : "",
           step.new_concepts.length ? "concept-born" : "",
+          step.new_abstractions.length ? "abstraction-born" : "",
           events.some((event) => event.startsWith("level_advanced")) ? "advanced" : "",
         ].join(" ");
         return `<button class="${className}" style="left:${replay.steps.length === 1 ? 50 : index / (replay.steps.length - 1) * 100}%" data-step="${index}" title="Step ${index + 1}: ${actionName(step.recorded_decision.action_id)}"><span>${index + 1}</span></button>`;
@@ -212,9 +215,10 @@ function modelInspector(step: ReplayStep): string {
   const counts = {
     concepts: state.concepts.concepts.length,
     schemas: state.schemas.schemas.length,
+    families: state.abstractions.schema_families.length + state.abstractions.concept_types.length,
     hypotheses: state.hypotheses.causal.length + state.hypotheses.temporal.length,
     graph: state.dependency_graph.nodes.length,
-    language: predicateInventory(state.schemas.schemas).length,
+    language: state.abstractions.language_operators.length,
   };
   return `
     <div class="panel-head">
@@ -231,9 +235,10 @@ function modelInspector(step: ReplayStep): string {
 function modelTab(state: ReplayStep["symbolic_state"], tab: string): string {
   if (tab === "concepts") return conceptList(state.concepts.concepts, state.dependency_graph);
   if (tab === "schemas") return schemaList(state.schemas.schemas);
+  if (tab === "families") return familyList(state.abstractions.schema_families, state.abstractions.concept_types);
   if (tab === "hypotheses") return hypothesisList([...state.hypotheses.causal, ...state.hypotheses.temporal]);
   if (tab === "graph") return graphView(state.dependency_graph);
-  return languageView(state.schemas.schemas);
+  return languageView(state.schemas.schemas, state.abstractions);
 }
 
 function conceptList(concepts: Concept[], graph: Graph): string {
@@ -263,6 +268,24 @@ function schemaList(schemas: Schema[]): string {
   </div>`;
 }
 
+function familyList(families: SchemaFamily[], conceptTypes: ConceptType[]): string {
+  if (!families.length && !conceptTypes.length) return emptyState("No higher-order abstractions", "Schema families and typed parents must reduce description length after their complexity charge.");
+  return `<div class="card-list">
+    ${families.map((family) => `<article class="symbol-card family-card">
+      <div class="symbol-title"><span class="type-icon family">F</span><div><strong>${actionName(family.action_id)} → ${family.result_predicates.map(escapeHtml).join(", ")}</strong><small>${short(family.family_id, 24)}</small></div><span class="utility">+${family.utility.toFixed(1)} U</span></div>
+      <p>${family.shared_context.map(escapeHtml).join(" ∧ ") || "context-invariant family"}</p>
+      <footer><span>${family.member_schemas.length} schemas</span><span>${family.support} support</span><span>${family.raw_description_length} → ${family.compiled_description_length} units</span></footer>
+      <details><summary>Member evidence</summary><code>${family.member_schemas.map(escapeHtml).join("\n")}</code></details>
+    </article>`).join("")}
+    ${conceptTypes.map((conceptType) => `<article class="symbol-card type-card">
+      <div class="symbol-title"><span class="type-icon concept-type">T</span><div><strong>${escapeHtml(conceptType.name)}</strong><small>${short(conceptType.type_id, 24)}</small></div><span class="utility">+${conceptType.utility.toFixed(1)} U</span></div>
+      <p>Typed parent of ${conceptType.children.length} evidence-backed concepts.</p>
+      <footer><span>${conceptType.support} support</span><span>${conceptType.complexity} cost</span><span>${conceptType.raw_description_length} → ${conceptType.compiled_description_length}</span></footer>
+      <details><summary>Children & evidence</summary><code>${conceptType.children.map(escapeHtml).join("\n")}</code></details>
+    </article>`).join("")}
+  </div>`;
+}
+
 function hypothesisList(items: Hypothesis[]): string {
   if (!items.length) return emptyState("No hypotheses yet", "Controlled action/effect and temporal comparisons accumulate online.");
   return `<div class="card-list compact-list">${items.map((item) => `<article class="symbol-card">
@@ -276,8 +299,9 @@ function graphView(graph: Graph): string {
   const width = 760;
   const height = 330;
   const positions = new Map(graph.nodes.map((node, index) => {
-    const lane = ({ concept: 0, causal_hypothesis: 1, temporal_hypothesis: 1, schema: 2 } as Record<string, number>)[node.kind] ?? 1;
-    const inLane = graph.nodes.filter((other) => (({ concept: 0, causal_hypothesis: 1, temporal_hypothesis: 1, schema: 2 } as Record<string, number>)[other.kind] ?? 1) === lane);
+    const lanes = { concept: 0, concept_type: 0, language_operator: 0, causal_hypothesis: 1, temporal_hypothesis: 1, language_version: 1, schema_family: 1, schema: 2 } as Record<string, number>;
+    const lane = lanes[node.kind] ?? 1;
+    const inLane = graph.nodes.filter((other) => (lanes[other.kind] ?? 1) === lane);
     const laneIndex = inLane.findIndex((other) => other.id === node.id);
     return [node.id, { x: 100 + lane * 280, y: 45 + laneIndex * (260 / Math.max(1, inLane.length - 1)) }] as const;
   }));
@@ -298,12 +322,14 @@ function predicateInventory(schemas: Schema[]): string[] {
   return [...new Set(terms.map((term) => term.split("(", 1)[0] ?? term))].sort();
 }
 
-function languageView(schemas: Schema[]): string {
+function languageView(schemas: Schema[], abstractions: ReplayStep["symbolic_state"]["abstractions"]): string {
   const predicates = predicateInventory(schemas);
+  const currentVersion = abstractions.language_history.at(-1);
   return `<div class="language-view">
-    <div class="language-version"><small>CURRENT REPRESENTATION</small><strong>${escapeHtml(replay.trace.agent_version)}</strong><span>trace format v${replay.trace.format_version} · immutable typed atoms</span></div>
+    <div class="language-version"><small>CURRENT REPRESENTATION</small><strong>${escapeHtml(currentVersion?.version_id ?? replay.trace.agent_version)}</strong><span>trace format v${replay.trace.format_version} · ${abstractions.language_operators.length} compositional operators · utility ${currentVersion?.utility.toFixed(1) ?? "0.0"}</span></div>
     <div><h3>Observed predicate vocabulary</h3><div class="chips">${predicates.map((item) => `<code>${escapeHtml(item)}</code>`).join("") || "<span class='empty'>No predicates observed.</span>"}</div></div>
-    <div class="language-history"><span class="current"></span><article><small>ACTIVE</small><strong>Primitive atom language</strong><p>Language evolution is evidence-gated; no invented operator has yet displaced this representation.</p></article></div>
+    ${abstractions.language_operators.map((operator) => `<article class="language-operator"><div><small>COMPILED OPERATOR</small><strong>${escapeHtml(operator.signature)}</strong></div><code>${escapeHtml(operator.algebra)}</code><p>Replaces ${operator.replaces.map(escapeHtml).join(", ")} · ${operator.support} support · ${operator.raw_description_length} → ${operator.compiled_description_length} units · +${operator.utility.toFixed(1)} utility</p></article>`).join("")}
+    <div class="language-timeline">${abstractions.language_history.map((version, index) => `<div class="language-history"><span class="${index === abstractions.language_history.length - 1 ? "current" : ""}"></span><article><small>${index === abstractions.language_history.length - 1 ? "ACTIVE" : "ANCESTOR"}</small><strong>${escapeHtml(version.version_id)}</strong><p>${version.operators.length ? `${version.operators.length} operators from ${version.evidence.length} evidence schemas` : "Primitive typed atom language."}</p></article></div>`).join("")}</div>
   </div>`;
 }
 
@@ -421,9 +447,9 @@ function candidateInspector(item: CandidateRecord, all: CandidateRecord[]): stri
   const changes = keys.filter((key) => parent && parent.candidate.config[key] !== item.candidate.config[key]);
   return `<div class="candidate-detail">
     <div class="candidate-title"><span class="${item.pareto ? "pareto-badge" : ""}">${item.pareto ? "PARETO" : `GEN ${item.candidate.generation}`}</span><strong>${short(item.candidate.candidate_id, 28)}</strong></div>
-    <p>${escapeHtml(item.candidate.rationale)}</p>
+    <p>${escapeHtml(item.candidate.rationale)} <code>via ${escapeHtml(item.candidate.mutation_source)}</code></p>
     <div class="diff">${parent ? (changes.map((key) => `<div><code>${escapeHtml(key)}</code><del>${escapeHtml(parent.candidate.config[key])}</del><ins>${escapeHtml(item.candidate.config[key])}</ins></div>`).join("") || `<span class="empty">No structural configuration change.</span>`) : `<span class="empty">Root genome; no parent diff.</span>`}</div>
-    <div class="regression"><small>REGRESSION RETENTION</small><strong>${item.fitness ? percent(item.fitness.deterministic_replay_rate) : "not evaluated"}</strong><span>${item.fitness?.schema_description_length ?? "—"} description units · ${item.fitness?.mean_schema_reliability ? percent(item.fitness.mean_schema_reliability) : "0%"} reliability</span></div>
+    <div class="regression"><small>REGRESSION RETENTION</small><strong>${item.fitness ? percent(item.fitness.deterministic_replay_rate) : "not evaluated"}</strong><span>${item.fitness?.schema_description_length ?? "—"} description units · ${item.fitness?.abstraction_description_savings ?? 0} compiled savings · ${item.fitness?.mean_schema_reliability ? percent(item.fitness.mean_schema_reliability) : "0%"} reliability</span></div>
   </div>`;
 }
 

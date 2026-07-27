@@ -17,9 +17,10 @@ closure tests, and a network-disabled packaged smoke test.
 `reflector evaluate TRACE` currently reports actions, resets, transitions,
 level advances, failed experiments, schema/concept counts, mean schema
 reliability, causal/temporal hypothesis counts, planner expansions, symbolic
-description length, recoverable redundancy, counterfactual replay savings, and
-deterministic replay rate. These are initial operational approximations, not
-claims that epistemic compression has already been solved.
+description length, schema-family/concept-type/language-operator counts,
+abstraction description savings, recoverable redundancy, counterfactual replay
+savings, and deterministic replay rate. These are operational approximations,
+not claims that epistemic compression has already been solved.
 
 `reflector ablations TRACE` runs the same recorded observations through:
 
@@ -28,7 +29,9 @@ claims that epistemic compression has already been solved.
 - no counterfactual utility requirement;
 - no schema-complexity charge;
 - no explicit experiments;
-- no planner.
+- no planner;
+- no hierarchy complexity pressure;
+- flat concepts with reflecting abstraction disabled.
 
 These trace-only ablations measure representational and policy divergence.
 They do not replace environment reruns when measuring score or action savings.
@@ -42,8 +45,9 @@ RHAE improvement.
 
 Candidates are ranked without collapsing all evidence into one scalar. The
 current Pareto objectives maximize recorded level advances, deterministic
-replay retention, and schema reliability, and minimize planner expansions and
-schema description length. A candidate is accepted into the archive only when
+replay retention, schema reliability, and abstraction description savings,
+and minimize planner expansions and schema description length. A candidate is
+accepted into the archive only when
 no evaluated candidate dominates it on all objectives. This is an experiment
 archive, not yet an automatic promotion to the Kaggle default.
 
@@ -68,8 +72,7 @@ expansions, prediction accuracy, schema/concept description length, reuse,
 duplicates, contradictions, orphans, replay savings, regression retention,
 transformed-holdout performance, and improvement over their parent.
 
-Still required as their mechanisms arrive: no hierarchy pressure, score-only
-evolution, no LLM mutation, and flat versus typed concepts. The existing
-`no_*` ablations cover the mechanisms already implemented. An abstraction is
-accepted only when its measured benefit pays for its added complexity without
-breaking the Kaggle gate.
+`reflector evolution-ablations` compares the Pareto archive with score-only
+selection and excludes descendants proposed by the optional LLM provider.
+An abstraction is accepted only when its measured benefit pays for its added
+complexity without breaking the Kaggle gate.

@@ -3,7 +3,12 @@ import json
 import pytest
 
 from reflector.cli import demo_trace
-from reflector.evolver import descendants, root_candidate, run_experiment
+from reflector.evolver import (
+    descendants,
+    evaluate_evolution_ablations,
+    root_candidate,
+    run_experiment,
+)
 from reflector.experiments import ExperimentManifest, ExperimentStore
 from reflector.mind import MindConfig
 from reflector.mutations import (
@@ -67,6 +72,7 @@ def test_mutations_are_constrained_and_create_lineage() -> None:
     (child,) = descendants(parent, (provider,), {})
     assert child.parent_id == parent.candidate_id
     assert child.generation == 1
+    assert child.mutation_source == "DeterministicMutationProvider"
     assert child.config.planner_max_expansions == 16
     with pytest.raises(ValueError, match="unknown"):
         MutationProposal.from_dict(
@@ -83,6 +89,24 @@ def test_pareto_archive_keeps_nondominated_candidates() -> None:
     worse = Fitness(1, 1.0, 0.7, 20, 30)
     archive = pareto_archive(((first, better), (second, worse)))
     assert archive == ((first, better),)
+
+
+def test_evolution_ablation_matrix_separates_pressure_and_llm_source() -> None:
+    root = root_candidate()
+    llm = Candidate.create(
+        MindConfig(information_weight=2.0),
+        parent_id=root.candidate_id,
+        generation=1,
+        rationale="remote proposal",
+        mutation_source="OpenAICompatibleMutationProvider",
+    )
+    root_fitness = Fitness(1, 1.0, 0.8, 10, 20, 3)
+    llm_fitness = Fitness(2, 0.5, 0.7, 20, 25, 5)
+    report = evaluate_evolution_ablations(
+        ((root, root_fitness), (llm, llm_fitness))
+    )
+    assert report["score_only_evolution"] == (llm.candidate_id,)
+    assert report["no_llm_mutation"] == (root.candidate_id,)
 
 
 def test_manifest_store_and_lineage_round_trip(tmp_path) -> None:

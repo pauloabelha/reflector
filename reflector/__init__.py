@@ -1,5 +1,12 @@
 """Offline symbolic agent shared by every Reflector execution surface."""
 
+from .abstraction import (
+    AbstractionStore,
+    ConceptType,
+    LanguageOperator,
+    LanguageVersion,
+    SchemaFamily,
+)
 from .causal import (
     CausalHypothesis,
     Experiment,
@@ -24,8 +31,10 @@ from .trace import EpisodeTrace, TraceStep
 
 __all__ = [
     "Atom",
+    "AbstractionStore",
     "CausalHypothesis",
     "ConceptStore",
+    "ConceptType",
     "Decision",
     "DependencyEdge",
     "DependencyGraph",
@@ -34,12 +43,15 @@ __all__ = [
     "Experiment",
     "Goal",
     "HypothesisStore",
+    "LanguageOperator",
+    "LanguageVersion",
     "MindConfig",
     "ObjectState",
     "Observation",
     "Plan",
     "Scene",
     "Schema",
+    "SchemaFamily",
     "SchemaStore",
     "SymbolicMind",
     "SymbolicPlanner",

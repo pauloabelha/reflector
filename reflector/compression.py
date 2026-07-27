@@ -20,6 +20,8 @@ class RedundancyReport:
     equivalent_schema_groups: int
     equivalent_schemas: int
     forgotten_inferences: int
+    abstraction_description_savings: int
+    language_description_savings: int
     raw_symbolic_description_length: int
     recoverable_redundancy: int
 
@@ -115,6 +117,22 @@ def analyze_redundancy(
         len(result) for item in observed for result in item.result_signature()
     )
     equivalent_count = sum(len(group) - 1 for group in equivalent_groups)
+    abstraction_savings = round(
+        sum(
+            item.utility
+            for item in policy.mind.abstractions.schema_families.values()
+        )
+        + sum(
+            item.utility
+            for item in policy.mind.abstractions.concept_types.values()
+        )
+    )
+    language_savings = round(
+        sum(
+            item.utility
+            for item in policy.mind.abstractions.language_operators.values()
+        )
+    )
     recoverable = (
         repeated_rediscoveries
         + repeated_planning
@@ -127,6 +145,8 @@ def analyze_redundancy(
         equivalent_schema_groups=len(equivalent_groups),
         equivalent_schemas=equivalent_count,
         forgotten_inferences=forgotten,
+        abstraction_description_savings=abstraction_savings,
+        language_description_savings=language_savings,
         raw_symbolic_description_length=raw_length,
         recoverable_redundancy=recoverable,
     )

@@ -18,6 +18,9 @@ def test_analysis_reconstructs_symbolic_state_and_explanations() -> None:
     final = analysis["final_symbolic_state"]
     assert final["schemas"]["schemas"]
     assert final["hypotheses"]["causal"]
+    assert final["abstractions"]["language_history"][0][
+        "version_id"
+    ] == "language-v1-primitives"
     assert analysis["steps"][0]["recorded_decision"]["reason"]
 
 

@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .causal import HypothesisStore
 from .schemas import ConceptStore, SchemaStore
+
+if TYPE_CHECKING:
+    from .abstraction import AbstractionStore
 
 
 @dataclass(frozen=True, order=True, slots=True)
@@ -27,6 +30,7 @@ class DependencyGraph:
         schemas: SchemaStore,
         concepts: ConceptStore,
         hypotheses: HypothesisStore,
+        abstractions: AbstractionStore | None = None,
     ) -> "DependencyGraph":
         graph = cls()
         for schema in schemas.schemas.values():
@@ -56,6 +60,41 @@ class DependencyGraph:
                     )
         for temporal_hypothesis in hypotheses.temporal.values():
             graph.nodes[temporal_hypothesis.hypothesis_id] = "temporal_hypothesis"
+        if abstractions is not None:
+            for family in abstractions.schema_families.values():
+                graph.nodes[family.family_id] = "schema_family"
+                for member in family.member_schemas:
+                    graph.edges.add(
+                        DependencyEdge(family.family_id, "abstracts", member)
+                    )
+            for concept_type in abstractions.concept_types.values():
+                graph.nodes[concept_type.type_id] = "concept_type"
+                for child in concept_type.children:
+                    graph.edges.add(
+                        DependencyEdge(concept_type.type_id, "parent_of", child)
+                    )
+            for operator in abstractions.language_operators.values():
+                graph.nodes[operator.operator_id] = "language_operator"
+                for evidence in operator.evidence:
+                    graph.edges.add(
+                        DependencyEdge(
+                            operator.operator_id, "compiled_from", evidence
+                        )
+                    )
+            for version in abstractions.language_history:
+                graph.nodes[version.version_id] = "language_version"
+                if version.parent_id is not None:
+                    graph.edges.add(
+                        DependencyEdge(
+                            version.version_id, "descends_from", version.parent_id
+                        )
+                    )
+                for operator_id in version.operators:
+                    graph.edges.add(
+                        DependencyEdge(
+                            version.version_id, "uses", operator_id
+                        )
+                    )
         return graph
 
     def to_dict(self) -> dict[str, Any]:

@@ -60,6 +60,9 @@ def _aggregate(metrics: dict[str, TraceMetrics]) -> Fitness:
         schema_description_length=sum(
             item.schema_description_length for item in values
         ),
+        abstraction_description_savings=sum(
+            item.abstraction_description_savings for item in values
+        ),
     )
 
 

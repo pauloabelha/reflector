@@ -26,6 +26,13 @@ search over learned event operators toward the current `level_advanced` goal
 and reports every expansion. Its proposal is one scored input to action
 selection, not an unbounded side channel.
 
+`AbstractionStore` performs three bounded reflection passes after transition
+learning. It groups cross-context schemas by action/result predicates, groups
+synthetic concepts by evidence-backed kind, and detects rotation vocabularies
+that can be represented by an orientation algebra. It retains only
+description-positive structures and records their evidence, residual cost, and
+language ancestry. The store is part of the shared Kaggle closure.
+
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
 questions, plans, decisions, and concept births used during inference. Replay,
 compression analysis, and evaluation consume those records without a parallel
@@ -40,11 +47,11 @@ symbolic package must never depend outward on an evolver, LLM, trace analyzer,
 SQLite store, API server, or frontend. `tests/integration/test_kaggle_contract.py`
 enforces the current inference closure.
 
-The Kaggle closure contains symbolic values, perception, schemas, causal and
-temporal hypotheses, planning, dependency graphs, mind, policy, and trace
-types. Evaluation, compression analysis, transforms, experiment persistence,
-population selection, mutation providers, sandbox orchestration, evolver, and
-CLI modules remain outside it.
+The Kaggle closure contains symbolic values, perception, schemas, reflecting
+abstraction, causal and temporal hypotheses, planning, dependency graphs, mind,
+policy, and trace types. Evaluation, compression analysis, transforms,
+experiment persistence, population selection, mutation providers, sandbox
+orchestration, evolver, and CLI modules remain outside it.
 Future inference mechanisms must be added to the explicit overlay allowlist
 and pass its import closure test.
 

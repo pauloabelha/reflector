@@ -16,6 +16,9 @@ from .symbolic import (
     Transition,
 )
 
+TRACE_FORMAT_VERSION = 1
+AGENT_VERSION = "reflector-symbolic-v3"
+
 
 @dataclass(frozen=True, slots=True)
 class TraceStep:
@@ -26,6 +29,7 @@ class TraceStep:
     incoming_transition: Transition | None
     new_concepts: tuple[str, ...] = ()
     new_hypotheses: tuple[str, ...] = ()
+    new_abstractions: tuple[str, ...] = ()
     experiment: str | None = None
     plan_actions: tuple[int, ...] = ()
     planner_expansions: int = 0
@@ -43,6 +47,7 @@ class TraceStep:
             ),
             "new_concepts": list(self.new_concepts),
             "new_hypotheses": list(self.new_hypotheses),
+            "new_abstractions": list(self.new_abstractions),
             "experiment": self.experiment,
             "plan_actions": list(self.plan_actions),
             "planner_expansions": self.planner_expansions,
@@ -76,6 +81,9 @@ class TraceStep:
                     area=item["area"],
                     bbox=tuple(item["bbox"]),
                     centroid=tuple(item["centroid"]),
+                    shape=tuple(
+                        tuple(point) for point in item.get("shape", ())
+                    ),
                 )
                 for item in raw_scene["objects"]
             ),
@@ -108,6 +116,7 @@ class TraceStep:
             incoming_transition=transition,
             new_concepts=tuple(value["new_concepts"]),
             new_hypotheses=tuple(value.get("new_hypotheses", ())),
+            new_abstractions=tuple(value.get("new_abstractions", ())),
             experiment=value.get("experiment"),
             plan_actions=tuple(value.get("plan_actions", ())),
             planner_expansions=value.get("planner_expansions", 0),
@@ -118,8 +127,8 @@ class TraceStep:
 class EpisodeTrace:
     """In-memory trace owned by the symbolic agent; persistence is optional."""
 
-    format_version: int = 1
-    agent_version: str = "reflector-symbolic-v2"
+    format_version: int = TRACE_FORMAT_VERSION
+    agent_version: str = AGENT_VERSION
     steps: list[TraceStep] = field(default_factory=list)
     terminal_observation: Observation | None = None
     terminal_scene: Scene | None = None
@@ -185,6 +194,7 @@ class EpisodeTrace:
                     "incoming_transition": terminal["transition"],
                     "new_concepts": [],
                     "new_hypotheses": [],
+                    "new_abstractions": [],
                     "experiment": None,
                     "plan_actions": [],
                     "planner_expansions": 0,

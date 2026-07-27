@@ -20,6 +20,7 @@ OVERLAY_FILES = (
     "reflector/symbolic.py",
     "reflector/perception.py",
     "reflector/schemas.py",
+    "reflector/abstraction.py",
     "reflector/causal.py",
     "reflector/planning.py",
     "reflector/graph.py",

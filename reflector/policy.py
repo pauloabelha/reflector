@@ -104,6 +104,7 @@ class SymbolicPolicy:
                     for concept in update.new_concepts
                 ),
                 new_hypotheses=update.new_hypotheses,
+                new_abstractions=update.new_abstractions,
                 experiment=(
                     self.mind.last_experiment.question
                     if self.mind.last_experiment is not None

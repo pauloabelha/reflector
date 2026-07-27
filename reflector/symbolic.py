@@ -90,6 +90,7 @@ class ObjectState:
     area: int
     bbox: tuple[int, int, int, int]
     centroid: tuple[int, int]
+    shape: tuple[tuple[int, int], ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -134,6 +135,11 @@ class Scene:
                 "object_count",
                 "color_present",
                 "action_available",
+                "left_of",
+                "above",
+                "aligned_x",
+                "aligned_y",
+                "touching",
             }
         }
         return tuple(sorted(reusable))

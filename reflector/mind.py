@@ -6,6 +6,7 @@ import math
 from dataclasses import asdict, dataclass, fields
 from typing import Any
 
+from .abstraction import AbstractionStore
 from .causal import Experiment, HypothesisStore
 from .graph import DependencyGraph
 from .perception import SceneTracker
@@ -20,6 +21,7 @@ class MindUpdate:
     transition: Transition | None
     new_concepts: tuple[SyntheticConcept, ...]
     new_hypotheses: tuple[str, ...]
+    new_abstractions: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,11 +33,13 @@ class MindConfig:
     enable_schema_complexity_pressure: bool = True
     enable_experiments: bool = True
     enable_planning: bool = True
+    enable_reflecting_abstraction: bool = True
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
     information_weight: float = 1.0
     experiment_weight: float = 0.25
     plan_weight: float = 10.0
+    hierarchy_complexity_pressure: float = 1.0
 
     def __post_init__(self) -> None:
         for name in (
@@ -44,6 +48,7 @@ class MindConfig:
             "enable_schema_complexity_pressure",
             "enable_experiments",
             "enable_planning",
+            "enable_reflecting_abstraction",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -59,6 +64,7 @@ class MindConfig:
             "information_weight",
             "experiment_weight",
             "plan_weight",
+            "hierarchy_complexity_pressure",
         ):
             value = getattr(self, name)
             if type(value) not in (int, float):
@@ -94,6 +100,9 @@ class SymbolicMind:
             ),
         )
         self.hypotheses = HypothesisStore()
+        self.abstractions = AbstractionStore(
+            complexity_pressure=self.config.hierarchy_complexity_pressure
+        )
         self.planner = SymbolicPlanner(
             max_depth=self.config.planner_max_depth,
             max_expansions=self.config.planner_max_expansions,
@@ -109,6 +118,7 @@ class SymbolicMind:
         transition = None
         new_concepts: tuple[SyntheticConcept, ...] = ()
         new_hypotheses: tuple[str, ...] = ()
+        new_abstractions: tuple[str, ...] = ()
         if self._last_scene is not None and previous_decision is not None:
             transition = self.tracker.transition(
                 self._last_scene,
@@ -127,8 +137,18 @@ class SymbolicMind:
                     for concept_id, concept in sorted(self.concepts.concepts.items())
                     if concept_id not in before
                 )
+            if self.config.enable_reflecting_abstraction:
+                new_abstractions = self.abstractions.reflect(
+                    self.schemas, self.concepts
+                )
         self._last_scene = scene
-        return MindUpdate(scene, transition, new_concepts, new_hypotheses)
+        return MindUpdate(
+            scene,
+            transition,
+            new_concepts,
+            new_hypotheses,
+            new_abstractions,
+        )
 
     def select_action(self, legal_actions: tuple[int, ...]) -> tuple[int, str]:
         """Balance predicted effects with information gain.
@@ -210,12 +230,16 @@ class SymbolicMind:
 
     def snapshot(self) -> dict[str, Any]:
         graph = DependencyGraph.build(
-            self.schemas, self.concepts, self.hypotheses
+            self.schemas,
+            self.concepts,
+            self.hypotheses,
+            self.abstractions,
         )
         return {
             "schemas": self.schemas.to_dict(),
             "concepts": self.concepts.to_dict(),
             "hypotheses": self.hypotheses.to_dict(),
+            "abstractions": self.abstractions.to_dict(),
             "last_experiment": (
                 self.last_experiment.to_dict()
                 if self.last_experiment is not None
