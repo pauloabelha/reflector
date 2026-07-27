@@ -13,9 +13,9 @@ not contain a separately maintained policy.
 
 ## 2026-07-27 — Inference closure is explicit
 
-The Kaggle overlay allowlist is four files. Optional LLM agents retained from
-the starter are development-only and are no longer imported by the core agent
-registry.
+The Kaggle overlay uses an explicit inference-file allowlist. Optional LLM
+agents retained from the starter are development-only and are no longer
+imported by the core agent registry.
 
 ## 2026-07-27 — Offline compatibility is executable
 
@@ -29,3 +29,11 @@ schemas, and synthetic concepts. Visual objects are same-color connected
 components with greedy persistent identity matching. These are explicit
 approximations. Concepts require repeated action-effect evidence and positive
 utility after a description-complexity charge.
+
+## 2026-07-27 — Counterfactual claims are bounded by observable evidence
+
+Trace replay may credit description-length reduction, avoided rediscovery, and
+repeated planner work. It must report zero action savings unless an actual
+branch-and-replay environment run supplies the counterfactual outcomes.
+Causal strength is an observed action/control rate difference with discounted
+confidence, not a claim of complete causal identification.

@@ -56,6 +56,7 @@ class SyntheticConcept:
     support: int
     utility: float
     complexity: int
+    counterfactual_savings: float
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -67,6 +68,7 @@ class SyntheticConcept:
             "support": self.support,
             "utility": self.utility,
             "complexity": self.complexity,
+            "counterfactual_savings": self.counterfactual_savings,
         }
 
 
@@ -135,6 +137,38 @@ class SchemaStore:
                 total += 200.0 * count
         return total / trials
 
+    def event_probability(self, action_id: int, event_kind: str) -> float:
+        trials = self.action_trials.get(action_id, 0)
+        if not trials:
+            return 0.0
+        support = sum(
+            count
+            for event, count in self.action_events.get(action_id, {}).items()
+            if event.split("(", 1)[0] == event_kind
+        )
+        return support / trials
+
+    def event_kinds(self, action_id: int) -> tuple[str, ...]:
+        return tuple(
+            sorted(
+                {
+                    event.split("(", 1)[0]
+                    for event in self.action_events.get(action_id, {})
+                }
+            )
+        )
+
+    def event_text_probability(self, action_id: int, token: str) -> float:
+        trials = self.action_trials.get(action_id, 0)
+        if not trials:
+            return 0.0
+        support = sum(
+            count
+            for event, count in self.action_events.get(action_id, {}).items()
+            if token in event
+        )
+        return support / trials
+
     @staticmethod
     def _id(
         context: tuple[Atom, ...], action_id: int, result: tuple[str, ...]
@@ -165,6 +199,8 @@ class ConceptStore:
     concepts: dict[str, SyntheticConcept] = field(default_factory=dict)
     minimum_support: int = 2
     minimum_utility: float = 0.0
+    complexity_pressure: float = 1.0
+    require_counterfactual_utility: bool = True
 
     def reflect(self, schemas: SchemaStore) -> tuple[SyntheticConcept, ...]:
         proposals: list[SyntheticConcept] = []
@@ -184,7 +220,21 @@ class ConceptStore:
                     )
                 definition = (f"action({action_id})", event)
                 complexity = sum(len(term) for term in definition)
-                utility = support * reliability - complexity / 100.0
+                raw_description = support * len(event)
+                compiled_description = (
+                    self.complexity_pressure * complexity + support * 4
+                )
+                rediscovery_savings = max(0, support - 1) * 10
+                counterfactual_savings = (
+                    raw_description
+                    + rediscovery_savings
+                    - compiled_description
+                )
+                utility = (
+                    counterfactual_savings * reliability
+                    if self.require_counterfactual_utility
+                    else support * reliability
+                )
                 evidence = tuple(
                     sorted(
                         schema.schema_id
@@ -208,6 +258,7 @@ class ConceptStore:
                         support=support,
                         utility=utility,
                         complexity=complexity,
+                        counterfactual_savings=counterfactual_savings,
                     )
                     self.concepts[concept_id] = concept
                     proposals.append(concept)

@@ -7,7 +7,7 @@ the web UI, a database, or development-time services.
 
 from __future__ import annotations
 
-from .mind import MindUpdate, SymbolicMind
+from .mind import MindConfig, MindUpdate, SymbolicMind
 from .symbolic import Decision, Observation
 from .trace import EpisodeTrace, TraceStep
 
@@ -20,10 +20,10 @@ class SymbolicPolicy:
     TERMINAL = "WIN"
     NEEDS_RESET = frozenset({"NOT_PLAYED", "GAME_OVER", "NOT_STARTED"})
 
-    def __init__(self) -> None:
+    def __init__(self, config: MindConfig | None = None) -> None:
         self.observations_seen = 0
         self.action_counts: dict[int, int] = {}
-        self.mind = SymbolicMind()
+        self.mind = SymbolicMind(config)
         self.trace = EpisodeTrace()
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
@@ -53,6 +53,8 @@ class SymbolicPolicy:
     def choose_action(self, observation: Observation) -> Decision:
         update = self.observe(observation)
         if observation.state in self.NEEDS_RESET:
+            self.mind.last_experiment = None
+            self.mind.last_plan = None
             decision = self._record(Decision(self.RESET, reason="reset-required"))
             self._append_trace(observation, decision, update)
             self._previous_decision = decision
@@ -101,6 +103,18 @@ class SymbolicPolicy:
                     concept.concept_id
                     for concept in update.new_concepts
                 ),
+                new_hypotheses=update.new_hypotheses,
+                experiment=(
+                    self.mind.last_experiment.question
+                    if self.mind.last_experiment is not None
+                    else None
+                ),
+                plan_actions=(
+                    self.mind.last_plan.actions
+                    if self.mind.last_plan is not None
+                    else ()
+                ),
+                planner_expansions=self.mind.planner.last_expansions,
             )
         )
 

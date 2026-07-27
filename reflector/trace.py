@@ -25,6 +25,10 @@ class TraceStep:
     scene: Scene
     incoming_transition: Transition | None
     new_concepts: tuple[str, ...] = ()
+    new_hypotheses: tuple[str, ...] = ()
+    experiment: str | None = None
+    plan_actions: tuple[int, ...] = ()
+    planner_expansions: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -38,6 +42,10 @@ class TraceStep:
                 else None
             ),
             "new_concepts": list(self.new_concepts),
+            "new_hypotheses": list(self.new_hypotheses),
+            "experiment": self.experiment,
+            "plan_actions": list(self.plan_actions),
+            "planner_expansions": self.planner_expansions,
         }
 
     @classmethod
@@ -99,6 +107,10 @@ class TraceStep:
             scene=scene,
             incoming_transition=transition,
             new_concepts=tuple(value["new_concepts"]),
+            new_hypotheses=tuple(value.get("new_hypotheses", ())),
+            experiment=value.get("experiment"),
+            plan_actions=tuple(value.get("plan_actions", ())),
+            planner_expansions=value.get("planner_expansions", 0),
         )
 
 
@@ -107,7 +119,7 @@ class EpisodeTrace:
     """In-memory trace owned by the symbolic agent; persistence is optional."""
 
     format_version: int = 1
-    agent_version: str = "reflector-symbolic-v1"
+    agent_version: str = "reflector-symbolic-v2"
     steps: list[TraceStep] = field(default_factory=list)
     terminal_observation: Observation | None = None
     terminal_scene: Scene | None = None
@@ -172,6 +184,10 @@ class EpisodeTrace:
                     "scene": terminal["scene"],
                     "incoming_transition": terminal["transition"],
                     "new_concepts": [],
+                    "new_hypotheses": [],
+                    "experiment": None,
+                    "plan_actions": [],
+                    "planner_expansions": 0,
                 }
             )
             trace.finish(

@@ -72,6 +72,10 @@ Generate, replay, evaluate, and compare deterministic traces:
 .venv/bin/reflector replay /tmp/reflector-trace.json
 .venv/bin/reflector evaluate /tmp/reflector-trace.json
 .venv/bin/reflector compare /tmp/reflector-trace.json
+.venv/bin/reflector compression /tmp/reflector-trace.json
+.venv/bin/reflector counterfactual /tmp/reflector-trace.json
+.venv/bin/reflector ablations /tmp/reflector-trace.json
+.venv/bin/reflector graph /tmp/reflector-trace.json
 ```
 
 ## Governing invariant
@@ -86,10 +90,12 @@ See [KAGGLE.md](KAGGLE.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 
 ## Status
 
-The end-to-end Kaggle-compatible baseline and first online schema-learning
-slice exist. Richer relations, causal experiments, planning, counterfactual
-epistemic compression, population evolution, and the replay UI remain
-subsequent evidence-driven layers.
+The end-to-end Kaggle baseline now includes online schemas, causal and temporal
+hypotheses, explicit experiment questions, bounded event-goal planning, and
+utility-gated synthetic concepts. Development tooling measures recoverable
+redundancy and counterfactual representation savings without claiming
+unobservable action savings. Richer relations, hierarchy/language reflection,
+population evolution, transformed holdouts, and the replay UI remain.
 
 ## License
 

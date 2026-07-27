@@ -6,7 +6,9 @@ import argparse
 import json
 from pathlib import Path
 
-from .evaluation import compare_traces, evaluate_trace
+from .compression import analyze_redundancy, counterfactual_replay, replay_policy
+from .evaluation import compare_traces, evaluate_ablations, evaluate_trace
+from .graph import DependencyGraph
 from .policy import SymbolicPolicy
 from .symbolic import Observation
 from .trace import EpisodeTrace
@@ -59,6 +61,18 @@ def main() -> None:
     compare = commands.add_parser("compare")
     compare.add_argument("traces", nargs="+", type=Path)
 
+    compression = commands.add_parser("compression")
+    compression.add_argument("trace", type=Path)
+
+    counterfactual = commands.add_parser("counterfactual")
+    counterfactual.add_argument("trace", type=Path)
+
+    ablations = commands.add_parser("ablations")
+    ablations.add_argument("trace", type=Path)
+
+    graph = commands.add_parser("graph")
+    graph.add_argument("trace", type=Path)
+
     args = parser.parse_args()
     if args.command == "trace-demo":
         trace = demo_trace()
@@ -70,9 +84,35 @@ def main() -> None:
         print(json.dumps(report, indent=2))
     elif args.command == "evaluate":
         print(json.dumps(evaluate_trace(load_trace(args.trace)).to_dict(), indent=2))
-    else:
+    elif args.command == "compare":
         traces = {path.stem: load_trace(path) for path in args.traces}
         print(json.dumps(compare_traces(traces), indent=2))
+    elif args.command == "compression":
+        print(
+            json.dumps(
+                analyze_redundancy(load_trace(args.trace)).to_dict(), indent=2
+            )
+        )
+    elif args.command == "counterfactual":
+        print(
+            json.dumps(
+                [
+                    item.to_dict()
+                    for item in counterfactual_replay(load_trace(args.trace))
+                ],
+                indent=2,
+            )
+        )
+    elif args.command == "ablations":
+        print(json.dumps(evaluate_ablations(load_trace(args.trace)), indent=2))
+    else:
+        policy = replay_policy(load_trace(args.trace))
+        dependency_graph = DependencyGraph.build(
+            policy.mind.schemas,
+            policy.mind.concepts,
+            policy.mind.hypotheses,
+        )
+        print(json.dumps(dependency_graph.to_dict(), indent=2))
 
 
 if __name__ == "__main__":

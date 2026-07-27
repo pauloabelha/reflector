@@ -22,8 +22,10 @@ advance it, close the scorecard, and exit.
 
 ## Boundaries
 
-- `reflector/` is the shared symbolic inference package. Keep it deterministic,
-  typed, serializable, and free of development services.
+- The Kaggle allowlist in `reflector/kaggle.py` is the shared symbolic
+  inference closure. Keep it deterministic, typed, serializable, and free of
+  development services. `evaluation.py`, `compression.py`, and `cli.py` are
+  development consumers and must remain outside that allowlist.
 - `agents/templates/reflector_agent.py` is a thin official-starter adapter. It
   must delegate decisions to `reflector/`.
 - `reflector/kaggle.py` owns export and compatibility verification. Generated
