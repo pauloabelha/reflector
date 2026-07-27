@@ -19,6 +19,7 @@ from .mind import MindConfig, SymbolicMind
 from .planning import Goal, Plan, SymbolicPlanner
 from .policy import SymbolicPolicy
 from .reinforcement import (
+    ConditionalAccommodation,
     StructuralAssessment,
     StructuralCreditLedger,
     StructuralEligibility,
@@ -47,6 +48,7 @@ __all__ = [
     "CausalHypothesis",
     "ConceptStore",
     "ConceptType",
+    "ConditionalAccommodation",
     "Decision",
     "DependencyEdge",
     "DependencyGraph",

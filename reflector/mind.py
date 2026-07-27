@@ -43,6 +43,7 @@ class MindConfig:
     enable_experiments: bool = True
     enable_planning: bool = True
     enable_reflecting_abstraction: bool = True
+    enable_accommodation: bool = True
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
     information_weight: float = 1.0
@@ -58,6 +59,7 @@ class MindConfig:
             "enable_experiments",
             "enable_planning",
             "enable_reflecting_abstraction",
+            "enable_accommodation",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -168,11 +170,19 @@ class SymbolicMind:
                 transition.action_id,
                 transition.context,
             )
+            if self.config.enable_accommodation:
+                prediction = self.reinforcement.accommodate_prediction(
+                    action_id=transition.action_id,
+                    context=transition.context,
+                    prediction=prediction,
+                )
             assessment_id = self.reinforcement.assess(
                 transition,
                 prediction,
             )
             new_assessments = (assessment_id,)
+            if self.config.enable_accommodation:
+                new_abstractions = self.reinforcement.last_constructed
             schema = self.schemas.observe(transition)
             new_hypotheses = self.hypotheses.observe(transition, self.schemas)
             if self.config.enable_reflecting_abstraction:
@@ -283,6 +293,23 @@ class SymbolicMind:
                 context,
                 transfer_value=transfer_value,
             )
+            if self.config.enable_accommodation:
+                accommodated = self.reinforcement.accommodate_prediction(
+                    action_id=action,
+                    context=context,
+                    prediction=self.schemas.predict(action, context),
+                )
+                if accommodated is not None and any(
+                    evidence in self.reinforcement.accommodations
+                    and self.reinforcement.accommodations[
+                        evidence
+                    ].proposition
+                    in {"level_advanced", "WIN", "GAME_OVER"}
+                    for evidence in accommodated.evidence
+                ):
+                    predicted = self.schemas.result_value(
+                        accommodated.result
+                    )
             information = 1.0 / math.sqrt(trials + 1)
             experiment = experiment_by_action.get(action)
             experiment_bonus = (

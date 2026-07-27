@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass, field, replace
 from typing import Any, Iterable
 
 from .schemas import SchemaPrediction
-from .symbolic import Transition
+from .symbolic import Atom, Transition
 
 
 def _identifier(*parts: str) -> str:
@@ -61,6 +61,27 @@ class StructuralEligibility:
         return asdict(self)
 
 
+@dataclass(frozen=True, slots=True)
+class ConditionalAccommodation:
+    """A learned context condition that adds or suppresses a proposition."""
+
+    accommodation_id: str
+    action_id: int
+    condition: tuple[str, ...]
+    operation: str
+    proposition: str
+    evidence: tuple[str, ...]
+    support: int
+    confidence: float
+    raw_description_length: int
+    compiled_description_length: int
+    complexity: int
+    utility: float
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
 @dataclass(slots=True)
 class StructuralCreditLedger:
     """Route prediction error to evidence-backed structural responses."""
@@ -69,6 +90,13 @@ class StructuralCreditLedger:
     assessments: dict[str, StructuralAssessment] = field(default_factory=dict)
     eligibility: list[StructuralEligibility] = field(default_factory=list)
     credited_structures: dict[str, dict[str, int]] = field(default_factory=dict)
+    accommodations: dict[str, ConditionalAccommodation] = field(
+        default_factory=dict
+    )
+    accommodation_history: dict[str, ConditionalAccommodation] = field(
+        default_factory=dict
+    )
+    last_constructed: tuple[str, ...] = ()
 
     def assess(
         self,
@@ -112,7 +140,7 @@ class StructuralCreditLedger:
         )
         perturbation = (
             tuple(sorted(set(context) - shared))
-            if contradicted and prediction is not None
+            if (contradicted or unpredicted) and prediction is not None
             else ()
         )
         response = (
@@ -161,7 +189,146 @@ class StructuralCreditLedger:
                     )
                 )
         self.eligibility = self.eligibility[-256:]
+        self.last_constructed = self._rebuild_accommodations()
         return assessment_id
+
+    def accommodate_prediction(
+        self,
+        *,
+        action_id: int,
+        context: tuple[Atom, ...],
+        prediction: SchemaPrediction | None,
+    ) -> SchemaPrediction | None:
+        """Apply the most specific evidenced proposition amendments."""
+
+        current = {atom.text() for atom in context}
+        applicable = [
+            item
+            for item in self.accommodations.values()
+            if item.action_id == action_id
+            and set(item.condition).issubset(current)
+        ]
+        if not applicable:
+            return prediction
+        chosen: dict[str, ConditionalAccommodation] = {}
+        for item in applicable:
+            previous = chosen.get(item.proposition)
+            if previous is None or (
+                len(item.condition),
+                item.support,
+                item.confidence,
+                item.accommodation_id,
+            ) > (
+                len(previous.condition),
+                previous.support,
+                previous.confidence,
+                previous.accommodation_id,
+            ):
+                chosen[item.proposition] = item
+        result = list(prediction.result if prediction is not None else ())
+        for proposition, item in sorted(chosen.items()):
+            result = [term for term in result if _kind(term) != proposition]
+            if item.operation == "add":
+                result.append(proposition)
+        evidence = set(prediction.evidence if prediction is not None else ())
+        evidence.update(item.accommodation_id for item in chosen.values())
+        contexts = (
+            prediction.evidence_contexts if prediction is not None else ()
+        )
+        support = min(item.support for item in chosen.values())
+        confidence = min(item.confidence for item in chosen.values())
+        return SchemaPrediction(
+            action_id=action_id,
+            result=tuple(sorted(set(result))),
+            evidence=tuple(sorted(evidence)),
+            evidence_contexts=contexts,
+            support=support,
+            confidence=confidence,
+            transferred=True,
+        )
+
+    def _rebuild_accommodations(self) -> tuple[str, ...]:
+        before = set(self.accommodations)
+        grouped: dict[
+            tuple[int, str, str], list[StructuralAssessment]
+        ] = {}
+        for assessment in self.assessments.values():
+            if not assessment.perturbation:
+                continue
+            for term in assessment.contradicted:
+                grouped.setdefault(
+                    (assessment.action_id, "remove", _kind(term)), []
+                ).append(assessment)
+            for term in assessment.unpredicted:
+                grouped.setdefault(
+                    (assessment.action_id, "add", _kind(term)), []
+                ).append(assessment)
+
+        rebuilt: dict[str, ConditionalAccommodation] = {}
+        for (action_id, operation, proposition), evidence in sorted(
+            grouped.items()
+        ):
+            if len(evidence) < 2:
+                continue
+            condition = tuple(
+                sorted(
+                    set.intersection(
+                        *(set(item.perturbation) for item in evidence)
+                    )
+                )
+            )
+            if not condition:
+                continue
+            evidence_ids = tuple(
+                sorted(item.assessment_id for item in evidence)
+            )
+            raw = sum(
+                sum(len(term) for term in item.context)
+                + sum(len(term) for term in item.predicted)
+                + sum(len(term) for term in item.observed)
+                for item in evidence
+            )
+            complexity = (
+                len(str(action_id))
+                + len(operation)
+                + len(proposition)
+                + sum(len(term) for term in condition)
+                + 12
+            )
+            compiled = complexity + len(evidence) * 4
+            utility = raw - compiled
+            if utility <= 0:
+                continue
+            accommodation_id = (
+                "accommodation-"
+                + hashlib.sha256(
+                    "|".join(
+                        (
+                            str(action_id),
+                            operation,
+                            proposition,
+                            *condition,
+                        )
+                    ).encode()
+                ).hexdigest()[:12]
+            )
+            rebuilt[accommodation_id] = ConditionalAccommodation(
+                accommodation_id=accommodation_id,
+                action_id=action_id,
+                condition=condition,
+                operation=operation,
+                proposition=proposition,
+                evidence=evidence_ids,
+                support=len(evidence),
+                confidence=(len(evidence) + 1) / (len(evidence) + 2),
+                raw_description_length=raw,
+                compiled_description_length=compiled,
+                complexity=complexity,
+                utility=utility,
+            )
+        self.accommodations = rebuilt
+        self.accommodation_history.update(rebuilt)
+        return tuple(sorted(set(rebuilt) - before))
 
     def integrate(
         self,
@@ -230,4 +397,18 @@ class StructuralCreditLedger:
                     self.credited_structures.items()
                 )
             },
+            "accommodations": [
+                item.to_dict()
+                for item in sorted(
+                    self.accommodations.values(),
+                    key=lambda value: value.accommodation_id,
+                )
+            ],
+            "accommodation_history": [
+                item.to_dict()
+                for item in sorted(
+                    self.accommodation_history.values(),
+                    key=lambda value: value.accommodation_id,
+                )
+            ],
         }

@@ -118,3 +118,51 @@ def test_integration_requires_an_evidenced_conditional_family() -> None:
     )
     assert integrated == (assessment_id,)
     assert ledger.assessments[assessment_id].response == "integrate"
+
+
+def test_repeated_disequilibrium_constructs_a_transferable_condition() -> None:
+    prediction = SchemaPrediction(
+        action_id=1,
+        result=("level_advanced(scene)", "object_moved(piece,1,0)"),
+        evidence=("schema-unblocked",),
+        evidence_contexts=(("mode(ordinary)",),),
+        support=4,
+        confidence=0.8,
+        transferred=True,
+    )
+    ledger = StructuralCreditLedger()
+    for index, incidental in enumerate(("layout(a)", "layout(b)")):
+        ledger.assess(
+            _transition(
+                index,
+                (
+                    Atom("mode", ("ordinary",)),
+                    Atom("barrier_present"),
+                    Atom.parse(incidental),
+                ),
+                (Event("no_observed_change"),),
+            ),
+            prediction,
+        )
+
+    assert ledger.last_constructed
+    held_out = (
+        Atom("mode", ("ordinary",)),
+        Atom("barrier_present"),
+        Atom("layout", ("held_out",)),
+    )
+    accommodated = ledger.accommodate_prediction(
+        action_id=1,
+        context=held_out,
+        prediction=prediction,
+    )
+
+    assert accommodated is not None
+    assert accommodated.transferred
+    assert "level_advanced(scene)" not in accommodated.result
+    assert "object_moved(piece,1,0)" not in accommodated.result
+    assert "no_observed_change" in accommodated.result
+    assert any(
+        item.condition == ("barrier_present",)
+        for item in ledger.accommodations.values()
+    )

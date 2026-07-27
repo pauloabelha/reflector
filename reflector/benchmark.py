@@ -257,6 +257,133 @@ class TransferSequenceGame:
             self._progress = 0
 
 
+class AccommodationGame:
+    """Equal-history construction followed by novel-context interventions.
+
+    Training actions are forced, so every policy receives the same actions and
+    level-progress sequence.  Barrier contexts share only a color predicate;
+    layouts and incidental effects vary.  Test layouts never appeared during
+    training.
+    """
+
+    family = "constructive_accommodation"
+
+    def __init__(self, seed: int) -> None:
+        rng = random.Random(seed)
+        self._training = (
+            (False, 1, True),
+            (False, 2, False),
+            (False, 1, True),
+            (False, 2, False),
+            (True, 1, False),
+            (True, 2, True),
+            (True, 1, False),
+            (True, 2, True),
+        )
+        held_out = [False, True] * 4
+        rng.shuffle(held_out)
+        self._held_out = tuple(held_out)
+        positions = [
+            (x, y)
+            for y in range(1, 8)
+            for x in range(1, 8)
+            if (x, y) not in {(4, 4), (7, 7)}
+        ]
+        rng.shuffle(positions)
+        self._positions = tuple(
+            positions[: len(self._training) + len(self._held_out)]
+        )
+        barrier_candidates = [
+            (x, y) for y in range(1, 8) for x in range(1, 8)
+        ]
+        rng.shuffle(barrier_candidates)
+        barrier_positions: list[tuple[int, int]] = []
+        for mover in self._positions:
+            reflected = (8 - mover[0], 8 - mover[1])
+            barrier = next(
+                candidate
+                for candidate in barrier_candidates
+                if candidate not in {mover, reflected}
+                and candidate not in barrier_positions[-3:]
+            )
+            barrier_positions.append(barrier)
+        self._barrier_positions = tuple(barrier_positions)
+        self.training_actions = tuple(item[1] for item in self._training)
+        self.training_progress: list[int] = []
+        self.test_first_attempts = 0
+        self.test_correct_first = 0
+        self._last_attempted_phase = -1
+        self.total_levels = sum(
+            int(item[2]) for item in self._training
+        ) + len(self._held_out)
+        self.oracle_actions = len(self._training) + len(self._held_out)
+        self._phase = 0
+        self._levels = 0
+        self._won = False
+
+    @property
+    def _training_phase(self) -> bool:
+        return self._phase < len(self._training)
+
+    def _barrier(self) -> bool:
+        if self._training_phase:
+            return self._training[self._phase][0]
+        index = min(
+            self._phase - len(self._training),
+            len(self._held_out) - 1,
+        )
+        return self._held_out[index]
+
+    def _frame(self) -> tuple[tuple[int, ...], ...]:
+        index = min(self._phase, len(self._positions) - 1)
+        x, y = self._positions[index]
+        grid = [[0] * 9 for _ in range(9)]
+        grid[y][x] = 2
+        # A second moving object makes incidental transition signatures differ.
+        grid[8 - y][8 - x] = 3
+        if self._barrier():
+            barrier_x, barrier_y = self._barrier_positions[index]
+            grid[barrier_y][barrier_x] = 5
+        return tuple(tuple(row) for row in grid)
+
+    def observation(self) -> Observation:
+        if self._won:
+            actions: tuple[int, ...] = ()
+        elif self._training_phase:
+            actions = (self._training[self._phase][1],)
+        else:
+            actions = (1, 2)
+        return Observation.create(
+            state="WIN" if self._won else "NOT_FINISHED",
+            available_actions=actions,
+            frame=self._frame(),
+            levels_completed=self._levels,
+        )
+
+    def step(self, decision: Decision) -> None:
+        if self._training_phase:
+            _barrier, forced, succeeds = self._training[self._phase]
+            if decision.action_id != forced:
+                return
+            if succeeds:
+                self._levels += 1
+            self.training_progress.append(self._levels)
+            self._phase += 1
+            return
+
+        target = 2 if self._barrier() else 1
+        if self._last_attempted_phase != self._phase:
+            self.test_first_attempts += 1
+            self.test_correct_first += int(decision.action_id == target)
+            self._last_attempted_phase = self._phase
+        if decision.action_id == target:
+            self._levels += 1
+            self._phase += 1
+            self._won = self._phase == (
+                len(self._training) + len(self._held_out)
+            )
+
+
 class SeededRandomPolicy:
     def __init__(self, seed: int) -> None:
         self._rng = random.Random(seed)
@@ -367,6 +494,11 @@ class RunResult:
     won: bool
     legal: bool
     oracle_actions: int
+    training_actions: tuple[int, ...] = ()
+    training_progress: tuple[int, ...] = ()
+    held_out_first_attempt_accuracy: float = 0.0
+    structures_constructed: int = 0
+    target_condition_constructed: bool = False
 
     @property
     def completion(self) -> float:
@@ -402,6 +534,17 @@ FAMILIES_V2 = (
     "procedure_transfer",
 )
 
+POLICY_NAMES_V3 = (
+    "full",
+    "constructive",
+    "fixed_ontology",
+    "score_only",
+    "context_table",
+    "seeded_random",
+)
+
+FAMILIES_V3 = ("constructive_accommodation",)
+
 
 def _policy(name: str, seed: int) -> BenchmarkPolicy:
     if name == "full":
@@ -423,6 +566,16 @@ def _policy(name: str, seed: int) -> BenchmarkPolicy:
         )
     if name == "score_only":
         return ScoreOnlyPolicy()
+    if name in {"constructive", "fixed_ontology"}:
+        return SymbolicPolicy(
+            MindConfig(
+                enable_concepts=False,
+                enable_experiments=False,
+                enable_planning=False,
+                enable_reflecting_abstraction=False,
+                enable_accommodation=name == "constructive",
+            )
+        )
     if name == "context_table":
         return ContextTablePolicy()
     if name == "rare_color":
@@ -445,6 +598,8 @@ def _game(family: str, seed: int) -> DiagnosticGame:
         return NovelContextGame(seed)
     if family == "procedure_transfer":
         return TransferSequenceGame(seed)
+    if family == "constructive_accommodation":
+        return AccommodationGame(seed)
     raise ValueError(f"unknown family: {family}")
 
 
@@ -456,6 +611,7 @@ def _budget(family: str) -> int:
         "temporal_sequence": 128,
         "novel_context_transfer": 56,
         "procedure_transfer": 160,
+        "constructive_accommodation": 40,
     }[family]
 
 
@@ -472,6 +628,30 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         actions += 1
         observation = game.observation()
     policy.observe(observation)
+    training_actions = tuple(getattr(game, "training_actions", ()))
+    training_progress = tuple(getattr(game, "training_progress", ()))
+    test_attempts = int(getattr(game, "test_first_attempts", 0))
+    test_correct = int(getattr(game, "test_correct_first", 0))
+    structures = (
+        len(policy.mind.reinforcement.accommodations)
+        if isinstance(policy, SymbolicPolicy)
+        and policy.mind.config.enable_accommodation
+        else 0
+    )
+    target_condition = (
+        any(
+            item.action_id == 2
+            and item.operation == "add"
+            and item.proposition == "level_advanced"
+            and "color_present(5)" in item.condition
+            for item in (
+                policy.mind.reinforcement.accommodation_history.values()
+            )
+        )
+        if isinstance(policy, SymbolicPolicy)
+        and policy.mind.config.enable_accommodation
+        else False
+    )
     return RunResult(
         policy_name,
         family,
@@ -482,6 +662,11 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         observation.state == "WIN",
         legal,
         game.oracle_actions,
+        training_actions,
+        training_progress,
+        test_correct / test_attempts if test_attempts else 0.0,
+        structures,
+        target_condition,
     )
 
 
@@ -510,12 +695,19 @@ def run_validation(
         raise ValueError("seed_count must be at least 2")
     if seed_start < 0:
         raise ValueError("seed_start must be non-negative")
-    if suite not in {"v1", "v2"}:
-        raise ValueError("suite must be v1 or v2")
-    families = FAMILIES if suite == "v1" else FAMILIES_V2
+    if suite not in {"v1", "v2", "v3"}:
+        raise ValueError("suite must be v1, v2, or v3")
+    families = (
+        FAMILIES
+        if suite == "v1"
+        else FAMILIES_V2
+        if suite == "v2"
+        else FAMILIES_V3
+    )
+    policies = POLICY_NAMES if suite != "v3" else POLICY_NAMES_V3
     results = [
         run_one(policy, family, seed)
-        for policy in POLICY_NAMES
+        for policy in policies
         for family in families
         for seed in range(seed_start, seed_start + seed_count)
     ]
@@ -548,6 +740,100 @@ def run_validation(
     full_score = _bootstrap_difference(
         values("full", "completion"), values("score_only", "completion")
     )
+    if suite == "v3":
+        constructive = _bootstrap_difference(
+            values("constructive", "efficiency"),
+            values("fixed_ontology", "efficiency"),
+        )
+        intervention_accuracy = _bootstrap_difference(
+            values("constructive", "held_out_first_attempt_accuracy"),
+            values("fixed_ontology", "held_out_first_attempt_accuracy"),
+        )
+        histories = {
+            (item.seed, item.training_actions, item.training_progress)
+            for item in results
+        }
+        histories_by_seed = {
+            seed: {
+                (item.training_actions, item.training_progress)
+                for item in results
+                if item.seed == seed
+            }
+            for seed in range(seed_start, seed_start + seed_count)
+        }
+        criteria = {
+            "all_actions_legal": all(item.legal for item in results),
+            "identical_training_histories": (
+                bool(histories)
+                and all(len(items) == 1 for items in histories_by_seed.values())
+            ),
+            "constructive_completion_is_one": mean(
+                values(
+                    "constructive",
+                    "completion",
+                    "constructive_accommodation",
+                )
+            )
+            == 1.0,
+            "full_completion_at_least_0_95": mean(
+                values("full", "completion", "constructive_accommodation")
+            )
+            >= 0.95,
+            "accommodation_improves_efficiency_ci": constructive[1] > 0.0,
+            "accommodation_improves_intervention_accuracy_ci": (
+                intervention_accuracy[1] > 0.0
+            ),
+            "constructive_builds_evidenced_conditions": mean(
+                values("constructive", "structures_constructed")
+            )
+            >= 2.0,
+            "constructive_builds_target_condition": mean(
+                values("constructive", "target_condition_constructed")
+            )
+            == 1.0,
+            "fixed_ontology_builds_no_conditions": mean(
+                values("fixed_ontology", "structures_constructed")
+            )
+            == 0.0,
+        }
+        v3_payload: dict[str, object] = {
+            "benchmark": "reflector_symbolic_diagnostics_v3",
+            "claim_scope": (
+                "equal-history constructive accommodation mechanism test; "
+                "not an ARC score"
+            ),
+            "seed_start": seed_start,
+            "seed_count": seed_count,
+            "policies": list(policies),
+            "families": list(families),
+            "aggregates": aggregates,
+            "paired_differences": {
+                "constructive_minus_fixed_ontology_efficiency": {
+                    "mean": constructive[0],
+                    "ci95": [constructive[1], constructive[2]],
+                },
+                "constructive_minus_fixed_ontology_intervention_accuracy": {
+                    "mean": intervention_accuracy[0],
+                    "ci95": [
+                        intervention_accuracy[1],
+                        intervention_accuracy[2],
+                    ],
+                },
+            },
+            "training_history_variants": len(histories),
+            "criteria": criteria,
+            "causal_thesis_supported": all(criteria.values()),
+            "verdict": "supported" if all(criteria.values()) else "not_supported",
+            "runs": [asdict(item) for item in results],
+        }
+        canonical = json.dumps(
+            v3_payload, sort_keys=True, separators=(",", ":")
+        )
+        v3_payload["result_sha256"] = hashlib.sha256(
+            canonical.encode()
+        ).hexdigest()
+        return v3_payload
+
     abstraction = _bootstrap_difference(
         values("full", "efficiency"), values("no_abstraction", "efficiency")
     )
@@ -611,7 +897,7 @@ def run_validation(
         "claim_scope": "synthetic interactive mechanism tests; not an ARC score",
         "seed_start": seed_start,
         "seed_count": seed_count,
-        "policies": list(POLICY_NAMES),
+        "policies": list(policies),
         "families": list(families),
         "aggregates": aggregates,
         "paired_differences": {

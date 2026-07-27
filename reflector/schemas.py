@@ -255,8 +255,11 @@ class SchemaStore:
 
         grouped: dict[tuple[str, ...], list[Schema]] = {}
         for schema in selected:
-            grouped.setdefault(schema.result, []).append(schema)
-        result, members = max(
+            predicate_signature = tuple(
+                sorted(term.split("(", 1)[0] for term in schema.result)
+            )
+            grouped.setdefault(predicate_signature, []).append(schema)
+        _signature, members = max(
             grouped.items(),
             key=lambda item: (
                 sum(schema.support for schema in item[1]),
@@ -264,6 +267,15 @@ class SchemaStore:
                 item[0],
             ),
         )
+        representative = max(
+            members,
+            key=lambda schema: (
+                schema.support,
+                schema.confirmations,
+                schema.result,
+            ),
+        )
+        result = representative.result
         support = sum(schema.support for schema in members)
         opportunities = sum(schema.opportunities for schema in members)
         confirmations = sum(schema.confirmations for schema in members)
