@@ -21,3 +21,11 @@ registry.
 
 `kaggle_smoke_test` uses a clean directory and Linux network namespace rather
 than treating an environment flag as evidence that networking is disabled.
+
+## 2026-07-27 — First symbolic language is constrained and empirical
+
+The first DSL is composed of typed atoms, objects, events, scenes, transitions,
+schemas, and synthetic concepts. Visual objects are same-color connected
+components with greedy persistent identity matching. These are explicit
+approximations. Concepts require repeated action-effect evidence and positive
+utility after a description-complexity charge.

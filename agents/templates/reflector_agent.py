@@ -21,6 +21,12 @@ class ReflectorAgent(Agent):
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
         return latest_frame.state is GameState.WIN
 
+    def append_frame(self, frame: FrameData) -> None:
+        """Preserve the official lifecycle while learning terminal results."""
+
+        super().append_frame(frame)
+        self.policy.observe(self._observation(frame))
+
     def choose_action(
         self, frames: list[FrameData], latest_frame: FrameData
     ) -> GameAction:
@@ -29,7 +35,7 @@ class ReflectorAgent(Agent):
         action = GameAction.from_id(decision.action_id)
         if decision.data:
             action.set_data(decision.data_dict())
-        action.reasoning = {"policy": "reflector-symbolic-v0", "why": decision.reason}
+        action.reasoning = {"policy": "reflector-symbolic-v1", "why": decision.reason}
         return action
 
     @staticmethod

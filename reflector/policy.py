@@ -7,46 +7,9 @@ the web UI, a database, or development-time services.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Iterable, Sequence
-
-
-@dataclass(frozen=True, slots=True)
-class Observation:
-    """Serializable subset of an ARC observation needed by the baseline."""
-
-    state: str
-    available_actions: tuple[int, ...]
-    frame: tuple[tuple[int, ...], ...] = ()
-    levels_completed: int = 0
-
-    @classmethod
-    def create(
-        cls,
-        *,
-        state: str,
-        available_actions: Iterable[int],
-        frame: Sequence[Sequence[int]] | None = None,
-        levels_completed: int = 0,
-    ) -> "Observation":
-        return cls(
-            state=state,
-            available_actions=tuple(sorted(set(available_actions))),
-            frame=tuple(tuple(int(cell) for cell in row) for row in (frame or ())),
-            levels_completed=levels_completed,
-        )
-
-
-@dataclass(frozen=True, slots=True)
-class Decision:
-    """A legal ARC action plus optional data and a symbolic explanation."""
-
-    action_id: int
-    data: tuple[tuple[str, int], ...] = ()
-    reason: str = ""
-
-    def data_dict(self) -> dict[str, int]:
-        return dict(self.data)
+from .mind import MindUpdate, SymbolicMind
+from .symbolic import Decision, Observation
+from .trace import EpisodeTrace, TraceStep
 
 
 class SymbolicPolicy:
@@ -60,14 +23,40 @@ class SymbolicPolicy:
     def __init__(self) -> None:
         self.observations_seen = 0
         self.action_counts: dict[int, int] = {}
+        self.mind = SymbolicMind()
+        self.trace = EpisodeTrace()
+        self._previous_decision: Decision | None = None
+        self._last_observation: Observation | None = None
+        self._last_update: MindUpdate | None = None
 
     def is_done(self, observation: Observation) -> bool:
         return observation.state == self.TERMINAL
 
-    def choose_action(self, observation: Observation) -> Decision:
+    def observe(self, observation: Observation) -> MindUpdate:
+        """Ingest each environment observation exactly once.
+
+        The official agent adapter calls this from ``append_frame`` so terminal
+        results are learned even though the official loop never chooses another
+        action after WIN.
+        """
+
+        if observation == self._last_observation and self._last_update is not None:
+            return self._last_update
         self.observations_seen += 1
+        update = self.mind.ingest(observation, self._previous_decision)
+        self._last_observation = observation
+        self._last_update = update
+        if self.is_done(observation):
+            self.trace.finish(observation, update.scene, update.transition)
+        return update
+
+    def choose_action(self, observation: Observation) -> Decision:
+        update = self.observe(observation)
         if observation.state in self.NEEDS_RESET:
-            return self._record(Decision(self.RESET, reason="reset-required"))
+            decision = self._record(Decision(self.RESET, reason="reset-required"))
+            self._append_trace(observation, decision, update)
+            self._previous_decision = decision
+            return decision
 
         legal = tuple(
             action
@@ -77,20 +66,42 @@ class SymbolicPolicy:
         if not legal:
             raise ValueError("active observation exposes no legal non-reset action")
 
-        # Canonical action order is the minimal symbolic baseline. It is stable,
-        # reproducible, and cannot accidentally emit an unavailable enum member.
-        action_id = min(legal)
+        action_id, reason = self.mind.select_action(legal)
         if action_id == self.COMPLEX:
             x, y = self._symbolic_click(observation.frame)
-            return self._record(
+            decision = self._record(
                 Decision(
                     action_id,
                     data=(("x", x), ("y", y)),
-                    reason="canonical-action:rare-color-centroid",
+                    reason=f"{reason}:rare-color-centroid",
                 )
             )
-        return self._record(
-            Decision(action_id, reason="canonical-lowest-legal-action")
+        else:
+            decision = self._record(Decision(action_id, reason=reason))
+        self._append_trace(observation, decision, update)
+        self._previous_decision = decision
+        return decision
+
+    def _append_trace(
+        self: "SymbolicPolicy",
+        observation: Observation,
+        decision: Decision,
+        update: MindUpdate,
+    ) -> None:
+        # The concrete type is deliberately accessed structurally to keep the
+        # public policy surface compact.
+        self.trace.append(
+            TraceStep(
+                index=len(self.trace.steps),
+                observation=observation,
+                decision=decision,
+                scene=update.scene,
+                incoming_transition=update.transition,
+                new_concepts=tuple(
+                    concept.concept_id
+                    for concept in update.new_concepts
+                ),
+            )
         )
 
     def _record(self, decision: Decision) -> Decision:

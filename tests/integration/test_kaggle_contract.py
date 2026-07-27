@@ -1,3 +1,4 @@
+import ast
 import io
 import json
 import zipfile
@@ -12,6 +13,27 @@ def test_overlay_contains_only_inference_path() -> None:
         assert "openai" not in names
         assert "web" not in names
         assert "database" not in names
+
+
+def test_overlay_import_closure_excludes_development_services() -> None:
+    forbidden = {"openai", "langchain", "flask", "sqlite3", "requests"}
+    with zipfile.ZipFile(io.BytesIO(build_overlay())) as archive:
+        for name in archive.namelist():
+            if not name.endswith(".py"):
+                continue
+            tree = ast.parse(archive.read(name), filename=name)
+            imports = {
+                alias.name.split(".", 1)[0]
+                for node in ast.walk(tree)
+                if isinstance(node, ast.Import)
+                for alias in node.names
+            }
+            imports.update(
+                node.module.split(".", 1)[0]
+                for node in ast.walk(tree)
+                if isinstance(node, ast.ImportFrom) and node.module
+            )
+            assert not imports & forbidden, (name, imports & forbidden)
 
 
 def test_export_preserves_kaggle_contract(tmp_path) -> None:

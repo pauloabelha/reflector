@@ -8,10 +8,12 @@ ARC-AGI-3. It is built directly on the official
 > Kaggle compatibility is the foundational architectural constraint from the
 > first commit.
 
-The first descendant is intentionally small. It converts an official ARC frame
-into an immutable symbolic observation, selects only from the reported legal
-actions, uses a deterministic rare-color centroid for complex click actions,
-and runs with no LLM, internet, remote service, database, or web server.
+The first learning descendant converts official frames into connected objects
+with persistent identities, derives facts and events, induces empirical
+context + action → result schemas, attributes action effects, and retains
+synthetic concepts only when repeated evidence pays their complexity cost. It
+selects only reported legal actions and runs with no LLM, internet, remote
+service, database, or web server.
 
 ## Verified baseline
 
@@ -63,6 +65,15 @@ RECORDINGS_DIR=recordings \
   'from agents import Swarm; Swarm("reflector", "http://localhost:8001", ["bt11"]).main()'
 ```
 
+Generate, replay, evaluate, and compare deterministic traces:
+
+```bash
+.venv/bin/reflector trace-demo --output /tmp/reflector-trace.json
+.venv/bin/reflector replay /tmp/reflector-trace.json
+.venv/bin/reflector evaluate /tmp/reflector-trace.json
+.venv/bin/reflector compare /tmp/reflector-trace.json
+```
+
 ## Governing invariant
 
 Every accepted agent descendant must remain directly exportable as an offline
@@ -75,10 +86,10 @@ See [KAGGLE.md](KAGGLE.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 
 ## Status
 
-The end-to-end Kaggle-compatible symbolic baseline exists. Deeper schema
-induction, synthetic concepts, reflecting abstraction, epistemic compression,
-population evolution, and the replay UI are subsequent evidence-driven layers;
-they must preserve the invariant above.
+The end-to-end Kaggle-compatible baseline and first online schema-learning
+slice exist. Richer relations, causal experiments, planning, counterfactual
+epistemic compression, population evolution, and the replay UI remain
+subsequent evidence-driven layers.
 
 ## License
 

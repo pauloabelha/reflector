@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "reflector"
 version = "0.1.0"
@@ -31,6 +35,7 @@ agentops = [
 ]
 
 [project.scripts]
+reflector = "reflector.cli:main"
 reflector-kaggle = "reflector.kaggle:main"
 kaggle_smoke_test = "reflector.kaggle:smoke_test"
 
@@ -39,6 +44,9 @@ strict = true
 disallow_untyped_defs = true
 exclude = [
     "tests",
+    "agents",
+    "reflector/kaggle.py",
+    "reflector/kaggle_probe.py",
 ]
 plugins = []
 
@@ -48,3 +56,6 @@ extend-select = ["I"]
 [tool.setuptools.packages.find]
 include = ["reflector*", "agents*"]
 exclude = ["tests*", "recordings*"]
+
+[tool.uv]
+package = true

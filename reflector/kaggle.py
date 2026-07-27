@@ -17,7 +17,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OVERLAY_FILES = (
     "reflector/__init__.py",
+    "reflector/symbolic.py",
+    "reflector/perception.py",
+    "reflector/schemas.py",
+    "reflector/mind.py",
     "reflector/policy.py",
+    "reflector/trace.py",
     "agents/templates/reflector_agent.py",
     "agents/__init__.py",
 )

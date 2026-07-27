@@ -16,12 +16,16 @@ def test_official_swarm_runs_reflector_to_clean_termination(
     monkeypatch.setenv("ENVIRONMENTS_DIR", str(fixture))
     monkeypatch.setenv("RECORDINGS_DIR", str(tmp_path / "recordings"))
 
-    scorecard = Swarm(
+    swarm = Swarm(
         agent="reflector",
         ROOT_URL="http://localhost:8001",
         games=["bt11"],
-    ).main()
+    )
+    scorecard = swarm.main()
 
     assert scorecard is not None
     assert scorecard.environments[0].levels_completed == 5
     assert scorecard.score == 100.0
+    policy = swarm.agents[0].policy
+    assert policy.trace.terminal_observation is not None
+    assert policy.trace.terminal_observation.state == "WIN"
