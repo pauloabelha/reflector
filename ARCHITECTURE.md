@@ -6,8 +6,8 @@ Reflector has one inference core and several consumers.
 reflector.SymbolicPolicy
   ├── official Agent adapter ── official Swarm/Arcade ── local runs
   ├── generated Kaggle overlay ── official starter ── Kaggle gateway
-  ├── experiment runner (future)
-  ├── population evaluator (future)
+  ├── experiment runner ── transformed traces + SQLite
+  ├── population evaluator ── sandbox + Pareto archive
   └── replay API/UI (future)
 ```
 
@@ -42,6 +42,32 @@ enforces the current inference closure.
 
 The Kaggle closure contains symbolic values, perception, schemas, causal and
 temporal hypotheses, planning, dependency graphs, mind, policy, and trace
-types. Evaluation, compression analysis, and CLI modules remain outside it.
+types. Evaluation, compression analysis, transforms, experiment persistence,
+population selection, mutation providers, sandbox orchestration, evolver, and
+CLI modules remain outside it.
 Future inference mechanisms must be added to the explicit overlay allowlist
 and pass its import closure test.
+
+## Development control plane
+
+`MindConfig` is the deployable genome. It contains bounded booleans, planner
+limits, and action-selection weights, has a strict JSON representation, and is
+constructed by `SymbolicPolicy` on every execution surface. There is no
+research-only organism.
+
+`ExperimentManifest` hashes source traces and holdout seeds into a stable
+experiment identity. `ExperimentStore` keeps candidates, parent links,
+fitness, and detailed results in local SQLite. `MutationProvider` is a narrow
+interface: deterministic or optional remote providers return one structured
+configuration patch. Validation rejects unknown fields, compound values, and
+out-of-range settings before execution.
+
+`validate_candidate` starts a fresh interpreter with a clean environment and,
+by default, a disabled Linux network namespace. It executes the candidate
+twice over the original and color-permuted traces and rejects nondeterminism.
+The Pareto archive maximizes level evidence, replay retention, and schema
+reliability while minimizing planner expansions and description length.
+
+This control plane depends on the inference core. None of it is packaged in
+the Kaggle overlay, and the import-closure test permanently enforces that
+direction.

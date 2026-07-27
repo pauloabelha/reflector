@@ -78,6 +78,23 @@ Generate, replay, evaluate, and compare deterministic traces:
 .venv/bin/reflector graph /tmp/reflector-trace.json
 ```
 
+Run a reproducible population evaluation (network isolation is on by default):
+
+```bash
+.venv/bin/reflector population-evaluate \
+  /tmp/reflector-trace.json --db /tmp/reflector-experiments.sqlite
+.venv/bin/reflector evolve \
+  /tmp/reflector-trace.json --db /tmp/reflector-evolution.sqlite
+```
+
+`evolve` uses deterministic mutations unless an OpenAI-compatible JSON endpoint
+and model are explicitly supplied. Mutation providers can only propose
+validated `MindConfig` field changes; they cannot inject code. Every candidate
+is the same `SymbolicPolicy` used by Kaggle, executed twice in a clean
+network-disabled process, stored with its parent, and compared by a Pareto
+archive. Use `reflector lineage --db DB --experiment ID [--candidate ID]` to
+inspect the archive or one ancestry chain.
+
 ## Governing invariant
 
 Every accepted agent descendant must remain directly exportable as an offline
@@ -94,8 +111,11 @@ The end-to-end Kaggle baseline now includes online schemas, causal and temporal
 hypotheses, explicit experiment questions, bounded event-goal planning, and
 utility-gated synthetic concepts. Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
-unobservable action savings. Richer relations, hierarchy/language reflection,
-population evolution, transformed holdouts, and the replay UI remain.
+unobservable action savings. It also provides serializable constrained
+genomes, transformed trace holdouts, reproducible experiment manifests,
+SQLite lineage, Pareto selection, optional provider-neutral mutation proposals,
+and sandboxed population evaluation. Richer relations, hierarchy/language
+reflection, true environment holdouts, and the replay UI remain.
 
 ## License
 

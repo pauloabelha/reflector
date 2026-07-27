@@ -2,7 +2,6 @@ import os
 import shutil
 
 import pytest
-
 from arcengine import FrameData, GameState
 
 

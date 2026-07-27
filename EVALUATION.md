@@ -33,6 +33,28 @@ claims that epistemic compression has already been solved.
 These trace-only ablations measure representational and policy divergence.
 They do not replace environment reruns when measuring score or action savings.
 
+`reflector population-evaluate` adds seeded color-permutation holdouts and
+stores an immutable experiment manifest, candidates, detailed trace metrics,
+and lineage in SQLite. The transform preserves the observation/action protocol
+and recorded environment outcomes. It probes representational robustness; it
+does not simulate counterfactual game dynamics and therefore cannot establish
+RHAE improvement.
+
+Candidates are ranked without collapsing all evidence into one scalar. The
+current Pareto objectives maximize recorded level advances, deterministic
+replay retention, and schema reliability, and minimize planner expansions and
+schema description length. A candidate is accepted into the archive only when
+no evaluated candidate dominates it on all objectives. This is an experiment
+archive, not yet an automatic promotion to the Kaggle default.
+
+`reflector evolve` uses a deterministic proposal set by default. An explicitly
+configured OpenAI-compatible provider may suggest the same constrained JSON
+patches, but the response is untrusted input: unknown fields, nested values,
+invalid types, and settings outside hard inference bounds are rejected. The
+provider runs only in the development command. Candidate evaluation then runs
+the deployed package in a fresh network-disabled process, twice, and rejects
+nondeterminism.
+
 Research descendants will additionally report completion and RHAE score, action
 efficiency, resets, failed experiments, runtime, peak memory, planner
 expansions, prediction accuracy, schema/concept description length, reuse,
@@ -40,6 +62,7 @@ duplicates, contradictions, orphans, replay savings, regression retention,
 transformed-holdout performance, and improvement over their parent.
 
 Still required as their mechanisms arrive: no hierarchy pressure, score-only
-evolution, no LLM mutation, and flat versus typed concepts. An abstraction is
+evolution, no LLM mutation, and flat versus typed concepts. The existing
+`no_*` ablations cover the mechanisms already implemented. An abstraction is
 accepted only when its measured benefit pays for its added complexity without
 breaking the Kaggle gate.

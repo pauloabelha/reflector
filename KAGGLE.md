@@ -108,6 +108,7 @@ The command:
 8. advances the official environment;
 9. closes the scorecard and exits.
 
-CI also validates that the overlay contains only four inference files and that
-the generated notebook retains all gateway, mount, rerun, agent, and parquet
-contract markers.
+CI also validates that the overlay equals the explicit inference allowlist,
+excludes the evolver, mutation providers, SQLite store, sandbox, and other
+development services, and retains all gateway, mount, rerun, agent, and
+parquet contract markers in the generated notebook.

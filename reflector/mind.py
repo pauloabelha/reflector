@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, fields
 from typing import Any
 
 from .causal import Experiment, HypothesisStore
@@ -24,11 +24,58 @@ class MindUpdate:
 
 @dataclass(frozen=True, slots=True)
 class MindConfig:
+    """Serializable, constrained genome for every deployable agent descendant."""
+
     enable_concepts: bool = True
     enable_counterfactual_pressure: bool = True
     enable_schema_complexity_pressure: bool = True
     enable_experiments: bool = True
     enable_planning: bool = True
+    planner_max_depth: int = 3
+    planner_max_expansions: int = 64
+    information_weight: float = 1.0
+    experiment_weight: float = 0.25
+    plan_weight: float = 10.0
+
+    def __post_init__(self) -> None:
+        for name in (
+            "enable_concepts",
+            "enable_counterfactual_pressure",
+            "enable_schema_complexity_pressure",
+            "enable_experiments",
+            "enable_planning",
+        ):
+            if type(getattr(self, name)) is not bool:
+                raise ValueError(f"{name} must be a boolean")
+        if type(self.planner_max_depth) is not int:
+            raise ValueError("planner_max_depth must be an integer")
+        if type(self.planner_max_expansions) is not int:
+            raise ValueError("planner_max_expansions must be an integer")
+        if not 1 <= self.planner_max_depth <= 8:
+            raise ValueError("planner_max_depth must be between 1 and 8")
+        if not 1 <= self.planner_max_expansions <= 512:
+            raise ValueError("planner_max_expansions must be between 1 and 512")
+        for name in (
+            "information_weight",
+            "experiment_weight",
+            "plan_weight",
+        ):
+            value = getattr(self, name)
+            if type(value) not in (int, float):
+                raise ValueError(f"{name} must be numeric")
+            if not math.isfinite(value) or not 0.0 <= value <= 100.0:
+                raise ValueError(f"{name} must be finite and between 0 and 100")
+
+    def to_dict(self) -> dict[str, bool | int | float]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, value: dict[str, Any]) -> "MindConfig":
+        expected = {item.name for item in fields(cls)}
+        unknown = set(value) - expected
+        if unknown:
+            raise ValueError(f"unknown MindConfig fields: {sorted(unknown)}")
+        return cls(**value)
 
 
 class SymbolicMind:
@@ -47,7 +94,10 @@ class SymbolicMind:
             ),
         )
         self.hypotheses = HypothesisStore()
-        self.planner = SymbolicPlanner()
+        self.planner = SymbolicPlanner(
+            max_depth=self.config.planner_max_depth,
+            max_expansions=self.config.planner_max_expansions,
+        )
         self.last_experiment: Experiment | None = None
         self.last_plan: Plan | None = None
         self._last_scene: Scene | None = None
@@ -112,9 +162,13 @@ class SymbolicMind:
             predicted = self.schemas.action_value(action)
             information = 1.0 / math.sqrt(trials + 1)
             experiment = experiment_by_action.get(action)
-            experiment_bonus = experiment.score * 0.25 if experiment else 0.0
+            experiment_bonus = (
+                experiment.score * self.config.experiment_weight
+                if experiment
+                else 0.0
+            )
             plan_bonus = (
-                10.0 * self.last_plan.confidence
+                self.config.plan_weight * self.last_plan.confidence
                 if self.last_plan is not None
                 and self.last_plan.actions
                 and self.last_plan.actions[0] == action
@@ -122,7 +176,7 @@ class SymbolicMind:
             )
             score = (
                 predicted
-                + information
+                + information * self.config.information_weight
                 + experiment_bonus
                 + plan_bonus
                 - action / 1000.0

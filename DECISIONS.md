@@ -37,3 +37,18 @@ repeated planner work. It must report zero action savings unless an actual
 branch-and-replay environment run supplies the counterfactual outcomes.
 Causal strength is an observed action/control rate difference with discounted
 confidence, not a claim of complete causal identification.
+
+## 2026-07-27 — The deployed configuration is the evolutionary genome
+
+Population candidates are strict, bounded `MindConfig` values instantiated by
+the same `SymbolicPolicy` shipped to Kaggle. Mutation providers return
+untrusted structured patches; they cannot inject or replace policy code.
+Candidate validation runs twice in a fresh network-disabled process before
+SQLite persistence and Pareto comparison.
+
+## 2026-07-27 — Transformed traces are robustness probes, not game rollouts
+
+Seeded color permutations test representational retention while preserving
+recorded outcomes. They do not model counterfactual environment dynamics and
+cannot by themselves support claims about RHAE, action savings, or score
+improvement.
