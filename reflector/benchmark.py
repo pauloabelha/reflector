@@ -384,6 +384,151 @@ class AccommodationGame:
             )
 
 
+class TransformationGame:
+    """Forced operator learning, one goal demonstration, then composition."""
+
+    family = "transformation_composition"
+    _VECTORS = {
+        1: (1, 0),
+        2: (-1, 0),
+        3: (0, 1),
+        4: (0, -1),
+    }
+
+    def __init__(self, seed: int) -> None:
+        rng = random.Random(seed)
+        self._training = (1, 2, 3, 4, 1, 2, 3, 4, 1)
+        pairs: list[tuple[tuple[int, int], tuple[int, int]]] = []
+        displacements = [
+            (3, 0),
+            (-3, 0),
+            (0, 3),
+            (0, -3),
+            (2, 1),
+            (-2, 1),
+            (1, -2),
+            (-1, -2),
+        ]
+        rng.shuffle(displacements)
+        for dx, dy in displacements:
+            valid_starts = [
+                (x, y)
+                for y in range(1, 8)
+                for x in range(1, 8)
+                if 1 <= x + dx <= 7 and 1 <= y + dy <= 7
+            ]
+            mover = rng.choice(valid_starts)
+            pairs.append((mover, (mover[0] + dx, mover[1] + dy)))
+        self._held_out = tuple(pairs)
+        self._phase = 0
+        self._mover = (4, 4)
+        self._target: tuple[int, int] | None = None
+        self._levels = 0
+        self._won = False
+        self.training_actions = (*self._training, 1)
+        self.training_progress: list[int] = []
+        self.test_first_attempts = 0
+        self.test_correct_first = 0
+        self._last_attempted_phase = -1
+        self.total_levels = 1 + len(self._held_out)
+        self.oracle_actions = len(self.training_actions) + sum(
+            abs(mover[0] - target[0]) + abs(mover[1] - target[1]) - 1
+            for mover, target in self._held_out
+        )
+
+    @property
+    def _primitive_phase(self) -> bool:
+        return self._phase < len(self._training)
+
+    @property
+    def _demo_phase(self) -> bool:
+        return self._phase == len(self._training)
+
+    @property
+    def _test_index(self) -> int:
+        return self._phase - len(self._training) - 1
+
+    def _frame(self) -> tuple[tuple[int, ...], ...]:
+        grid = [[0] * 9 for _ in range(9)]
+        grid[self._mover[1]][self._mover[0]] = 2
+        if self._target is not None:
+            grid[self._target[1]][self._target[0]] = 8
+        return tuple(tuple(row) for row in grid)
+
+    def observation(self) -> Observation:
+        if self._won:
+            actions: tuple[int, ...] = ()
+        elif self._primitive_phase:
+            actions = (self._training[self._phase],)
+        elif self._demo_phase:
+            actions = (1,)
+        else:
+            actions = (1, 2, 3, 4)
+        return Observation.create(
+            state="WIN" if self._won else "NOT_FINISHED",
+            available_actions=actions,
+            frame=self._frame(),
+            levels_completed=self._levels,
+        )
+
+    def _move(self, action: int) -> None:
+        dx, dy = self._VECTORS[action]
+        self._mover = (
+            min(7, max(1, self._mover[0] + dx)),
+            min(7, max(1, self._mover[1] + dy)),
+        )
+
+    def step(self, decision: Decision) -> None:
+        if self._primitive_phase:
+            forced = self._training[self._phase]
+            if decision.action_id != forced:
+                return
+            self._move(forced)
+            self.training_progress.append(self._levels)
+            self._phase += 1
+            if self._demo_phase:
+                # The primitive sequence ends at (5, 4).
+                self._target = (7, 4)
+            return
+
+        if self._demo_phase:
+            if decision.action_id != 1:
+                return
+            self._levels += 1
+            self.training_progress.append(self._levels)
+            self._phase += 1
+            self._mover, self._target = self._held_out[0]
+            return
+
+        target = self._target
+        if target is None:
+            return
+        before_distance = abs(self._mover[0] - target[0]) + abs(
+            self._mover[1] - target[1]
+        )
+        dx, dy = self._VECTORS[decision.action_id]
+        proposed = (
+            min(7, max(1, self._mover[0] + dx)),
+            min(7, max(1, self._mover[1] + dy)),
+        )
+        after_distance = abs(proposed[0] - target[0]) + abs(
+            proposed[1] - target[1]
+        )
+        if self._last_attempted_phase != self._phase:
+            self.test_first_attempts += 1
+            self.test_correct_first += int(after_distance < before_distance)
+            self._last_attempted_phase = self._phase
+        self._mover = proposed
+        if after_distance != 1:
+            return
+        self._levels += 1
+        self._phase += 1
+        if self._test_index == len(self._held_out):
+            self._won = True
+            return
+        self._mover, self._target = self._held_out[self._test_index]
+
+
 class SeededRandomPolicy:
     def __init__(self, seed: int) -> None:
         self._rng = random.Random(seed)
@@ -499,6 +644,10 @@ class RunResult:
     held_out_first_attempt_accuracy: float = 0.0
     structures_constructed: int = 0
     target_condition_constructed: bool = False
+    transformations_constructed: int = 0
+    inverse_transformations: int = 0
+    comparison_laws_passed: bool = False
+    multi_step_plans: int = 0
 
     @property
     def completion(self) -> float:
@@ -545,6 +694,17 @@ POLICY_NAMES_V3 = (
 
 FAMILIES_V3 = ("constructive_accommodation",)
 
+POLICY_NAMES_V4 = (
+    "full",
+    "transformation",
+    "no_transformations",
+    "score_only",
+    "context_table",
+    "seeded_random",
+)
+
+FAMILIES_V4 = ("transformation_composition",)
+
 
 def _policy(name: str, seed: int) -> BenchmarkPolicy:
     if name == "full":
@@ -576,6 +736,16 @@ def _policy(name: str, seed: int) -> BenchmarkPolicy:
                 enable_accommodation=name == "constructive",
             )
         )
+    if name in {"transformation", "no_transformations"}:
+        return SymbolicPolicy(
+            MindConfig(
+                enable_concepts=False,
+                enable_experiments=False,
+                enable_reflecting_abstraction=False,
+                enable_accommodation=False,
+                enable_transformations=name == "transformation",
+            )
+        )
     if name == "context_table":
         return ContextTablePolicy()
     if name == "rare_color":
@@ -600,6 +770,8 @@ def _game(family: str, seed: int) -> DiagnosticGame:
         return TransferSequenceGame(seed)
     if family == "constructive_accommodation":
         return AccommodationGame(seed)
+    if family == "transformation_composition":
+        return TransformationGame(seed)
     raise ValueError(f"unknown family: {family}")
 
 
@@ -612,6 +784,7 @@ def _budget(family: str) -> int:
         "novel_context_transfer": 56,
         "procedure_transfer": 160,
         "constructive_accommodation": 40,
+        "transformation_composition": 96,
     }[family]
 
 
@@ -652,6 +825,32 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         and policy.mind.config.enable_accommodation
         else False
     )
+    transformations = (
+        len(policy.mind.transformations.transformations)
+        if isinstance(policy, SymbolicPolicy)
+        and policy.mind.config.enable_transformations
+        else 0
+    )
+    inverse_count = (
+        sum(
+            int(policy.mind.transformations.inverse(item) is not None)
+            for item in policy.mind.transformations.transformations.values()
+        )
+        if isinstance(policy, SymbolicPolicy)
+        and policy.mind.config.enable_transformations
+        else 0
+    )
+    laws_passed = (
+        policy.mind.transformations.law_report().passed
+        if isinstance(policy, SymbolicPolicy)
+        and policy.mind.config.enable_transformations
+        else False
+    )
+    multi_step_plans = (
+        sum(int(len(step.plan_actions) >= 2) for step in policy.trace.steps)
+        if isinstance(policy, SymbolicPolicy)
+        else 0
+    )
     return RunResult(
         policy_name,
         family,
@@ -667,6 +866,10 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         test_correct / test_attempts if test_attempts else 0.0,
         structures,
         target_condition,
+        transformations,
+        inverse_count,
+        laws_passed,
+        multi_step_plans,
     )
 
 
@@ -695,16 +898,24 @@ def run_validation(
         raise ValueError("seed_count must be at least 2")
     if seed_start < 0:
         raise ValueError("seed_start must be non-negative")
-    if suite not in {"v1", "v2", "v3"}:
-        raise ValueError("suite must be v1, v2, or v3")
+    if suite not in {"v1", "v2", "v3", "v4"}:
+        raise ValueError("suite must be v1, v2, v3, or v4")
     families = (
         FAMILIES
         if suite == "v1"
         else FAMILIES_V2
         if suite == "v2"
         else FAMILIES_V3
+        if suite == "v3"
+        else FAMILIES_V4
     )
-    policies = POLICY_NAMES if suite != "v3" else POLICY_NAMES_V3
+    policies = (
+        POLICY_NAMES
+        if suite in {"v1", "v2"}
+        else POLICY_NAMES_V3
+        if suite == "v3"
+        else POLICY_NAMES_V4
+    )
     results = [
         run_one(policy, family, seed)
         for policy in policies
@@ -833,6 +1044,99 @@ def run_validation(
             canonical.encode()
         ).hexdigest()
         return v3_payload
+
+    if suite == "v4":
+        transformation_effect = _bootstrap_difference(
+            values("transformation", "efficiency"),
+            values("no_transformations", "efficiency"),
+        )
+        intervention_accuracy = _bootstrap_difference(
+            values("transformation", "held_out_first_attempt_accuracy"),
+            values("no_transformations", "held_out_first_attempt_accuracy"),
+        )
+        histories_by_seed = {
+            seed: {
+                (item.training_actions, item.training_progress)
+                for item in results
+                if item.seed == seed
+            }
+            for seed in range(seed_start, seed_start + seed_count)
+        }
+        criteria = {
+            "all_actions_legal": all(item.legal for item in results),
+            "identical_training_histories": all(
+                len(items) == 1 for items in histories_by_seed.values()
+            ),
+            "transformation_completion_at_least_0_95": mean(
+                values("transformation", "completion")
+            )
+            >= 0.95,
+            "full_completion_at_least_0_95": mean(
+                values("full", "completion")
+            )
+            >= 0.95,
+            "transformations_improve_efficiency_ci": (
+                transformation_effect[1] > 0.0
+            ),
+            "transformations_improve_intervention_accuracy_ci": (
+                intervention_accuracy[1] > 0.0
+            ),
+            "four_primitive_transformations_constructed": mean(
+                values("transformation", "transformations_constructed")
+            )
+            == 4.0,
+            "all_primitives_have_inverses": mean(
+                values("transformation", "inverse_transformations")
+            )
+            == 4.0,
+            "typed_comparison_laws_pass": mean(
+                values("transformation", "comparison_laws_passed")
+            )
+            == 1.0,
+            "multi_step_compositions_are_operative": mean(
+                values("transformation", "multi_step_plans")
+            )
+            >= 1.0,
+        }
+        v4_payload: dict[str, object] = {
+            "benchmark": "reflector_symbolic_diagnostics_v4",
+            "claim_scope": (
+                "transformation composition, reversal, and finite comparison "
+                "laws on synthetic interactions; not an ARC score"
+            ),
+            "seed_start": seed_start,
+            "seed_count": seed_count,
+            "policies": list(policies),
+            "families": list(families),
+            "aggregates": aggregates,
+            "paired_differences": {
+                "transformation_minus_no_transformations_efficiency": {
+                    "mean": transformation_effect[0],
+                    "ci95": [
+                        transformation_effect[1],
+                        transformation_effect[2],
+                    ],
+                },
+                "transformation_minus_no_transformations_intervention_accuracy": {
+                    "mean": intervention_accuracy[0],
+                    "ci95": [
+                        intervention_accuracy[1],
+                        intervention_accuracy[2],
+                    ],
+                },
+            },
+            "criteria": criteria,
+            "causal_thesis_supported": all(criteria.values()),
+            "verdict": "supported" if all(criteria.values()) else "not_supported",
+            "runs": [asdict(item) for item in results],
+        }
+        canonical = json.dumps(
+            v4_payload, sort_keys=True, separators=(",", ":")
+        )
+        v4_payload["result_sha256"] = hashlib.sha256(
+            canonical.encode()
+        ).hexdigest()
+        return v4_payload
 
     abstraction = _bootstrap_difference(
         values("full", "efficiency"), values("no_abstraction", "efficiency")

@@ -24,6 +24,7 @@ OVERLAY_FILES = (
     "reflector/perception.py",
     "reflector/schemas.py",
     "reflector/reinforcement.py",
+    "reflector/transformations.py",
     "reflector/abstraction.py",
     "reflector/causal.py",
     "reflector/planning.py",

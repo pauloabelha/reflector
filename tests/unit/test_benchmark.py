@@ -30,6 +30,21 @@ def test_v3_accommodation_is_deterministic_equal_history_and_causal() -> None:
     )
 
 
+def test_v4_transformations_are_deterministic_typed_and_causal() -> None:
+    first = run_validation(seed_count=10, seed_start=400, suite="v4")
+    second = run_validation(seed_count=10, seed_start=400, suite="v4")
+    assert first == second
+    assert first["benchmark"] == "reflector_symbolic_diagnostics_v4"
+    assert first["criteria"]["all_actions_legal"] is True
+    assert first["criteria"]["identical_training_histories"] is True
+    assert first["criteria"]["all_primitives_have_inverses"] is True
+    assert first["criteria"]["typed_comparison_laws_pass"] is True
+    assert (
+        first["criteria"]["transformations_improve_intervention_accuracy_ci"]
+        is True
+    )
+
+
 def test_rare_color_mechanism_solves_rare_object_clicks() -> None:
     result = run_one("full", "rare_object_click", seed=7)
     assert result.won
@@ -63,3 +78,19 @@ def test_constructive_accommodation_improves_novel_interventions() -> None:
         constructive.held_out_first_attempt_accuracy
         > fixed.held_out_first_attempt_accuracy
     )
+
+
+def test_transformation_composition_reaches_oracle_action_count() -> None:
+    transformed = run_one(
+        "transformation", "transformation_composition", seed=9
+    )
+    flat = run_one("no_transformations", "transformation_composition", seed=9)
+    assert transformed.training_actions == flat.training_actions
+    assert transformed.training_progress == flat.training_progress
+    assert transformed.won
+    assert transformed.actions == transformed.oracle_actions
+    assert transformed.transformations_constructed == 4
+    assert transformed.inverse_transformations == 4
+    assert transformed.comparison_laws_passed
+    assert transformed.multi_step_plans >= 8
+    assert not flat.won

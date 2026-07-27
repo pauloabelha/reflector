@@ -41,6 +41,14 @@ from .symbolic import (
     Transition,
 )
 from .trace import EpisodeTrace, TraceStep
+from .transformations import (
+    ComparisonLawReport,
+    ModalReachability,
+    OperatoryTransformation,
+    TransformationComposition,
+    TransformationMorphism,
+    TransformationSystem,
+)
 
 __all__ = [
     "Atom",
@@ -60,8 +68,10 @@ __all__ = [
     "LanguageOperator",
     "LanguageVersion",
     "MindConfig",
+    "ModalReachability",
     "ObjectState",
     "Observation",
+    "OperatoryTransformation",
     "Plan",
     "ProcedureAbstraction",
     "Scene",
@@ -79,4 +89,8 @@ __all__ = [
     "TemporalHypothesis",
     "TraceStep",
     "Transition",
+    "TransformationComposition",
+    "TransformationMorphism",
+    "TransformationSystem",
+    "ComparisonLawReport",
 ]

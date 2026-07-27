@@ -21,6 +21,7 @@ from .symbolic import (
     Transition,
     canonical_atoms,
 )
+from .transformations import TransformationSystem
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,6 +45,7 @@ class MindConfig:
     enable_planning: bool = True
     enable_reflecting_abstraction: bool = True
     enable_accommodation: bool = True
+    enable_transformations: bool = True
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
     information_weight: float = 1.0
@@ -60,6 +62,7 @@ class MindConfig:
             "enable_planning",
             "enable_reflecting_abstraction",
             "enable_accommodation",
+            "enable_transformations",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -112,6 +115,9 @@ class SymbolicMind:
         )
         self.hypotheses = HypothesisStore()
         self.reinforcement = StructuralCreditLedger()
+        self.transformations = TransformationSystem(
+            complexity_pressure=self.config.hierarchy_complexity_pressure
+        )
         self.abstractions = AbstractionStore(
             complexity_pressure=self.config.hierarchy_complexity_pressure
         )
@@ -184,6 +190,19 @@ class SymbolicMind:
             if self.config.enable_accommodation:
                 new_abstractions = self.reinforcement.last_constructed
             schema = self.schemas.observe(transition)
+            if self.config.enable_transformations:
+                new_abstractions = tuple(
+                    sorted(
+                        set(new_abstractions)
+                        | set(self.transformations.reflect(self.schemas))
+                        | set(
+                            self.transformations.observe_goal(
+                                transition,
+                                self._last_scene,
+                            )
+                        )
+                    )
+                )
             new_hypotheses = self.hypotheses.observe(transition, self.schemas)
             if self.config.enable_reflecting_abstraction:
                 new_abstractions = self.abstractions.observe_procedure(
@@ -256,8 +275,28 @@ class SymbolicMind:
             and self.config.enable_reflecting_abstraction
             else None
         )
+        transformation_plan = (
+            self.transformations.plan_touching(
+                self._last_scene,
+                legal_actions,
+                max_depth=self.config.planner_max_depth,
+                max_expansions=self.config.planner_max_expansions,
+            )
+            if self._last_scene is not None
+            and self.config.enable_planning
+            and self.config.enable_transformations
+            else None
+        )
         self.last_plan = (
             Plan(
+                goal=Goal("touching", priority=1.0),
+                actions=transformation_plan[0],
+                predicted_events=("touching",),
+                confidence=transformation_plan[1],
+                expansions=transformation_plan[2],
+            )
+            if transformation_plan is not None
+            else Plan(
                 goal=Goal("level_advanced", priority=1.0),
                 actions=procedure[0],
                 predicted_events=("level_advanced",),
@@ -275,6 +314,15 @@ class SymbolicMind:
             if self.config.enable_planning
             else None
         )
+        if transformation_plan is not None:
+            action = transformation_plan[0][0]
+            return (
+                action,
+                "transformation-plan:"
+                f"actions={transformation_plan[0]},"
+                f"confidence={transformation_plan[1]:.3f},"
+                f"expansions={transformation_plan[2]}",
+            )
 
         scored: list[
             tuple[float, int, float, float, float, float, float]
@@ -326,7 +374,8 @@ class SymbolicMind:
                 and self.last_plan.actions
                 and self.last_plan.actions[0] == action
                 and (
-                    procedure is not None
+                    transformation_plan is not None
+                    or procedure is not None
                     or trials == 0
                     or predicted > 0.0
                 )
@@ -383,6 +432,7 @@ class SymbolicMind:
             "hypotheses": self.hypotheses.to_dict(),
             "abstractions": self.abstractions.to_dict(),
             "structural_credit": self.reinforcement.to_dict(),
+            "transformations": self.transformations.to_dict(),
             "last_experiment": (
                 self.last_experiment.to_dict()
                 if self.last_experiment is not None
