@@ -5,6 +5,7 @@ from typing import Any
 from arcengine import FrameData, GameAction, GameState
 
 from reflector import Observation, SymbolicPolicy
+from reflector.trace import AGENT_VERSION
 
 from ..agent import Agent
 
@@ -35,7 +36,7 @@ class ReflectorAgent(Agent):
         action = GameAction.from_id(decision.action_id)
         if decision.data:
             action.set_data(decision.data_dict())
-        action.reasoning = {"policy": "reflector-symbolic-v2", "why": decision.reason}
+        action.reasoning = {"policy": AGENT_VERSION, "why": decision.reason}
         return action
 
     @staticmethod

@@ -19,6 +19,7 @@ class EvolutionResult:
     manifest: ExperimentManifest
     evaluated: tuple[tuple[Candidate, Fitness], ...]
     archive: tuple[tuple[Candidate, Fitness], ...]
+    diagnostics: tuple[tuple[str, dict[str, Any]], ...]
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -31,6 +32,7 @@ class EvolutionResult:
                 {"candidate": candidate.to_dict(), "fitness": fitness.to_dict()}
                 for candidate, fitness in self.archive
             ],
+            "diagnostics": dict(self.diagnostics),
         }
 
 
@@ -73,6 +75,7 @@ def run_experiment(
         **transformed_holdouts(traces, holdout_seeds),
     }
     evaluated: list[tuple[Candidate, Fitness]] = []
+    diagnostics: list[tuple[str, dict[str, Any]]] = []
     for candidate in candidates:
         report: ValidationReport = validate_candidate(
             candidate.config,
@@ -88,11 +91,29 @@ def run_experiment(
                 "traces": report.details,
                 "deterministic": report.deterministic,
                 "network_isolated": report.network_isolated,
+                "runtime_ms": report.runtime_ms,
+                "peak_memory_kib": report.peak_memory_kib,
             },
         )
         evaluated.append((candidate, report.fitness))
+        diagnostics.append(
+            (
+                candidate.candidate_id,
+                {
+                    "runtime_ms": report.runtime_ms,
+                    "peak_memory_kib": report.peak_memory_kib,
+                    "network_isolated": report.network_isolated,
+                    "deterministic": report.deterministic,
+                },
+            )
+        )
     result = tuple(evaluated)
-    return EvolutionResult(manifest, result, pareto_archive(result))
+    return EvolutionResult(
+        manifest,
+        result,
+        pareto_archive(result),
+        tuple(diagnostics),
+    )
 
 
 def root_candidate(config: MindConfig | None = None) -> Candidate:

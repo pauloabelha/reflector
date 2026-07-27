@@ -255,6 +255,16 @@ h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #
 .regression small { color: var(--muted); font: 7px var(--mono); }
 .regression strong { color: var(--acid); font: 15px var(--mono); }
 .regression span { grid-column: 1 / -1; color: var(--faint); font-size: 8px; }
+.resource-strip { display: grid; grid-template-columns: repeat(3, 1fr); margin: 10px 0; border-block: 1px solid var(--line-soft); }
+.resource-strip > span { padding: 8px 5px; display: flex; flex-direction: column; gap: 3px; }
+.resource-strip > span + span { border-left: 1px solid var(--line-soft); }
+.resource-strip small, .improvements > small { color: var(--faint); font: 7px var(--mono); }
+.resource-strip strong { font: 9px var(--mono); font-weight: 400; }
+.improvements { margin: 10px 0; }
+.improvements > div { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.improvements span { padding: 3px 5px; background: #161b22; font: 7px var(--mono); }
+.improvements span.gain { color: var(--acid); }
+.improvements span.loss { color: var(--red); }
 
 footer { width: min(1540px, calc(100% - clamp(24px, 4vw, 70px))); margin: 0 auto 30px; padding-top: 15px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; color: var(--faint); font: 8px var(--mono); }
 

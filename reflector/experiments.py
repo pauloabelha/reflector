@@ -261,6 +261,31 @@ class ExperimentStore:
             item["pareto"] = (
                 item["candidate"]["candidate_id"] in archive_ids
             )
+        by_id = {
+            item["candidate"]["candidate_id"]: item for item in candidates
+        }
+        lower_is_better = {
+            "planner_expansions",
+            "schema_description_length",
+            "genome_description_length",
+        }
+        for item in candidates:
+            parent_id = item["candidate"]["parent_id"]
+            parent = by_id.get(parent_id)
+            if (
+                parent is None
+                or parent["fitness"] is None
+                or item["fitness"] is None
+            ):
+                item["parent_improvement"] = None
+                continue
+            improvement = {}
+            for metric, value in item["fitness"].items():
+                delta = value - parent["fitness"][metric]
+                improvement[metric] = (
+                    -delta if metric in lower_is_better else delta
+                )
+            item["parent_improvement"] = improvement
         return {
             "manifest": json.loads(manifest_row["manifest_json"]),
             "candidates": candidates,

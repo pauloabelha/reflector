@@ -51,12 +51,15 @@ def test_experiment_report_includes_pareto_and_genealogy(tmp_path) -> None:
     )
     with ExperimentStore(tmp_path / "web.sqlite") as store:
         store.save_manifest(manifest)
-        for candidate in (parent, child):
+        for candidate, candidate_fitness in (
+            (parent, Fitness(1, 1.0, 0.5, 3, 10)),
+            (child, Fitness(2, 1.0, 0.5, 2, 12)),
+        ):
             store.save_candidate(manifest.experiment_id, candidate)
             store.save_evaluation(
                 manifest.experiment_id,
                 candidate.candidate_id,
-                Fitness(1, 1.0, 0.5, 3, 10),
+                candidate_fitness,
                 {"candidate": candidate.candidate_id},
             )
         listing = store.list_experiments()
@@ -67,6 +70,17 @@ def test_experiment_report_includes_pareto_and_genealogy(tmp_path) -> None:
         {"source": parent.candidate_id, "target": child.candidate_id}
     ]
     assert all(item["pareto"] for item in report["candidates"])
+    child_report = next(
+        item
+        for item in report["candidates"]
+        if item["candidate"]["candidate_id"] == child.candidate_id
+    )
+    assert child_report["parent_improvement"]
+    assert child_report["parent_improvement"]["levels_advanced"] == 1
+    assert child_report["parent_improvement"]["planner_expansions"] == 1
+    assert child_report["parent_improvement"][
+        "schema_description_length"
+    ] == -2
 
 
 def test_local_http_api_and_static_shell(tmp_path) -> None:

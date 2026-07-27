@@ -5,6 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
+from contextlib import redirect_stdout
+from importlib import import_module
 from pathlib import Path
 
 from .compression import analyze_redundancy, counterfactual_replay, replay_policy
@@ -123,6 +126,11 @@ def main() -> None:
     evolution_ablations = commands.add_parser("evolution-ablations")
     evolution_ablations.add_argument("--db", type=Path, required=True)
     evolution_ablations.add_argument("--experiment", required=True)
+
+    official_run = commands.add_parser("official-run")
+    official_run.add_argument("games", nargs="+")
+    official_run.add_argument("--environments-dir", type=Path, required=True)
+    official_run.add_argument("--recordings-dir", type=Path, required=True)
 
     web = commands.add_parser("web")
     web.add_argument("trace", type=Path)
@@ -263,6 +271,43 @@ def main() -> None:
                 store.evaluated(args.experiment)
             )
         print(json.dumps(payload, indent=2))
+    elif args.command == "official-run":
+        os.environ["OPERATION_MODE"] = "offline"
+        os.environ["ENVIRONMENTS_DIR"] = str(args.environments_dir.resolve())
+        os.environ["RECORDINGS_DIR"] = str(args.recordings_dir.resolve())
+        with redirect_stdout(sys.stderr):
+            swarm_class = getattr(import_module("agents"), "Swarm")
+            swarm = swarm_class(
+                agent="reflector",
+                ROOT_URL="http://localhost:8001",
+                games=args.games,
+            )
+            scorecard = swarm.main()
+        if scorecard is None:
+            raise RuntimeError("official harness returned no scorecard")
+        agent_reports = []
+        for agent in swarm.agents:
+            official_policy: SymbolicPolicy = getattr(agent, "policy")
+            agent_reports.append(
+                {
+                    "game_id": agent.game_id,
+                    "actions": agent.action_counter,
+                    "seconds": agent.seconds,
+                    "levels_completed": agent.levels_completed,
+                    "trace_metrics": evaluate_trace(
+                        official_policy.trace
+                    ).to_dict(),
+                }
+            )
+        print(
+            json.dumps(
+                {
+                    "scorecard": scorecard.model_dump(mode="json"),
+                    "agents": agent_reports,
+                },
+                indent=2,
+            )
+        )
     else:
         serve(
             trace=load_trace(args.trace),

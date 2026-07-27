@@ -74,6 +74,9 @@ by default, a disabled Linux network namespace. It executes the candidate
 twice over the original and color-permuted traces and rejects nondeterminism.
 The Pareto archive maximizes level evidence, replay retention, and schema
 reliability while minimizing planner expansions and description length.
+Validation separately records wall time, peak traced Python allocation, and
+canonical genome length. Experiment reports derive direction-aware
+parent-relative improvements from persisted fitness rather than UI arithmetic.
 
 This control plane depends on the inference core. None of it is packaged in
 the Kaggle overlay, and the import-closure test permanently enforces that

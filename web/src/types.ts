@@ -211,9 +211,11 @@ export interface CandidateRecord {
     planner_expansions: number;
     schema_description_length: number;
     abstraction_description_savings: number;
+    genome_description_length: number;
   } | null;
   details: Record<string, Json> | null;
   pareto: boolean;
+  parent_improvement: Record<string, number> | null;
 }
 
 export interface ExperimentReport {

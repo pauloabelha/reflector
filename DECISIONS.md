@@ -71,3 +71,12 @@ predicates and adopts an orientation algebra only when at least three elements
 and enough repeated support make the compiled representation shorter. This is
 an operational approximation, not a claim of full Piagetian abstraction or
 held-out transfer.
+
+## 2026-07-27 — Predictions are scored before their outcomes are observed
+
+Trace evaluation carries the event set predicted after one decision forward to
+the next transition and scores set overlap only then. Structural diagnostics
+count reuse, equivalent schemas, conflicting results, low-reliability schemas,
+and concepts with missing evidence. Sandbox wall time and Python allocation
+peaks are reported as machine-local diagnostics; deterministic operation and
+description measures remain the stable comparison basis.

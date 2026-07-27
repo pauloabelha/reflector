@@ -65,6 +65,15 @@ RECORDINGS_DIR=recordings \
   'from agents import Swarm; Swarm("reflector", "http://localhost:8001", ["bt11"]).main()'
 ```
 
+Or produce one structured report containing the official scorecard, per-agent
+wall time/action count/levels, and the full trace metrics:
+
+```bash
+.venv/bin/reflector official-run bt11 \
+  --environments-dir tests/fixtures/official_toolkit \
+  --recordings-dir /tmp/reflector-recordings
+```
+
 Generate, replay, evaluate, and compare deterministic traces:
 
 ```bash
@@ -135,9 +144,9 @@ redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained
 genomes, transformed trace holdouts, reproducible experiment manifests,
 SQLite lineage, Pareto selection, optional provider-neutral mutation proposals,
-and sandboxed population evaluation. Richer relations, hierarchy/language
-transfer-validated macro planning and true environment holdouts remain. The first complete local
-replay and population-analysis UI is operational.
+and sandboxed population evaluation. Transfer-validated macro planning, broader
+relational languages, and true environment holdouts remain. The first complete
+local replay and population-analysis UI is operational.
 
 ## License
 

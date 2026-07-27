@@ -83,6 +83,7 @@ class Fitness:
     planner_expansions: int
     schema_description_length: int
     abstraction_description_savings: int = 0
+    genome_description_length: int = 0
 
     def to_dict(self) -> dict[str, int | float]:
         return asdict(self)
@@ -99,6 +100,7 @@ class Fitness:
             -self.planner_expansions,
             -self.schema_description_length,
             self.abstraction_description_savings,
+            -self.genome_description_length,
         )
         theirs = (
             other.levels_advanced,
@@ -107,6 +109,7 @@ class Fitness:
             -other.planner_expansions,
             -other.schema_description_length,
             other.abstraction_description_savings,
+            -other.genome_description_length,
         )
         return all(left >= right for left, right in zip(mine, theirs)) and any(
             left > right for left, right in zip(mine, theirs)

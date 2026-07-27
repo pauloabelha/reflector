@@ -445,10 +445,15 @@ function candidateInspector(item: CandidateRecord, all: CandidateRecord[]): stri
   const parent = all.find((other) => other.candidate.candidate_id === item.candidate.parent_id);
   const keys = Object.keys(item.candidate.config);
   const changes = keys.filter((key) => parent && parent.candidate.config[key] !== item.candidate.config[key]);
+  const runtime = Number(item.details?.runtime_ms ?? 0);
+  const peakMemory = Number(item.details?.peak_memory_kib ?? 0);
+  const improvements = Object.entries(item.parent_improvement ?? {}).filter(([_metric, value]) => value !== 0);
   return `<div class="candidate-detail">
     <div class="candidate-title"><span class="${item.pareto ? "pareto-badge" : ""}">${item.pareto ? "PARETO" : `GEN ${item.candidate.generation}`}</span><strong>${short(item.candidate.candidate_id, 28)}</strong></div>
     <p>${escapeHtml(item.candidate.rationale)} <code>via ${escapeHtml(item.candidate.mutation_source)}</code></p>
     <div class="diff">${parent ? (changes.map((key) => `<div><code>${escapeHtml(key)}</code><del>${escapeHtml(parent.candidate.config[key])}</del><ins>${escapeHtml(item.candidate.config[key])}</ins></div>`).join("") || `<span class="empty">No structural configuration change.</span>`) : `<span class="empty">Root genome; no parent diff.</span>`}</div>
+    <div class="resource-strip"><span><small>RUNTIME</small><strong>${runtime.toFixed(2)} ms</strong></span><span><small>PEAK PY ALLOC</small><strong>${peakMemory} KiB</strong></span><span><small>GENOME</small><strong>${item.fitness?.genome_description_length ?? 0} B</strong></span></div>
+    <div class="improvements"><small>PARENT-RELATIVE IMPROVEMENT</small><div>${improvements.length ? improvements.map(([metric, value]) => `<span class="${value > 0 ? "gain" : "loss"}">${escapeHtml(metric)} ${value > 0 ? "+" : ""}${Number(value).toFixed(2)}</span>`).join("") : "<span class='empty'>No measured objective change.</span>"}</div></div>
     <div class="regression"><small>REGRESSION RETENTION</small><strong>${item.fitness ? percent(item.fitness.deterministic_replay_rate) : "not evaluated"}</strong><span>${item.fitness?.schema_description_length ?? "—"} description units · ${item.fitness?.abstraction_description_savings ?? 0} compiled savings · ${item.fitness?.mean_schema_reliability ? percent(item.fitness.mean_schema_reliability) : "0%"} reliability</span></div>
   </div>`;
 }

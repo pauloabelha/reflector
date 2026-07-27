@@ -43,6 +43,9 @@ advance it, close the scorecard, and exit.
 - A schema family, concept type, or language operator must retain member
   evidence, raw/compiled description cost, positive utility, and dependency
   edges. Do not promote a symbolic label or regex match by itself.
+- Never score a transition using predictions learned from that same transition.
+  Runtime and allocation measurements are diagnostics and must not be presented
+  as deterministic across machines.
 
 ## Official compatibility
 

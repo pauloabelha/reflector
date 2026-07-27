@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import asdict, dataclass
 from functools import partial
 from typing import Any, Callable
@@ -15,12 +16,20 @@ from .trace import EpisodeTrace
 @dataclass(frozen=True, slots=True)
 class TraceMetrics:
     actions: int
+    action_efficiency: float
     resets: int
     transitions: int
     levels_advanced: int
     failed_experiments: int
+    prediction_accuracy: float
     schema_count: int
     concept_count: int
+    schema_reuse: int
+    concept_reuse: int
+    duplicate_schemas: int
+    contradictory_schemas: int
+    dead_schemas: int
+    orphan_concepts: int
     schema_family_count: int
     concept_type_count: int
     language_operator_count: int
@@ -48,6 +57,8 @@ def evaluate_trace(
     transitions = 0
     levels_advanced = 0
     failed_experiments = 0
+    prediction_scores: list[float] = []
+    pending_predictions: set[str] = set()
     for step in trace.steps:
         decision = policy.choose_action(step.observation)
         matches += int(decision == step.decision)
@@ -55,14 +66,27 @@ def evaluate_trace(
         if step.incoming_transition is not None:
             transitions += 1
             kinds = {event.kind for event in step.incoming_transition.result}
+            union = pending_predictions | kinds
+            prediction_scores.append(
+                len(pending_predictions & kinds) / len(union) if union else 1.0
+            )
             levels_advanced += int("level_advanced" in kinds)
             failed_experiments += int(kinds == {"no_observed_change"})
+        pending_predictions = set(
+            policy.mind.schemas.event_kinds(decision.action_id)
+        )
 
     if trace.terminal_observation is not None:
         policy.observe(trace.terminal_observation)
     if trace.terminal_transition is not None:
         transitions += 1
         terminal_kinds = {event.kind for event in trace.terminal_transition.result}
+        union = pending_predictions | terminal_kinds
+        prediction_scores.append(
+            len(pending_predictions & terminal_kinds) / len(union)
+            if union
+            else 1.0
+        )
         levels_advanced += int("level_advanced" in terminal_kinds)
         failed_experiments += int(terminal_kinds == {"no_observed_change"})
 
@@ -82,14 +106,48 @@ def evaluate_trace(
         max(0, item.net_utility)
         for item in counterfactual_replay(trace, policy)
     )
+    equivalent: dict[tuple[int, tuple[str, ...]], list[str]] = defaultdict(list)
+    alternatives: dict[
+        tuple[tuple[str, ...], int], set[tuple[str, ...]]
+    ] = defaultdict(set)
+    for schema in schemas:
+        equivalent[(schema.action_id, schema.result)].append(schema.schema_id)
+        alternatives[
+            (tuple(atom.text() for atom in schema.context), schema.action_id)
+        ].add(schema.result)
+    schema_ids = {schema.schema_id for schema in schemas}
+    concepts = tuple(policy.mind.concepts.concepts.values())
     return TraceMetrics(
         actions=len(trace.steps),
+        action_efficiency=levels_advanced / max(1, len(trace.steps)),
         resets=resets,
         transitions=transitions,
         levels_advanced=levels_advanced,
         failed_experiments=failed_experiments,
+        prediction_accuracy=(
+            sum(prediction_scores) / len(prediction_scores)
+            if prediction_scores
+            else 1.0
+        ),
         schema_count=len(schemas),
-        concept_count=len(policy.mind.concepts.concepts),
+        concept_count=len(concepts),
+        schema_reuse=sum(max(0, schema.support - 1) for schema in schemas),
+        concept_reuse=sum(max(0, concept.support - 1) for concept in concepts),
+        duplicate_schemas=sum(
+            max(0, len(group) - 1) for group in equivalent.values()
+        ),
+        contradictory_schemas=sum(
+            max(0, len(results) - 1) for results in alternatives.values()
+        ),
+        dead_schemas=sum(
+            schema.opportunities >= 2 and schema.reliability < 0.25
+            for schema in schemas
+        ),
+        orphan_concepts=sum(
+            not concept.evidence
+            or any(evidence not in schema_ids for evidence in concept.evidence)
+            for concept in concepts
+        ),
         schema_family_count=len(policy.mind.abstractions.schema_families),
         concept_type_count=len(policy.mind.abstractions.concept_types),
         language_operator_count=len(

@@ -140,6 +140,9 @@ def test_candidate_validation_is_deterministic_and_network_isolated() -> None:
     traces = {"demo": demo_trace()}
     local = evaluate_candidate(MindConfig(), traces)
     assert local.deterministic
+    assert local.runtime_ms > 0
+    assert local.peak_memory_kib > 0
+    assert local.fitness.genome_description_length > 0
     isolated = validate_candidate(MindConfig(), traces)
     assert isolated.deterministic
     assert isolated.network_isolated
@@ -160,5 +163,9 @@ def test_end_to_end_population_experiment(tmp_path) -> None:
             holdout_seeds=(17,),
         )
         assert result.archive[0][0] == candidate
+        diagnostics = dict(result.diagnostics)[candidate.candidate_id]
+        assert diagnostics["runtime_ms"] > 0
+        assert diagnostics["peak_memory_kib"] > 0
+        assert diagnostics["network_isolated"]
         assert store.evaluated(result.manifest.experiment_id)
     assert json.loads(json.dumps(result.to_dict()))["pareto_archive"]
