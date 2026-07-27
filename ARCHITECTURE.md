@@ -8,7 +8,7 @@ reflector.SymbolicPolicy
   ├── generated Kaggle overlay ── official starter ── Kaggle gateway
   ├── experiment runner ── transformed traces + SQLite
   ├── population evaluator ── sandbox + Pareto archive
-  └── replay API/UI (future)
+  └── replay API ── browser-native TypeScript analysis console
 ```
 
 `Observation` and `Decision` are immutable protocol values. `SceneTracker`
@@ -71,3 +71,22 @@ reliability while minimizing planner expansions and description length.
 This control plane depends on the inference core. None of it is packaged in
 the Kaggle overlay, and the import-closure test permanently enforces that
 direction.
+
+## Replay and analysis surface
+
+`reflector.web_api` deterministically reconstructs the deployed policy at each
+recorded observation. Its loopback HTTP server exposes the replay bundle,
+configuration branches, experiment manifests, candidate metrics, lineage, and
+Pareto membership. It serves the compiled `web/` application from the same
+origin and makes no outbound calls.
+
+The frontend is strict TypeScript compiled to browser-native modules, with no
+runtime framework or CDN. Board playback, symbolic inspectors, graphs,
+genealogy, candidate diffs, regression summaries, and the Pareto plot are all
+derived from API evidence rather than fixture-shaped dashboard data.
+
+A trace branch changes only a validated `MindConfig` and replays the complete
+recorded prefix before displaying the selected suffix. Since the observations
+remain fixed, the API labels the result `trace-only-policy-branch` and does not
+claim alternate game dynamics or score. A future environment-snapshot adapter
+is required for causal branch-and-rollout.

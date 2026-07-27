@@ -25,8 +25,8 @@ advance it, close the scorecard, and exit.
 - The Kaggle allowlist in `reflector/kaggle.py` is the shared symbolic
   inference closure. Keep it deterministic, typed, serializable, and free of
   development services. Evaluation, compression, transforms, experiments,
-  population, mutations, sandbox, evolver, and CLI modules are development
-  consumers and must remain outside that allowlist.
+  population, mutations, sandbox, evolver, web API, frontend, and CLI modules
+  are development consumers and must remain outside that allowlist.
 - `agents/templates/reflector_agent.py` is a thin official-starter adapter. It
   must delegate decisions to `reflector/`.
 - `reflector/kaggle.py` owns export and compatibility verification. Generated
@@ -35,6 +35,9 @@ advance it, close the scorecard, and exit.
   overlay listed by `OVERLAY_FILES`.
 - Never import OpenAI, LangChain, a web framework, a database driver, or a
   population manager from the Kaggle overlay.
+- Web views must derive from trace/API evidence. Never add fabricated
+  dashboard metrics, and keep trace-only branches explicitly distinct from
+  environment rollouts.
 - Do not hardcode solutions for public game IDs. Mechanisms may encode general
   priors only and must earn complexity through evaluation.
 

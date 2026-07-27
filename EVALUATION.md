@@ -55,6 +55,13 @@ provider runs only in the development command. Candidate evaluation then runs
 the deployed package in a fresh network-disabled process, twice, and rejects
 nondeterminism.
 
+The local replay console is also an evaluation surface, not a source of new
+metrics. It reconstructs every displayed policy snapshot from the trace,
+renders recorded versus replayed decisions, and reads candidates and fitness
+directly from SQLite. Its branch endpoint accepts only bounded `MindConfig`
+patches and returns divergence over fixed observations with an explicit
+non-rollout limitation.
+
 Research descendants will additionally report completion and RHAE score, action
 efficiency, resets, failed experiments, runtime, peak memory, planner
 expansions, prediction accuracy, schema/concept description length, reuse,

@@ -95,6 +95,22 @@ network-disabled process, stored with its parent, and compared by a Pareto
 archive. Use `reflector lineage --db DB --experiment ID [--candidate ID]` to
 inspect the archive or one ancestry chain.
 
+Build and run the local replay/analysis console:
+
+```bash
+cd web && npm install && npm run build && cd ..
+.venv/bin/reflector web /tmp/reflector-trace.json \
+  --db /tmp/reflector-evolution.sqlite
+```
+
+Open `http://127.0.0.1:8765`. The TypeScript console renders the recorded ARC
+board with play/pause/step controls, the action explanation, prediction versus
+observed transition, persistent objects, facts, concepts, schemas, hypotheses,
+dependency graph, language inventory, genealogy, structural diffs, regression
+retention, and Pareto front. It contains no remote assets or telemetry. Its
+branch tool replays a deployable configuration over fixed observations and
+clearly avoids claiming counterfactual environment outcomes.
+
 ## Governing invariant
 
 Every accepted agent descendant must remain directly exportable as an offline
@@ -115,7 +131,8 @@ unobservable action savings. It also provides serializable constrained
 genomes, transformed trace holdouts, reproducible experiment manifests,
 SQLite lineage, Pareto selection, optional provider-neutral mutation proposals,
 and sandboxed population evaluation. Richer relations, hierarchy/language
-reflection, true environment holdouts, and the replay UI remain.
+reflection, and true environment holdouts remain. The first complete local
+replay and population-analysis UI is operational.
 
 ## License
 

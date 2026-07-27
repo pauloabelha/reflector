@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .population import Candidate, Fitness
+from .population import Candidate, Fitness, pareto_archive
 from .trace import EpisodeTrace
 
 
@@ -194,3 +194,82 @@ class ExperimentStore:
             )
             for row in rows
         )
+
+    def list_experiments(self) -> tuple[dict[str, Any], ...]:
+        rows = self.connection.execute(
+            """
+            SELECT x.manifest_json, COUNT(c.candidate_id) AS candidate_count
+            FROM experiments x
+            LEFT JOIN candidates c ON x.experiment_id = c.experiment_id
+            GROUP BY x.experiment_id
+            ORDER BY x.experiment_id
+            """
+        )
+        output = []
+        for row in rows:
+            manifest = json.loads(row["manifest_json"])
+            manifest["candidate_count"] = row["candidate_count"]
+            output.append(manifest)
+        return tuple(output)
+
+    def experiment_report(self, experiment_id: str) -> dict[str, Any]:
+        manifest_row = self.connection.execute(
+            "SELECT manifest_json FROM experiments WHERE experiment_id = ?",
+            (experiment_id,),
+        ).fetchone()
+        if manifest_row is None:
+            raise KeyError(experiment_id)
+        rows = self.connection.execute(
+            """
+            SELECT c.candidate_json, e.fitness_json, e.details_json
+            FROM candidates c
+            LEFT JOIN evaluations e
+              ON c.experiment_id = e.experiment_id
+             AND c.candidate_id = e.candidate_id
+            WHERE c.experiment_id = ?
+            ORDER BY c.candidate_id
+            """,
+            (experiment_id,),
+        )
+        candidates: list[dict[str, Any]] = []
+        evaluated: list[tuple[Candidate, Fitness]] = []
+        for row in rows:
+            candidate = Candidate.from_dict(json.loads(row["candidate_json"]))
+            fitness = (
+                Fitness.from_dict(json.loads(row["fitness_json"]))
+                if row["fitness_json"] is not None
+                else None
+            )
+            if fitness is not None:
+                evaluated.append((candidate, fitness))
+            candidates.append(
+                {
+                    "candidate": candidate.to_dict(),
+                    "fitness": fitness.to_dict() if fitness is not None else None,
+                    "details": (
+                        json.loads(row["details_json"])
+                        if row["details_json"] is not None
+                        else None
+                    ),
+                }
+            )
+        archive_ids = {
+            candidate.candidate_id
+            for candidate, _fitness in pareto_archive(evaluated)
+        }
+        for item in candidates:
+            item["pareto"] = (
+                item["candidate"]["candidate_id"] in archive_ids
+            )
+        return {
+            "manifest": json.loads(manifest_row["manifest_json"]),
+            "candidates": candidates,
+            "lineage_edges": [
+                {
+                    "source": item["candidate"]["parent_id"],
+                    "target": item["candidate"]["candidate_id"],
+                }
+                for item in candidates
+                if item["candidate"]["parent_id"] is not None
+            ],
+        }

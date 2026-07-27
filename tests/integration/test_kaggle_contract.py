@@ -17,6 +17,7 @@ def test_overlay_contains_only_inference_path() -> None:
             "reflector/population.py",
             "reflector/sandbox.py",
             "reflector/transforms.py",
+            "reflector/web_api.py",
         ):
             assert development_module not in archive.namelist()
         assert "openai" not in names

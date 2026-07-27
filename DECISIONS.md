@@ -52,3 +52,12 @@ Seeded color permutations test representational retention while preserving
 recorded outcomes. They do not model counterfactual environment dynamics and
 cannot by themselves support claims about RHAE, action savings, or score
 improvement.
+
+## 2026-07-27 — The first web surface is local, evidence-backed, and offline
+
+The Python analysis API reconstructs the same deployed policy from traces and
+reads the same SQLite experiment records as the CLI. The strict TypeScript
+frontend compiles to browser-native modules with no runtime framework, CDN,
+remote font, telemetry, or separate data model. Recorded-observation branches
+are labeled trace-only until an official environment snapshot mechanism can
+generate genuine counterfactual outcomes.

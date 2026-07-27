@@ -23,6 +23,7 @@ from .policy import SymbolicPolicy
 from .population import pareto_archive
 from .symbolic import Observation
 from .trace import EpisodeTrace
+from .web_api import serve
 
 
 def demo_trace() -> EpisodeTrace:
@@ -113,6 +114,17 @@ def main() -> None:
     lineage.add_argument("--db", type=Path, required=True)
     lineage.add_argument("--experiment", required=True)
     lineage.add_argument("--candidate")
+
+    web = commands.add_parser("web")
+    web.add_argument("trace", type=Path)
+    web.add_argument("--db", type=Path)
+    web.add_argument("--host", default="127.0.0.1")
+    web.add_argument("--port", type=int, default=8765)
+    web.add_argument(
+        "--static",
+        type=Path,
+        default=Path(__file__).resolve().parent.parent / "web" / "dist",
+    )
 
     args = parser.parse_args()
     if args.command == "trace-demo":
@@ -216,7 +228,7 @@ def main() -> None:
                 network_disabled=not args.allow_network,
             )
         print(json.dumps(result.to_dict(), indent=2))
-    else:
+    elif args.command == "lineage":
         with ExperimentStore(args.db) as store:
             evaluated = store.evaluated(args.experiment)
             if args.candidate:
@@ -235,6 +247,14 @@ def main() -> None:
                     for candidate, fitness in pareto_archive(evaluated)
                 ]
         print(json.dumps(payload, indent=2))
+    else:
+        serve(
+            trace=load_trace(args.trace),
+            database=args.db,
+            static_directory=args.static,
+            host=args.host,
+            port=args.port,
+        )
 
 
 if __name__ == "__main__":

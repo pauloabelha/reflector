@@ -24,3 +24,7 @@ tests/recordings/not-a-recording.txt
 memory.db
 
 environment_files/
+
+# Local TypeScript build
+web/node_modules/
+web/dist/
