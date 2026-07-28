@@ -3,18 +3,48 @@
 Last updated: 2026-07-28  
 Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
-## Current status
+## Result at a glance
 
-| Evaluation surface | Agent | Score | Levels | Coverage | Status |
-| --- | --- | ---: | ---: | ---: | --- |
-| Official local public-development suite | v21 accepted | **0.8359967620** | **5** | 25/25 | reproducible |
-| Kaggle public leaderboard | v21 package ready | — | — | 0 submissions | **not submitted** |
-| Kaggle private leaderboard | — | — | — | — | unavailable |
-| Target-only development run | v22 experimental | 16.7556638306 on `ft09` | 3 | 1 game | not promoted |
+> **Reflector has fully beaten 0 of 25 public-development games.**
+> It has solved 5 of 183 levels across 4 games. The suite ran all 25 games,
+> but evaluation coverage is not game completion.
 
-The local score is not a Kaggle leaderboard score. Kaggle evaluates a separate
-hidden set of 110 games: half determine the visible public score and half the
-private score. Reflector has not yet crossed that evaluation boundary.
+| Outcome metric | Accepted v21 result | Meaning |
+| --- | ---: | --- |
+| Complete games beaten | **0 / 25** | No game was solved through its final level. |
+| Games with progress | **4 / 25** | At least one level was solved in four games. |
+| Levels solved | **5 / 183** | Two in `ft09`; one each in `lf52`, `r11l`, and `tn36`. |
+| Official local score | **0.8359967620 / 100** | About **0.836%**, not 83.6%. |
+| Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
+| Action budget used | **10,000** | 400 actions were allocated to each game. |
+| Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
+
+## Evaluation surfaces
+
+| Evaluation surface | Agent | Score | Outcome | Status |
+| --- | --- | ---: | --- | --- |
+| Official local public-development suite | v21 accepted | **0.8359967620 / 100** | 0 games beaten; 5/183 levels | reproducible |
+| Kaggle public leaderboard | v21 package ready | — | no returned score | **not submitted** |
+| Kaggle private leaderboard | — | — | no returned score | unavailable |
+| Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
+
+These surfaces must not be combined. The accepted local result uses 25 known
+public-development games. Kaggle evaluates a separate hidden set of 110 games:
+half determine the visible public score and half the private score. Reflector
+has not yet crossed that evaluation boundary.
+
+### Reporting terms
+
+- **Game beaten:** the agent completed every level in that game.
+- **Game with progress:** the agent completed at least one level, but possibly
+  not the whole game.
+- **Level solved:** the environment reported advancement to the next level.
+- **Evaluation coverage:** the game was run and returned a result. It says
+  nothing about whether the agent solved it.
+- **Local score:** Relative Human Action Efficiency averaged over the 25 local
+  games, on the official 0–100 scale. Unsolved games contribute zero.
+- **Kaggle score:** a score returned by an actual hidden Kaggle evaluation.
+  Export and smoke-test success do not create a Kaggle score.
 
 Official competition links:
 
@@ -30,7 +60,24 @@ Actions: 10,000
 Report SHA-256:
 `59e09da642949de4897917ca6cea1fb7a00771d7adbbb445283dc6f09fa61417`
 
-| Game | Level | Agent actions | Human baseline | What caused the win |
+### Progress by game
+
+| Game | Levels solved | Total levels | Complete game beaten? | Local game score |
+| --- | ---: | ---: | --- | ---: |
+| `ft09` | **2** | 6 | No | 14.2857142857 |
+| `lf52` | **1** | 10 | No | 1.6105693614 |
+| `r11l` | **1** | 6 | No | 4.7619047619 |
+| `tn36` | **1** | 7 | No | 0.2417306403 |
+| Remaining 21 games | **0** | 154 | No | 0 |
+| **Total** | **5** | **183** | **0 / 25 beaten** | **0.8359967620 overall** |
+
+No level was solved in: `ar25`, `bp35`, `cd82`, `cn04`, `dc22`, `g50t`,
+`ka59`, `lp85`, `ls20`, `m0r0`, `re86`, `s5i5`, `sb26`, `sc25`, `sk48`,
+`sp80`, `su15`, `tr87`, `tu93`, `vc33`, and `wa30`.
+
+### Solved-level efficiency
+
+| Game | Level | Agent actions | Human baseline | What caused the level completion |
 | --- | ---: | ---: | ---: | --- |
 | `ft09` | 1 | **4** | 43 | Induced local same/different constraints from three rendered examples. |
 | `ft09` | 2 | **7** | 12 | Retained the induced relation and transferred it to overlapping panels with no solved example. |
@@ -46,13 +93,13 @@ Raw evidence:
 
 ## Score evolution
 
-| Version | Public score | Levels | Main change | Decision |
-| --- | ---: | ---: | --- | --- |
-| v8 | 0.0000000000 | 0 | Initial symbolic research agent | baseline |
-| v14 | 0.2548989649 | 2 | Epistemic state graph | promoted |
-| v18 | 0.2645681905 | 3 | Failure-driven click ontology accommodation | promoted |
-| v20 | 0.4550443810 | 4 | Within-frame local relation induction | promoted |
-| v21 | **0.8359967620** | **5** | Cross-level relation transfer | **current accepted** |
+| Version | Local score / 100 | Levels solved | Games with progress | Games beaten | Main change | Decision |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| v8 | 0.0000000000 | 0 | 0 | 0 | Initial symbolic research agent | baseline |
+| v14 | 0.2548989649 | 2 | 2 | 0 | Epistemic state graph | promoted |
+| v18 | 0.2645681905 | 3 | 3 | 0 | Failure-driven click ontology accommodation | promoted |
+| v20 | 0.4550443810 | 4 | 4 | 0 | Within-frame local relation induction | promoted |
+| v21 | **0.8359967620** | **5** | **4** | **0** | Cross-level relation transfer | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
@@ -137,3 +184,15 @@ This file is updated whenever:
 
 Raw scorecards remain immutable under `reports/`. The live continuation state
 and next experiment are maintained in [PLAN.md](PLAN.md).
+
+Every future headline must state all of the following separately:
+
+1. complete games beaten out of games evaluated;
+2. games with at least one solved level;
+3. levels solved out of total levels;
+4. local score explicitly written as “out of 100”;
+5. evaluation coverage;
+6. Kaggle submission count and returned public/private scores.
+
+Never use “complete” as shorthand for coverage. Use “evaluated” for coverage
+and reserve “beaten” or “fully completed” for finishing every level of a game.

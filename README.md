@@ -19,12 +19,27 @@ service, database, or web server.
 
 Last verified: 2026-07-28
 
-| Surface | Reflector | Score | Levels | Status |
-| --- | --- | ---: | ---: | --- |
-| Official 25-game public-development suite | v21 accepted | **0.8359967620** | **5** | 25/25 complete |
-| Kaggle public leaderboard | submission-ready package | — | — | not submitted |
-| Kaggle private leaderboard | — | — | — | unavailable |
-| Current target experiment | v22 on `ft09` | 16.7556638306 | 3 | target-only, not promoted |
+> **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
+> It has solved **5 of 183 levels across 4 games**. All 25 games were
+> evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
+
+| Metric | Accepted v21 result |
+| --- | ---: |
+| Complete games beaten | **0 / 25** |
+| Games with at least one solved level | **4 / 25** |
+| Levels solved | **5 / 183** |
+| Official local score | **0.8359967620 / 100** |
+| Games evaluated | **25 / 25** |
+| Kaggle submissions | **0** |
+
+The `0.8359967620` result is about **0.836% of the 100-point scale**, not
+83.6%. It is a reproducible score on the known local public-development games,
+not a Kaggle public-leaderboard score. The v21 package is submission-ready, but
+hidden public and private scores remain unavailable until an actual submission.
+
+The current v22 experiment has solved three levels of `ft09` in a target-only
+run. It is not accepted because it has not passed the regression gate, full
+25-game evaluation, and packaging checks.
 
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction
