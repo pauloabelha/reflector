@@ -172,6 +172,17 @@ class SceneTracker:
         facts: list[Atom] = [
             Atom("state", (observation.state,)),
             Atom("object_count", (str(len(objects)),)),
+            Atom(
+                "frame_bounds",
+                (
+                    "0",
+                    "0",
+                    str(len(observation.frame[0]) - 1)
+                    if observation.frame and observation.frame[0]
+                    else "-1",
+                    str(len(observation.frame) - 1),
+                ),
+            ),
         ]
         facts.extend(
             Atom("action_available", (str(action),))

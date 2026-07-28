@@ -183,3 +183,78 @@ def test_touching_goal_requires_level_evidence_and_projects_known_effect() -> No
     )
     assert plan is not None
     assert len(plan[0]) == 4
+
+
+def test_modal_touching_distinguishes_reachable_from_exhausted_board() -> None:
+    schemas = SchemaStore()
+    _learn_movement(schemas, action=1, dx=1, dy=0, offset=0)
+    _learn_movement(schemas, action=3, dx=0, dy=1, offset=10)
+    system = TransformationSystem()
+    system.reflect(schemas)
+    system.touching_goal_evidence.add("known-touching-goal")
+
+    def scene(mover_at: tuple[int, int], target_at: tuple[int, int]) -> Scene:
+        return Scene(
+            index=20,
+            state="NOT_FINISHED",
+            levels_completed=1,
+            available_actions=(1, 3, 5),
+            objects=(
+                ObjectState(
+                    object_id="piece",
+                    color=2,
+                    area=1,
+                    bbox=(*mover_at, *mover_at),
+                    centroid=mover_at,
+                ),
+                ObjectState(
+                    object_id="target",
+                    color=8,
+                    area=1,
+                    bbox=(*target_at, *target_at),
+                    centroid=target_at,
+                ),
+            ),
+            facts=(Atom("frame_bounds", ("0", "0", "6", "6")),),
+            frame_digest="modal",
+        )
+
+    possible = system.modal_touching(
+        scene((1, 1), (4, 2)),
+        (1, 3, 5),
+        max_expansions=64,
+    )
+    assert possible is not None
+    assert possible.possible
+    assert not possible.impossible_within_bounds
+    assert len(possible.shortest_actions) == 3
+
+    impossible_scene = scene((4, 4), (1, 1))
+    impossible = system.modal_touching(
+        impossible_scene,
+        (1, 3, 5),
+        max_expansions=64,
+    )
+    assert impossible is not None
+    assert impossible.impossible_within_bounds
+
+    transition = Transition(
+        before_index=20,
+        after_index=21,
+        context=(),
+        action_id=5,
+        action_data=(),
+        result=(Event("level_advanced", "game", ("1", "2")),),
+    )
+    assert system.observe_impossible_touching(
+        transition,
+        impossible_scene,
+        max_expansions=64,
+    )
+    response = system.impossible_touching_action(
+        impossible_scene,
+        (1, 3, 5),
+        max_expansions=64,
+    )
+    assert response is not None
+    assert response[0] == 5

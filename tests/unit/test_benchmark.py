@@ -45,6 +45,21 @@ def test_v4_transformations_are_deterministic_typed_and_causal() -> None:
     )
 
 
+def test_v5_modal_reasoning_is_deterministic_equal_history_and_causal() -> None:
+    first = run_validation(seed_count=10, seed_start=500, suite="v5")
+    second = run_validation(seed_count=10, seed_start=500, suite="v5")
+    assert first == second
+    assert first["benchmark"] == "reflector_symbolic_diagnostics_v5"
+    assert first["criteria"]["all_actions_legal"] is True
+    assert first["criteria"]["identical_training_histories"] is True
+    assert first["criteria"]["impossibility_response_is_evidence_grounded"] is True
+    assert first["criteria"]["modal_response_is_operative"] is True
+    assert (
+        first["criteria"]["modal_reasoning_improves_intervention_accuracy_ci"]
+        is True
+    )
+
+
 def test_rare_color_mechanism_solves_rare_object_clicks() -> None:
     result = run_one("full", "rare_object_click", seed=7)
     assert result.won
@@ -94,3 +109,15 @@ def test_transformation_composition_reaches_oracle_action_count() -> None:
     assert transformed.comparison_laws_passed
     assert transformed.multi_step_plans >= 8
     assert not flat.won
+
+
+def test_modal_reachability_reaches_oracle_beyond_short_plan_horizon() -> None:
+    modal = run_one("modal", "modal_reachability", seed=17)
+    ablated = run_one("no_modal", "modal_reachability", seed=17)
+    assert modal.training_actions == ablated.training_actions
+    assert modal.training_progress == ablated.training_progress
+    assert modal.won
+    assert modal.actions == modal.oracle_actions == 26
+    assert modal.modal_response_evidence >= 1
+    assert modal.modal_actions_used >= 4
+    assert ablated.modal_actions_used == 0

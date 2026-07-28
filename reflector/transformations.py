@@ -121,6 +121,9 @@ class TransformationSystem:
     )
     morphisms: dict[str, TransformationMorphism] = field(default_factory=dict)
     touching_goal_evidence: set[str] = field(default_factory=set)
+    impossible_touching_actions: dict[int, set[str]] = field(
+        default_factory=dict
+    )
 
     def reflect(self, schemas: SchemaStore) -> tuple[str, ...]:
         before = set(self.transformations) | set(self.morphisms)
@@ -345,6 +348,201 @@ class TransformationSystem:
                         )
             frontier = next_frontier
         return None
+
+    @staticmethod
+    def _frame_bounds(scene: Scene) -> tuple[int, int, int, int] | None:
+        atom = next(
+            (item for item in scene.facts if item.predicate == "frame_bounds"),
+            None,
+        )
+        if atom is None or len(atom.arguments) != 4:
+            return None
+        try:
+            bounds = tuple(int(item) for item in atom.arguments)
+        except ValueError:
+            return None
+        if bounds[2] < bounds[0] or bounds[3] < bounds[1]:
+            return None
+        return bounds  # type: ignore[return-value]
+
+    def modal_touching(
+        self,
+        scene: Scene,
+        legal_actions: tuple[int, ...],
+        *,
+        max_expansions: int,
+    ) -> ModalReachability | None:
+        """Exhaust the represented finite board for an adjacency goal."""
+
+        bounds = self._frame_bounds(scene)
+        if bounds is None or not self.touching_goal_evidence:
+            return None
+        by_subject = {
+            subject
+            for item in self.transformations.values()
+            for subject in item.subjects
+        }
+        movable = [item for item in scene.objects if item.object_id in by_subject]
+        targets = [
+            item for item in scene.objects if item.object_id not in by_subject
+        ]
+        if len(movable) != 1 or len(targets) != 1:
+            return None
+        operators = sorted(
+            (item.action_id, item.parameters)
+            for item in self.transformations.values()
+            if item.action_id in legal_actions
+            and movable[0].object_id in item.subjects
+        )
+        if not operators:
+            return None
+        start = movable[0].centroid
+        target = targets[0].centroid
+        frontier: list[tuple[tuple[int, int], tuple[int, ...]]] = [(start, ())]
+        visited = {start}
+        solutions: list[tuple[int, ...]] = []
+        expansions = 0
+        while frontier:
+            next_frontier: list[tuple[tuple[int, int], tuple[int, ...]]] = []
+            for state, path in frontier:
+                if (
+                    abs(state[0] - target[0])
+                    + abs(state[1] - target[1])
+                    == 1
+                ):
+                    solutions.append(path)
+                    continue
+                for action_id, vector in operators:
+                    if expansions >= max_expansions:
+                        return ModalReachability(
+                            possible=False,
+                            impossible_within_bounds=False,
+                            shortest_actions=(),
+                            necessary_first_actions=(),
+                            reachable_states=len(visited),
+                            expansions=expansions,
+                        )
+                    expansions += 1
+                    reached = (
+                        state[0] + vector[0],
+                        state[1] + vector[1],
+                    )
+                    if not (
+                        bounds[0] <= reached[0] <= bounds[2]
+                        and bounds[1] <= reached[1] <= bounds[3]
+                    ):
+                        continue
+                    if reached not in visited:
+                        visited.add(reached)
+                        next_frontier.append((reached, (*path, action_id)))
+            if solutions:
+                break
+            frontier = next_frontier
+        shortest = min(solutions) if solutions else ()
+        first_actions = tuple(
+            sorted({path[0] for path in solutions if path})
+        )
+        return ModalReachability(
+            possible=bool(solutions),
+            impossible_within_bounds=not solutions,
+            shortest_actions=shortest,
+            necessary_first_actions=(
+                first_actions if len(first_actions) == 1 else ()
+            ),
+            reachable_states=len(visited),
+            expansions=expansions,
+        )
+
+    def observe_impossible_touching(
+        self,
+        transition: Transition,
+        before: Scene,
+        *,
+        max_expansions: int,
+    ) -> tuple[str, ...]:
+        """Learn the response used after an exhaustively impossible state."""
+
+        if not any(event.kind == "level_advanced" for event in transition.result):
+            return ()
+        if any(
+            item.action_id == transition.action_id
+            for item in self.transformations.values()
+        ):
+            return ()
+        reachability = self.modal_touching(
+            before,
+            before.available_actions,
+            max_expansions=max_expansions,
+        )
+        if reachability is None or not reachability.impossible_within_bounds:
+            return ()
+        evidence_id = _identifier(
+            "impossible-touching",
+            str(transition.action_id),
+            str(transition.before_index),
+            *transition.result_signature(),
+        )
+        evidence = self.impossible_touching_actions.setdefault(
+            transition.action_id, set()
+        )
+        created = evidence_id not in evidence
+        evidence.add(evidence_id)
+        return (evidence_id,) if created else ()
+
+    def impossible_touching_action(
+        self,
+        scene: Scene,
+        legal_actions: tuple[int, ...],
+        *,
+        max_expansions: int,
+    ) -> tuple[int, ModalReachability] | None:
+        reachability = self.modal_touching(
+            scene,
+            legal_actions,
+            max_expansions=max_expansions,
+        )
+        if reachability is None or not reachability.impossible_within_bounds:
+            return None
+        candidates = sorted(
+            (
+                -len(evidence),
+                action_id,
+            )
+            for action_id, evidence in self.impossible_touching_actions.items()
+            if action_id in legal_actions
+        )
+        if not candidates:
+            return None
+        return candidates[0][1], reachability
+
+    def modal_touching_decision(
+        self,
+        scene: Scene,
+        legal_actions: tuple[int, ...],
+        *,
+        max_expansions: int,
+    ) -> tuple[int, ModalReachability] | None:
+        """Choose from a fully explored finite reachability result."""
+
+        reachability = self.modal_touching(
+            scene,
+            legal_actions,
+            max_expansions=max_expansions,
+        )
+        if reachability is None:
+            return None
+        if reachability.possible and reachability.shortest_actions:
+            return reachability.shortest_actions[0], reachability
+        if not reachability.impossible_within_bounds:
+            return None
+        candidates = sorted(
+            (-len(evidence), action_id)
+            for action_id, evidence in self.impossible_touching_actions.items()
+            if action_id in legal_actions
+        )
+        if not candidates:
+            return None
+        return candidates[0][1], reachability
 
     def compose(
         self,
@@ -619,5 +817,11 @@ class TransformationSystem:
                 )
             ],
             "touching_goal_evidence": sorted(self.touching_goal_evidence),
+            "impossible_touching_actions": {
+                str(action_id): sorted(evidence)
+                for action_id, evidence in sorted(
+                    self.impossible_touching_actions.items()
+                )
+            },
             "law_report": self.law_report().to_dict(),
         }

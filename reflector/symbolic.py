@@ -135,6 +135,7 @@ class Scene:
                 "object_count",
                 "color_present",
                 "action_available",
+                "frame_bounds",
             }
         }
         for item in self.objects:

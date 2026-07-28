@@ -529,6 +529,175 @@ class TransformationGame:
         self._mover, self._target = self._held_out[self._test_index]
 
 
+class ModalGame:
+    """Equal-history reachability test over a learned finite operator set."""
+
+    family = "modal_reachability"
+    _VECTORS = {1: (1, 0), 3: (0, 1)}
+
+    def __init__(self, seed: int) -> None:
+        rng = random.Random(seed)
+        self._training = (1, 3, 1, 3)
+        possible_displacements = [(5, 0), (0, 5), (4, 1), (1, 4)]
+        impossible_displacements = [
+            (-5, 0),
+            (0, -5),
+            (-4, -1),
+            (-1, -4),
+        ]
+        layouts: list[
+            tuple[tuple[int, int], tuple[int, int], bool]
+        ] = []
+        for dx, dy in possible_displacements + impossible_displacements:
+            valid_starts = [
+                (x, y)
+                for y in range(1, 8)
+                for x in range(1, 8)
+                if 1 <= x + dx <= 7
+                and 1 <= y + dy <= 7
+                and (
+                    (dx >= 0 and dy >= 0)
+                    or (x >= 5 and y >= 5)
+                )
+            ]
+            mover = rng.choice(valid_starts)
+            layouts.append(
+                (
+                    mover,
+                    (mover[0] + dx, mover[1] + dy),
+                    dx >= 0 and dy >= 0,
+                )
+            )
+        rng.shuffle(layouts)
+        self._held_out = tuple(layouts)
+        self._phase = 0
+        self._mover = (1, 1)
+        self._target: tuple[int, int] | None = None
+        self._levels = 0
+        self._won = False
+        self.training_actions = (*self._training, 1, 5)
+        self.training_progress: list[int] = []
+        self.test_first_attempts = 0
+        self.test_correct_first = 0
+        self._last_attempted_phase = -1
+        self.total_levels = 2 + len(self._held_out)
+        self.oracle_actions = len(self.training_actions) + 20
+
+    @property
+    def _primitive_phase(self) -> bool:
+        return self._phase < len(self._training)
+
+    @property
+    def _possible_demo_phase(self) -> bool:
+        return self._phase == len(self._training)
+
+    @property
+    def _impossible_demo_phase(self) -> bool:
+        return self._phase == len(self._training) + 1
+
+    @property
+    def _test_index(self) -> int:
+        return self._phase - len(self._training) - 2
+
+    def _frame(self) -> tuple[tuple[int, ...], ...]:
+        grid = [[0] * 9 for _ in range(9)]
+        grid[self._mover[1]][self._mover[0]] = 2
+        if self._target is not None:
+            grid[self._target[1]][self._target[0]] = 8
+        return tuple(tuple(row) for row in grid)
+
+    def observation(self) -> Observation:
+        if self._won:
+            actions: tuple[int, ...] = ()
+        elif self._primitive_phase:
+            actions = (self._training[self._phase],)
+        elif self._possible_demo_phase:
+            actions = (1,)
+        elif self._impossible_demo_phase:
+            actions = (5,)
+        else:
+            actions = (1, 3, 5)
+        return Observation.create(
+            state="WIN" if self._won else "NOT_FINISHED",
+            available_actions=actions,
+            frame=self._frame(),
+            levels_completed=self._levels,
+        )
+
+    def _move(self, action: int) -> None:
+        dx, dy = self._VECTORS[action]
+        self._mover = (
+            min(8, max(0, self._mover[0] + dx)),
+            min(8, max(0, self._mover[1] + dy)),
+        )
+
+    def _advance(self) -> None:
+        self._levels += 1
+        self._phase += 1
+        if self._test_index == len(self._held_out):
+            self._won = True
+            return
+        mover, target, _possible = self._held_out[self._test_index]
+        self._mover, self._target = mover, target
+
+    def step(self, decision: Decision) -> None:
+        if self._primitive_phase:
+            forced = self._training[self._phase]
+            if decision.action_id != forced:
+                return
+            self._move(forced)
+            self.training_progress.append(self._levels)
+            self._phase += 1
+            if self._possible_demo_phase:
+                self._target = (5, 3)
+            return
+        if self._possible_demo_phase:
+            if decision.action_id != 1:
+                return
+            self._move(1)
+            self._levels += 1
+            self.training_progress.append(self._levels)
+            self._phase += 1
+            self._mover, self._target = (4, 4), (1, 1)
+            return
+        if self._impossible_demo_phase:
+            if decision.action_id != 5:
+                return
+            self._levels += 1
+            self.training_progress.append(self._levels)
+            self._phase += 1
+            mover, demo_target, _possible = self._held_out[0]
+            self._mover, self._target = mover, demo_target
+            return
+
+        target = self._target
+        if target is None:
+            return
+        possible = self._held_out[self._test_index][2]
+        before_distance = abs(self._mover[0] - target[0]) + abs(
+            self._mover[1] - target[1]
+        )
+        after_distance = before_distance
+        if decision.action_id in self._VECTORS:
+            self._move(decision.action_id)
+            after_distance = abs(self._mover[0] - target[0]) + abs(
+                self._mover[1] - target[1]
+            )
+        if self._last_attempted_phase != self._phase:
+            self.test_first_attempts += 1
+            correct = (
+                decision.action_id == 5
+                if not possible
+                else after_distance < before_distance
+            )
+            self.test_correct_first += int(correct)
+            self._last_attempted_phase = self._phase
+        if (not possible and decision.action_id == 5) or (
+            possible and after_distance == 1
+        ):
+            self._advance()
+
+
 class SeededRandomPolicy:
     def __init__(self, seed: int) -> None:
         self._rng = random.Random(seed)
@@ -648,6 +817,8 @@ class RunResult:
     inverse_transformations: int = 0
     comparison_laws_passed: bool = False
     multi_step_plans: int = 0
+    modal_response_evidence: int = 0
+    modal_actions_used: int = 0
 
     @property
     def completion(self) -> float:
@@ -705,6 +876,17 @@ POLICY_NAMES_V4 = (
 
 FAMILIES_V4 = ("transformation_composition",)
 
+POLICY_NAMES_V5 = (
+    "full",
+    "modal",
+    "no_modal",
+    "score_only",
+    "context_table",
+    "seeded_random",
+)
+
+FAMILIES_V5 = ("modal_reachability",)
+
 
 def _policy(name: str, seed: int) -> BenchmarkPolicy:
     if name == "full":
@@ -746,6 +928,16 @@ def _policy(name: str, seed: int) -> BenchmarkPolicy:
                 enable_transformations=name == "transformation",
             )
         )
+    if name in {"modal", "no_modal"}:
+        return SymbolicPolicy(
+            MindConfig(
+                enable_concepts=False,
+                enable_experiments=False,
+                enable_reflecting_abstraction=False,
+                enable_accommodation=False,
+                enable_modal_reasoning=name == "modal",
+            )
+        )
     if name == "context_table":
         return ContextTablePolicy()
     if name == "rare_color":
@@ -772,6 +964,8 @@ def _game(family: str, seed: int) -> DiagnosticGame:
         return AccommodationGame(seed)
     if family == "transformation_composition":
         return TransformationGame(seed)
+    if family == "modal_reachability":
+        return ModalGame(seed)
     raise ValueError(f"unknown family: {family}")
 
 
@@ -785,6 +979,7 @@ def _budget(family: str) -> int:
         "procedure_transfer": 160,
         "constructive_accommodation": 40,
         "transformation_composition": 96,
+        "modal_reachability": 72,
     }[family]
 
 
@@ -851,6 +1046,25 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         if isinstance(policy, SymbolicPolicy)
         else 0
     )
+    modal_evidence = (
+        sum(
+            len(evidence)
+            for evidence in (
+                policy.mind.transformations.impossible_touching_actions.values()
+            )
+        )
+        if isinstance(policy, SymbolicPolicy)
+        and policy.mind.config.enable_modal_reasoning
+        else 0
+    )
+    modal_actions = (
+        sum(
+            int(step.decision.reason.startswith("modal-"))
+            for step in policy.trace.steps
+        )
+        if isinstance(policy, SymbolicPolicy)
+        else 0
+    )
     return RunResult(
         policy_name,
         family,
@@ -870,6 +1084,8 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         inverse_count,
         laws_passed,
         multi_step_plans,
+        modal_evidence,
+        modal_actions,
     )
 
 
@@ -898,8 +1114,8 @@ def run_validation(
         raise ValueError("seed_count must be at least 2")
     if seed_start < 0:
         raise ValueError("seed_start must be non-negative")
-    if suite not in {"v1", "v2", "v3", "v4"}:
-        raise ValueError("suite must be v1, v2, v3, or v4")
+    if suite not in {"v1", "v2", "v3", "v4", "v5"}:
+        raise ValueError("suite must be v1, v2, v3, v4, or v5")
     families = (
         FAMILIES
         if suite == "v1"
@@ -908,6 +1124,8 @@ def run_validation(
         else FAMILIES_V3
         if suite == "v3"
         else FAMILIES_V4
+        if suite == "v4"
+        else FAMILIES_V5
     )
     policies = (
         POLICY_NAMES
@@ -915,6 +1133,8 @@ def run_validation(
         else POLICY_NAMES_V3
         if suite == "v3"
         else POLICY_NAMES_V4
+        if suite == "v4"
+        else POLICY_NAMES_V5
     )
     results = [
         run_one(policy, family, seed)
@@ -1101,8 +1321,9 @@ def run_validation(
         v4_payload: dict[str, object] = {
             "benchmark": "reflector_symbolic_diagnostics_v4",
             "claim_scope": (
-                "transformation composition, reversal, and finite comparison "
-                "laws on synthetic interactions; not an ARC score"
+                "transformation composition, represented inverse partners, "
+                "and finite comparison laws on synthetic interactions; not "
+                "an ARC score"
             ),
             "seed_start": seed_start,
             "seed_count": seed_count,
@@ -1137,6 +1358,90 @@ def run_validation(
             canonical.encode()
         ).hexdigest()
         return v4_payload
+
+    if suite == "v5":
+        modal_effect = _bootstrap_difference(
+            values("modal", "efficiency"),
+            values("no_modal", "efficiency"),
+        )
+        intervention_accuracy = _bootstrap_difference(
+            values("modal", "held_out_first_attempt_accuracy"),
+            values("no_modal", "held_out_first_attempt_accuracy"),
+        )
+        histories_by_seed = {
+            seed: {
+                (item.training_actions, item.training_progress)
+                for item in results
+                if item.seed == seed
+            }
+            for seed in range(seed_start, seed_start + seed_count)
+        }
+        criteria = {
+            "all_actions_legal": all(item.legal for item in results),
+            "identical_training_histories": all(
+                len(items) == 1 for items in histories_by_seed.values()
+            ),
+            "modal_completion_at_least_0_95": mean(
+                values("modal", "completion")
+            )
+            >= 0.95,
+            "full_completion_at_least_0_95": mean(
+                values("full", "completion")
+            )
+            >= 0.95,
+            "modal_reasoning_improves_efficiency_ci": modal_effect[1] > 0.0,
+            "modal_reasoning_improves_intervention_accuracy_ci": (
+                intervention_accuracy[1] > 0.0
+            ),
+            "impossibility_response_is_evidence_grounded": mean(
+                values("modal", "modal_response_evidence")
+            )
+            >= 1.0,
+            "modal_response_is_operative": mean(
+                values("modal", "modal_actions_used")
+            )
+            >= 4.0,
+            "ablation_has_no_modal_side_channel": mean(
+                values("no_modal", "modal_actions_used")
+            )
+            == 0.0,
+        }
+        v5_payload: dict[str, object] = {
+            "benchmark": "reflector_symbolic_diagnostics_v5",
+            "claim_scope": (
+                "finite modal reachability used in synthetic control after "
+                "equal training histories; not an ARC score"
+            ),
+            "seed_start": seed_start,
+            "seed_count": seed_count,
+            "policies": list(policies),
+            "families": list(families),
+            "aggregates": aggregates,
+            "paired_differences": {
+                "modal_minus_no_modal_efficiency": {
+                    "mean": modal_effect[0],
+                    "ci95": [modal_effect[1], modal_effect[2]],
+                },
+                "modal_minus_no_modal_intervention_accuracy": {
+                    "mean": intervention_accuracy[0],
+                    "ci95": [
+                        intervention_accuracy[1],
+                        intervention_accuracy[2],
+                    ],
+                },
+            },
+            "criteria": criteria,
+            "causal_thesis_supported": all(criteria.values()),
+            "verdict": "supported" if all(criteria.values()) else "not_supported",
+            "runs": [asdict(item) for item in results],
+        }
+        canonical = json.dumps(
+            v5_payload, sort_keys=True, separators=(",", ":")
+        )
+        v5_payload["result_sha256"] = hashlib.sha256(
+            canonical.encode()
+        ).hexdigest()
+        return v5_payload
 
     abstraction = _bootstrap_difference(
         values("full", "efficiency"), values("no_abstraction", "efficiency")

@@ -46,6 +46,7 @@ class MindConfig:
     enable_reflecting_abstraction: bool = True
     enable_accommodation: bool = True
     enable_transformations: bool = True
+    enable_modal_reasoning: bool = True
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
     information_weight: float = 1.0
@@ -63,6 +64,7 @@ class MindConfig:
             "enable_reflecting_abstraction",
             "enable_accommodation",
             "enable_transformations",
+            "enable_modal_reasoning",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -203,6 +205,21 @@ class SymbolicMind:
                         )
                     )
                 )
+                if self.config.enable_modal_reasoning:
+                    new_abstractions = tuple(
+                        sorted(
+                            set(new_abstractions)
+                            | set(
+                                self.transformations.observe_impossible_touching(
+                                    transition,
+                                    self._last_scene,
+                                    max_expansions=(
+                                        self.config.planner_max_expansions
+                                    ),
+                                )
+                            )
+                        )
+                    )
             new_hypotheses = self.hypotheses.observe(transition, self.schemas)
             if self.config.enable_reflecting_abstraction:
                 new_abstractions = self.abstractions.observe_procedure(
@@ -287,6 +304,19 @@ class SymbolicMind:
             and self.config.enable_transformations
             else None
         )
+        modal_action = (
+            self.transformations.modal_touching_decision(
+                self._last_scene,
+                legal_actions,
+                max_expansions=self.config.planner_max_expansions,
+            )
+            if self._last_scene is not None
+            and self.config.enable_planning
+            and self.config.enable_transformations
+            and self.config.enable_modal_reasoning
+            and transformation_plan is None
+            else None
+        )
         self.last_plan = (
             Plan(
                 goal=Goal("touching", priority=1.0),
@@ -296,6 +326,14 @@ class SymbolicMind:
                 expansions=transformation_plan[2],
             )
             if transformation_plan is not None
+            else Plan(
+                goal=Goal("impossible_touching", priority=1.0),
+                actions=(modal_action[0],),
+                predicted_events=("level_advanced",),
+                confidence=1.0,
+                expansions=modal_action[1].expansions,
+            )
+            if modal_action is not None
             else Plan(
                 goal=Goal("level_advanced", priority=1.0),
                 actions=procedure[0],
@@ -322,6 +360,18 @@ class SymbolicMind:
                 f"actions={transformation_plan[0]},"
                 f"confidence={transformation_plan[1]:.3f},"
                 f"expansions={transformation_plan[2]}",
+            )
+        if modal_action is not None:
+            modal_kind = (
+                "modal-possible:"
+                if modal_action[1].possible
+                else "modal-impossible:"
+            )
+            return (
+                modal_action[0],
+                f"{modal_kind}"
+                f"reachable_states={modal_action[1].reachable_states},"
+                f"expansions={modal_action[1].expansions}",
             )
 
         scored: list[
