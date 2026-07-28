@@ -27,6 +27,10 @@ not treat them as authority for claims the implementation has not measured.
   relationships among prior structures, not a claim of psychological fidelity.
   The locally consulted file contains only the front matter and Campbell's
   26-page theoretical introduction, not the complete book.
+- Richard S. Sutton and Andrew G. Barto, *Reinforcement Learning: An
+  Introduction*, locally consulted 352-page “Second edition, in progress”
+  draft dated 2014–2015. It is used to distinguish value/policy improvement
+  from constructive change to the agent's representational language.
 
 The repository does not redistribute copyrighted book or thesis files. Add
 locally obtained research material under `references/local/`, which is ignored,
@@ -40,3 +44,6 @@ consequences are in
 [`AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md`](AUTHORITATIVE_REFLECTING_ABSTRACTION_SURVEY.md).
 The transformation/morphism distinction and its executable category-law gate
 are in [`MORPHISMS_CATEGORIES_NOTES.md`](MORPHISMS_CATEGORIES_NOTES.md).
+The reinforcement-learning comparison and non-scalar structural-credit
+contract are in
+[`SUTTON_BARTO_CONSTRUCTIVIST_GAP.md`](SUTTON_BARTO_CONSTRUCTIVIST_GAP.md).

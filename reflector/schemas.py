@@ -83,6 +83,7 @@ class SchemaPrediction:
     support: int
     confidence: float
     transferred: bool
+    negated_predicates: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -93,6 +94,7 @@ class SchemaPrediction:
             "support": self.support,
             "confidence": self.confidence,
             "transferred": self.transferred,
+            "negated_predicates": list(self.negated_predicates),
         }
 
 
@@ -292,6 +294,7 @@ class SchemaStore:
             support=support,
             confidence=(confirmations + 1) / (opportunities + 2),
             transferred=not bool(exact),
+            negated_predicates=(),
         )
 
     def event_probability(self, action_id: int, event_kind: str) -> float:

@@ -33,6 +33,9 @@ class StructuralAssessment:
     licensing_structures: tuple[str, ...]
     confirmed: tuple[str, ...]
     contradicted: tuple[str, ...]
+    predicted_absent: tuple[str, ...]
+    confirmed_absent: tuple[str, ...]
+    contradicted_absent: tuple[str, ...]
     unpredicted: tuple[str, ...]
     pragmatic: tuple[str, ...]
     epistemic: tuple[str, ...]
@@ -42,7 +45,7 @@ class StructuralAssessment:
 
     @property
     def is_disequilibrium(self) -> bool:
-        return bool(self.contradicted)
+        return bool(self.contradicted or self.contradicted_absent)
 
     def to_dict(self) -> dict[str, Any]:
         return {**asdict(self), "is_disequilibrium": self.is_disequilibrium}
@@ -107,11 +110,48 @@ class StructuralCreditLedger:
 
         observed = transition.result_signature()
         predicted = prediction.result if prediction is not None else ()
-        predicted_set = set(predicted)
         observed_set = set(observed)
-        confirmed = tuple(sorted(predicted_set & observed_set))
-        contradicted = tuple(sorted(predicted_set - observed_set))
-        unpredicted = tuple(sorted(observed_set - predicted_set))
+        observed_kinds = {_kind(term) for term in observed}
+        confirmed = tuple(
+            sorted(
+                term
+                for term in predicted
+                if (
+                    term in observed_set
+                    if "(" in term
+                    else term in observed_kinds
+                )
+            )
+        )
+        contradicted = tuple(sorted(set(predicted) - set(confirmed)))
+        matched_observed = {
+            term
+            for term in observed
+            if any(
+                forecast == term
+                if "(" in forecast
+                else forecast == _kind(term)
+                for forecast in predicted
+            )
+        }
+        predicted_absent = (
+            prediction.negated_predicates if prediction is not None else ()
+        )
+        confirmed_absent = tuple(
+            sorted(
+                proposition
+                for proposition in predicted_absent
+                if proposition not in observed_kinds
+            )
+        )
+        contradicted_absent = tuple(
+            sorted(
+                proposition
+                for proposition in predicted_absent
+                if proposition in observed_kinds
+            )
+        )
+        unpredicted = tuple(sorted(observed_set - matched_observed))
         pragmatic = tuple(
             sorted(
                 term
@@ -140,14 +180,15 @@ class StructuralCreditLedger:
         )
         perturbation = (
             tuple(sorted(set(context) - shared))
-            if (contradicted or unpredicted) and prediction is not None
+            if (contradicted or contradicted_absent or unpredicted)
+            and prediction is not None
             else ()
         )
         response = (
             "differentiate"
-            if contradicted and perturbation
+            if (contradicted or contradicted_absent) and perturbation
             else "specialize"
-            if contradicted
+            if contradicted or contradicted_absent
             else "retain"
         )
         licensing = prediction.evidence if prediction is not None else ()
@@ -171,6 +212,9 @@ class StructuralCreditLedger:
             licensing_structures=licensing,
             confirmed=confirmed,
             contradicted=contradicted,
+            predicted_absent=predicted_absent,
+            confirmed_absent=confirmed_absent,
+            contradicted_absent=contradicted_absent,
             unpredicted=unpredicted,
             pragmatic=pragmatic,
             epistemic=epistemic,
@@ -226,9 +270,15 @@ class StructuralCreditLedger:
             ):
                 chosen[item.proposition] = item
         result = list(prediction.result if prediction is not None else ())
+        negated = set(
+            prediction.negated_predicates if prediction is not None else ()
+        )
         for proposition, item in sorted(chosen.items()):
             result = [term for term in result if _kind(term) != proposition]
-            if item.operation == "add":
+            if item.operation == "remove":
+                negated.add(proposition)
+            else:
+                negated.discard(proposition)
                 result.append(proposition)
         evidence = set(prediction.evidence if prediction is not None else ())
         evidence.update(item.accommodation_id for item in chosen.values())
@@ -245,6 +295,7 @@ class StructuralCreditLedger:
             support=support,
             confidence=confidence,
             transferred=True,
+            negated_predicates=tuple(sorted(negated)),
         )
 
     def _rebuild_accommodations(self) -> tuple[str, ...]:
@@ -258,6 +309,10 @@ class StructuralCreditLedger:
             for term in assessment.contradicted:
                 grouped.setdefault(
                     (assessment.action_id, "remove", _kind(term)), []
+                ).append(assessment)
+            for proposition in assessment.contradicted_absent:
+                grouped.setdefault(
+                    (assessment.action_id, "add", proposition), []
                 ).append(assessment)
             for term in assessment.unpredicted:
                 grouped.setdefault(

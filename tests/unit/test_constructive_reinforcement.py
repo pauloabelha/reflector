@@ -161,8 +161,57 @@ def test_repeated_disequilibrium_constructs_a_transferable_condition() -> None:
     assert accommodated.transferred
     assert "level_advanced(scene)" not in accommodated.result
     assert "object_moved(piece,1,0)" not in accommodated.result
+    assert accommodated.negated_predicates == (
+        "level_advanced",
+        "object_moved",
+    )
     assert "no_observed_change" in accommodated.result
     assert any(
         item.condition == ("barrier_present",)
         for item in ledger.accommodations.values()
     )
+
+    held_out_assessment = ledger.assess(
+        _transition(
+            4,
+            held_out,
+            (Event("no_observed_change"),),
+        ),
+        accommodated,
+    )
+    assessment = ledger.assessments[held_out_assessment]
+    assert assessment.confirmed_absent == (
+        "level_advanced",
+        "object_moved",
+    )
+    assert assessment.contradicted_absent == ()
+    assert not assessment.is_disequilibrium
+
+
+def test_learned_negation_is_falsifiable_not_a_reward_penalty() -> None:
+    prediction = SchemaPrediction(
+        action_id=1,
+        result=("no_observed_change(scene)",),
+        evidence=("accommodation-barrier",),
+        evidence_contexts=(("barrier_present",),),
+        support=3,
+        confidence=0.75,
+        transferred=True,
+        negated_predicates=("level_advanced", "object_moved"),
+    )
+    ledger = StructuralCreditLedger()
+    assessment_id = ledger.assess(
+        _transition(
+            0,
+            (Atom("barrier_present"), Atom("switch_on")),
+            (Event("object_moved", "piece", ("1", "0")),),
+        ),
+        prediction,
+    )
+    assessment = ledger.assessments[assessment_id]
+
+    assert assessment.confirmed_absent == ("level_advanced",)
+    assert assessment.contradicted_absent == ("object_moved",)
+    assert assessment.pragmatic == ()
+    assert assessment.response == "differentiate"
+    assert assessment.is_disequilibrium
