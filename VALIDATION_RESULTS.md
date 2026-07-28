@@ -2,6 +2,49 @@
 
 Run date: 2026-07-27.
 
+## V8 conclusion
+
+The narrow represented-language-invention claim is **supported** on its
+untouched confirmation split. A bounded, hand-authored cyclic-predicate
+inducer recorded a rejected trial, later earned a positive-utility parented
+revision, licensed an orientation operator with immutable provenance, and
+caused a held-out transition to be expressed in the compositional language.
+
+This is synthetic causal evidence for explicit meta-evaluation of one language
+invention strategy. It is not task-score evidence, arbitrary DSL invention,
+source-code evolution, psychological metareflection, or ARC-AGI-3
+generalization.
+
+## V8 untouched confirmation set
+
+The single run used seeds 210,000–210,029 after freeze commit `51997a4` and
+passed all fourteen frozen criteria:
+
+| Preregistered criterion | Result |
+| --- | --- |
+| Independent oracle accepts strong histories | Pass: 100% |
+| Independent oracle rejects weak histories | Pass: 100% |
+| Paired evidence hashes identical | Pass: 100% |
+| Early rejected trial recorded | Pass: 100% |
+| Exactly one orientation operator constructed | Pass: 100% |
+| Validated mechanism has positive utility | Pass: 100%; mean 196.3 |
+| Ablation has no language structures | Pass: 100% |
+| Weak histories accept no operator | Pass: 100% |
+| Non-cyclic controls abstain | Pass: 100% |
+| Held-out transition normalized | Pass: 100% |
+| Ablation preserves held-out transition | Pass: 100% |
+| Provenance endpoints valid | Pass: 100% |
+| Held-out identity does not leak | Pass: 100% |
+| Repeated reflection is idempotent | Pass: 100% |
+
+The canonical report is
+[`validation-v8-holdout.json`](validation-v8-holdout.json), file SHA-256
+`c1de69980ae5db46bcac72f6f81e258d5d2a552b91c6c218bbe674f0b0888736`
+and embedded result SHA-256
+`c99d21fde56ec810f1e715090621c49e007fb8237992f44102ccda3f456faa0a`.
+The frozen protocol and development result are recorded in
+[`VALIDATION_V8.md`](VALIDATION_V8.md).
+
 ## V7 conclusion
 
 The narrow causal comparison-composition claim is **supported** on its

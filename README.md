@@ -136,15 +136,15 @@ This benchmark compares the deployed policy with ablations and simple
 baselines. It is explicitly not an ARC score; see
 [`VALIDATION_V8.md`](VALIDATION_V8.md) for the latest frozen claim boundary and
 criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for the original
-falsification plus the v2–v7 confirmation results. V3 supports narrow
+falsification plus the v2–v8 confirmation results. V3 supports narrow
 conditional accommodation; v4 supports executable transformation composition
 and v5 supports bounded possible/impossible reachability in control under
 identical training histories. V6 supports direct causal transfer through a
 typed finite comparison; v7 supports bounded endpoint-valid two-step
-comparison composition. V8 preregisters a bounded language-invention mechanism
-test; its confirmation result is not yet claimed. None is evidence of general
-equilibration, unrestricted category-theoretic cognition, or official-game
-generalization.
+comparison composition; v8 supports explicit meta-evaluation and held-out
+normalization by one bounded language-invention mechanism. None is evidence of
+general equilibration, unrestricted category-theoretic cognition, arbitrary
+language invention, or official-game generalization.
 
 Run a reproducible population evaluation (network isolation is on by default):
 

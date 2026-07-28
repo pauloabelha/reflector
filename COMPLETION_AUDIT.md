@@ -41,7 +41,7 @@ test merely passed.
 | Bounded possible/impossible modal control | Proven synthetically | Preregistered v5 untouched result; search-cap exhaustion returns unknown. |
 | Direct typed comparison transfer | Proven synthetically | Preregistered v6 untouched result with leakage and negative controls. |
 | Endpoint-valid comparison composition | Proven synthetically | Preregistered v7 untouched result with composition-only ablation. |
-| General ARC transfer | Missing | None of v1–v7 is an official ARC score or cross-game public-suite result. |
+| General ARC transfer | Missing | None of v1–v8 is an official ARC score or cross-game public-suite result. |
 
 ## Reflecting abstraction and epistemic compression
 
@@ -52,7 +52,7 @@ test merely passed.
 | Recoverable redundancy diagnostics | Proven as approximation | `compression.py` detects rediscovery, equivalent structures, missing retained information, and repeated planning work. |
 | Counterfactual suffix replay and description/planner savings | Proven as trace-only approximation | Counterfactual/compression commands and tests label fixed-observation limitations. |
 | True counterfactual action savings | Missing | Requires restorable official environment branches; current trace injection cannot establish alternate outcomes. |
-| Reflection over mechanisms that invent new languages | Proven as a bounded first mechanism | The cyclic-predicate inducer is a parented, serializable object with rejected/accepted proposals, evidence, complexity utility, retained products, dependency edges, UI visibility, and a causal ablation. This is not general autonomous DSL or source-code invention. |
+| Reflection over mechanisms that invent new languages | Proven as a bounded first mechanism | The cyclic-predicate inducer is a parented, serializable object with rejected/accepted proposals, evidence, complexity utility, retained products, dependency edges, UI visibility, and a same-evidence causal ablation. Preregistered v8 passed all 14 untouched criteria. This is not general autonomous DSL or source-code invention. |
 | General Piagetian equilibration or psychological fidelity | Deliberately unclaimed | Theory, decision log, and validation protocols constrain claims to implemented mechanisms. |
 
 ## Meta-evolver and evaluation control plane

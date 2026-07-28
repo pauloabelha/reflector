@@ -300,3 +300,18 @@ provisional mechanism from one whose product utility pays the mechanism-level
 complexity charge. The accepted claim is limited to explicit meta-evaluation of
 one bounded, hand-authored invention strategy. It is not autonomous discovery
 of arbitrary DSLs, source-code evolution, or official ARC generalization.
+
+## 2026-07-27 — Accept bounded language-mechanism reflection, not general invention
+
+Validation v8 froze its independent utility oracle, same-evidence ablation,
+weak and non-cyclic controls, held-out intervention, provenance checks, and
+fourteen criteria in commit `51997a4`. The single untouched run over seeds
+210,000–210,029 passed every criterion. All enabled histories constructed one
+operator and one positive-utility validated mechanism revision; all ablations
+and controls abstained as required.
+
+Explicit meta-evaluation of the cyclic-predicate inducer is therefore accepted
+as a bounded mechanism result. The effect is a held-out representational
+normalization, not improved game score or action efficiency. General language
+invention, autonomous source changes, psychological metareflection, and
+official ARC transfer remain unvalidated.

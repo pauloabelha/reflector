@@ -1,7 +1,6 @@
 # Reflector validation protocol v8
 
-Status: runner and protocol frozen after a passing development run;
-confirmation seeds have not been executed.
+Status: confirmed on the untouched preregistered split.
 
 V8 tests the narrow claim that a represented language-invention mechanism can
 record falsifiable trials, distinguish insufficient from sufficient evidence,
@@ -138,6 +137,27 @@ development report is `validation-v8-development.json`, with file SHA-256
 `a56eec45d98bf7c47c69ca53cc0794cbf99f81584e007bca595210a14b4572cf`
 and embedded result SHA-256
 `8b514ac3ddb890e355802b71d27d2008686ec5d8d0013dc58d84b0a7981d1739`.
+
+## Untouched confirmation result
+
+The single execution of seeds 210,000–210,029 after freeze commit `51997a4`
+passed all fourteen preregistered criteria. Every enabled run recorded an early
+rejected trial, then constructed exactly one orientation operator and one
+positive-utility validated mechanism revision. Mechanism utility averaged
+`196.3` and ranged from `166` to `236`.
+
+Every paired ablation had the identical canonical schema-evidence hash and
+constructed no language proposal or operator. All weak-evidence and non-cyclic
+controls abstained. Every enabled held-out transition was normalized, every
+ablated transition remained byte-identical, all provenance endpoints resolved,
+no held-out identity leaked, and repeated reflection was structurally
+idempotent.
+
+The canonical report is `validation-v8-holdout.json`, with file SHA-256
+`c1de69980ae5db46bcac72f6f81e258d5d2a552b91c6c218bbe674f0b0888736`
+and embedded result SHA-256
+`c99d21fde56ec810f1e715090621c49e007fb8237992f44102ccda3f456faa0a`.
+No code or criterion changed after this result was viewed.
 
 ## Preregistered support criteria
 
