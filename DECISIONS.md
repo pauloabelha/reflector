@@ -377,3 +377,23 @@ turn rendered demonstrations into effective interventions for one public game.
 This is not evidence of general relational induction, cross-game transfer, or
 competitive leaderboard performance. The next mutation must preserve all four
 wins and show a new official environment-level effect.
+
+## 2026-07-28 — Promote cross-level relation retention as operative transfer
+
+The accepted v20 agent solved `ft09` level 1 by inducing a local
+equality/difference relation from three solved panels, but discarded that
+relation at the level boundary. Level 2 presented the same clue vocabulary in
+two overlapping panels with no solved example. V21 retains the induced mapping
+inside the agent episode and applies it only when the new frame supplies
+compatible panel structure.
+
+The frozen v21 candidate completed `ft09` levels 1 and 2 in four and seven
+actions. It preserved `r11l`, `lf52`, and `tn36` at their exact v20 action
+counts. On all 25 public-development games it completed five levels, scored
+0.8359967620, and improved v20 by 83.7%. The packaged candidate passed the
+network-disabled Kaggle smoke test.
+
+This is accepted as finite operative transfer of one induced relation across a
+level boundary. It is stronger than coordinate replay because the second
+layout changes and panels overlap, but it does not establish general schema
+transfer, arbitrary relation learning, or a Kaggle leaderboard result.

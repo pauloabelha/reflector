@@ -4,6 +4,8 @@ Evaluation date: 2026-07-28
 
 Primary evidence:
 
+- [v21 cross-level relation result](reports/official-public-evaluation-v21-cross-level-relations-400.json)
+- [v21 targeted promotion summary](reports/official-targeted-evaluation-v21-summary.json)
 - [v20 local-relation result](reports/official-public-evaluation-v20-local-relations-400.json)
 - [v20 targeted promotion summary](reports/official-targeted-evaluation-v20-summary.json)
 - [v18 accommodated-affordance result](reports/official-public-evaluation-v18-accommodated-400.json)
@@ -18,9 +20,9 @@ Primary evidence:
 
 ## Verdict
 
-**The current accepted Reflector v20 agent scores 0.4550443810 on the 25
-official public ARC-AGI-3 games. It completes four levels across four games.
-This is a reproducible 72.0% score improvement over v18, but it is still far
+**The current accepted Reflector v21 agent scores 0.8359967620 on the 25
+official public ARC-AGI-3 games. It completes five levels across four games.
+This is a reproducible 83.7% score improvement over v20, but it is still far
 from competitive performance.**
 
 This is the first legitimate environment-level test of the research platform.
@@ -28,12 +30,22 @@ It proves that the agent is runnable, submission-compatible, and capable of
 limited public-game progress. It still contradicts any claim that the current
 symbolic mechanisms are competitive.
 
-| Result | Reflector v20 | Reflector v18 | Reflector v14 | v14 control |
+| Result | Reflector v21 | Reflector v20 | Reflector v18 | Reflector v14 |
 | --- | ---: | ---: | ---: | ---: |
 | Public games reported | 25/25 | 25/25 | 25/25 | 25/25 |
-| ARC score | 0.4550443810 | 0.2645681905 | 0.2548989649 | 0.0 |
-| Levels completed | 4 | 3 | 2 | 0 |
+| ARC score | 0.8359967620 | 0.4550443810 | 0.2645681905 | 0.2548989649 |
+| Levels completed | 5 | 4 | 3 | 2 |
 | Actions | 10,000 | 10,000 | 10,000 | 10,000 |
+
+V21 retained the equality/difference relation induced during `ft09` level 1
+and applied it to level 2, where the same clue vocabulary appears in two
+overlapping panels without solved examples. It completed level 2 in seven
+actions while preserving every v20 result.
+
+- frozen source commit:
+  `e7037b4a5a2ac56b026f9ca3acbd559bbd0cb0fc`
+- v21 structured result SHA-256:
+  `59e09da642949de4897917ca6cea1fb7a00771d7adbbb445283dc6f09fa61417`
 
 V20 preserved every v18 completion at the same action count and added `ft09`
 level 1 in four actions. From the rendered frame alone, it detects repeated
@@ -87,6 +99,26 @@ Two isolated mechanisms were tested after v14:
 6. v20 induced local same/different constraints from repeated panels and
    repaired the most inconsistent panel. It preserved all v18 wins and added
    `ft09` in four actions, so it was promoted.
+7. v21 retained the induced relation across levels and applied it to
+   overlapping panels with no solved examples. It added `ft09` level 2 in
+   seven actions while preserving every v20 result, so it was promoted.
+
+## Competition score status
+
+Status checked: 2026-07-28.
+
+| Surface | Reflector status | Score | Rank |
+| --- | --- | ---: | ---: |
+| Local official public-development suite | evaluated, 25/25 games | 0.8359967620 | not a leaderboard |
+| Kaggle public leaderboard | not submitted | unavailable | unranked |
+| Kaggle private leaderboard | no evaluated submission | unavailable | unavailable |
+
+The Kaggle competition evaluates a separate private set of 110 games, with
+half contributing to the public leaderboard and half to the private
+leaderboard. The dynamic leaderboard requires Kaggle access and must never be
+inferred from this local score. Future promotion reports will update this
+table, identify the responsible mechanism and same-parent comparison, and
+state explicitly whether an actual Kaggle submission was made.
 
 These negative results are intentionally retained. The evidence indicates that
 flat coordinate novelty is weak, but equal action-family allocation is too
@@ -206,9 +238,9 @@ The exact frozen agent still passes the network-disabled Kaggle smoke test and
 exports both intended artifacts:
 
 - overlay SHA-256:
-  `770f2fa671b9e0f20f19eb968cdc212e1dd39579da2eca9f92a43eb2ef7545d4`
+  `0b9580fefba5f87efea6df351877d83d01f3704d591b7d79574c420c3f2c0033`
 - notebook SHA-256:
-  `28695fbe1372a12329cee99e238ba7fcfcbb7f95e5b4a7fa058867d149632a27`
+  `28b86409357fb15270d7a9b5a40257609b91e899892b6728861fc8b82902ddc7`
 
 Thus the submission architecture is validated locally. Performance is not.
 The 25 public games are development evidence, not a Kaggle leaderboard score;
