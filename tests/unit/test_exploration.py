@@ -336,6 +336,39 @@ def test_local_relation_solver_induces_and_repairs_repeated_panel_rule() -> None
     assert choice.token.data == (("x", 38), ("y", 38))
     assert "untried" in choice.reason
 
+    transfer_pixels = [[5 for _x in range(size)] for _y in range(size)]
+    transfer_clues = (
+        (0, 2, 2, 0, 12, 0, 0, 2, 0),
+        (0, 2, 0, 2, 12, 2, 0, 0, 2),
+    )
+    for center_y, clue in zip((22, 38), transfer_clues):
+        center_x = 28
+        for dx, dy in directions:
+            block_x = center_x + dx * step
+            block_y = center_y + dy * step
+            for y in range(block_y, block_y + block_size):
+                for x in range(block_x, block_x + block_size):
+                    transfer_pixels[y][x] = 9
+        for clue_index, color in enumerate(clue):
+            clue_x = center_x + clue_index % 3 * subcell
+            clue_y = center_y + clue_index // 3 * subcell
+            for y in range(clue_y, clue_y + subcell):
+                for x in range(clue_x, clue_x + subcell):
+                    transfer_pixels[y][x] = color
+    transfer = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=tuple(tuple(row) for row in transfer_pixels),
+        levels_completed=1,
+    )
+    transfer_scene = _scene(transfer)
+    explorer.observe(transfer, transfer_scene)
+
+    transferred_choice = explorer.select(transfer, transfer_scene, (6,))
+
+    assert transferred_choice.token.data == (("x", 22), ("y", 16))
+    assert explorer.to_dict()["learned_local_relations"] == 2
+
 
 def test_policy_explorer_is_an_exact_configuration_ablation() -> None:
     from reflector.mind import MindConfig

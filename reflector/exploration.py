@@ -81,6 +81,7 @@ class EpistemicExplorer:
     pending_role: ActionRole | None = None
     role_trials: Counter[ActionRole] = field(default_factory=Counter)
     role_responses: Counter[ActionRole] = field(default_factory=Counter)
+    learned_local_relation: dict[int, bool] = field(default_factory=dict)
 
     def observe(self, observation: Observation, scene: Scene) -> StateKey:
         """Record the outcome of the last issued intervention exactly once."""
@@ -496,14 +497,14 @@ class EpistemicExplorer:
             == (item.bbox[2] - item.bbox[0] + 1)
             * (item.bbox[3] - item.bbox[1] + 1)
         )
-        if len(blocks) < 24:
+        if len(blocks) < 8:
             return ()
         sizes = Counter(item.bbox[2] - item.bbox[0] + 1 for item in blocks)
         size, _support = max(sizes.items(), key=lambda item: (item[1], item[0]))
         blocks = tuple(
             item for item in blocks if item.bbox[2] - item.bbox[0] + 1 == size
         )
-        if len(blocks) < 24 or size % 3:
+        if len(blocks) < 8 or size % 3:
             return ()
         origins = {(item.bbox[0], item.bbox[1]): item for item in blocks}
         x_values = sorted({point[0] for point in origins})
@@ -568,20 +569,21 @@ class EpistemicExplorer:
             if len(set(clue)) < 2:
                 continue
             panels.append((clue, center_color, tuple(neighbors)))
-        if len(panels) < 3:
-            return ()
-
-        relation_counts: dict[int, Counter[bool]] = {}
         clue_indexes = (0, 1, 2, 3, 5, 6, 7, 8)
-        for clue, center_color, panel_neighbors in panels:
-            for clue_index, (_item, color) in zip(clue_indexes, panel_neighbors):
-                relation_counts.setdefault(clue[clue_index], Counter())[
-                    color == center_color
-                ] += 1
-        relation = {
-            symbol: max(counts, key=lambda value: (counts[value], value))
-            for symbol, counts in relation_counts.items()
-        }
+        if len(panels) >= 3:
+            relation_counts: dict[int, Counter[bool]] = {}
+            for clue, center_color, panel_neighbors in panels:
+                for clue_index, (_item, color) in zip(clue_indexes, panel_neighbors):
+                    relation_counts.setdefault(clue[clue_index], Counter())[
+                        color == center_color
+                    ] += 1
+            self.learned_local_relation = {
+                symbol: max(counts, key=lambda value: (counts[value], value))
+                for symbol, counts in relation_counts.items()
+            }
+        relation = self.learned_local_relation
+        if not panels or not relation:
+            return ()
 
         ranked: list[tuple[int, tuple[tuple[int, int], ...]]] = []
         for clue, center_color, panel_neighbors in panels:
@@ -705,6 +707,7 @@ class EpistemicExplorer:
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()
             ),
+            "learned_local_relations": len(self.learned_local_relation),
             "frontier_states": sum(
                 self._has_frontier(state) for state in self.tokens_by_state
             ),
