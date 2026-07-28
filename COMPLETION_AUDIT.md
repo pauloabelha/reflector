@@ -4,10 +4,11 @@ Audit date: 2026-07-27.
 
 Overall status: **functional open-source v1, but the full original goal is not
 yet proven complete**. Kaggle architecture, the symbolic inference vertical
-slice, development control plane, replay UI, and synthetic mechanism
-validation are executable. Official 25-game evidence, a scored Kaggle rerun,
-publication/account actions, genuine environment branch rollouts, and parts of
-the deepest meta-reflection/UI specification remain incomplete.
+slice, development control plane, replay UI, synthetic mechanism validation,
+and one official 25-public-game run are executable. That run scored zero.
+A scored Kaggle rerun, publication/account actions, genuine environment branch
+rollouts, environment-level mechanism ablations, and parts of the deepest
+meta-reflection/UI specification remain incomplete.
 
 “Proven” below means a current executable test, artifact, or canonical result
 matches the scope of the requirement. It does not mean a nearby or narrower
@@ -25,7 +26,7 @@ test merely passed.
 | Permanent compatibility regression | Proven | Integration tests enforce overlay equality/import closure, selected genome embedding, gateway markers, and offline execution. |
 | Same symbolic package for local, experiments, UI replay, population, and Kaggle | Proven | All consumers instantiate `reflector.SymbolicPolicy`; `MindConfig` is serialized unchanged into traces, candidates, and notebook. |
 | No LLM/network/database/server in Kaggle inference | Proven | Explicit overlay allowlist and forbidden-import closure tests; smoke test runs without network. |
-| Official runtime/resource compliance | Partial | Fixture and smoke are bounded and lightweight. Only a full Kaggle competition rerun proves the nine-hour envelope across hidden evaluation. |
+| Official runtime/resource compliance | Partial | The 25-game public Swarm closed in about 39 seconds and the frozen package passes offline smoke. Only a full Kaggle competition rerun proves the nine-hour envelope across hidden evaluation. |
 
 ## Symbolic research core
 
@@ -41,7 +42,7 @@ test merely passed.
 | Bounded possible/impossible modal control | Proven synthetically | Preregistered v5 untouched result; search-cap exhaustion returns unknown. |
 | Direct typed comparison transfer | Proven synthetically | Preregistered v6 untouched result with leakage and negative controls. |
 | Endpoint-valid comparison composition | Proven synthetically | Preregistered v7 untouched result with composition-only ablation. |
-| General ARC transfer | Missing | None of v1–v8 is an official ARC score or cross-game public-suite result. |
+| General ARC transfer | Contradicted for v8 | The frozen v8 agent scored 0.0 and completed 0 levels across all 25 official API public games. It tied one official random-starter run. See `PUBLIC_GAME_TEST_REPORT.md`. |
 
 ## Reflecting abstraction and epistemic compression
 
@@ -66,7 +67,7 @@ test merely passed.
 | Mutation brief from recurrent failures and arbitrary code evolution | Partial | Current mutation surface is deliberately constrained to `MindConfig`; it does not autonomously patch symbolic source or language-invention code. |
 | Metrics named in the goal | Mostly proven | Trace evaluation covers score evidence, actions, resets, runtime/allocation, expansions, prediction, structure length/reuse/pathologies, replay savings, regressions, holdouts, and parent changes. |
 | Environment-level ablations on official public games | Missing | Existing transformed traces and synthetic games do not replace official environment reruns. |
-| Strict 25-public-game report | Ready but externally gated | `official-public-run` requires exactly 25 unique metadata game IDs, hashes the inventory, runs all through official Swarm, and rejects incomplete coverage. Current checkout contains only `bt11`. |
+| Strict 25-public-game report | Proven | `reports/official-public-evaluation-v8.json` contains 25 discovered and 25 reported agents, a complete inventory, score 0.0, and source commit `1cd73e2`. The suite came from the official API; byte identity with the account-gated Kaggle archive was not checked. |
 
 ## Web interface
 
@@ -76,7 +77,7 @@ test merely passed.
 | Action explanation, prediction/outcome, objects, concepts, schemas, hypotheses | Proven | Replay bundle is reconstructed from the deployed policy. |
 | Concept/schema graph and language history | Proven | UI inspectors and graph/language views. |
 | Genealogy, structural configuration diff, experiment dashboard, regressions, Pareto plot | Proven | SQLite-backed experiment endpoints and UI tests. |
-| Branch and replay | Partial | Validated configuration branches replay fixed recorded observations and are correctly labeled non-rollouts. |
+| Branch and replay | Partial | Validated configuration branches replay fixed recorded observations and are correctly labeled non-rollouts. The official adapter recording path was found to drop `action_input`, so the 25 public recordings are not faithful action replays. |
 | Live official gameplay | Not required by “live or replayed” | Replay is implemented; no live streaming transport is claimed. |
 | Full concept retirement/lineage and all requested metric leaderboards | Partial | Evidence, dependencies, utility, activity, candidates, and Pareto data are shown; autonomous concept retirement and separate score/transfer/compression/runtime/code-size leaderboards are not all implemented. |
 
@@ -90,24 +91,16 @@ hosted-service dependency.
 
 ## Exact remaining gates
 
-1. Obtain accepted competition data or an authorized ARC credential so that
-   25 official public environments are present.
-2. Run:
-
-   ```bash
-   .venv/bin/reflector official-public-run \
-     --environments-dir /path/to/environment_files \
-     --recordings-dir /tmp/reflector-public-recordings \
-     --output official-public-evaluation.json
-   ```
-
-3. Analyze per-game failures and rerun the required official ablations against
-   real environment dynamics rather than fixed traces.
-4. Import the generated notebook into Kaggle, attach competition data, disable
+1. Correct the official recording conversion so actions and explanations
+   survive into replay artifacts, then add a regression and rerun.
+2. Use the public failures to produce at least one reproducible level
+   completion and rerun causal mechanism ablations against real environment
+   dynamics rather than fixed traces.
+3. Import the generated notebook into Kaggle, attach competition data, disable
    internet, commit a complete rerun, and archive the scored submission.
-5. Publish a participant-owned public repository and complete eligibility,
+4. Publish a participant-owned public repository and complete eligibility,
    competition publication, and Paper Track actions.
-6. If the original deepest research scope remains mandatory, add genuine
+5. If the original deepest research scope remains mandatory, add genuine
    restorable environment branching, general autonomous language/source
    invention, autonomous concept retirement, and the remaining specialized UI
    leaderboards.

@@ -1,5 +1,26 @@
 # Decision log
 
+## 2026-07-28 — Official public behavior outranks synthetic structure
+
+The first complete 25-game official-API public run scored 0.0 with no level
+completions, tying one official random-starter run. The agent formed many
+schemas, concepts, and hypotheses, but no procedure or language operator
+became operative. Therefore structure counts, compression, prediction
+accuracy, and synthetic mechanism wins cannot qualify a descendant as the
+current best agent without environment-level progress.
+
+Future accepted descendants must first demonstrate reproducible official-game
+improvement, then isolate the responsible mechanism with a same-environment
+ablation. The full negative result remains in `PUBLIC_GAME_TEST_REPORT.md`.
+
+## 2026-07-28 — Public recordings are evidence only if actions survive
+
+The public run exposed an adapter defect: conversion from `FrameDataRaw` to
+`FrameData` drops `action_input`, and the recorder serializes the default
+`RESET` for every frame. Scorecard results remain valid, but those recordings
+are not faithful gameplay replays. Public replay claims are suspended until
+the conversion is fixed, regression-tested, and rerun.
+
 ## 2026-07-27 — Official starter is the repository root
 
 Reflector was cloned directly from `arcprize/ARC-AGI-3-Agents`. The official

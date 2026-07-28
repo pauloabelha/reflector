@@ -2,6 +2,28 @@
 
 Run date: 2026-07-27.
 
+## Official public-game conclusion
+
+On 2026-07-28, the frozen `reflector-symbolic-v13` agent at commit `1cd73e2`
+ran through all 25 official API public games using the official offline
+`Swarm`. Coverage was complete, but the agent scored `0.0`, completed zero
+levels, and consumed 2,025 actions. One official random-starter reference run
+also scored zero.
+
+The public result overrides any performance implication one might draw from
+the synthetic validations below. Across the real games, Reflector constructed
+1,794 schemas and 479 concepts but produced no learned procedures, no accepted
+language operators, and no level advances. The current abstractions therefore
+do not yet connect sensorimotor prediction to goal discovery and control.
+
+The raw report is
+[`reports/official-public-evaluation-v8.json`](reports/official-public-evaluation-v8.json),
+SHA-256
+`cca07a3f571697ceea4b93d1cb308a5f1700bee47de83a769f537bc45a52f3d9`.
+The interpretation, provenance, random reference, artifact hashes, and a
+recording-fidelity defect are documented in
+[`PUBLIC_GAME_TEST_REPORT.md`](PUBLIC_GAME_TEST_REPORT.md).
+
 ## V8 conclusion
 
 The narrow represented-language-invention claim is **supported** on its

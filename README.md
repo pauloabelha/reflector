@@ -102,6 +102,12 @@ count, hashes every metadata file and the complete manifest, runs every game
 through the unchanged official `Swarm`, and refuses to write a successful
 report unless every game has an agent result.
 
+The first frozen 25-game run is recorded in
+[`PUBLIC_GAME_TEST_REPORT.md`](PUBLIC_GAME_TEST_REPORT.md). It is valid
+negative evidence: Reflector v8 scored `0.0`, completed no levels, and tied
+one official random-starter reference run. Kaggle compatibility is proven
+locally; competitive performance is not.
+
 Generate, replay, evaluate, and compare deterministic traces:
 
 ```bash

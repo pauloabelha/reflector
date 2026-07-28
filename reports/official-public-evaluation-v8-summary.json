@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "evaluated_at": "2026-07-28",
+  "verdict": "valid_public_run_zero_score",
+  "source": {
+    "commit": "1cd73e24e99e92de870243277f4938da3a2162f1",
+    "agent_version": "reflector-symbolic-v13",
+    "frozen_detached_worktree": true
+  },
+  "environment_suite": {
+    "provenance": "Official ARC API anonymous public-game enumeration and source endpoints",
+    "kaggle_archive_byte_identity_checked": false,
+    "unique_games": 25,
+    "files": 50,
+    "bytes": 3978490,
+    "metadata_inventory_sha256": "d3ea8336b4534e4a8f5a5789fa910ad0cc9be2e40943e0803f9ec5ef88b9b25a",
+    "complete_file_manifest_sha256": "8b7b1bf84e68bd0453d3970cabdac2f8c8cba06c0598b70bb3e32ff0128ff9d9"
+  },
+  "reflector": {
+    "score": 0.0,
+    "levels_completed": 0,
+    "actions": 2025,
+    "games_reported": 25,
+    "games_game_over": 12,
+    "games_not_finished": 13,
+    "resets": 13,
+    "transitions": 2000,
+    "schemas": 1794,
+    "concepts": 479,
+    "schema_reuse": 206,
+    "concept_reuse": 6307,
+    "failed_experiments": 461,
+    "planner_expansions": 93879,
+    "causal_hypotheses": 411,
+    "temporal_hypotheses": 983,
+    "procedures": 0,
+    "language_operators": 0,
+    "mean_prediction_accuracy": 0.603559126984127,
+    "schema_description_length": 2961858,
+    "abstraction_description_savings": 13589473,
+    "swarm_wall_seconds_from_log": 39,
+    "report_postprocessing_seconds_from_timestamps": 27,
+    "raw_result": "reports/official-public-evaluation-v8.json",
+    "raw_result_sha256": "cca07a3f571697ceea4b93d1cb308a5f1700bee47de83a769f537bc45a52f3d9"
+  },
+  "random_reference": {
+    "implementation": "official starter Random agent",
+    "runs": 1,
+    "stochastic": true,
+    "score": 0.0,
+    "levels_completed": 0,
+    "actions": 2025,
+    "result_sha256": "c31fdcb42278f1954af22a73c488046f19deca794753839f1f2e1de760d8e5f2",
+    "conclusion": "Reflector did not clear the trivial baseline."
+  },
+  "recordings": {
+    "files": 25,
+    "bytes": 78247139,
+    "manifest_sha256": "baab7d9faf05b1c410f8486c5fb48d602cbe81e667e892b8fbb0a6579acf95e3",
+    "faithful_action_replay": false,
+    "observed_action_zero_frames": 2025,
+    "observed_total_frames": 2025,
+    "defect": "FrameDataRaw action_input is dropped by the official agent conversion before the agent recorder serializes FrameData."
+  },
+  "kaggle_compatibility": {
+    "network_disabled_smoke": "pass",
+    "export": "pass",
+    "overlay_sha256": "762b193ccc07655c845d52099bfdea692ae46cfbdaed32641d8e386fca57080b",
+    "notebook_sha256": "d790782da5ecaac6fbddb6bcb1f3fa13a08b9164a00129a212b008215b16d850",
+    "leaderboard_submission_completed": false
+  },
+  "claim_boundary": "Submission compatibility is validated locally. Public-game performance is zero. No Kaggle leaderboard score exists."
+}
