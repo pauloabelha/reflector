@@ -1890,6 +1890,10 @@ def run_validation(
     *,
     suite: str = "v1",
 ) -> dict[str, object]:
+    if suite == "v8":
+        from .meta_validation import run_language_meta_validation
+
+        return run_language_meta_validation(seed_count, seed_start)
     if seed_count < 2:
         raise ValueError("seed_count must be at least 2")
     if seed_start < 0:
