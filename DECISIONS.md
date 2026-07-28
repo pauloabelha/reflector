@@ -238,3 +238,14 @@ and frontier exhaustion; exceeding the expansion budget returns `unknown`.
 The claim excludes necessity, arbitrary obstacles, general modal logic,
 unobserved inverse construction, causal morphism use, and official ARC
 generalization.
+
+## 2026-07-27 — A generated comparison graph is not transfer evidence
+
+The current finite comparison graph constructs all pairwise parameter deltas,
+so its law checks cannot identify a learned or causally useful morphism.
+Validation v6 must first introduce context-typed transformation systems and
+infer a preserved map from multiple observed operator correspondences. Its
+held-out effect must be absent from ordinary schemas and recoverable only by
+applying that evidenced map. A same-information ablation, leakage audit, and
+negative-control world are mandatory. The design and its rejection conditions
+are recorded in `VALIDATION_V6_DESIGN.md` before implementation.

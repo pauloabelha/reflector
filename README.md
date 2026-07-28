@@ -121,6 +121,9 @@ conditional accommodation; v4 supports executable transformation composition
 and v5 supports bounded possible/impossible reachability in control under
 identical training histories. None is evidence of general equilibration,
 category-theoretic cognition, or official-game generalization.
+The next comparison-transfer falsification gate is specified, but not yet
+implemented or claimed, in
+[`VALIDATION_V6_DESIGN.md`](VALIDATION_V6_DESIGN.md).
 
 Run a reproducible population evaluation (network isolation is on by default):
 
