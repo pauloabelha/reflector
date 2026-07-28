@@ -249,3 +249,21 @@ held-out effect must be absent from ordinary schemas and recoverable only by
 applying that evidenced map. A same-information ablation, leakage audit, and
 negative-control world are mandatory. The design and its rejection conditions
 are recorded in `VALIDATION_V6_DESIGN.md` before implementation.
+
+## 2026-07-27 — Accept direct causal comparison transfer, not composition
+
+Validation v6 froze its context-typed operator mechanism, independent oracle,
+leakage checks, negative control, and thresholds in commit `66ce650`, then ran
+seeds 150,000–150,029 once. The isolated and default descendants completed
+every run at the 32-action oracle. Disabling only application of learned
+comparisons removed every inferred withheld operator, produced zero wins, and
+reduced mean completion to 55%. First-intervention accuracy improved by 0.6851
+(95% paired bootstrap CI [0.5902, 0.7888]) and efficiency by 1.0 (CI
+[1.0, 1.0]).
+
+Direct transfer through a uniquely identified finite system comparison is
+therefore accepted into the operative Kaggle path. Each inferred operator
+names its perceived domain, source operator, typed comparison, and calibration
+evidence; inconsistent mappings are rejected. This does not validate
+composition of comparisons, arbitrary morphisms, general category theory, or
+official ARC generalization.

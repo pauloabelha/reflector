@@ -2,6 +2,53 @@
 
 Run date: 2026-07-27.
 
+## V6 conclusion
+
+The narrow causal comparison-transfer claim is **supported** on its untouched
+confirmation split. From two non-collinear same-action correspondences, a
+Kaggle-exportable symbolic descendant learned a typed finite mapping between
+perceived transformation systems, predicted withheld context-specific
+operator effects with explicit provenance, and used them in control.
+
+This goes beyond the finite law checks in v4: disabling only comparison
+application removes the inferred operators and the control advantage while
+retaining every observed context operator, schema, calibration, progress
+event, and ordinary planner. It remains a synthetic direct-transfer result,
+not evidence for composition of comparisons, general category theory, or
+ARC-AGI-3 generalization.
+
+## V6 untouched confirmation set
+
+The single run used paired seeds 150,000–150,029 after freeze commit `66ce650`
+and passed all twelve frozen criteria:
+
+| Preregistered criterion | Result |
+| --- | --- |
+| Independent oracle and leakage audit | Pass |
+| All actions legal | Pass: 100% |
+| Identical fixed forced histories | Pass within every paired seed |
+| Isolated comparison-transfer completion | Pass: 100% |
+| Default full-policy completion | Pass: 100% |
+| Comparison minus ablation efficiency | Pass: +1.0000, 95% bootstrap CI [1.0000, 1.0000] |
+| Comparison minus ablation first-attempt accuracy | Pass: +0.6851, 95% CI [0.5902, 0.7888] |
+| Withheld effects unobserved before intervention | Pass |
+| All eight withheld effects inferred before intervention | Pass |
+| Ablation inferred no withheld effect | Pass |
+| Inferred comparison plans operative | Pass |
+| Inconsistent negative control rejected | Pass |
+
+Both comparison-enabled descendants completed every run in the 32-action
+oracle minimum. The no-transfer ablation never won and averaged 55% completion
+within the 96-action budget.
+
+The canonical report is
+[`validation-v6-holdout.json`](validation-v6-holdout.json), file SHA-256
+`f07afc2b712cbe5b3404a442e1b0be41f83e9ed5725e4536b3f3466eff07d44d`
+and embedded result SHA-256
+`fa32ecd8fc7f2803aa387e71112d9ff203105ac25a16a5ef908b6e5587bcf593`.
+The frozen protocol and development revisions are recorded in
+[`VALIDATION_V6.md`](VALIDATION_V6.md).
+
 ## V5 conclusion
 
 The narrow finite-modal-control claim is **supported** on its untouched

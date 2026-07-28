@@ -1,6 +1,6 @@
 # Reflector validation protocol v6
 
-Status: frozen after development. Confirmation seeds have not been viewed.
+Status: confirmed on the untouched preregistered split.
 
 V6 tests whether an evidence-backed comparison between context-typed
 transformation systems predicts withheld operator effects and improves
@@ -134,6 +134,27 @@ The canonical development report has file SHA-256
 and embedded result SHA-256
 `a6af4ded7b686fde30f5f590821c8e5c2216146a6b55af5bcb4656afa27bac12`.
 An immediate second run reproduced the JSON byte-for-byte.
+
+## Untouched confirmation result
+
+All twelve criteria passed on the single execution of seeds
+150,000–150,029 after the protocol and implementation were frozen in commit
+`66ce650`. Both the isolated comparison-transfer descendant and the default
+full policy completed every run at the 32-action oracle minimum. The
+no-comparison-transfer descendant never won and averaged 55% completion within
+the 96-action budget.
+
+Comparison transfer improved paired first-attempt intervention accuracy by
+`0.68512` (95% bootstrap CI `[0.59024, 0.78885]`) and completed-run efficiency
+by `1.0` (CI `[1.0, 1.0]`). The independent oracle, legality, equal fixed
+histories, pre-intervention leakage checks, provenance-bearing inferred plans,
+ablation isolation, and negative-control abstention all passed.
+
+The canonical report is `validation-v6-holdout.json`, with file SHA-256
+`f07afc2b712cbe5b3404a442e1b0be41f83e9ed5725e4536b3f3466eff07d44d`
+and embedded result SHA-256
+`fa32ecd8fc7f2803aa387e71112d9ff203105ac25a16a5ef908b6e5587bcf593`.
+No code or criterion changed after this result was viewed.
 
 ## Commands
 

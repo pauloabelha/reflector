@@ -66,9 +66,16 @@ transformation set contains state-changing operators and executable temporal
 composition. The comparison graph contains typed mappings between
 transformations and structural composition of compatible mappings. Its finite
 endpoint, identity, closure, and associativity checks pass, but these laws are
-structural evidence only: morphisms do not yet improve action selection, and
-category-theoretic cognition is not claimed. Existing schema families remain
-similarity groups rather than arrows in the comparison graph.
+structural evidence only: those generated morphisms do not improve action
+selection. A separate `ComparisonTransferSystem` now learns context-typed
+operators directly from perceived domains, accepts a finite square-symmetry
+map only when at least two non-collinear correspondences identify it uniquely,
+and keeps source, calibration, comparison, and observed/inferred provenance.
+Validation v6 shows that applying such a direct comparison causally improves
+synthetic held-out control and that inconsistent calibration causes
+abstention. Composition of comparisons and general category-theoretic
+cognition remain unvalidated. Existing schema families remain similarity
+groups rather than arrows in the comparison graph.
 
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
 questions, plans, decisions, and concept births used during inference. It also

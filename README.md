@@ -110,20 +110,21 @@ Run the latest preregistered synthetic mechanism benchmark:
   --output validation-v4-holdout.json
 .venv/bin/reflector validate --suite v5 --seed-start 120000 --seeds 30 \
   --output validation-v5-holdout.json
+.venv/bin/reflector validate --suite v6 --seed-start 150000 --seeds 30 \
+  --output validation-v6-holdout.json
 ```
 
 This benchmark compares the deployed policy with ablations and simple
 baselines. It is explicitly not an ARC score; see
-[`VALIDATION_V5.md`](VALIDATION_V5.md) for the latest frozen claim boundary and
+[`VALIDATION_V6.md`](VALIDATION_V6.md) for the latest frozen claim boundary and
 criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for the original
-falsification plus the v2–v5 confirmation results. V3 supports narrow
+falsification plus the v2–v6 confirmation results. V3 supports narrow
 conditional accommodation; v4 supports executable transformation composition
 and v5 supports bounded possible/impossible reachability in control under
-identical training histories. None is evidence of general equilibration,
-category-theoretic cognition, or official-game generalization.
-The next comparison-transfer falsification gate is specified, but not yet
-implemented or claimed, in
-[`VALIDATION_V6_DESIGN.md`](VALIDATION_V6_DESIGN.md).
+identical training histories. V6 supports direct causal transfer through a
+typed finite comparison, but not composition of comparisons. None is evidence
+of general equilibration, general category-theoretic cognition, or
+official-game generalization.
 
 Run a reproducible population evaluation (network isolation is on by default):
 
@@ -183,7 +184,10 @@ terms, language operators normalize later events, and family confidence feeds
 the bounded planner. Evidence-backed translations now compile into explicit
 operator objects used by a bounded spatial planner; the inference trace also
 exposes represented inverses, finite modal reachability, and a typed comparison
-graph with executable finite law checks. Development tooling measures recoverable
+graph with executable finite law checks. Context-typed operator systems can
+now learn an evidence-backed square-symmetry comparison, infer a withheld
+operator with provenance, reject inconsistent calibrations, and use the
+inference in bounded planning. Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained
 genomes, transformed trace holdouts, reproducible experiment manifests,
