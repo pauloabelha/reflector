@@ -133,7 +133,9 @@ def main() -> None:
     validate.add_argument("--seeds", type=int, default=30)
     validate.add_argument("--seed-start", type=int, default=0)
     validate.add_argument(
-        "--suite", choices=("v1", "v2", "v3", "v4", "v5"), default="v1"
+        "--suite",
+        choices=("v1", "v2", "v3", "v4", "v5", "v6"),
+        default="v1",
     )
     validate.add_argument("--output", type=Path)
 

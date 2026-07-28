@@ -8,6 +8,7 @@ from typing import Any
 
 from .abstraction import AbstractionStore
 from .causal import Experiment, HypothesisStore
+from .comparisons import ComparisonTransferSystem
 from .graph import DependencyGraph
 from .perception import SceneTracker
 from .planning import Goal, Plan, SymbolicPlanner
@@ -47,6 +48,7 @@ class MindConfig:
     enable_accommodation: bool = True
     enable_transformations: bool = True
     enable_modal_reasoning: bool = True
+    enable_comparison_transfer: bool = True
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
     information_weight: float = 1.0
@@ -65,6 +67,7 @@ class MindConfig:
             "enable_accommodation",
             "enable_transformations",
             "enable_modal_reasoning",
+            "enable_comparison_transfer",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -120,6 +123,7 @@ class SymbolicMind:
         self.transformations = TransformationSystem(
             complexity_pressure=self.config.hierarchy_complexity_pressure
         )
+        self.comparisons = ComparisonTransferSystem()
         self.abstractions = AbstractionStore(
             complexity_pressure=self.config.hierarchy_complexity_pressure
         )
@@ -192,6 +196,22 @@ class SymbolicMind:
             if self.config.enable_accommodation:
                 new_abstractions = self.reinforcement.last_constructed
             schema = self.schemas.observe(transition)
+            comparison_updates = self.comparisons.observe(
+                transition,
+                self._last_scene,
+                allow_transfer=self.config.enable_comparison_transfer,
+            )
+            comparison_goals = self.comparisons.observe_goal(
+                transition,
+                self._last_scene,
+            )
+            new_abstractions = tuple(
+                sorted(
+                    set(new_abstractions)
+                    | set(comparison_updates)
+                    | set(comparison_goals)
+                )
+            )
             if self.config.enable_transformations:
                 new_abstractions = tuple(
                     sorted(
@@ -304,6 +324,16 @@ class SymbolicMind:
             and self.config.enable_transformations
             else None
         )
+        comparison_plan = (
+            self.comparisons.plan_touching(
+                self._last_scene,
+                legal_actions,
+                max_depth=self.config.planner_max_depth,
+                max_expansions=self.config.planner_max_expansions,
+            )
+            if self._last_scene is not None and self.config.enable_planning
+            else None
+        )
         modal_action = (
             self.transformations.modal_touching_decision(
                 self._last_scene,
@@ -319,6 +349,14 @@ class SymbolicMind:
         )
         self.last_plan = (
             Plan(
+                goal=Goal("touching", priority=1.0),
+                actions=comparison_plan.actions,
+                predicted_events=("touching",),
+                confidence=comparison_plan.confidence,
+                expansions=comparison_plan.expansions,
+            )
+            if comparison_plan is not None
+            else Plan(
                 goal=Goal("touching", priority=1.0),
                 actions=transformation_plan[0],
                 predicted_events=("touching",),
@@ -352,6 +390,15 @@ class SymbolicMind:
             if self.config.enable_planning
             else None
         )
+        if comparison_plan is not None:
+            action = comparison_plan.actions[0]
+            return (
+                action,
+                "comparison-transfer-plan:"
+                f"actions={comparison_plan.actions},"
+                f"inferred={comparison_plan.inferred_operators},"
+                f"expansions={comparison_plan.expansions}",
+            )
         if transformation_plan is not None:
             action = transformation_plan[0][0]
             return (
@@ -483,6 +530,7 @@ class SymbolicMind:
             "abstractions": self.abstractions.to_dict(),
             "structural_credit": self.reinforcement.to_dict(),
             "transformations": self.transformations.to_dict(),
+            "comparisons": self.comparisons.to_dict(),
             "last_experiment": (
                 self.last_experiment.to_dict()
                 if self.last_experiment is not None

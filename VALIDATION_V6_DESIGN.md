@@ -1,7 +1,8 @@
 # Draft validation v6: causal comparison transfer
 
-Status: design only. No implementation, thresholds, seeds, or confirmation
-split are frozen.
+Status: superseded by the implemented frozen protocol in `VALIDATION_V6.md`.
+This file remains the preimplementation falsification design and rejection
+boundary.
 
 Validation v4 established causal use of transformation composition and finite
 structural laws over a comparison graph. It did not show that a comparison

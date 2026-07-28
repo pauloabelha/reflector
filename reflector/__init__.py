@@ -14,6 +14,12 @@ from .causal import (
     HypothesisStore,
     TemporalHypothesis,
 )
+from .comparisons import (
+    ComparisonPlan,
+    ComparisonTransferSystem,
+    ContextOperator,
+    SystemComparison,
+)
 from .graph import DependencyEdge, DependencyGraph
 from .mind import MindConfig, SymbolicMind
 from .planning import Goal, Plan, SymbolicPlanner
@@ -54,9 +60,12 @@ __all__ = [
     "Atom",
     "AbstractionStore",
     "CausalHypothesis",
+    "ComparisonPlan",
+    "ComparisonTransferSystem",
     "ConceptStore",
     "ConceptType",
     "ConditionalAccommodation",
+    "ContextOperator",
     "Decision",
     "DependencyEdge",
     "DependencyGraph",
@@ -86,6 +95,7 @@ __all__ = [
     "StructuralEligibility",
     "SymbolicPolicy",
     "SyntheticConcept",
+    "SystemComparison",
     "TemporalHypothesis",
     "TraceStep",
     "Transition",

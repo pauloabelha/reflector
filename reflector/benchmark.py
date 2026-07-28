@@ -11,9 +11,11 @@ import hashlib
 import json
 import random
 from dataclasses import asdict, dataclass
+from itertools import product
 from statistics import mean
 from typing import Protocol
 
+from .comparisons import SQUARE_SYMMETRIES, apply_matrix
 from .mind import MindConfig
 from .policy import SymbolicPolicy
 from .symbolic import Decision, Observation
@@ -698,6 +700,310 @@ class ModalGame:
             self._advance()
 
 
+class ComparisonTransferGame:
+    """Infer withheld context operators from calibrated system comparisons."""
+
+    family = "comparison_transfer"
+
+    def __init__(self, seed: int) -> None:
+        rng = random.Random(seed)
+        vectors = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        rng.shuffle(vectors)
+        self._canonical = {
+            action: vector for action, vector in zip(range(1, 5), vectors)
+        }
+        self._calibration = next(
+            (left, right)
+            for left in range(1, 5)
+            for right in range(left + 1, 5)
+            if (
+                self._canonical[left][0] * self._canonical[right][1]
+                - self._canonical[left][1] * self._canonical[right][0]
+            )
+            != 0
+        )
+        withheld = tuple(
+            action for action in range(1, 5) if action not in self._calibration
+        )
+        marker_colors = [1, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15]
+        rng.shuffle(marker_colors)
+        self._canonical_marker = marker_colors.pop()
+        self._negative_marker = marker_colors.pop()
+        layouts: list[tuple[int, tuple[int, int, int, int], int]] = []
+        for index in range(8):
+            layouts.append(
+                (
+                    marker_colors[index],
+                    rng.choice(SQUARE_SYMMETRIES),
+                    rng.choice(withheld),
+                )
+            )
+        rng.shuffle(layouts)
+        self._held_out = tuple(layouts)
+        self._negative_matrix = rng.choice(SQUARE_SYMMETRIES)
+        self._phase = 0
+        self._mover = (4, 4)
+        self._target: tuple[int, int] | None = None
+        self._marker_color = self._canonical_marker
+        self._levels = 0
+        self._won = False
+        self.training_actions: list[int] = []
+        self.training_progress: list[int] = []
+        self.test_first_attempts = 0
+        self.test_correct_first = 0
+        self._last_attempted_phase = -1
+        self.total_levels = 10
+        self.oracle_actions = 32
+
+    @property
+    def _canonical_phase(self) -> bool:
+        return self._phase < 4
+
+    @property
+    def _canonical_demo_phase(self) -> bool:
+        return self._phase == 4
+
+    @property
+    def _negative_calibration_phase(self) -> bool:
+        return self._phase in {5, 6}
+
+    @property
+    def _negative_exit_phase(self) -> bool:
+        return self._phase == 7
+
+    @property
+    def _test_index(self) -> int:
+        return (self._phase - 8) // 3
+
+    @property
+    def _test_subphase(self) -> int:
+        return (self._phase - 8) % 3
+
+    @property
+    def decisive_withheld_action(self) -> int | None:
+        if self._phase < 8 or self._test_subphase != 2:
+            return None
+        return self._held_out[self._test_index][2]
+
+    @property
+    def decisive_query_id(self) -> int | None:
+        return (
+            self._test_index
+            if self.decisive_withheld_action is not None
+            else None
+        )
+
+    def _effects(self) -> dict[int, tuple[int, int]]:
+        if self._phase <= 4:
+            return self._canonical
+        if self._negative_calibration_phase or self._negative_exit_phase:
+            output = {
+                action: apply_matrix(self._negative_matrix, vector)
+                for action, vector in self._canonical.items()
+            }
+            second = self._calibration[1]
+            output[second] = (
+                output[second][0] * 2,
+                output[second][1] * 2,
+            )
+            return output
+        matrix = self._held_out[self._test_index][1]
+        return {
+            action: apply_matrix(matrix, vector)
+            for action, vector in self._canonical.items()
+        }
+
+    def oracle_audit(self) -> bool:
+        """Prove the withheld action is required by every generated query."""
+
+        left, right = self._calibration
+        canonical_non_collinear = (
+            self._canonical[left][0] * self._canonical[right][1]
+            - self._canonical[left][1] * self._canonical[right][0]
+        ) != 0
+        if not canonical_non_collinear:
+            return False
+        for _marker, matrix, withheld in self._held_out:
+            effects = {
+                action: apply_matrix(matrix, vector)
+                for action, vector in self._canonical.items()
+            }
+            start = (
+                4 + effects[left][0] + effects[right][0],
+                4 + effects[left][1] + effects[right][1],
+            )
+            target = (
+                start[0] + 2 * effects[withheld][0],
+                start[1] + 2 * effects[withheld][1],
+            )
+            reached = (
+                start[0] + effects[withheld][0],
+                start[1] + effects[withheld][1],
+            )
+            if abs(reached[0] - target[0]) + abs(
+                reached[1] - target[1]
+            ) != 1:
+                return False
+            for depth in range(1, 4):
+                for sequence in product(self._calibration, repeat=depth):
+                    position = start
+                    for action in sequence:
+                        position = (
+                            position[0] + effects[action][0],
+                            position[1] + effects[action][1],
+                        )
+                    if abs(position[0] - target[0]) + abs(
+                        position[1] - target[1]
+                    ) == 1:
+                        return False
+        negative = {
+            action: apply_matrix(self._negative_matrix, vector)
+            for action, vector in self._canonical.items()
+        }
+        negative[right] = (
+            negative[right][0] * 2,
+            negative[right][1] * 2,
+        )
+        negative_matches = [
+            matrix
+            for matrix in SQUARE_SYMMETRIES
+            if all(
+                apply_matrix(matrix, self._canonical[action])
+                == negative[action]
+                for action in self._calibration
+            )
+        ]
+        return not negative_matches
+
+    def _frame(self) -> tuple[tuple[int, ...], ...]:
+        grid = [[0] * 9 for _ in range(9)]
+        grid[0][0] = self._marker_color
+        grid[0][1] = self._marker_color
+        grid[self._mover[1]][self._mover[0]] = 2
+        if self._target is not None:
+            grid[self._target[1]][self._target[0]] = 8
+        return tuple(tuple(row) for row in grid)
+
+    def observation(self) -> Observation:
+        if self._won:
+            actions: tuple[int, ...] = ()
+        elif self._canonical_phase:
+            actions = (self._phase + 1,)
+        elif self._canonical_demo_phase:
+            actions = (1,)
+        elif self._negative_calibration_phase:
+            actions = (self._calibration[self._phase - 5],)
+        elif self._negative_exit_phase:
+            actions = (7,)
+        elif self._test_subphase < 2:
+            actions = (self._calibration[self._test_subphase],)
+        else:
+            actions = (1, 2, 3, 4)
+        return Observation.create(
+            state="WIN" if self._won else "NOT_FINISHED",
+            available_actions=actions,
+            frame=self._frame(),
+            levels_completed=self._levels,
+        )
+
+    def _move(self, action: int) -> None:
+        vector = self._effects()[action]
+        self._mover = (
+            min(8, max(0, self._mover[0] + vector[0])),
+            min(8, max(0, self._mover[1] + vector[1])),
+        )
+
+    def _record_forced(self, action: int) -> None:
+        self.training_actions.append(action)
+        self.training_progress.append(self._levels)
+
+    def _setup_negative(self) -> None:
+        self._mover = (4, 4)
+        self._target = None
+        self._marker_color = self._negative_marker
+
+    def _setup_held_out(self, index: int) -> None:
+        if index == len(self._held_out):
+            self._won = True
+            return
+        self._mover = (4, 4)
+        self._target = None
+        self._marker_color = self._held_out[index][0]
+
+    def step(self, decision: Decision) -> None:
+        if self._canonical_phase:
+            forced = self._phase + 1
+            if decision.action_id != forced:
+                return
+            self._move(forced)
+            self._phase += 1
+            self._record_forced(forced)
+            if self._canonical_demo_phase:
+                vector = self._canonical[1]
+                self._target = (
+                    self._mover[0] + 2 * vector[0],
+                    self._mover[1] + 2 * vector[1],
+                )
+            return
+        if self._canonical_demo_phase:
+            if decision.action_id != 1:
+                return
+            self._move(1)
+            self._levels += 1
+            self._phase += 1
+            self._record_forced(1)
+            self._setup_negative()
+            return
+        if self._negative_calibration_phase:
+            forced = self._calibration[self._phase - 5]
+            if decision.action_id != forced:
+                return
+            self._move(forced)
+            self._phase += 1
+            self._record_forced(forced)
+            return
+        if self._negative_exit_phase:
+            if decision.action_id != 7:
+                return
+            self._levels += 1
+            self._phase += 1
+            self._record_forced(7)
+            self._setup_held_out(0)
+            return
+        if self._test_subphase < 2:
+            forced = self._calibration[self._test_subphase]
+            if decision.action_id != forced:
+                return
+            self._move(forced)
+            self._phase += 1
+            if self._test_subphase == 2:
+                withheld = self._held_out[self._test_index][2]
+                vector = self._effects()[withheld]
+                self._target = (
+                    self._mover[0] + 2 * vector[0],
+                    self._mover[1] + 2 * vector[1],
+                )
+            return
+
+        withheld = self._held_out[self._test_index][2]
+        if self._last_attempted_phase != self._phase:
+            self.test_first_attempts += 1
+            self.test_correct_first += int(decision.action_id == withheld)
+            self._last_attempted_phase = self._phase
+        self._move(decision.action_id)
+        target = self._target
+        if target is None:
+            return
+        distance = abs(self._mover[0] - target[0]) + abs(
+            self._mover[1] - target[1]
+        )
+        if distance != 1:
+            return
+        self._levels += 1
+        self._phase += 1
+        self._setup_held_out(self._test_index)
+
+
 class SeededRandomPolicy:
     def __init__(self, seed: int) -> None:
         self._rng = random.Random(seed)
@@ -819,6 +1125,14 @@ class RunResult:
     multi_step_plans: int = 0
     modal_response_evidence: int = 0
     modal_actions_used: int = 0
+    context_operators_observed: int = 0
+    system_comparisons_constructed: int = 0
+    inferred_context_operators: int = 0
+    inferred_comparison_plans: int = 0
+    comparison_rejection_abstained: bool = False
+    observed_withheld_leaks: int = 0
+    inferred_ready_before_intervention: int = 0
+    environment_oracle_passed: bool = False
 
     @property
     def completion(self) -> float:
@@ -887,6 +1201,17 @@ POLICY_NAMES_V5 = (
 
 FAMILIES_V5 = ("modal_reachability",)
 
+POLICY_NAMES_V6 = (
+    "full",
+    "comparison_transfer",
+    "no_comparison_transfer",
+    "score_only",
+    "context_table",
+    "seeded_random",
+)
+
+FAMILIES_V6 = ("comparison_transfer",)
+
 
 def _policy(name: str, seed: int) -> BenchmarkPolicy:
     if name == "full":
@@ -938,6 +1263,18 @@ def _policy(name: str, seed: int) -> BenchmarkPolicy:
                 enable_modal_reasoning=name == "modal",
             )
         )
+    if name in {"comparison_transfer", "no_comparison_transfer"}:
+        return SymbolicPolicy(
+            MindConfig(
+                enable_concepts=False,
+                enable_experiments=False,
+                enable_reflecting_abstraction=False,
+                enable_accommodation=False,
+                enable_transformations=False,
+                enable_modal_reasoning=False,
+                enable_comparison_transfer=name == "comparison_transfer",
+            )
+        )
     if name == "context_table":
         return ContextTablePolicy()
     if name == "rare_color":
@@ -966,6 +1303,8 @@ def _game(family: str, seed: int) -> DiagnosticGame:
         return TransformationGame(seed)
     if family == "modal_reachability":
         return ModalGame(seed)
+    if family == "comparison_transfer":
+        return ComparisonTransferGame(seed)
     raise ValueError(f"unknown family: {family}")
 
 
@@ -980,6 +1319,7 @@ def _budget(family: str) -> int:
         "constructive_accommodation": 40,
         "transformation_composition": 96,
         "modal_reachability": 72,
+        "comparison_transfer": 96,
     }[family]
 
 
@@ -988,9 +1328,31 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
     game = _game(family, seed)
     legal = True
     actions = 0
+    observed_withheld_leaks = 0
+    inferred_ready = 0
+    seen_decisive_queries: set[int] = set()
     observation = game.observation()
     while observation.state != "WIN" and actions < _budget(family):
         decision = policy.choose_action(observation)
+        query_id = getattr(game, "decisive_query_id", None)
+        withheld = getattr(game, "decisive_withheld_action", None)
+        if (
+            isinstance(query_id, int)
+            and isinstance(withheld, int)
+            and query_id not in seen_decisive_queries
+            and isinstance(policy, SymbolicPolicy)
+        ):
+            seen_decisive_queries.add(query_id)
+            scene = policy.trace.steps[-1].scene
+            domain_id = policy.mind.comparisons.domain(scene)
+            if domain_id is not None:
+                key = (domain_id, withheld)
+                observed_withheld_leaks += int(
+                    key in policy.mind.comparisons.observed_operators
+                )
+                inferred_ready += int(
+                    key in policy.mind.comparisons.inferred_operators
+                )
         legal = legal and decision.action_id in observation.available_actions
         game.step(decision)
         actions += 1
@@ -1065,6 +1427,49 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         if isinstance(policy, SymbolicPolicy)
         else 0
     )
+    context_operators = (
+        len(policy.mind.comparisons.observed_operators)
+        if isinstance(policy, SymbolicPolicy)
+        else 0
+    )
+    system_comparisons = (
+        len(policy.mind.comparisons.comparisons)
+        if isinstance(policy, SymbolicPolicy)
+        else 0
+    )
+    inferred_operators = (
+        len(policy.mind.comparisons.inferred_operators)
+        if isinstance(policy, SymbolicPolicy)
+        else 0
+    )
+    inferred_plans = (
+        sum(
+            int(
+                step.decision.reason.startswith("comparison-transfer-plan:")
+                and "inferred=()" not in step.decision.reason
+            )
+            for step in policy.trace.steps
+        )
+        if isinstance(policy, SymbolicPolicy)
+        else 0
+    )
+    rejection_abstained = False
+    if isinstance(policy, SymbolicPolicy):
+        accepted_targets = {
+            comparison.codomain
+            for comparison in policy.mind.comparisons.comparisons.values()
+        }
+        rejected_only = {
+            codomain
+            for _domain, codomain in (
+                policy.mind.comparisons.rejected_comparisons
+            )
+            if codomain not in accepted_targets
+        }
+        rejection_abstained = bool(rejected_only) and not any(
+            item.domain_id in rejected_only
+            for item in policy.mind.comparisons.inferred_operators.values()
+        )
     return RunResult(
         policy_name,
         family,
@@ -1086,6 +1491,14 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         multi_step_plans,
         modal_evidence,
         modal_actions,
+        context_operators,
+        system_comparisons,
+        inferred_operators,
+        inferred_plans,
+        rejection_abstained,
+        observed_withheld_leaks,
+        inferred_ready,
+        bool(getattr(game, "oracle_audit", lambda: True)()),
     )
 
 
@@ -1114,8 +1527,8 @@ def run_validation(
         raise ValueError("seed_count must be at least 2")
     if seed_start < 0:
         raise ValueError("seed_start must be non-negative")
-    if suite not in {"v1", "v2", "v3", "v4", "v5"}:
-        raise ValueError("suite must be v1, v2, v3, v4, or v5")
+    if suite not in {"v1", "v2", "v3", "v4", "v5", "v6"}:
+        raise ValueError("suite must be v1, v2, v3, v4, v5, or v6")
     families = (
         FAMILIES
         if suite == "v1"
@@ -1126,6 +1539,8 @@ def run_validation(
         else FAMILIES_V4
         if suite == "v4"
         else FAMILIES_V5
+        if suite == "v5"
+        else FAMILIES_V6
     )
     policies = (
         POLICY_NAMES
@@ -1135,6 +1550,8 @@ def run_validation(
         else POLICY_NAMES_V4
         if suite == "v4"
         else POLICY_NAMES_V5
+        if suite == "v5"
+        else POLICY_NAMES_V6
     )
     results = [
         run_one(policy, family, seed)
@@ -1442,6 +1859,131 @@ def run_validation(
             canonical.encode()
         ).hexdigest()
         return v5_payload
+
+    if suite == "v6":
+        comparison_effect = _bootstrap_difference(
+            values("comparison_transfer", "efficiency"),
+            values("no_comparison_transfer", "efficiency"),
+        )
+        intervention_accuracy = _bootstrap_difference(
+            values(
+                "comparison_transfer",
+                "held_out_first_attempt_accuracy",
+            ),
+            values(
+                "no_comparison_transfer",
+                "held_out_first_attempt_accuracy",
+            ),
+        )
+        histories_by_seed = {
+            seed: {
+                (item.training_actions, item.training_progress)
+                for item in results
+                if item.seed == seed
+            }
+            for seed in range(seed_start, seed_start + seed_count)
+        }
+        criteria = {
+            "independent_environment_oracle_passes": all(
+                item.environment_oracle_passed for item in results
+            ),
+            "all_actions_legal": all(item.legal for item in results),
+            "identical_forced_histories": all(
+                len(items) == 1 for items in histories_by_seed.values()
+            ),
+            "comparison_completion_at_least_0_95": mean(
+                values("comparison_transfer", "completion")
+            )
+            >= 0.95,
+            "full_completion_at_least_0_90": mean(
+                values("full", "completion")
+            )
+            >= 0.90,
+            "comparison_improves_efficiency_ci": comparison_effect[1] > 0.0,
+            "comparison_improves_intervention_accuracy_ci": (
+                intervention_accuracy[1] > 0.0
+            ),
+            "withheld_effect_never_observed_before_intervention": (
+                mean(
+                    values(
+                        "comparison_transfer",
+                        "observed_withheld_leaks",
+                    )
+                )
+                == 0.0
+                and mean(
+                    values(
+                        "no_comparison_transfer",
+                        "observed_withheld_leaks",
+                    )
+                )
+                == 0.0
+            ),
+            "all_withheld_effects_inferred_before_intervention": mean(
+                values(
+                    "comparison_transfer",
+                    "inferred_ready_before_intervention",
+                )
+            )
+            == 8.0,
+            "ablation_infers_no_withheld_effects": mean(
+                values(
+                    "no_comparison_transfer",
+                    "inferred_ready_before_intervention",
+                )
+            )
+            == 0.0,
+            "inferred_comparison_plans_are_operative": mean(
+                values("comparison_transfer", "inferred_comparison_plans")
+            )
+            >= 8.0,
+            "negative_control_is_rejected": mean(
+                values(
+                    "comparison_transfer",
+                    "comparison_rejection_abstained",
+                )
+            )
+            == 1.0,
+        }
+        v6_payload: dict[str, object] = {
+            "benchmark": "reflector_symbolic_diagnostics_v6",
+            "claim_scope": (
+                "causal transfer of withheld context-typed operator effects "
+                "through evidenced finite comparisons; not an ARC score"
+            ),
+            "seed_start": seed_start,
+            "seed_count": seed_count,
+            "policies": list(policies),
+            "families": list(families),
+            "aggregates": aggregates,
+            "paired_differences": {
+                "comparison_minus_no_comparison_efficiency": {
+                    "mean": comparison_effect[0],
+                    "ci95": [
+                        comparison_effect[1],
+                        comparison_effect[2],
+                    ],
+                },
+                "comparison_minus_no_comparison_intervention_accuracy": {
+                    "mean": intervention_accuracy[0],
+                    "ci95": [
+                        intervention_accuracy[1],
+                        intervention_accuracy[2],
+                    ],
+                },
+            },
+            "criteria": criteria,
+            "causal_thesis_supported": all(criteria.values()),
+            "verdict": "supported" if all(criteria.values()) else "not_supported",
+            "runs": [asdict(item) for item in results],
+        }
+        canonical = json.dumps(
+            v6_payload, sort_keys=True, separators=(",", ":")
+        )
+        v6_payload["result_sha256"] = hashlib.sha256(
+            canonical.encode()
+        ).hexdigest()
+        return v6_payload
 
     abstraction = _bootstrap_difference(
         values("full", "efficiency"), values("no_abstraction", "efficiency")
