@@ -357,3 +357,23 @@ as a bounded mechanism result. The effect is a held-out representational
 normalization, not improved game score or action efficiency. General language
 invention, autonomous source changes, psychological metareflection, and
 official ARC transfer remain unvalidated.
+
+## 2026-07-28 — Promote induced local relations after official public gain
+
+V20 detects repeated visual panels, induces a majority mapping from local clue
+symbols to equality or difference constraints, and prioritizes interventions
+at violated cells. The mechanism receives only the rendered observation and
+contains no public game identifier, fixed coordinate, or fixed color.
+
+In the official harness it completed `ft09` level 1 in four actions while
+preserving the accepted v18 completions of `r11l` (18 actions), `lf52`
+(34 actions), and `tn36` (123 actions). The frozen 25-game run at commit
+`e2cd533` reported all 25 environments, used 10,000 actions, completed four
+levels, and scored 0.4550443810 versus v18's 0.2645681905. The packaged
+candidate also passed the network-disabled Kaggle smoke test.
+
+The accepted claim is narrow: a coordinate-free repeated-panel relation can
+turn rendered demonstrations into effective interventions for one public game.
+This is not evidence of general relational induction, cross-game transfer, or
+competitive leaderboard performance. The next mutation must preserve all four
+wins and show a new official environment-level effect.

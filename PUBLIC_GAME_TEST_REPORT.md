@@ -4,6 +4,8 @@ Evaluation date: 2026-07-28
 
 Primary evidence:
 
+- [v20 local-relation result](reports/official-public-evaluation-v20-local-relations-400.json)
+- [v20 targeted promotion summary](reports/official-targeted-evaluation-v20-summary.json)
 - [v18 accommodated-affordance result](reports/official-public-evaluation-v18-accommodated-400.json)
 - [v17 targeted rejected-descendant summary](reports/official-targeted-evaluation-v17-summary.json)
 - [v14 epistemic-graph result](reports/official-public-evaluation-v14-graph-400.json)
@@ -16,22 +18,33 @@ Primary evidence:
 
 ## Verdict
 
-**The current accepted Reflector v18 agent scores 0.2645681905 on the 25
-official public ARC-AGI-3 games. It completes three levels across three games.
-This is a reproducible improvement over v14 and its exact equal-budget
-control, but it is still far from competitive performance.**
+**The current accepted Reflector v20 agent scores 0.4550443810 on the 25
+official public ARC-AGI-3 games. It completes four levels across four games.
+This is a reproducible 72.0% score improvement over v18, but it is still far
+from competitive performance.**
 
 This is the first legitimate environment-level test of the research platform.
 It proves that the agent is runnable, submission-compatible, and capable of
 limited public-game progress. It still contradicts any claim that the current
 symbolic mechanisms are competitive.
 
-| Result | Reflector v18 | Reflector v14 | v14 control | Reflector v8 |
+| Result | Reflector v20 | Reflector v18 | Reflector v14 | v14 control |
 | --- | ---: | ---: | ---: | ---: |
 | Public games reported | 25/25 | 25/25 | 25/25 | 25/25 |
-| ARC score | 0.2645681905 | 0.2548989649 | 0.0 | 0.0 |
-| Levels completed | 3 | 2 | 0 | 0 |
-| Actions | 10,000 | 10,000 | 10,000 | 2,025 |
+| ARC score | 0.4550443810 | 0.2645681905 | 0.2548989649 | 0.0 |
+| Levels completed | 4 | 3 | 2 | 0 |
+| Actions | 10,000 | 10,000 | 10,000 | 10,000 |
+
+V20 preserved every v18 completion at the same action count and added `ft09`
+level 1 in four actions. From the rendered frame alone, it detects repeated
+3x3 panels, induces how local clue symbols constrain equality or difference
+from the center color, and clicks the four violated macro-cells. The mechanism
+contains no game identifier, fixed color, or fixed coordinate.
+
+- frozen source commit:
+  `e2cd533d4416cb5d8f5bff1d9e41a23b99ecfa77`
+- v20 structured result SHA-256:
+  `d99316b8cb895cac23eff1d53d1a050dfa20b424f2fd65edfbcfc46597a2daf4`
 
 V18 retained the v14 completions of `r11l` level 1 in 18 actions and `lf52`
 level 1 in 34 actions. It additionally completed `tn36` level 1 at action 123:
@@ -71,6 +84,9 @@ Two isolated mechanisms were tested after v14:
 5. v19 reused action roles that produced substantive interior pixel change
    after repeated failure. It preserved all v18 wins but added none; visual
    motion was not sufficiently goal-sensitive, so it was not promoted.
+6. v20 induced local same/different constraints from repeated panels and
+   repaired the most inconsistent panel. It preserved all v18 wins and added
+   `ft09` in four actions, so it was promoted.
 
 These negative results are intentionally retained. The evidence indicates that
 flat coordinate novelty is weak, but equal action-family allocation is too
@@ -190,9 +206,9 @@ The exact frozen agent still passes the network-disabled Kaggle smoke test and
 exports both intended artifacts:
 
 - overlay SHA-256:
-  `762b193ccc07655c845d52099bfdea692ae46cfbdaed32641d8e386fca57080b`
+  `770f2fa671b9e0f20f19eb968cdc212e1dd39579da2eca9f92a43eb2ef7545d4`
 - notebook SHA-256:
-  `d790782da5ecaac6fbddb6bcb1f3fa13a08b9164a00129a212b008215b16d850`
+  `28695fbe1372a12329cee99e238ba7fcfcbb7f95e5b4a7fa058867d149632a27`
 
 Thus the submission architecture is validated locally. Performance is not.
 The 25 public games are development evidence, not a Kaggle leaderboard score;
