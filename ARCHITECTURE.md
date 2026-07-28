@@ -3,6 +3,25 @@
 Reflector has one inference core and several consumers.
 
 ```text
+reflector/
+├── core/       deterministic symbolic state, learning, and planning
+├── runtime/    deployed policy, configuration loading, and traces
+├── research/   evaluation, diagnostics, transforms, and validation
+├── evolution/  candidates, mutations, persistence, and sandboxing
+├── cli.py      local command-line composition root
+├── kaggle.py   offline overlay exporter and compatibility verifier
+├── web_api.py  local replay/analysis composition root
+└── *.py        compatibility imports for the pre-reorganization API
+```
+
+Dependencies point inward: `core` imports only `core`; `runtime` may import
+`core`; `research` may import `runtime` and `core`; and `evolution` may import
+the other three. Architecture tests enforce this direction. Top-level
+compatibility modules preserve established `reflector.mind`,
+`reflector.policy`, and related imports while new code uses the canonical
+package paths.
+
+```text
 reflector.SymbolicPolicy
   ├── official Agent adapter ── official Swarm/Arcade ── local runs
   ├── generated Kaggle overlay ── official starter ── Kaggle gateway

@@ -1,6 +1,6 @@
 """Offline symbolic agent shared by every Reflector execution surface."""
 
-from .abstraction import (
+from .core.abstraction import (
     AbstractionStore,
     ConceptType,
     LanguageInventionMechanism,
@@ -10,29 +10,28 @@ from .abstraction import (
     ProcedureAbstraction,
     SchemaFamily,
 )
-from .causal import (
+from .core.causal import (
     CausalHypothesis,
     Experiment,
     HypothesisStore,
     TemporalHypothesis,
 )
-from .comparisons import (
+from .core.comparisons import (
     ComparisonPlan,
     ComparisonTransferSystem,
     ContextOperator,
     SystemComparison,
 )
-from .graph import DependencyEdge, DependencyGraph
-from .mind import MindConfig, SymbolicMind
-from .planning import Goal, Plan, SymbolicPlanner
-from .policy import SymbolicPolicy
-from .reinforcement import (
+from .core.graph import DependencyEdge, DependencyGraph
+from .core.mind import MindConfig, SymbolicMind
+from .core.planning import Goal, Plan, SymbolicPlanner
+from .core.reinforcement import (
     ConditionalAccommodation,
     StructuralAssessment,
     StructuralCreditLedger,
     StructuralEligibility,
 )
-from .schemas import (
+from .core.schemas import (
     ConceptLifecycleEvent,
     ConceptStore,
     Schema,
@@ -40,7 +39,7 @@ from .schemas import (
     SchemaStore,
     SyntheticConcept,
 )
-from .symbolic import (
+from .core.symbolic import (
     Atom,
     Decision,
     Event,
@@ -49,8 +48,7 @@ from .symbolic import (
     Scene,
     Transition,
 )
-from .trace import EpisodeTrace, TraceStep
-from .transformations import (
+from .core.transformations import (
     ComparisonLawReport,
     ModalReachability,
     OperatoryTransformation,
@@ -58,6 +56,8 @@ from .transformations import (
     TransformationMorphism,
     TransformationSystem,
 )
+from .runtime.policy import SymbolicPolicy
+from .runtime.trace import EpisodeTrace, TraceStep
 
 __all__ = [
     "Atom",

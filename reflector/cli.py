@@ -12,33 +12,41 @@ from contextlib import redirect_stdout
 from importlib import import_module
 from pathlib import Path
 
-from .benchmark import run_validation
-from .compression import analyze_redundancy, counterfactual_replay, replay_policy
-from .deployment import CONFIG_ENV
-from .evaluation import compare_traces, evaluate_ablations, evaluate_trace
-from .evolver import (
+from .core.graph import DependencyGraph
+from .core.mind import MindConfig
+from .core.symbolic import Observation
+from .evolution.evolver import (
     descendants,
     evaluate_evolution_ablations,
     root_candidate,
     run_experiment,
 )
-from .experiments import ExperimentStore
-from .graph import DependencyGraph
-from .mind import MindConfig
-from .mutations import (
+from .evolution.experiments import ExperimentStore
+from .evolution.mutations import (
     DeterministicMutationProvider,
     MutationProposal,
     MutationProvider,
     OpenAICompatibleMutationProvider,
 )
-from .official_eval import (
+from .evolution.population import pareto_archive
+from .research.benchmark import run_validation
+from .research.compression import (
+    analyze_redundancy,
+    counterfactual_replay,
+    replay_policy,
+)
+from .research.evaluation import (
+    compare_traces,
+    evaluate_ablations,
+    evaluate_trace,
+)
+from .research.official_eval import (
     expected_public_game_count,
     inventory_official_environments,
 )
-from .policy import SymbolicPolicy
-from .population import pareto_archive
-from .symbolic import Observation
-from .trace import EpisodeTrace
+from .runtime.deployment import CONFIG_ENV
+from .runtime.policy import SymbolicPolicy
+from .runtime.trace import EpisodeTrace
 from .web_api import serve
 
 

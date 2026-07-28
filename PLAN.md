@@ -32,8 +32,9 @@ generalization.
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
-- Unrelated user work: `reflector/concept_validation.py` is untracked; do not
-  modify, delete, or commit it unless the user explicitly brings it into scope.
+- Maintenance state: canonical code is organized under `reflector/core/`,
+  `reflector/runtime/`, `reflector/research/`, and `reflector/evolution/`.
+  Legacy top-level imports remain compatibility aliases.
 
 ## Why the accepted agent wins what it wins
 

@@ -13,15 +13,14 @@ def test_overlay_contains_only_inference_path() -> None:
         assert set(archive.namelist()) == set(OVERLAY_FILES)
         names = " ".join(archive.namelist()).lower()
         for development_module in (
-            "reflector/evolver.py",
-            "reflector/experiments.py",
-            "reflector/mutations.py",
-            "reflector/population.py",
-            "reflector/sandbox.py",
-            "reflector/transforms.py",
+            "reflector/evolution/",
+            "reflector/research/",
             "reflector/web_api.py",
         ):
-            assert development_module not in archive.namelist()
+            assert not any(
+                name.startswith(development_module)
+                for name in archive.namelist()
+            )
         assert "openai" not in names
         assert "web" not in names
         assert "database" not in names

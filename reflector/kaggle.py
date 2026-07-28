@@ -14,26 +14,28 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-from .mind import MindConfig
+from .core.mind import MindConfig
 
 ROOT = Path(__file__).resolve().parents[1]
 OVERLAY_FILES = (
     "reflector/__init__.py",
-    "reflector/deployment.py",
-    "reflector/symbolic.py",
-    "reflector/perception.py",
-    "reflector/schemas.py",
-    "reflector/reinforcement.py",
-    "reflector/transformations.py",
-    "reflector/comparisons.py",
-    "reflector/abstraction.py",
-    "reflector/causal.py",
-    "reflector/planning.py",
-    "reflector/exploration.py",
-    "reflector/graph.py",
-    "reflector/mind.py",
-    "reflector/policy.py",
-    "reflector/trace.py",
+    "reflector/core/__init__.py",
+    "reflector/core/symbolic.py",
+    "reflector/core/perception.py",
+    "reflector/core/schemas.py",
+    "reflector/core/reinforcement.py",
+    "reflector/core/transformations.py",
+    "reflector/core/comparisons.py",
+    "reflector/core/abstraction.py",
+    "reflector/core/causal.py",
+    "reflector/core/planning.py",
+    "reflector/core/exploration.py",
+    "reflector/core/graph.py",
+    "reflector/core/mind.py",
+    "reflector/runtime/__init__.py",
+    "reflector/runtime/deployment.py",
+    "reflector/runtime/policy.py",
+    "reflector/runtime/trace.py",
     "agents/templates/reflector_agent.py",
     "agents/__init__.py",
 )

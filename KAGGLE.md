@@ -151,10 +151,12 @@ excludes the evolver, mutation providers, SQLite store, sandbox, and other
 development services, and retains all gateway, mount, rerun, agent, and
 parquet contract markers in the generated notebook.
 
-The inference allowlist includes `reflector/abstraction.py`. Its schema-family,
-concept-type, and language-reflection passes operate only on bounded in-memory
-symbolic stores; they add no package, network, database, or filesystem
-dependency.
+The inference allowlist includes `reflector/core/abstraction.py`. Its
+schema-family, concept-type, and language-reflection passes operate only on
+bounded in-memory symbolic stores; they add no package, network, database, or
+filesystem dependency. The rest of the canonical inference closure lives in
+`reflector/core/` and `reflector/runtime/`; development-only `research/` and
+`evolution/` packages are excluded.
 
 ## Prize eligibility
 

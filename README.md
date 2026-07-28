@@ -210,6 +210,17 @@ ARC-AGI-3 Kaggle submission without architectural translation or manual
 rewriting. Development-only evolution, analysis, persistence, and UI code may
 consume the symbolic package but may never be imported by its Kaggle path.
 
+The Python package is organized by responsibility:
+
+- `reflector/core/` is the deterministic symbolic inference engine.
+- `reflector/runtime/` owns deployed policy execution and serializable traces.
+- `reflector/research/` contains development-only evaluation and validation.
+- `reflector/evolution/` contains candidate generation, persistence, and
+  isolated selection.
+- `reflector/cli.py`, `reflector/kaggle.py`, and `reflector/web_api.py` are
+  composition roots. Legacy top-level module imports remain compatibility
+  aliases; canonical internal imports follow the package boundaries above.
+
 See [KAGGLE.md](KAGGLE.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 [THEORY.md](THEORY.md), [EVALUATION.md](EVALUATION.md), and
 [PRIZE_READINESS.md](PRIZE_READINESS.md). Requirement-by-requirement status is

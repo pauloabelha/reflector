@@ -13,19 +13,15 @@ from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
-from .deployment import CONFIG_ENV
+from .core.mind import MindConfig
 from .kaggle import OVERLAY_FILES, ROOT, _notebook, build_overlay
-from .mind import MindConfig
+from .runtime.deployment import CONFIG_ENV
 
 OFFICIAL_STARTER = "https://github.com/arcprize/ARC-AGI-3-Agents.git"
 INFERENCE_FORBIDDEN = (
-    "reflector/evolver.py",
-    "reflector/experiments.py",
-    "reflector/mutations.py",
-    "reflector/population.py",
+    "reflector/evolution/",
     "reflector/prize.py",
-    "reflector/sandbox.py",
-    "reflector/transforms.py",
+    "reflector/research/",
     "reflector/web_api.py",
 )
 
@@ -143,7 +139,11 @@ def audit(root: Path = ROOT) -> PrizeAudit:
         _check(
             "inference_allowlist",
             names == set(OVERLAY_FILES)
-            and not names.intersection(INFERENCE_FORBIDDEN),
+            and not any(
+                name.startswith(prefix)
+                for name in names
+                for prefix in INFERENCE_FORBIDDEN
+            ),
             "The overlay contains exactly the reviewed inference closure and "
             "no evolver, database, web, or audit module.",
         ),
@@ -165,7 +165,7 @@ def audit(root: Path = ROOT) -> PrizeAudit:
         _check(
             "direct_candidate_export",
             CONFIG_ENV in notebook_source
-            and "reflector/deployment.py" in names,
+            and "reflector/runtime/deployment.py" in names,
             "The complete MindConfig genome is embedded without rewriting "
             "the shared symbolic policy.",
         ),

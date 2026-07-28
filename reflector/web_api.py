@@ -11,10 +11,10 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
 
-from .experiments import ExperimentStore
-from .mind import MindConfig
-from .policy import SymbolicPolicy
-from .trace import EpisodeTrace
+from .core.mind import MindConfig
+from .evolution.experiments import ExperimentStore
+from .runtime.policy import SymbolicPolicy
+from .runtime.trace import EpisodeTrace
 
 MAX_REQUEST_BYTES = 1_000_000
 

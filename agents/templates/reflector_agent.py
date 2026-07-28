@@ -6,8 +6,8 @@ from typing import Any
 from arcengine import FrameData, FrameDataRaw, GameAction, GameState
 
 from reflector import Observation, SymbolicPolicy
-from reflector.deployment import deployed_config
-from reflector.trace import AGENT_VERSION
+from reflector.runtime.deployment import deployed_config
+from reflector.runtime.trace import AGENT_VERSION
 
 from ..agent import Agent
 
