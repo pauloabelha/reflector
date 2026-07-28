@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-28T17:22:59Z",
+  "status": "blocked_missing_official_public_data",
+  "claim": "No 25-game public-suite score was produced.",
+  "requested_evaluation": {
+    "competition": "ARC Prize 2026 - ARC-AGI-3",
+    "competition_slug": "arc-prize-2026-arc-agi-3",
+    "suite": "official public development environments",
+    "expected_unique_games": 25,
+    "runner": "reflector official-public-run",
+    "harness": "official ARC-AGI-3 Agents Swarm",
+    "operation_mode": "offline"
+  },
+  "source": {
+    "commit": "cfba2db23ef08913d967f918475f816746d1225f",
+    "agent_version": "reflector-symbolic-v13",
+    "worktree_had_uncommitted_inference_changes": true,
+    "rules_snapshot": "competition/arc_agi_3_2026.json",
+    "rules_snapshot_sha256": "c18aa3690fffd6eba78e82e64f48658d638617ad77a2ebb5abce2afbcceaffb4"
+  },
+  "official_access_checks": [
+    {
+      "route": "Kaggle competition data download",
+      "url": "https://www.kaggle.com/api/v1/competitions/data/download-all/arc-prize-2026-arc-agi-3",
+      "result": "HTTP 401 Unauthorized",
+      "interpretation": "A Kaggle account that has joined the competition and accepted its rules is required."
+    },
+    {
+      "route": "ARC-AGI Toolkit public API discovery",
+      "url": "https://three.arcprize.org/api/games",
+      "result": "HTTP 401 Unauthorized",
+      "interpretation": "An ARC_API_KEY is required by the service at the time of this test."
+    }
+  ],
+  "local_inventory_preflight": {
+    "directory": "tests/fixtures/official_toolkit",
+    "expected_unique_games": 25,
+    "discovered_unique_games": 1,
+    "exit_code": 2,
+    "result": "rejected",
+    "message": "official public suite is incomplete: expected 25 unique games, found 1",
+    "output_file_created": false
+  },
+  "non_public_compatibility_evidence": {
+    "kaggle_smoke_test": {
+      "result": "pass",
+      "network_disabled": true,
+      "selected_legal_action": 3,
+      "advanced_state": "NOT_FINISHED"
+    },
+    "kaggle_export": {
+      "result": "pass",
+      "overlay_sha256": "09daf0f3a243dac323fc0d2c38cb87be6299f7b0f9b5c0b387c670ed1c6901af",
+      "notebook_sha256": "8235513e462d73595e1698af3bbdd4a6199c33386ffa5f077a7136be98d2886c"
+    },
+    "bundled_bt11_fixture": {
+      "official_harness": true,
+      "official_public_suite_evidence": false,
+      "score": 100.0,
+      "levels_completed": 5,
+      "actions": 72,
+      "wall_seconds": 1.52,
+      "raw_report_sha256": "1f1feb49a615eb8a42d4351f38ec6a89ba1c9103d637e390959f8cdedc53d3f3"
+    },
+    "prize_audit": {
+      "technical_ready": true,
+      "prize_ready": false,
+      "raw_report_sha256": "be7a1c5ab50934557589731fcede023a7c75a17dc370ccc127eef695ea8ae7eb"
+    }
+  },
+  "unblock_condition": {
+    "preferred": "Download the accepted Kaggle competition data and place its environment_files directory on this machine.",
+    "alternative": "Provide an authorized ARC_API_KEY and download all 25 permitted public environments through the official toolkit.",
+    "required_command": ".venv/bin/reflector official-public-run --environments-dir /path/to/environment_files --recordings-dir /tmp/reflector-public-recordings --output reports/official-public-evaluation.json"
+  },
+  "leaderboard_boundary": "The 25 public development games are a local development test. Only a committed Kaggle submission can evaluate the separate 110 hidden games used for the public and private competition leaderboards."
+}
