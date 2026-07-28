@@ -29,6 +29,7 @@ OVERLAY_FILES = (
     "reflector/abstraction.py",
     "reflector/causal.py",
     "reflector/planning.py",
+    "reflector/exploration.py",
     "reflector/graph.py",
     "reflector/mind.py",
     "reflector/policy.py",

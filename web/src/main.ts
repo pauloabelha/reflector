@@ -1,7 +1,6 @@
 import type {
   BranchReport,
   CandidateRecord,
-  Concept,
   ConceptType,
   ExperimentReport,
   Graph,
@@ -213,7 +212,7 @@ function branchControls(): string {
 function modelInspector(step: ReplayStep): string {
   const state = step.symbolic_state;
   const counts = {
-    concepts: state.concepts.concepts.length,
+    concepts: state.concepts.active_ids.length,
     schemas: state.schemas.schemas.length,
     families: state.abstractions.schema_families.length + state.abstractions.concept_types.length,
     hypotheses: state.hypotheses.causal.length + state.hypotheses.temporal.length,
@@ -233,7 +232,7 @@ function modelInspector(step: ReplayStep): string {
 }
 
 function modelTab(state: ReplayStep["symbolic_state"], tab: string): string {
-  if (tab === "concepts") return conceptList(state.concepts.concepts, state.dependency_graph);
+  if (tab === "concepts") return conceptList(state.concepts, state.dependency_graph);
   if (tab === "schemas") return schemaList(state.schemas.schemas);
   if (tab === "families") return familyList(state.abstractions.schema_families, state.abstractions.concept_types);
   if (tab === "hypotheses") return hypothesisList([...state.hypotheses.causal, ...state.hypotheses.temporal]);
@@ -241,16 +240,19 @@ function modelTab(state: ReplayStep["symbolic_state"], tab: string): string {
   return languageView(state.schemas.schemas, state.abstractions);
 }
 
-function conceptList(concepts: Concept[], graph: Graph): string {
+function conceptList(state: ReplayStep["symbolic_state"]["concepts"], graph: Graph): string {
+  const concepts = state.concepts;
   if (!concepts.length) return emptyState("No retained concepts yet", "A proposal appears only after repeated evidence pays its complexity cost.");
   return `<div class="card-list">${concepts.map((concept) => {
     const children = graph.edges.filter((edge) => edge.source === concept.concept_id);
+    const lifecycle = state.lifecycle_events.filter((event) => event.concept_id === concept.concept_id);
+    const status = state.active_ids.includes(concept.concept_id) ? "active" : "retired";
     return `<article class="symbol-card concept-card">
-      <div class="symbol-title"><span class="type-icon">C</span><div><strong>${escapeHtml(concept.name)}</strong><small>${escapeHtml(concept.kind)} · ${short(concept.concept_id)}</small></div><span class="utility">+${concept.utility.toFixed(1)} U</span></div>
+      <div class="symbol-title"><span class="type-icon">C</span><div><strong>${escapeHtml(concept.name)}</strong><small>${escapeHtml(concept.kind)} · ${short(concept.concept_id)} · ${status}</small></div><span class="utility">${concept.utility >= 0 ? "+" : ""}${concept.utility.toFixed(1)} U</span></div>
       <p>${concept.definition.map(escapeHtml).join(" ∧ ")}</p>
       <div class="evidence-bar"><span style="width:${Math.min(100, concept.support * 18)}%"></span></div>
       <footer><span>${concept.support} evidence</span><span>${concept.complexity} bits cost</span><span>${concept.counterfactual_savings.toFixed(0)} recoverable</span></footer>
-      <details><summary>Evidence & dependencies</summary><code>${concept.evidence.map(escapeHtml).join("\n") || "none"}</code><p>${children.length} graph dependencies · active · no retirement evidence</p></details>
+      <details><summary>Evidence, dependencies & lifecycle</summary><code>${concept.evidence.map(escapeHtml).join("\n") || "none"}</code><p>${children.length} graph dependencies · ${status} · ${lifecycle.length} lifecycle events</p>${lifecycle.map((event) => `<p><strong>${escapeHtml(event.transition)}</strong> at ${event.support}/${event.opportunities} support (${percent(event.reliability)}) · ${escapeHtml(event.reason)}</p>`).join("")}</details>
     </article>`;
   }).join("")}</div>`;
 }
@@ -299,7 +301,7 @@ function graphView(graph: Graph): string {
   const width = 760;
   const height = 330;
   const positions = new Map(graph.nodes.map((node, index) => {
-    const lanes = { concept: 0, concept_type: 0, language_operator: 0, language_invention_mechanism: 0, language_proposal: 1, causal_hypothesis: 1, temporal_hypothesis: 1, language_version: 1, schema_family: 1, schema: 2 } as Record<string, number>;
+    const lanes = { concept: 0, concept_type: 0, language_operator: 0, language_invention_mechanism: 0, concept_lifecycle: 1, language_proposal: 1, causal_hypothesis: 1, temporal_hypothesis: 1, language_version: 1, schema_family: 1, schema: 2 } as Record<string, number>;
     const lane = lanes[node.kind] ?? 1;
     const inLane = graph.nodes.filter((other) => (lanes[other.kind] ?? 1) === lane);
     const laneIndex = inLane.findIndex((other) => other.id === node.id);

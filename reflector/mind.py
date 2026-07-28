@@ -51,6 +51,9 @@ class MindConfig:
     enable_comparison_transfer: bool = True
     enable_comparison_composition: bool = True
     enable_language_meta_reflection: bool = True
+    enable_concept_retirement: bool = True
+    enable_epistemic_state_graph: bool = False
+    action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
     information_weight: float = 1.0
@@ -72,6 +75,8 @@ class MindConfig:
             "enable_comparison_transfer",
             "enable_comparison_composition",
             "enable_language_meta_reflection",
+            "enable_concept_retirement",
+            "enable_epistemic_state_graph",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -79,6 +84,10 @@ class MindConfig:
             raise ValueError("planner_max_depth must be an integer")
         if type(self.planner_max_expansions) is not int:
             raise ValueError("planner_max_expansions must be an integer")
+        if type(self.action_budget) is not int:
+            raise ValueError("action_budget must be an integer")
+        if not 1 <= self.action_budget <= 5000:
+            raise ValueError("action_budget must be between 1 and 5000")
         if not 1 <= self.planner_max_depth <= 8:
             raise ValueError("planner_max_depth must be between 1 and 8")
         if not 1 <= self.planner_max_expansions <= 512:
@@ -121,6 +130,7 @@ class SymbolicMind:
             require_counterfactual_utility=(
                 self.config.enable_counterfactual_pressure
             ),
+            enable_retirement=self.config.enable_concept_retirement,
         )
         self.hypotheses = HypothesisStore()
         self.reinforcement = StructuralCreditLedger()
@@ -256,13 +266,7 @@ class SymbolicMind:
                     max_steps=self.config.planner_max_depth,
                 )
             if self.config.enable_concepts:
-                before = set(self.concepts.concepts)
-                self.concepts.reflect(self.schemas)
-                new_concepts = tuple(
-                    concept
-                    for concept_id, concept in sorted(self.concepts.concepts.items())
-                    if concept_id not in before
-                )
+                new_concepts = self.concepts.reflect(self.schemas)
             if self.config.enable_reflecting_abstraction:
                 new_abstractions = tuple(
                     sorted(

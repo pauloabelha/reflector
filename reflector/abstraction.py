@@ -533,7 +533,7 @@ class AbstractionStore:
 
     def _reflect_concept_types(self, concepts: ConceptStore) -> None:
         groups: dict[str, list[SyntheticConcept]] = {}
-        for concept in concepts.concepts.values():
+        for concept in concepts.active_concepts():
             groups.setdefault(concept.kind, []).append(concept)
         for kind, children in sorted(groups.items()):
             if len(children) < 2:

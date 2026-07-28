@@ -33,6 +33,7 @@ from .reinforcement import (
     StructuralEligibility,
 )
 from .schemas import (
+    ConceptLifecycleEvent,
     ConceptStore,
     Schema,
     SchemaPrediction,
@@ -65,6 +66,7 @@ __all__ = [
     "ComparisonPlan",
     "ComparisonTransferSystem",
     "ConceptStore",
+    "ConceptLifecycleEvent",
     "ConceptType",
     "ConditionalAccommodation",
     "ContextOperator",

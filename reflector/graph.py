@@ -41,6 +41,31 @@ class DependencyGraph:
                 graph.edges.add(
                     DependencyEdge(concept.concept_id, "supported_by", evidence)
                 )
+        for event in concepts.lifecycle_events.values():
+            graph.nodes[event.event_id] = "concept_lifecycle"
+            graph.edges.add(
+                DependencyEdge(
+                    event.event_id,
+                    event.transition,
+                    event.concept_id,
+                )
+            )
+            if event.supersedes is not None:
+                graph.edges.add(
+                    DependencyEdge(
+                        event.event_id,
+                        "supersedes",
+                        event.supersedes,
+                    )
+                )
+            for evidence in event.evidence:
+                graph.edges.add(
+                    DependencyEdge(
+                        event.event_id,
+                        "supported_by",
+                        evidence,
+                    )
+                )
         for schema in schemas.schemas.values():
             for atom in schema.context:
                 if (

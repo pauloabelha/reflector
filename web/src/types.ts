@@ -57,6 +57,27 @@ export interface Concept {
   counterfactual_savings: number;
 }
 
+export interface ConceptLifecycleEvent {
+  event_id: string;
+  concept_id: string;
+  transition: "activated" | "retired" | "reactivated";
+  supersedes: string | null;
+  reason: string;
+  support: number;
+  opportunities: number;
+  contradictions: number;
+  reliability: number;
+  utility: number;
+  evidence: string[];
+}
+
+export interface ConceptState {
+  concepts: Concept[];
+  active_ids: string[];
+  retired_ids: string[];
+  lifecycle_events: ConceptLifecycleEvent[];
+}
+
 export interface Hypothesis {
   hypothesis_id: string;
   action_id?: number;
@@ -185,7 +206,7 @@ export interface AbstractionState {
 
 export interface SymbolicState {
   schemas: { schemas: Schema[]; action_trials: Record<string, number> };
-  concepts: { concepts: Concept[] };
+  concepts: ConceptState;
   hypotheses: { causal: Hypothesis[]; temporal: Hypothesis[] };
   abstractions: AbstractionState;
   last_experiment: Record<string, Json> | null;

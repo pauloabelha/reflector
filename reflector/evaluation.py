@@ -24,6 +24,8 @@ class TraceMetrics:
     prediction_accuracy: float
     schema_count: int
     concept_count: int
+    retired_concept_count: int
+    concept_lifecycle_events: int
     schema_reuse: int
     concept_reuse: int
     duplicate_schemas: int
@@ -127,7 +129,8 @@ def evaluate_trace(
             (tuple(atom.text() for atom in schema.context), schema.action_id)
         ].add(schema.result)
     schema_ids = {schema.schema_id for schema in schemas}
-    concepts = tuple(policy.mind.concepts.concepts.values())
+    concepts = policy.mind.concepts.active_concepts()
+    all_concepts = tuple(policy.mind.concepts.concepts.values())
     return TraceMetrics(
         actions=len(trace.steps),
         action_efficiency=levels_advanced / max(1, len(trace.steps)),
@@ -142,6 +145,12 @@ def evaluate_trace(
         ),
         schema_count=len(schemas),
         concept_count=len(concepts),
+        retired_concept_count=(
+            len(all_concepts) - len(policy.mind.concepts.active_ids)
+        ),
+        concept_lifecycle_events=len(
+            policy.mind.concepts.lifecycle_events
+        ),
         schema_reuse=sum(max(0, schema.support - 1) for schema in schemas),
         concept_reuse=sum(max(0, concept.support - 1) for concept in concepts),
         duplicate_schemas=sum(
@@ -157,7 +166,7 @@ def evaluate_trace(
         orphan_concepts=sum(
             not concept.evidence
             or any(evidence not in schema_ids for evidence in concept.evidence)
-            for concept in concepts
+            for concept in all_concepts
         ),
         schema_family_count=len(policy.mind.abstractions.schema_families),
         concept_type_count=len(policy.mind.abstractions.concept_types),
@@ -229,6 +238,7 @@ ABLATIONS: dict[str, MindConfig] = {
     "no_language_meta_reflection": MindConfig(
         enable_language_meta_reflection=False
     ),
+    "no_concept_retirement": MindConfig(enable_concept_retirement=False),
 }
 
 

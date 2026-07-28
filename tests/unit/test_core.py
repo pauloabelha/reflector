@@ -54,3 +54,4 @@ def test_official_adapter_loads_packaged_symbolic_genome(
         arc_env=MagicMock(),
     )
     assert agent.policy.mind.config.planner_max_expansions == 17
+    assert agent.MAX_ACTIONS == 79

@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+from collections import Counter
 from contextlib import redirect_stdout
 from importlib import import_module
 from pathlib import Path
@@ -363,12 +364,35 @@ def main() -> None:
         agent_reports = []
         for agent in swarm.agents:
             official_policy: SymbolicPolicy = getattr(agent, "policy")
+            decision_distribution = Counter(
+                (step.decision.action_id, step.decision.data)
+                for step in official_policy.trace.steps
+            )
+            reason_distribution = Counter(
+                step.decision.reason.split(":", 1)[0]
+                for step in official_policy.trace.steps
+            )
             agent_reports.append(
                 {
                     "game_id": agent.game_id,
                     "actions": agent.action_counter,
                     "seconds": agent.seconds,
                     "levels_completed": agent.levels_completed,
+                    "action_counts": dict(
+                        sorted(official_policy.action_counts.items())
+                    ),
+                    "decision_distribution": [
+                        {
+                            "action_id": action_id,
+                            "data": dict(data),
+                            "count": count,
+                        }
+                        for (
+                            action_id,
+                            data,
+                        ), count in sorted(decision_distribution.items())
+                    ],
+                    "reason_counts": dict(sorted(reason_distribution.items())),
                     "mind_config": official_policy.mind.config.to_dict(),
                     "agent_version": official_policy.trace.agent_version,
                     "trace_metrics": evaluate_trace(

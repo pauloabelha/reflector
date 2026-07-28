@@ -1,8 +1,9 @@
 """Official ARC-AGI-3 Agents adapter for Reflector's shared symbolic policy."""
 
+import time
 from typing import Any
 
-from arcengine import FrameData, GameAction, GameState
+from arcengine import FrameData, FrameDataRaw, GameAction, GameState
 
 from reflector import Observation, SymbolicPolicy
 from reflector.deployment import deployed_config
@@ -19,6 +20,10 @@ class ReflectorAgent(Agent):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.policy = SymbolicPolicy(deployed_config())
+        # The upstream loop is inclusive (``<= MAX_ACTIONS``), so subtract
+        # one to make the serialized genome's budget exact.
+        self.MAX_ACTIONS = self.policy.mind.config.action_budget - 1
+        self._finished_at: float | None = None
 
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
         return latest_frame.state is GameState.WIN
@@ -28,6 +33,28 @@ class ReflectorAgent(Agent):
 
         super().append_frame(frame)
         self.policy.observe(self._observation(frame))
+
+    def _convert_raw_frame_data(
+        self, raw: FrameDataRaw | None
+    ) -> FrameData:
+        """Retain the action that produced a frame for replay and diagnosis."""
+
+        converted = super()._convert_raw_frame_data(raw)
+        if raw is not None:
+            converted.action_input = raw.action_input.model_copy(deep=True)
+        return converted
+
+    @property
+    def seconds(self) -> float:
+        """Freeze gameplay duration before post-run trace analysis begins."""
+
+        end = self._finished_at if self._finished_at is not None else time.time()
+        return (end - self.timer) * 100 // 1 / 100
+
+    def cleanup(self, scorecard: Any | None = None) -> None:
+        if self._finished_at is None:
+            self._finished_at = time.time()
+        super().cleanup(scorecard)
 
     def choose_action(
         self, frames: list[FrameData], latest_frame: FrameData

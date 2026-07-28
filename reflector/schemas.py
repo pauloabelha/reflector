@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from .symbolic import Atom, Transition
@@ -70,6 +70,26 @@ class SyntheticConcept:
             "complexity": self.complexity,
             "counterfactual_savings": self.counterfactual_savings,
         }
+
+
+@dataclass(frozen=True, slots=True)
+class ConceptLifecycleEvent:
+    """Append-only evidence for a concept's operative lifecycle."""
+
+    event_id: str
+    concept_id: str
+    transition: str
+    supersedes: str | None
+    reason: str
+    support: int
+    opportunities: int
+    contradictions: int
+    reliability: float
+    utility: float
+    evidence: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass(frozen=True, slots=True)
@@ -357,10 +377,21 @@ class ConceptStore:
     """Propose functional concepts from repeated, reliable schema evidence."""
 
     concepts: dict[str, SyntheticConcept] = field(default_factory=dict)
+    active_ids: set[str] = field(default_factory=set)
+    lifecycle_events: dict[str, ConceptLifecycleEvent] = field(
+        default_factory=dict
+    )
+    latest_lifecycle_event: dict[str, str] = field(default_factory=dict)
     minimum_support: int = 2
     minimum_utility: float = 0.0
     complexity_pressure: float = 1.0
     require_counterfactual_utility: bool = True
+    enable_retirement: bool = True
+    retirement_min_opportunities: int = 6
+    retirement_min_contradictions: int = 3
+    retirement_reliability: float = 0.35
+    reactivation_support_gain: int = 2
+    reactivation_reliability: float = 0.50
 
     def context_atoms(self, action_id: int) -> tuple[Atom, ...]:
         """Compile retained functional concepts into later schema contexts."""
@@ -371,16 +402,27 @@ class ConceptStore:
             for concept in sorted(
                 self.concepts.values(), key=lambda item: item.concept_id
             )
-            if action_term in concept.definition
+            if concept.concept_id in self.active_ids
+            and action_term in concept.definition
+        )
+
+    def is_active(self, concept_id: str) -> bool:
+        return concept_id in self.active_ids
+
+    def active_concepts(self) -> tuple[SyntheticConcept, ...]:
+        return tuple(
+            concept
+            for concept in sorted(
+                self.concepts.values(), key=lambda item: item.concept_id
+            )
+            if concept.concept_id in self.active_ids
         )
 
     def reflect(self, schemas: SchemaStore) -> tuple[SyntheticConcept, ...]:
-        proposals: list[SyntheticConcept] = []
+        transitions: list[SyntheticConcept] = []
         for action_id, events in sorted(schemas.action_events.items()):
             trials = schemas.action_trials[action_id]
             for event, support in sorted(events.items()):
-                if support < self.minimum_support:
-                    continue
                 reliability = support / trials
                 kind = event.split("(", 1)[0]
                 if kind == "level_advanced":
@@ -420,21 +462,123 @@ class ConceptStore:
                         f"{name}|{'|'.join(definition)}".encode()
                     ).hexdigest()[:12]
                 )
-                if utility > self.minimum_utility:
-                    concept = SyntheticConcept(
-                        concept_id=concept_id,
-                        name=name,
-                        kind=concept_kind,
-                        definition=definition,
-                        evidence=evidence,
-                        support=support,
-                        utility=utility,
-                        complexity=complexity,
-                        counterfactual_savings=counterfactual_savings,
-                    )
+                concept = SyntheticConcept(
+                    concept_id=concept_id,
+                    name=name,
+                    kind=concept_kind,
+                    definition=definition,
+                    evidence=evidence,
+                    support=support,
+                    utility=utility,
+                    complexity=complexity,
+                    counterfactual_savings=counterfactual_savings,
+                )
+                eligible = (
+                    support >= self.minimum_support
+                    and utility > self.minimum_utility
+                )
+                existing = self.concepts.get(concept_id)
+                if existing is None:
+                    if not eligible:
+                        continue
                     self.concepts[concept_id] = concept
-                    proposals.append(concept)
-        return tuple(proposals)
+                    self.active_ids.add(concept_id)
+                    self._record_lifecycle(
+                        concept,
+                        transition="activated",
+                        reason="positive-counterfactual-utility",
+                        opportunities=trials,
+                    )
+                    transitions.append(concept)
+                else:
+                    self.concepts[concept_id] = concept
+
+                contradictions = trials - support
+                if (
+                    self.enable_retirement
+                    and concept_id in self.active_ids
+                    and trials >= self.retirement_min_opportunities
+                    and contradictions
+                    >= self.retirement_min_contradictions
+                    and reliability < self.retirement_reliability
+                ):
+                    self.active_ids.remove(concept_id)
+                    self._record_lifecycle(
+                        concept,
+                        transition="retired",
+                        reason="repeated-contradiction-below-reliability",
+                        opportunities=trials,
+                    )
+                elif (
+                    self.enable_retirement
+                    and concept_id not in self.active_ids
+                    and eligible
+                    and reliability >= self.reactivation_reliability
+                    and self._support_gain_since_retirement(concept_id, support)
+                    >= self.reactivation_support_gain
+                ):
+                    self.active_ids.add(concept_id)
+                    self._record_lifecycle(
+                        concept,
+                        transition="reactivated",
+                        reason="restored-reliability-and-utility",
+                        opportunities=trials,
+                    )
+                    transitions.append(concept)
+        return tuple(transitions)
+
+    def _support_gain_since_retirement(
+        self,
+        concept_id: str,
+        support: int,
+    ) -> int:
+        event_id = self.latest_lifecycle_event.get(concept_id)
+        if event_id is None:
+            return 0
+        event = self.lifecycle_events[event_id]
+        if event.transition != "retired":
+            return 0
+        return support - event.support
+
+    def _record_lifecycle(
+        self,
+        concept: SyntheticConcept,
+        *,
+        transition: str,
+        reason: str,
+        opportunities: int,
+    ) -> None:
+        supersedes = self.latest_lifecycle_event.get(concept.concept_id)
+        raw = "|".join(
+            (
+                concept.concept_id,
+                transition,
+                str(concept.support),
+                str(opportunities),
+                supersedes or "",
+            )
+        )
+        event_id = (
+            "concept-lifecycle-"
+            + hashlib.sha256(raw.encode()).hexdigest()[:12]
+        )
+        if event_id in self.lifecycle_events:
+            return
+        event = ConceptLifecycleEvent(
+            event_id=event_id,
+            concept_id=concept.concept_id,
+            transition=transition,
+            supersedes=supersedes,
+            reason=reason,
+            support=concept.support,
+            opportunities=opportunities,
+            contradictions=opportunities - concept.support,
+            reliability=concept.support / opportunities,
+            utility=concept.utility,
+            evidence=concept.evidence,
+        )
+        self.lifecycle_events[event_id] = event
+        self.latest_lifecycle_event[concept.concept_id] = event_id
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -443,5 +587,11 @@ class ConceptStore:
                 for concept in sorted(
                     self.concepts.values(), key=lambda item: item.concept_id
                 )
-            ]
+            ],
+            "active_ids": sorted(self.active_ids),
+            "retired_ids": sorted(set(self.concepts) - self.active_ids),
+            "lifecycle_events": [
+                event.to_dict()
+                for event in self.lifecycle_events.values()
+            ],
         }

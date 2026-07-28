@@ -143,3 +143,103 @@ def test_policy_uses_context_to_reject_a_globally_successful_action() -> None:
     # Action 1 now has strong global success evidence, but the unchanged
     # right-hand context is evidence that it is locally wrong.
     assert policy.choose_action(advanced_right).action_id == 2
+
+
+def test_concept_retirement_is_reversible_and_preserves_identity() -> None:
+    schemas = SchemaStore()
+    enabled = ConceptStore()
+    ablated = ConceptStore(enable_retirement=False)
+    context = (Atom("state", ("NOT_FINISHED",)),)
+
+    def observe(index: int, event: Event) -> None:
+        schemas.observe(
+            Transition(
+                before_index=index,
+                after_index=index + 1,
+                context=context,
+                action_id=3,
+                action_data=(),
+                result=(event,),
+            )
+        )
+
+    target = Event("level_advanced", "game")
+    for index in range(3):
+        observe(index, target)
+    enabled.reflect(schemas)
+    ablated.reflect(schemas)
+    concept_id = next(
+        concept.concept_id
+        for concept in enabled.concepts.values()
+        if concept.name == "Activator[action=3]"
+    )
+    assert enabled.is_active(concept_id)
+    assert ablated.is_active(concept_id)
+
+    for index in range(3, 11):
+        observe(index, Event("no_observed_change"))
+    enabled.reflect(schemas)
+    ablated.reflect(schemas)
+
+    assert not enabled.is_active(concept_id)
+    assert ablated.is_active(concept_id)
+    assert Atom("synthetic_item", (concept_id,)) not in (
+        enabled.context_atoms(3)
+    )
+    assert Atom("synthetic_item", (concept_id,)) in ablated.context_atoms(3)
+
+    for index in range(11, 17):
+        observe(index, target)
+    reactivated = enabled.reflect(schemas)
+    ablated.reflect(schemas)
+
+    assert enabled.is_active(concept_id)
+    assert [item.concept_id for item in reactivated] == [concept_id]
+    events = [
+        event
+        for event in enabled.lifecycle_events.values()
+        if event.concept_id == concept_id
+    ]
+    assert [event.transition for event in events] == [
+        "activated",
+        "retired",
+        "reactivated",
+    ]
+    assert events[-1].supersedes == events[-2].event_id
+    assert enabled.concepts[concept_id].support == 9
+    before = enabled.to_dict()
+    assert enabled.reflect(schemas) == ()
+    assert enabled.to_dict() == before
+
+
+def test_noisy_concept_is_not_retired_without_low_reliability() -> None:
+    schemas = SchemaStore()
+    context = (Atom("state", ("NOT_FINISHED",)),)
+    for index in range(6):
+        schemas.observe(
+            Transition(
+                before_index=index,
+                after_index=index + 1,
+                context=context,
+                action_id=2,
+                action_data=(),
+                result=(
+                    Event("level_advanced", "game")
+                    if index % 2 == 0
+                    else Event("no_observed_change")
+                ,),
+            )
+        )
+    concepts = ConceptStore()
+    concepts.reflect(schemas)
+    activator = next(
+        concept
+        for concept in concepts.concepts.values()
+        if concept.name == "Activator[action=2]"
+    )
+    assert concepts.is_active(activator.concept_id)
+    assert all(
+        event.transition != "retired"
+        for event in concepts.lifecycle_events.values()
+        if event.concept_id == activator.concept_id
+    )

@@ -7,6 +7,7 @@ the web UI, a database, or development-time services.
 
 from __future__ import annotations
 
+from .exploration import EpistemicExplorer
 from .mind import MindConfig, MindUpdate, SymbolicMind
 from .symbolic import Decision, Observation
 from .trace import EpisodeTrace, TraceStep
@@ -25,6 +26,7 @@ class SymbolicPolicy:
         self.action_counts: dict[int, int] = {}
         self.mind = SymbolicMind(config)
         self.trace = EpisodeTrace(mind_config=self.mind.config.to_dict())
+        self.explorer = EpistemicExplorer()
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
         self._last_update: MindUpdate | None = None
@@ -50,6 +52,7 @@ class SymbolicPolicy:
             return self._last_update
         self.observations_seen += 1
         update = self.mind.ingest(observation, self._previous_decision)
+        self.explorer.observe(observation, update.scene)
         self._last_observation = observation
         self._last_update = update
         self._last_ingested_epoch = self._decision_epoch
@@ -76,8 +79,27 @@ class SymbolicPolicy:
         if not legal:
             raise ValueError("active observation exposes no legal non-reset action")
 
-        action_id, reason = self.mind.select_action(legal)
-        if action_id == self.COMPLEX:
+        if self.mind.config.enable_epistemic_state_graph:
+            exploration = self.explorer.select(
+                observation,
+                update.scene,
+                legal,
+            )
+            action_id = exploration.token.action_id
+            reason = exploration.reason
+            data = exploration.token.data
+        else:
+            action_id, reason = self.mind.select_action(legal)
+            data = ()
+        if action_id == self.COMPLEX and data:
+            decision = self._record(
+                Decision(
+                    action_id,
+                    data=data,
+                    reason=reason,
+                )
+            )
+        elif action_id == self.COMPLEX:
             x, y = self._symbolic_click(observation.frame)
             decision = self._record(
                 Decision(
