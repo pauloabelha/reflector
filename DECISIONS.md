@@ -267,3 +267,19 @@ names its perceived domain, source operator, typed comparison, and calibration
 evidence; inconsistent mappings are rejected. This does not validate
 composition of comparisons, arbitrary morphisms, general category theory, or
 official ARC generalization.
+
+## 2026-07-27 — Accept bounded comparison composition, not general categories
+
+Validation v7 froze its `A → B → C` topology, perceived link tokens,
+independent oracle, leakage checks, and composition-only ablation in commit
+`004e509`, then ran seeds 180,000–180,029 once. The isolated and default
+descendants completed every run at the 96-action oracle. The ablation retained
+both direct maps and direct inferred operators but averaged 74.72% completion.
+First-intervention accuracy improved by 0.6365 (95% paired bootstrap CI
+[0.5927, 0.6797]) and efficiency by 0.6901 (CI [0.5401, 0.8200]).
+
+Endpoint-valid comparison composition through an inferred intermediate
+operator is therefore accepted into the Kaggle inference path with a fixed
+three-hop bound and ordered provenance. This is evidence for one finite
+two-step synthetic family, not arbitrary morphisms, unrestricted category
+theory, or official ARC generalization.

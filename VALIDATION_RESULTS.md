@@ -2,6 +2,54 @@
 
 Run date: 2026-07-27.
 
+## V7 conclusion
+
+The narrow causal comparison-composition claim is **supported** on its
+untouched confirmation split. Two independently evidenced comparisons over
+disjoint action pairs formed an endpoint-valid `A → B → C` path. A
+Kaggle-exportable symbolic descendant propagated a withheld operator through
+the inferred intermediate B operator and used the composed C operator in
+control.
+
+The ablation retained both direct comparisons, every observed operator, all
+direct inferred operators, perceived link tokens, and the same depth-one
+planner; it disabled only inferred intermediate sources. This is causal
+evidence for bounded two-step composition in one synthetic family, not for
+arbitrary morphisms, general category theory, or ARC-AGI-3 generalization.
+
+## V7 untouched confirmation set
+
+The single run used paired seeds 180,000–180,029 after freeze commit `004e509`
+and passed all thirteen frozen criteria:
+
+| Preregistered criterion | Result |
+| --- | --- |
+| Independent environment and topology oracle | Pass |
+| All actions legal | Pass: 100% |
+| Identical fixed histories | Pass within every paired seed |
+| Isolated composition completion | Pass: 100% |
+| Default full-policy completion | Pass: 100% |
+| Composition minus ablation efficiency | Pass: +0.6901, 95% bootstrap CI [0.5401, 0.8200] |
+| Composition minus ablation first-attempt accuracy | Pass: +0.6365, 95% CI [0.5927, 0.6797] |
+| Queried C/T effects unobserved | Pass |
+| All eight composed operators ready before intervention | Pass |
+| Ablation has no composed query operator | Pass |
+| Ablation retains direct inference | Pass |
+| Composed paths have matching endpoints | Pass |
+| Composed inferred plans operative | Pass |
+
+Both composition-enabled descendants completed every run in the 96-action
+oracle minimum. The no-composition ablation won 40% and averaged 74.72%
+completion within the 192-action budget.
+
+The canonical report is
+[`validation-v7-holdout.json`](validation-v7-holdout.json), file SHA-256
+`c28bf8ac1b2bf40e75774d0ac33f31fbb2f01a17c58c2787610ed14d86fadb2a`
+and embedded result SHA-256
+`4c5276f0de13832543a11774c05f9bc211a0aaa57273b904d9ae6ac603f0b6f8`.
+The frozen protocol and rejected development designs are recorded in
+[`VALIDATION_V7.md`](VALIDATION_V7.md).
+
 ## V6 conclusion
 
 The narrow causal comparison-transfer claim is **supported** on its untouched

@@ -73,9 +73,15 @@ map only when at least two non-collinear correspondences identify it uniquely,
 and keeps source, calibration, comparison, and observed/inferred provenance.
 Validation v6 shows that applying such a direct comparison causally improves
 synthetic held-out control and that inconsistent calibration causes
-abstention. Composition of comparisons and general category-theoretic
-cognition remain unvalidated. Existing schema families remain similarity
-groups rather than arrows in the comparison graph.
+abstention. Perceived marker components can act as comparison-link tokens: a
+bridge domain may share one token with its source and another with its target.
+The system can propagate an operator through at most three comparisons,
+retaining the ordered comparison path and accepting it only when adjacent
+codomain/domain endpoints match. Validation v7 causally identifies two-step
+composition against an ablation that retains all direct inference. Arbitrary
+morphisms, unbounded composition, and general category-theoretic cognition
+remain unvalidated. Existing schema families remain similarity groups rather
+than arrows in the comparison graph.
 
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
 questions, plans, decisions, and concept births used during inference. It also

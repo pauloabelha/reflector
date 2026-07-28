@@ -1,6 +1,6 @@
 # Reflector validation protocol v7
 
-Status: frozen after development. Confirmation seeds have not been viewed.
+Status: confirmed on the untouched preregistered split.
 
 V7 tests whether endpoint-valid composition of two independently evidenced
 finite comparisons predicts a withheld operator and improves held-out control.
@@ -140,6 +140,27 @@ The canonical development report has file SHA-256
 and embedded result SHA-256
 `c33bb6736926cb725e80bbbb347d186d8bcd0943ef601405caa93e120020785d`.
 An immediate second run reproduced the JSON byte-for-byte.
+
+## Untouched confirmation result
+
+All thirteen criteria passed on the single execution of seeds
+180,000–180,029 after the protocol and implementation were frozen in commit
+`004e509`. Both the isolated composition descendant and the default full policy
+completed every run at the 96-action oracle minimum. The no-composition
+descendant retained both direct maps and direct inferred operators, but
+averaged 74.72% completion and won 40% of runs within the 192-action budget.
+
+Composition improved paired first-attempt intervention accuracy by `0.63655`
+(95% bootstrap CI `[0.59270, 0.67972]`) and efficiency by `0.69007` (CI
+`[0.54010, 0.82000]`). The independent topology oracle, legality, fixed
+histories, leakage checks, direct-inference retention, endpoint-valid
+provenance, and operative composed plans all passed.
+
+The canonical report is `validation-v7-holdout.json`, with file SHA-256
+`c28bf8ac1b2bf40e75774d0ac33f31fbb2f01a17c58c2787610ed14d86fadb2a`
+and embedded result SHA-256
+`4c5276f0de13832543a11774c05f9bc211a0aaa57273b904d9ae6ac603f0b6f8`.
+No code or criterion changed after this result was viewed.
 
 ## Commands
 

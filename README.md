@@ -112,19 +112,21 @@ Run the latest preregistered synthetic mechanism benchmark:
   --output validation-v5-holdout.json
 .venv/bin/reflector validate --suite v6 --seed-start 150000 --seeds 30 \
   --output validation-v6-holdout.json
+.venv/bin/reflector validate --suite v7 --seed-start 180000 --seeds 30 \
+  --output validation-v7-holdout.json
 ```
 
 This benchmark compares the deployed policy with ablations and simple
 baselines. It is explicitly not an ARC score; see
-[`VALIDATION_V6.md`](VALIDATION_V6.md) for the latest frozen claim boundary and
+[`VALIDATION_V7.md`](VALIDATION_V7.md) for the latest frozen claim boundary and
 criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for the original
-falsification plus the v2–v6 confirmation results. V3 supports narrow
+falsification plus the v2–v7 confirmation results. V3 supports narrow
 conditional accommodation; v4 supports executable transformation composition
 and v5 supports bounded possible/impossible reachability in control under
 identical training histories. V6 supports direct causal transfer through a
-typed finite comparison, but not composition of comparisons. None is evidence
-of general equilibration, general category-theoretic cognition, or
-official-game generalization.
+typed finite comparison; v7 supports bounded endpoint-valid two-step
+comparison composition. None is evidence of general equilibration, unrestricted
+category-theoretic cognition, or official-game generalization.
 
 Run a reproducible population evaluation (network isolation is on by default):
 
@@ -187,7 +189,10 @@ exposes represented inverses, finite modal reachability, and a typed comparison
 graph with executable finite law checks. Context-typed operator systems can
 now learn an evidence-backed square-symmetry comparison, infer a withheld
 operator with provenance, reject inconsistent calibrations, and use the
-inference in bounded planning. Development tooling measures recoverable
+inference in bounded planning. Perceived link tokens also support bounded
+endpoint-valid chaining through an inferred intermediate operator while
+preventing unrelated domains from becoming direct comparison shortcuts.
+Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained
 genomes, transformed trace holdouts, reproducible experiment manifests,
