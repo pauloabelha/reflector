@@ -79,6 +79,22 @@ def test_v6_comparison_transfer_is_deterministic_and_non_leaky() -> None:
     )
 
 
+def test_v7_comparison_composition_is_deterministic_and_causal() -> None:
+    first = run_validation(seed_count=10, seed_start=700, suite="v7")
+    second = run_validation(seed_count=10, seed_start=700, suite="v7")
+    assert first == second
+    assert first["benchmark"] == "reflector_symbolic_diagnostics_v7"
+    assert first["criteria"]["independent_environment_oracle_passes"] is True
+    assert first["criteria"]["all_actions_legal"] is True
+    assert first["criteria"]["identical_fixed_histories"] is True
+    assert first["criteria"]["ablation_retains_direct_inference"] is True
+    assert first["criteria"]["composed_paths_have_valid_endpoints"] is True
+    assert (
+        first["criteria"]["composition_improves_intervention_accuracy_ci"]
+        is True
+    )
+
+
 def test_rare_color_mechanism_solves_rare_object_clicks() -> None:
     result = run_one("full", "rare_object_click", seed=7)
     assert result.won

@@ -1004,6 +1004,296 @@ class ComparisonTransferGame:
         self._setup_held_out(self._test_index)
 
 
+class ComparisonCompositionGame:
+    """Require A→B→C transfer through an inferred intermediate operator."""
+
+    family = "comparison_composition"
+
+    _TOKEN_SHAPES = (
+        ((0, 0), (1, 0)),
+        ((0, 0), (0, 1)),
+        ((0, 0), (1, 0), (0, 1)),
+        ((0, 0), (1, 0), (1, 1)),
+    )
+
+    def __init__(self, seed: int) -> None:
+        rng = random.Random(seed)
+        token_specs = [
+            (color, shape)
+            for color in (1, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15)
+            for shape in self._TOKEN_SHAPES
+        ]
+        rng.shuffle(token_specs)
+        chains: list[dict[str, object]] = []
+        for index in range(8):
+            labels = [1, 2, 3, 4, 5]
+            rng.shuffle(labels)
+            p = (labels[0], labels[1])
+            q = (labels[2], labels[3])
+            target_action = labels[4]
+            base = {
+                p[0]: (1, 0),
+                p[1]: (0, 1),
+                q[0]: (-1, 0),
+                q[1]: (0, -1),
+                target_action: (1, 1),
+            }
+            first = rng.choice(SQUARE_SYMMETRIES)
+            second = rng.choice(SQUARE_SYMMETRIES)
+            chains.append(
+                {
+                    "p": p,
+                    "q": q,
+                    "target_action": target_action,
+                    "a": base,
+                    "b": {
+                        action: apply_matrix(first, vector)
+                        for action, vector in base.items()
+                    },
+                    "c": {
+                        action: apply_matrix(
+                            second, apply_matrix(first, vector)
+                        )
+                        for action, vector in base.items()
+                    },
+                    "ab_token": token_specs[index * 2],
+                    "bc_token": token_specs[index * 2 + 1],
+                }
+            )
+        self._chains = tuple(chains)
+        self._chain_index = 0
+        self._domain = "a"
+        self._forced_index = 0
+        self._stage = "calibration"
+        self._mover = (4, 4)
+        self._target: tuple[int, int] | None = None
+        self._levels = 0
+        self._won = False
+        self.training_actions: list[int] = []
+        self.training_progress: list[int] = []
+        self.test_first_attempts = 0
+        self.test_correct_first = 0
+        self._last_attempted_chain = -1
+        self.total_levels = 24
+        self.oracle_actions = 96
+
+    @property
+    def _chain(self) -> dict[str, object]:
+        return self._chains[min(self._chain_index, len(self._chains) - 1)]
+
+    def _pair(self, name: str) -> tuple[int, int]:
+        value = self._chain[name]
+        assert isinstance(value, tuple)
+        return value
+
+    @property
+    def _target_action(self) -> int:
+        value = self._chain["target_action"]
+        assert isinstance(value, int)
+        return value
+
+    def _effects(self) -> dict[int, tuple[int, int]]:
+        value = self._chain[self._domain]
+        assert isinstance(value, dict)
+        return value
+
+    def _forced_actions(self) -> tuple[int, ...]:
+        if self._domain == "a":
+            return (*self._pair("p"), self._target_action)
+        if self._domain == "b":
+            return (*self._pair("p"), *self._pair("q"))
+        return self._pair("q")
+
+    @property
+    def decisive_withheld_action(self) -> int | None:
+        return self._target_action if self._stage == "decisive" else None
+
+    @property
+    def decisive_query_id(self) -> int | None:
+        return self._chain_index if self._stage == "decisive" else None
+
+    def _token_specs(
+        self,
+    ) -> tuple[tuple[int, tuple[tuple[int, int], ...]], ...]:
+        ab = self._chain["ab_token"]
+        bc = self._chain["bc_token"]
+        assert isinstance(ab, tuple)
+        assert isinstance(bc, tuple)
+        if self._domain == "a":
+            return (ab,)
+        if self._domain == "b":
+            return (ab, bc)
+        return (bc,)
+
+    def _frame(self) -> tuple[tuple[int, ...], ...]:
+        grid = [[0] * 12 for _ in range(9)]
+        origins = ((0, 0), (6, 0))
+        for (color, shape), (origin_x, origin_y) in zip(
+            self._token_specs(), origins
+        ):
+            for dx, dy in shape:
+                grid[origin_y + dy][origin_x + dx] = color
+        grid[self._mover[1]][self._mover[0]] = 2
+        if self._target is not None:
+            grid[self._target[1]][self._target[0]] = 8
+        return tuple(tuple(row) for row in grid)
+
+    def observation(self) -> Observation:
+        if self._won:
+            actions: tuple[int, ...] = ()
+        elif self._stage == "calibration":
+            actions = (self._forced_actions()[self._forced_index],)
+        elif self._stage in {"switch", "goal_demo"}:
+            actions = (
+                (self._target_action,)
+                if self._stage == "goal_demo"
+                else (7,)
+            )
+        else:
+            actions = (1, 2, 3, 4, 5)
+        return Observation.create(
+            state="WIN" if self._won else "NOT_FINISHED",
+            available_actions=actions,
+            frame=self._frame(),
+            levels_completed=self._levels,
+        )
+
+    def _move(self, action: int) -> None:
+        vector = self._effects()[action]
+        self._mover = (
+            min(11, max(0, self._mover[0] + vector[0])),
+            min(8, max(0, self._mover[1] + vector[1])),
+        )
+
+    def _record_initial(self, action: int) -> None:
+        if self._chain_index == 0 and self._domain == "a":
+            self.training_actions.append(action)
+            self.training_progress.append(self._levels)
+
+    def _setup_domain(self, domain: str) -> None:
+        self._domain = domain
+        self._forced_index = 0
+        self._stage = "calibration"
+        self._mover = (4, 4)
+        self._target = None
+
+    def oracle_audit(self) -> bool:
+        for chain in self._chains:
+            p = chain["p"]
+            q = chain["q"]
+            target_action = chain["target_action"]
+            a = chain["a"]
+            b = chain["b"]
+            c = chain["c"]
+            ab_token = chain["ab_token"]
+            bc_token = chain["bc_token"]
+            assert isinstance(p, tuple)
+            assert isinstance(q, tuple)
+            assert isinstance(target_action, int)
+            assert isinstance(a, dict)
+            assert isinstance(b, dict)
+            assert isinstance(c, dict)
+            if ab_token == bc_token:
+                return False
+            if set(p) & set(q) or target_action in {*p, *q}:
+                return False
+            if (
+                a[p[0]][0] * a[p[1]][1]
+                - a[p[0]][1] * a[p[1]][0]
+            ) == 0:
+                return False
+            if (
+                b[q[0]][0] * b[q[1]][1]
+                - b[q[0]][1] * b[q[1]][0]
+            ) == 0:
+                return False
+            start = (
+                4 + c[q[0]][0] + c[q[1]][0],
+                4 + c[q[0]][1] + c[q[1]][1],
+            )
+            target = (
+                start[0] + 2 * c[target_action][0],
+                start[1] + c[target_action][1],
+            )
+            if any(
+                abs(start[0] + c[action][0] - target[0])
+                + abs(start[1] + c[action][1] - target[1])
+                == 1
+                for action in (*p, *q)
+            ):
+                return False
+            reached = (
+                start[0] + c[target_action][0],
+                start[1] + c[target_action][1],
+            )
+            if abs(reached[0] - target[0]) + abs(
+                reached[1] - target[1]
+            ) != 1:
+                return False
+        return True
+
+    def step(self, decision: Decision) -> None:
+        if self._stage == "calibration":
+            forced = self._forced_actions()[self._forced_index]
+            if decision.action_id != forced:
+                return
+            self._move(forced)
+            self._record_initial(forced)
+            self._forced_index += 1
+            if self._forced_index == len(self._forced_actions()):
+                if self._domain == "a" and self._chain_index == 0:
+                    vector = self._effects()[self._target_action]
+                    self._target = (
+                        self._mover[0] + 2 * vector[0],
+                        self._mover[1] + vector[1],
+                    )
+                    self._stage = "goal_demo"
+                else:
+                    self._stage = "switch" if self._domain != "c" else "decisive"
+                    if self._stage == "decisive":
+                        vector = self._effects()[self._target_action]
+                        self._target = (
+                            self._mover[0] + 2 * vector[0],
+                            self._mover[1] + vector[1],
+                        )
+            return
+        if self._stage == "goal_demo":
+            if decision.action_id != self._target_action:
+                return
+            self._move(self._target_action)
+            self._levels += 1
+            self._record_initial(self._target_action)
+            self._setup_domain("b")
+            return
+        if self._stage == "switch":
+            if decision.action_id != 7:
+                return
+            self._levels += 1
+            self._setup_domain("b" if self._domain == "a" else "c")
+            return
+
+        if self._last_attempted_chain != self._chain_index:
+            self.test_first_attempts += 1
+            self.test_correct_first += int(
+                decision.action_id == self._target_action
+            )
+            self._last_attempted_chain = self._chain_index
+        self._move(decision.action_id)
+        target = self._target
+        if target is None:
+            return
+        dx = abs(self._mover[0] - target[0])
+        dy = abs(self._mover[1] - target[1])
+        if dx + dy != 1:
+            return
+        self._levels += 1
+        self._chain_index += 1
+        if self._chain_index == len(self._chains):
+            self._won = True
+            return
+        self._setup_domain("a")
+
+
 class SeededRandomPolicy:
     def __init__(self, seed: int) -> None:
         self._rng = random.Random(seed)
@@ -1133,6 +1423,10 @@ class RunResult:
     observed_withheld_leaks: int = 0
     inferred_ready_before_intervention: int = 0
     environment_oracle_passed: bool = False
+    composed_ready_before_intervention: int = 0
+    direct_inferred_operators: int = 0
+    composed_inferred_operators: int = 0
+    comparison_paths_endpoint_valid: bool = False
 
     @property
     def completion(self) -> float:
@@ -1212,6 +1506,17 @@ POLICY_NAMES_V6 = (
 
 FAMILIES_V6 = ("comparison_transfer",)
 
+POLICY_NAMES_V7 = (
+    "full",
+    "comparison_composition",
+    "no_comparison_composition",
+    "score_only",
+    "context_table",
+    "seeded_random",
+)
+
+FAMILIES_V7 = ("comparison_composition",)
+
 
 def _policy(name: str, seed: int) -> BenchmarkPolicy:
     if name == "full":
@@ -1275,6 +1580,22 @@ def _policy(name: str, seed: int) -> BenchmarkPolicy:
                 enable_comparison_transfer=name == "comparison_transfer",
             )
         )
+    if name in {"comparison_composition", "no_comparison_composition"}:
+        return SymbolicPolicy(
+            MindConfig(
+                enable_concepts=False,
+                enable_experiments=False,
+                enable_reflecting_abstraction=False,
+                enable_accommodation=False,
+                enable_transformations=False,
+                enable_modal_reasoning=False,
+                enable_comparison_transfer=True,
+                enable_comparison_composition=(
+                    name == "comparison_composition"
+                ),
+                planner_max_depth=1,
+            )
+        )
     if name == "context_table":
         return ContextTablePolicy()
     if name == "rare_color":
@@ -1305,6 +1626,8 @@ def _game(family: str, seed: int) -> DiagnosticGame:
         return ModalGame(seed)
     if family == "comparison_transfer":
         return ComparisonTransferGame(seed)
+    if family == "comparison_composition":
+        return ComparisonCompositionGame(seed)
     raise ValueError(f"unknown family: {family}")
 
 
@@ -1320,6 +1643,7 @@ def _budget(family: str) -> int:
         "transformation_composition": 96,
         "modal_reachability": 72,
         "comparison_transfer": 96,
+        "comparison_composition": 192,
     }[family]
 
 
@@ -1330,6 +1654,7 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
     actions = 0
     observed_withheld_leaks = 0
     inferred_ready = 0
+    composed_ready = 0
     seen_decisive_queries: set[int] = set()
     observation = game.observation()
     while observation.state != "WIN" and actions < _budget(family):
@@ -1352,6 +1677,11 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
                 )
                 inferred_ready += int(
                     key in policy.mind.comparisons.inferred_operators
+                )
+                inferred = policy.mind.comparisons.inferred_operators.get(key)
+                composed_ready += int(
+                    inferred is not None
+                    and len(inferred.comparison_path) >= 2
                 )
         legal = legal and decision.action_id in observation.available_actions
         game.step(decision)
@@ -1442,6 +1772,39 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         if isinstance(policy, SymbolicPolicy)
         else 0
     )
+    direct_inferred = (
+        sum(
+            int(len(item.comparison_path) == 1)
+            for item in policy.mind.comparisons.inferred_operators.values()
+        )
+        if isinstance(policy, SymbolicPolicy)
+        else 0
+    )
+    composed_inferred = (
+        sum(
+            int(len(item.comparison_path) >= 2)
+            for item in policy.mind.comparisons.inferred_operators.values()
+        )
+        if isinstance(policy, SymbolicPolicy)
+        else 0
+    )
+    endpoint_valid = False
+    if isinstance(policy, SymbolicPolicy) and composed_inferred:
+        by_id = {
+            item.comparison_id: item
+            for item in policy.mind.comparisons.comparisons.values()
+        }
+        endpoint_valid = all(
+            all(
+                by_id[left].codomain == by_id[right].domain
+                for left, right in zip(
+                    item.comparison_path,
+                    item.comparison_path[1:],
+                )
+            )
+            for item in policy.mind.comparisons.inferred_operators.values()
+            if len(item.comparison_path) >= 2
+        )
     inferred_plans = (
         sum(
             int(
@@ -1499,6 +1862,10 @@ def run_one(policy_name: str, family: str, seed: int) -> RunResult:
         observed_withheld_leaks,
         inferred_ready,
         bool(getattr(game, "oracle_audit", lambda: True)()),
+        composed_ready,
+        direct_inferred,
+        composed_inferred,
+        endpoint_valid,
     )
 
 
@@ -1527,8 +1894,10 @@ def run_validation(
         raise ValueError("seed_count must be at least 2")
     if seed_start < 0:
         raise ValueError("seed_start must be non-negative")
-    if suite not in {"v1", "v2", "v3", "v4", "v5", "v6"}:
-        raise ValueError("suite must be v1, v2, v3, v4, v5, or v6")
+    if suite not in {"v1", "v2", "v3", "v4", "v5", "v6", "v7"}:
+        raise ValueError(
+            "suite must be v1, v2, v3, v4, v5, v6, or v7"
+        )
     families = (
         FAMILIES
         if suite == "v1"
@@ -1541,6 +1910,8 @@ def run_validation(
         else FAMILIES_V5
         if suite == "v5"
         else FAMILIES_V6
+        if suite == "v6"
+        else FAMILIES_V7
     )
     policies = (
         POLICY_NAMES
@@ -1552,6 +1923,8 @@ def run_validation(
         else POLICY_NAMES_V5
         if suite == "v5"
         else POLICY_NAMES_V6
+        if suite == "v6"
+        else POLICY_NAMES_V7
     )
     results = [
         run_one(policy, family, seed)
@@ -1984,6 +2357,141 @@ def run_validation(
             canonical.encode()
         ).hexdigest()
         return v6_payload
+
+    if suite == "v7":
+        composition_effect = _bootstrap_difference(
+            values("comparison_composition", "efficiency"),
+            values("no_comparison_composition", "efficiency"),
+        )
+        intervention_accuracy = _bootstrap_difference(
+            values(
+                "comparison_composition",
+                "held_out_first_attempt_accuracy",
+            ),
+            values(
+                "no_comparison_composition",
+                "held_out_first_attempt_accuracy",
+            ),
+        )
+        histories_by_seed = {
+            seed: {
+                (item.training_actions, item.training_progress)
+                for item in results
+                if item.seed == seed
+            }
+            for seed in range(seed_start, seed_start + seed_count)
+        }
+        criteria = {
+            "independent_environment_oracle_passes": all(
+                item.environment_oracle_passed for item in results
+            ),
+            "all_actions_legal": all(item.legal for item in results),
+            "identical_fixed_histories": all(
+                len(items) == 1 for items in histories_by_seed.values()
+            ),
+            "composition_completion_at_least_0_95": mean(
+                values("comparison_composition", "completion")
+            )
+            >= 0.95,
+            "full_completion_at_least_0_90": mean(
+                values("full", "completion")
+            )
+            >= 0.90,
+            "composition_improves_efficiency_ci": composition_effect[1] > 0.0,
+            "composition_improves_intervention_accuracy_ci": (
+                intervention_accuracy[1] > 0.0
+            ),
+            "withheld_effect_never_observed_before_intervention": (
+                mean(
+                    values(
+                        "comparison_composition",
+                        "observed_withheld_leaks",
+                    )
+                )
+                == 0.0
+                and mean(
+                    values(
+                        "no_comparison_composition",
+                        "observed_withheld_leaks",
+                    )
+                )
+                == 0.0
+            ),
+            "all_queries_have_composed_operator_before_intervention": mean(
+                values(
+                    "comparison_composition",
+                    "composed_ready_before_intervention",
+                )
+            )
+            == 8.0,
+            "ablation_has_no_composed_query_operator": mean(
+                values(
+                    "no_comparison_composition",
+                    "composed_ready_before_intervention",
+                )
+            )
+            == 0.0,
+            "ablation_retains_direct_inference": mean(
+                values(
+                    "no_comparison_composition",
+                    "direct_inferred_operators",
+                )
+            )
+            >= 8.0,
+            "composed_paths_have_valid_endpoints": mean(
+                values(
+                    "comparison_composition",
+                    "comparison_paths_endpoint_valid",
+                )
+            )
+            == 1.0,
+            "composed_plans_are_operative": mean(
+                values(
+                    "comparison_composition",
+                    "inferred_comparison_plans",
+                )
+            )
+            >= 8.0,
+        }
+        v7_payload: dict[str, object] = {
+            "benchmark": "reflector_symbolic_diagnostics_v7",
+            "claim_scope": (
+                "causal endpoint-valid composition of independently learned "
+                "finite comparisons; not an ARC score"
+            ),
+            "seed_start": seed_start,
+            "seed_count": seed_count,
+            "policies": list(policies),
+            "families": list(families),
+            "aggregates": aggregates,
+            "paired_differences": {
+                "composition_minus_no_composition_efficiency": {
+                    "mean": composition_effect[0],
+                    "ci95": [
+                        composition_effect[1],
+                        composition_effect[2],
+                    ],
+                },
+                "composition_minus_no_composition_intervention_accuracy": {
+                    "mean": intervention_accuracy[0],
+                    "ci95": [
+                        intervention_accuracy[1],
+                        intervention_accuracy[2],
+                    ],
+                },
+            },
+            "criteria": criteria,
+            "causal_thesis_supported": all(criteria.values()),
+            "verdict": "supported" if all(criteria.values()) else "not_supported",
+            "runs": [asdict(item) for item in results],
+        }
+        canonical = json.dumps(
+            v7_payload, sort_keys=True, separators=(",", ":")
+        )
+        v7_payload["result_sha256"] = hashlib.sha256(
+            canonical.encode()
+        ).hexdigest()
+        return v7_payload
 
     abstraction = _bootstrap_difference(
         values("full", "efficiency"), values("no_abstraction", "efficiency")

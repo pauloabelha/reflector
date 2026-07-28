@@ -49,6 +49,7 @@ class MindConfig:
     enable_transformations: bool = True
     enable_modal_reasoning: bool = True
     enable_comparison_transfer: bool = True
+    enable_comparison_composition: bool = True
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
     information_weight: float = 1.0
@@ -68,6 +69,7 @@ class MindConfig:
             "enable_transformations",
             "enable_modal_reasoning",
             "enable_comparison_transfer",
+            "enable_comparison_composition",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -200,6 +202,7 @@ class SymbolicMind:
                 transition,
                 self._last_scene,
                 allow_transfer=self.config.enable_comparison_transfer,
+                allow_composition=self.config.enable_comparison_composition,
             )
             comparison_goals = self.comparisons.observe_goal(
                 transition,

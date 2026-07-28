@@ -157,3 +157,86 @@ def test_inconsistent_calibrations_are_rejected_without_augmentation() -> None:
     assert negative_domain is not None
     assert (canonical_domain, negative_domain) in system.rejected_comparisons
     assert (negative_domain, 3) not in system.inferred_operators
+
+
+def test_comparison_composition_requires_inferred_intermediate_operator() -> None:
+    def build(*, allow_composition: bool) -> tuple[
+        ComparisonTransferSystem, str
+    ]:
+        system = ComparisonTransferSystem()
+        domain_a = _scene(index=0, marker_color=9)
+        domain_b = _scene(index=10, marker_color=10)
+        domain_c = _scene(index=20, marker_color=11)
+        for action, vector in ((1, (1, 0)), (2, (0, 1)), (5, (-1, 0))):
+            _observe(system, domain_a, action, vector)
+        for action, vector in (
+            (1, (0, 1)),
+            (2, (-1, 0)),
+            (3, (0, -1)),
+            (4, (1, 0)),
+        ):
+            system.observe(
+                Transition(
+                    before_index=domain_b.index,
+                    after_index=domain_b.index + 1,
+                    context=(),
+                    action_id=action,
+                    action_data=(),
+                    result=(
+                        Event(
+                            "object_moved",
+                            "piece",
+                            (str(vector[0]), str(vector[1])),
+                        ),
+                    ),
+                ),
+                domain_b,
+                allow_transfer=True,
+                allow_composition=allow_composition,
+            )
+        for action, vector in ((3, (1, 0)), (4, (0, 1))):
+            system.observe(
+                Transition(
+                    before_index=domain_c.index,
+                    after_index=domain_c.index + 1,
+                    context=(),
+                    action_id=action,
+                    action_data=(),
+                    result=(
+                        Event(
+                            "object_moved",
+                            "piece",
+                            (str(vector[0]), str(vector[1])),
+                        ),
+                    ),
+                ),
+                domain_c,
+                allow_transfer=True,
+                allow_composition=allow_composition,
+            )
+        domain_c_id = system.domain(domain_c)
+        assert domain_c_id is not None
+        return system, domain_c_id
+
+    composed, domain_c = build(allow_composition=True)
+    chained = composed.operator(domain_c, 5)
+    assert chained is not None
+    assert chained.parameters == (1, 0)
+    assert len(chained.comparison_path) == 2
+    first = composed.inferred_operators[
+        (
+            next(
+                comparison.codomain
+                for comparison in composed.comparisons.values()
+                if comparison.comparison_id == chained.comparison_path[0]
+            ),
+            5,
+        )
+    ]
+    assert chained.source_operator_id == first.operator_id
+
+    direct_only, direct_domain_c = build(allow_composition=False)
+    assert direct_only.operator(direct_domain_c, 5) is None
+    assert any(
+        item.action_id == 5 for item in direct_only.inferred_operators.values()
+    )

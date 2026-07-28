@@ -57,6 +57,7 @@ class ContextOperator:
     evidence: tuple[str, ...]
     source_operator_id: str | None = None
     comparison_id: str | None = None
+    comparison_path: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -100,21 +101,31 @@ class ComparisonTransferSystem:
         default_factory=dict
     )
     touching_goal_evidence: set[str] = field(default_factory=set)
+    domain_tokens: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
-    @staticmethod
-    def domain(scene: Scene) -> str | None:
+    def domain(self, scene: Scene) -> str | None:
         markers = [item for item in scene.objects if item.area > 1]
-        if len(markers) != 1:
+        if not markers:
             return None
-        marker = markers[0]
-        return _identifier(
-            "domain",
-            str(marker.color),
-            str(marker.area),
-            repr(marker.shape),
-            str(marker.bbox[2] - marker.bbox[0] + 1),
-            str(marker.bbox[3] - marker.bbox[1] + 1),
+        tokens = tuple(
+            sorted(
+                _identifier(
+                    "domain-token",
+                    str(marker.color),
+                    str(marker.area),
+                    repr(marker.shape),
+                    str(marker.bbox[2] - marker.bbox[0] + 1),
+                    str(marker.bbox[3] - marker.bbox[1] + 1),
+                )
+                for marker in markers
+            )
         )
+        domain_id = _identifier(
+            "domain",
+            *tokens,
+        )
+        self.domain_tokens[domain_id] = tokens
+        return domain_id
 
     def observe(
         self,
@@ -122,6 +133,7 @@ class ComparisonTransferSystem:
         before: Scene,
         *,
         allow_transfer: bool,
+        allow_composition: bool = True,
     ) -> tuple[str, ...]:
         """Record local operators, then infer only supported typed transfers."""
 
@@ -177,7 +189,10 @@ class ComparisonTransferSystem:
                     evidence=evidence,
                 )
         self._rebuild_comparisons()
-        self._rebuild_inferences(allow_transfer=allow_transfer)
+        self._rebuild_inferences(
+            allow_transfer=allow_transfer,
+            allow_composition=allow_composition,
+        )
         after_ids = (
             {
                 item.comparison_id
@@ -190,11 +205,20 @@ class ComparisonTransferSystem:
 
     def _rebuild_comparisons(self) -> None:
         domains = sorted({key[0] for key in self.observed_operators})
+        linked_mode = any(
+            len(self.domain_tokens.get(domain, ())) > 1
+            for domain in domains
+        )
         comparisons: dict[tuple[str, str], SystemComparison] = {}
         rejected: dict[tuple[str, str], tuple[str, ...]] = {}
         for domain in domains:
             for codomain in domains:
                 if domain == codomain:
+                    continue
+                if linked_mode and not (
+                    set(self.domain_tokens.get(domain, ()))
+                    & set(self.domain_tokens.get(codomain, ()))
+                ):
                     continue
                 shared = sorted(
                     action
@@ -269,54 +293,102 @@ class ComparisonTransferSystem:
         self.comparisons = comparisons
         self.rejected_comparisons = rejected
 
-    def _rebuild_inferences(self, *, allow_transfer: bool) -> None:
+    def _rebuild_inferences(
+        self,
+        *,
+        allow_transfer: bool,
+        allow_composition: bool,
+    ) -> None:
         inferred: dict[tuple[str, int], ContextOperator] = {}
         if allow_transfer:
-            for comparison in self.comparisons.values():
-                target_subjects = sorted(
-                    {
-                        item.subject_id
-                        for (domain, _action), item in (
-                            self.observed_operators.items()
-                        )
-                        if domain == comparison.codomain
-                    }
-                )
-                if len(target_subjects) != 1:
-                    continue
-                for (domain, action), source in self.observed_operators.items():
-                    key = (comparison.codomain, action)
-                    if domain != comparison.domain:
-                        continue
-                    if key in self.observed_operators:
-                        continue
-                    parameters = apply_matrix(
-                        comparison.matrix, source.parameters
-                    )
-                    inferred[key] = ContextOperator(
-                        operator_id=_identifier(
-                            "inferred-operator",
-                            comparison.codomain,
-                            str(action),
-                            repr(parameters),
-                            comparison.comparison_id,
-                        ),
-                        domain_id=comparison.codomain,
-                        action_id=action,
-                        parameters=parameters,
-                        subject_id=target_subjects[0],
-                        observed=False,
-                        evidence=tuple(
-                            sorted(
-                                {
-                                    *source.evidence,
-                                    *comparison.evidence,
-                                }
+            available = dict(self.observed_operators)
+            for _hop in range(3):
+                candidates: dict[
+                    tuple[str, int], ContextOperator
+                ] = {}
+                for comparison in sorted(
+                    self.comparisons.values(),
+                    key=lambda item: item.comparison_id,
+                ):
+                    target_subjects = sorted(
+                        {
+                            item.subject_id
+                            for (domain, _action), item in (
+                                self.observed_operators.items()
                             )
-                        ),
-                        source_operator_id=source.operator_id,
-                        comparison_id=comparison.comparison_id,
+                            if domain == comparison.codomain
+                        }
                     )
+                    if len(target_subjects) != 1:
+                        continue
+                    for (domain, action), source in sorted(
+                        available.items()
+                    ):
+                        key = (comparison.codomain, action)
+                        if domain != comparison.domain:
+                            continue
+                        if key in self.observed_operators:
+                            continue
+                        if not source.observed and not allow_composition:
+                            continue
+                        if comparison.comparison_id in source.comparison_path:
+                            continue
+                        path = (
+                            *source.comparison_path,
+                            comparison.comparison_id,
+                        )
+                        parameters = apply_matrix(
+                            comparison.matrix, source.parameters
+                        )
+                        candidate = ContextOperator(
+                            operator_id=_identifier(
+                                "inferred-operator",
+                                comparison.codomain,
+                                str(action),
+                                repr(parameters),
+                                *path,
+                            ),
+                            domain_id=comparison.codomain,
+                            action_id=action,
+                            parameters=parameters,
+                            subject_id=target_subjects[0],
+                            observed=False,
+                            evidence=tuple(
+                                sorted(
+                                    {
+                                        *source.evidence,
+                                        *comparison.evidence,
+                                    }
+                                )
+                            ),
+                            source_operator_id=source.operator_id,
+                            comparison_id=comparison.comparison_id,
+                            comparison_path=path,
+                        )
+                        existing = inferred.get(key) or candidates.get(key)
+                        if existing is None or (
+                            len(candidate.comparison_path),
+                            candidate.operator_id,
+                        ) < (
+                            len(existing.comparison_path),
+                            existing.operator_id,
+                        ):
+                            candidates[key] = candidate
+                changed = False
+                for key, candidate in candidates.items():
+                    existing = inferred.get(key)
+                    if existing is None or (
+                        len(candidate.comparison_path),
+                        candidate.operator_id,
+                    ) < (
+                        len(existing.comparison_path),
+                        existing.operator_id,
+                    ):
+                        inferred[key] = candidate
+                        changed = True
+                if not changed:
+                    break
+                available = {**self.observed_operators, **inferred}
         self.inferred_operators = inferred
 
     def observe_goal(
@@ -486,4 +558,8 @@ class ComparisonTransferSystem:
                 )
             ],
             "touching_goal_evidence": sorted(self.touching_goal_evidence),
+            "domain_tokens": {
+                domain: list(tokens)
+                for domain, tokens in sorted(self.domain_tokens.items())
+            },
         }
