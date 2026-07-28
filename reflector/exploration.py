@@ -57,6 +57,7 @@ class EpistemicExplorer:
     successful_role_replay: bool = False
     multicolor_click_objects: bool = False
     click_object_accommodation: bool = False
+    productive_role_reuse: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -74,11 +75,17 @@ class EpistemicExplorer:
     successful_program: tuple[ActionRole, ...] = ()
     program_cursor: int = 0
     level_failures: int = 0
+    selection_frame: tuple[tuple[int, ...], ...] = ()
+    pending_frame: tuple[tuple[int, ...], ...] = ()
+    pending_role: ActionRole | None = None
+    role_trials: Counter[ActionRole] = field(default_factory=Counter)
+    role_responses: Counter[ActionRole] = field(default_factory=Counter)
 
     def observe(self, observation: Observation, scene: Scene) -> StateKey:
         """Record the outcome of the last issued intervention exactly once."""
 
         state = self._state_key(observation, scene)
+        self._record_response(observation)
         if self.current_level is None:
             self.current_level = observation.levels_completed
         elif observation.levels_completed > self.current_level:
@@ -106,6 +113,30 @@ class EpistemicExplorer:
         self.current_state = state
         return state
 
+    def _record_response(self, observation: Observation) -> None:
+        if self.pending_role is None or not self.pending_frame:
+            return
+        before = self.pending_frame
+        after = observation.frame
+        self.pending_frame = ()
+        role = self.pending_role
+        self.pending_role = None
+        self.role_trials[role] += 1
+        if len(before) != len(after) or not before or not after:
+            return
+        if any(len(left) != len(right) for left, right in zip(before, after)):
+            return
+        height = len(before)
+        width = len(before[0]) if before else 0
+        margin = 4 if height > 8 and width > 8 else 0
+        changed = sum(
+            before[y][x] != after[y][x]
+            for y in range(margin, height - margin)
+            for x in range(margin, width - margin)
+        )
+        if changed >= 4:
+            self.role_responses[role] += 1
+
     def _reorganize_click_ontology(self) -> None:
         """Invalidate graph evidence whose action tokens changed meaning."""
 
@@ -117,8 +148,12 @@ class EpistemicExplorer:
         self.tokens_by_state.clear()
         self.state_status.clear()
         self.visit_order.clear()
+        self.role_trials.clear()
+        self.role_responses.clear()
         self.current_state = None
         self.pending = None
+        self.pending_frame = ()
+        self.pending_role = None
 
     def select(
         self,
@@ -135,6 +170,7 @@ class EpistemicExplorer:
         if not tokens:
             raise ValueError("epistemic explorer has no represented legal action")
         self.tokens_by_state[state] = tokens
+        self.selection_frame = observation.frame
 
         replay = self._select_program_role(tokens, scene)
         if replay is not None:
@@ -142,6 +178,15 @@ class EpistemicExplorer:
                 state,
                 replay,
                 "epistemic-frontier:replay-successful-action-role",
+                scene,
+            )
+
+        productive = self._select_productive_role(tokens, scene, state)
+        if productive is not None:
+            return self._issue(
+                state,
+                productive,
+                "epistemic-frontier:reuse-productive-action-role",
                 scene,
             )
 
@@ -222,8 +267,39 @@ class EpistemicExplorer:
         self.global_family_attempts[token.action_id] += 1
         if self.successful_role_replay:
             self.episode_roles.append(self._role(token, scene))
+        self.pending_frame = self.selection_frame
+        self.pending_role = self._role(token, scene)
         self.pending = (state, token)
         return ExplorationChoice(token, reason)
+
+    def _select_productive_role(
+        self,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+        state: StateKey,
+    ) -> ActionToken | None:
+        if not self.productive_role_reuse or self.level_failures < 2:
+            return None
+        candidates = tuple(
+            token
+            for token in tokens
+            if self.role_responses[self._role(token, scene)] > 0
+        )
+        if not candidates:
+            return None
+        return min(
+            candidates,
+            key=lambda token: (
+                -(
+                    self.role_responses[self._role(token, scene)]
+                    / self.role_trials[self._role(token, scene)]
+                ),
+                -self.role_responses[self._role(token, scene)],
+                self.attempts[(state, token)],
+                self.global_attempts[token],
+                token,
+            ),
+        )
 
     def _select_program_role(
         self,
@@ -504,6 +580,9 @@ class EpistemicExplorer:
             "successful_program_length": len(self.successful_program),
             "program_cursor": self.program_cursor,
             "perceptual_accommodations": self.level_failures,
+            "productive_roles": sum(
+                response > 0 for response in self.role_responses.values()
+            ),
             "frontier_states": sum(
                 self._has_frontier(state) for state in self.tokens_by_state
             ),

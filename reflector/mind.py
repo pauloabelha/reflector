@@ -57,6 +57,7 @@ class MindConfig:
     enable_successful_role_replay: bool = False
     enable_multicolor_click_objects: bool = False
     enable_click_object_accommodation: bool = False
+    enable_productive_role_reuse: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -85,6 +86,7 @@ class MindConfig:
             "enable_successful_role_replay",
             "enable_multicolor_click_objects",
             "enable_click_object_accommodation",
+            "enable_productive_role_reuse",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")

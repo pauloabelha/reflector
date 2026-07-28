@@ -1,4 +1,4 @@
-from reflector.exploration import EpistemicExplorer
+from reflector.exploration import ActionRole, EpistemicExplorer
 from reflector.perception import SceneTracker
 from reflector.symbolic import Observation
 
@@ -255,6 +255,32 @@ def test_click_object_ontology_accommodates_only_after_failure() -> None:
     assert after.token.data == (("x", 2), ("y", 1))
     assert explorer.to_dict()["perceptual_accommodations"] == 1
     assert explorer.to_dict()["attempts"] == 1
+
+
+def test_productive_role_reuse_activates_only_after_repeated_failure() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (0, 0, 0, 0, 0),
+            (0, 2, 0, 3, 0),
+            (0, 0, 0, 0, 0),
+        ),
+    )
+    scene = _scene(observation)
+    role = ActionRole(6, color=3, area=1, shape=((0, 0),))
+    explorer = EpistemicExplorer(productive_role_reuse=True)
+    explorer.observe(observation, scene)
+    explorer.role_trials[role] = 1
+    explorer.role_responses[role] = 1
+
+    before = explorer.select(observation, scene, (6,))
+    explorer.level_failures = 2
+    after = explorer.select(observation, scene, (6,))
+
+    assert before.token.data == (("x", 1), ("y", 1))
+    assert after.token.data == (("x", 3), ("y", 1))
+    assert after.reason.endswith("reuse-productive-action-role")
 
 
 def test_policy_explorer_is_an_exact_configuration_ablation() -> None:

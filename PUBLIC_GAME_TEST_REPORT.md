@@ -68,6 +68,9 @@ Two isolated mechanisms were tested after v14:
 4. v18 activates that alternate ontology only after `GAME_OVER` and clears
    graph evidence whose meaning depended on the replaced ontology. It retained
    both v14 wins and added `tn36`, so it was promoted.
+5. v19 reused action roles that produced substantive interior pixel change
+   after repeated failure. It preserved all v18 wins but added none; visual
+   motion was not sufficiently goal-sensitive, so it was not promoted.
 
 These negative results are intentionally retained. The evidence indicates that
 flat coordinate novelty is weak, but equal action-family allocation is too
