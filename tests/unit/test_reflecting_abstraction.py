@@ -147,6 +147,15 @@ def test_orientation_language_operator_is_compositional_and_evidence_gated() -> 
     assert operator.replaces == ("rotated_180", "rotated_270", "rotated_90")
     assert operator.utility > 0
     assert operator.evidence
+    assert operator.invented_by == "language-inducer-v1-cyclic-predicates"
+    assert store.language_proposals
+    assert all(item.accepted for item in store.language_proposals.values())
+    mechanism = store.language_mechanism_history[-1]
+    assert mechanism.parent_id == operator.invented_by
+    assert mechanism.accepted_operators == (operator.operator_id,)
+    assert store.language_history[-1].invention_mechanism_revision == (
+        mechanism.revision_id
+    )
     assert store.language_history[-1].parent_id == "language-v1-primitives"
     assert store.language_history[-1].operators == (operator.operator_id,)
     graph = DependencyGraph.build(
@@ -158,6 +167,86 @@ def test_orientation_language_operator_is_compositional_and_evidence_gated() -> 
         and edge.relation == "compiled_from"
         for edge in graph.edges
     )
+    assert graph.nodes[mechanism.revision_id] == (
+        "language_invention_mechanism"
+    )
+    assert any(
+        edge.source == operator.operator_id
+        and edge.relation == "invented_by"
+        and edge.target == operator.invented_by
+        for edge in graph.edges
+    )
+
+
+def test_language_invention_mechanism_revises_after_falsifiable_trial() -> None:
+    schemas = SchemaStore()
+    _observe(
+        schemas,
+        index=0,
+        context=(Atom("state", ("NOT_FINISHED",)),),
+        action=5,
+        event=Event("rotated_90", "piece"),
+    )
+    store = AbstractionStore()
+    first = store.reflect(schemas, ConceptStore())
+
+    assert first
+    rejected = next(iter(store.language_proposals.values()))
+    assert not rejected.accepted
+    assert rejected.reason == "insufficient-distinct-predicates"
+    assert not store.language_operators
+    assert len(store.language_mechanism_history) == 1
+
+    index = 1
+    for angle in (90, 180, 270):
+        for _repeat in range(10):
+            _observe(
+                schemas,
+                index=index,
+                context=(Atom("state", ("NOT_FINISHED",)),),
+                action=5,
+                event=Event(f"rotated_{angle}", "piece"),
+            )
+            index += 1
+    created = store.reflect(schemas, ConceptStore())
+    operator = next(iter(store.language_operators.values()))
+    revised = store.language_mechanism_history[-1]
+
+    assert operator.operator_id in created
+    assert revised.revision_id in created
+    assert revised.parent_id == rejected.mechanism_revision_id
+    assert rejected.proposal_id in revised.rejected_proposals
+    assert revised.proposals == tuple(sorted(store.language_proposals))
+    assert operator.operator_id in revised.accepted_operators
+    assert revised.evidence
+    assert revised.status == "validated"
+    assert revised.utility > 0
+    history_size = len(store.language_mechanism_history)
+    proposal_ids = tuple(sorted(store.language_proposals))
+    store.reflect(schemas, ConceptStore())
+    assert store.language_operators[operator.operator_id].invented_by == (
+        operator.invented_by
+    )
+    assert len(store.language_mechanism_history) == history_size
+    assert tuple(sorted(store.language_proposals)) == proposal_ids
+
+    ablated = AbstractionStore(enable_language_meta_reflection=False)
+    ablated.reflect(schemas, ConceptStore())
+    assert not ablated.language_proposals
+    assert not ablated.language_operators
+    assert len(ablated.language_mechanism_history) == 1
+    future = Transition(
+        before_index=index,
+        after_index=index + 1,
+        context=(Atom("state", ("NOT_FINISHED",)),),
+        action_id=5,
+        action_data=(),
+        result=(Event("rotated_90", "held_out_piece"),),
+    )
+    assert store.normalize_transition(future).result[0].kind == (
+        "orientation_delta"
+    )
+    assert ablated.normalize_transition(future) == future
 
 
 def test_deployed_policy_can_invent_orientation_operator_from_frames() -> None:
@@ -184,6 +273,13 @@ def test_deployed_policy_can_invent_orientation_operator_from_frames() -> None:
     assert operator.utility > 0
     metrics = evaluate_trace(policy.trace)
     assert metrics.language_operator_count == 1
+    assert metrics.language_proposal_count > 0
+    assert metrics.language_mechanism_revision_count >= 2
+    deployed_mechanism = (
+        policy.mind.abstractions.language_mechanism_history[-1]
+    )
+    assert deployed_mechanism.status == "provisional"
+    assert deployed_mechanism.utility < 0
     assert metrics.abstraction_description_savings > 0
     assert any(
         event.kind == "orientation_delta"

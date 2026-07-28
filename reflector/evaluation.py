@@ -33,6 +33,8 @@ class TraceMetrics:
     schema_family_count: int
     concept_type_count: int
     language_operator_count: int
+    language_proposal_count: int
+    language_mechanism_revision_count: int
     procedure_count: int
     causal_hypotheses: int
     temporal_hypotheses: int
@@ -162,6 +164,12 @@ def evaluate_trace(
         language_operator_count=len(
             policy.mind.abstractions.language_operators
         ),
+        language_proposal_count=len(
+            policy.mind.abstractions.language_proposals
+        ),
+        language_mechanism_revision_count=len(
+            policy.mind.abstractions.language_mechanism_history
+        ),
         procedure_count=len(policy.mind.abstractions.procedures),
         causal_hypotheses=len(policy.mind.hypotheses.causal),
         temporal_hypotheses=len(policy.mind.hypotheses.temporal),
@@ -218,6 +226,9 @@ ABLATIONS: dict[str, MindConfig] = {
         hierarchy_complexity_pressure=0.0
     ),
     "flat_concepts": MindConfig(enable_reflecting_abstraction=False),
+    "no_language_meta_reflection": MindConfig(
+        enable_language_meta_reflection=False
+    ),
 }
 
 

@@ -83,6 +83,26 @@ abstract result predicates and confidence to the same bounded planner used by
 the Kaggle policy. MDL-positive procedures contribute evidence-gated plans to
 that same policy.
 
+Language invention has a bounded first meta-reflective layer. The cyclic
+predicate compiler is represented as a parented `LanguageInventionMechanism`;
+each attempted operator is a serializable proposal with acceptance criteria,
+evidence, description lengths, utility, and a rejection reason. An accepted
+operator names the mechanism revision that proposed it, and the mechanism is
+revised to record rejected trials and retained products. A causal ablation
+removes both proposals and the downstream operator under identical schema
+evidence.
+
+The mechanism-level complexity charge counts its bounded symbolic strategy,
+input/output-form tokens, and numeric thresholds. It does not charge the
+character length of explanatory prose. Operator description utility and
+mechanism utility are accounted separately.
+
+This is not general autonomous invention of arbitrary symbolic languages or
+source code. The available invention strategy remains bounded and
+hand-authored. What is explicit and revisable is its empirical history and
+licensed products: a testable first step beyond recording a language-version
+label.
+
 This closes an internal reuse loop. The preregistered v2 synthetic confirmation
 supports cross-layout family transfer and procedure efficiency under ablation,
 but does not prove transfer to an ARC game. Schema families remain predictive

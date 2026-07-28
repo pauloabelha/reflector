@@ -36,6 +36,11 @@ concepts compile into future schema contexts, accepted language operators
 normalize future events, family reliability informs transfer, and procedures
 can supply bounded plans. The store is part of the shared Kaggle closure.
 
+The language inducer is itself represented inside that store. Its rejected and
+accepted proposals, parented revisions, evidence, complexity utility, and
+retained products are serialized into traces and dependency graphs. This is a
+bounded meta-reflective mechanism, not arbitrary runtime code generation.
+
 `StructuralCreditLedger` compares each proposition-level schema prediction
 with the next outcome before that outcome updates the schema store. It keeps
 external goal events, epistemic events, confirmations, contradictions, and

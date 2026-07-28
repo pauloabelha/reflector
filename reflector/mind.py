@@ -50,6 +50,7 @@ class MindConfig:
     enable_modal_reasoning: bool = True
     enable_comparison_transfer: bool = True
     enable_comparison_composition: bool = True
+    enable_language_meta_reflection: bool = True
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
     information_weight: float = 1.0
@@ -70,6 +71,7 @@ class MindConfig:
             "enable_modal_reasoning",
             "enable_comparison_transfer",
             "enable_comparison_composition",
+            "enable_language_meta_reflection",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -127,7 +129,10 @@ class SymbolicMind:
         )
         self.comparisons = ComparisonTransferSystem()
         self.abstractions = AbstractionStore(
-            complexity_pressure=self.config.hierarchy_complexity_pressure
+            complexity_pressure=self.config.hierarchy_complexity_pressure,
+            enable_language_meta_reflection=(
+                self.config.enable_language_meta_reflection
+            ),
         )
         self.planner = SymbolicPlanner(
             max_depth=self.config.planner_max_depth,

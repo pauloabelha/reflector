@@ -198,7 +198,10 @@ MDL-positive schema families and concept types, and evidence-gated symbolic
 language versions, including a compositional ℤ₄ orientation operator when
 repeated rotation evidence pays its cost. Accepted concepts become later schema
 terms, language operators normalize later events, and family confidence feeds
-the bounded planner. Evidence-backed translations now compile into explicit
+the bounded planner. The bounded language inducer is now itself a parented,
+evidence-bearing symbolic object with falsifiable proposals, rejected trials,
+retained products, a complexity charge, and a same-evidence ablation.
+Evidence-backed translations now compile into explicit
 operator objects used by a bounded spatial planner; the inference trace also
 exposes represented inverses, finite modal reachability, and a typed comparison
 graph with executable finite law checks. Context-typed operator systems can

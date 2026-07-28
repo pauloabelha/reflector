@@ -89,10 +89,62 @@ class DependencyGraph:
                     )
             for operator in abstractions.language_operators.values():
                 graph.nodes[operator.operator_id] = "language_operator"
+                graph.edges.add(
+                    DependencyEdge(
+                        operator.operator_id,
+                        "invented_by",
+                        operator.invented_by,
+                    )
+                )
                 for evidence in operator.evidence:
                     graph.edges.add(
                         DependencyEdge(
                             operator.operator_id, "compiled_from", evidence
+                        )
+                    )
+            for proposal in abstractions.language_proposals.values():
+                graph.nodes[proposal.proposal_id] = "language_proposal"
+                graph.edges.add(
+                    DependencyEdge(
+                        proposal.proposal_id,
+                        "proposed_by",
+                        proposal.mechanism_revision_id,
+                    )
+                )
+                for evidence in proposal.evidence:
+                    graph.edges.add(
+                        DependencyEdge(
+                            proposal.proposal_id,
+                            "tested_on",
+                            evidence,
+                        )
+                    )
+            for mechanism in abstractions.language_mechanism_history:
+                graph.nodes[mechanism.revision_id] = (
+                    "language_invention_mechanism"
+                )
+                if mechanism.parent_id is not None:
+                    graph.edges.add(
+                        DependencyEdge(
+                            mechanism.revision_id,
+                            "descends_from",
+                            mechanism.parent_id,
+                        )
+                    )
+                for proposal_id in mechanism.proposals:
+                    graph.edges.add(
+                        DependencyEdge(
+                            mechanism.revision_id,
+                            "evaluated",
+                            proposal_id,
+                        )
+                    )
+                for operator_id in mechanism.accepted_operators:
+                    graph.edges.add(
+                        DependencyEdge(
+                            mechanism.revision_id,
+                            "retains",
+                            operator_id,
                         )
                     )
             for procedure in abstractions.procedures.values():
@@ -117,6 +169,14 @@ class DependencyGraph:
                     graph.edges.add(
                         DependencyEdge(
                             version.version_id, "uses", operator_id
+                        )
+                    )
+                if version.invention_mechanism_revision is not None:
+                    graph.edges.add(
+                        DependencyEdge(
+                            version.version_id,
+                            "licensed_by",
+                            version.invention_mechanism_revision,
                         )
                     )
         return graph

@@ -18,6 +18,7 @@ closure tests, and a network-disabled packaged smoke test.
 level advances, failed experiments, schema/concept counts, mean schema
 reliability, causal/temporal hypothesis counts, planner expansions, symbolic
 description length, schema-family/concept-type/language-operator counts,
+language-proposal and invention-mechanism revision counts,
 abstraction description savings, recoverable redundancy, counterfactual replay
 savings, action efficiency, pre-outcome prediction accuracy, schema/concept
 reuse, duplicate/contradictory/dead/orphan structures, and deterministic replay
@@ -35,6 +36,7 @@ that epistemic compression has already been solved.
 - no explicit experiments;
 - no planner;
 - no hierarchy complexity pressure;
+- no language meta-reflection;
 - flat concepts with reflecting abstraction disabled.
 
 These trace-only ablations measure representational and policy divergence.

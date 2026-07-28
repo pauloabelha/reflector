@@ -112,6 +112,41 @@ export interface LanguageOperator {
   compiled_description_length: number;
   complexity: number;
   utility: number;
+  invented_by: string;
+}
+
+export interface LanguageProposal {
+  proposal_id: string;
+  mechanism_revision_id: string;
+  candidate_name: string;
+  signature: string;
+  algebra: string;
+  replaces: string[];
+  evidence: string[];
+  support: number;
+  raw_description_length: number;
+  compiled_description_length: number;
+  complexity: number;
+  utility: number;
+  accepted: boolean;
+  reason: string;
+}
+
+export interface LanguageInventionMechanism {
+  revision_id: string;
+  parent_id: string | null;
+  strategy: string;
+  input_form: string;
+  output_form: string;
+  required_distinct_predicates: number;
+  minimum_support: number;
+  proposals: string[];
+  accepted_operators: string[];
+  rejected_proposals: string[];
+  evidence: string[];
+  complexity: number;
+  utility: number;
+  status: string;
 }
 
 export interface LanguageVersion {
@@ -121,6 +156,7 @@ export interface LanguageVersion {
   evidence: string[];
   description_length: number;
   utility: number;
+  invention_mechanism_revision: string | null;
 }
 
 export interface ProcedureAbstraction {
@@ -141,6 +177,8 @@ export interface AbstractionState {
   schema_families: SchemaFamily[];
   concept_types: ConceptType[];
   language_operators: LanguageOperator[];
+  language_proposals: LanguageProposal[];
+  language_mechanism_history: LanguageInventionMechanism[];
   procedures: ProcedureAbstraction[];
   language_history: LanguageVersion[];
 }

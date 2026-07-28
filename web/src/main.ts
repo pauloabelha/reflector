@@ -299,7 +299,7 @@ function graphView(graph: Graph): string {
   const width = 760;
   const height = 330;
   const positions = new Map(graph.nodes.map((node, index) => {
-    const lanes = { concept: 0, concept_type: 0, language_operator: 0, causal_hypothesis: 1, temporal_hypothesis: 1, language_version: 1, schema_family: 1, schema: 2 } as Record<string, number>;
+    const lanes = { concept: 0, concept_type: 0, language_operator: 0, language_invention_mechanism: 0, language_proposal: 1, causal_hypothesis: 1, temporal_hypothesis: 1, language_version: 1, schema_family: 1, schema: 2 } as Record<string, number>;
     const lane = lanes[node.kind] ?? 1;
     const inLane = graph.nodes.filter((other) => (lanes[other.kind] ?? 1) === lane);
     const laneIndex = inLane.findIndex((other) => other.id === node.id);
@@ -325,10 +325,13 @@ function predicateInventory(schemas: Schema[]): string[] {
 function languageView(schemas: Schema[], abstractions: ReplayStep["symbolic_state"]["abstractions"]): string {
   const predicates = predicateInventory(schemas);
   const currentVersion = abstractions.language_history.at(-1);
+  const mechanism = abstractions.language_mechanism_history.at(-1);
   return `<div class="language-view">
     <div class="language-version"><small>CURRENT REPRESENTATION</small><strong>${escapeHtml(currentVersion?.version_id ?? replay.trace.agent_version)}</strong><span>trace format v${replay.trace.format_version} · ${abstractions.language_operators.length} compositional operators · utility ${currentVersion?.utility.toFixed(1) ?? "0.0"}</span></div>
+    <article class="language-operator"><div><small>INVENTION MECHANISM · ${escapeHtml(mechanism?.status ?? "unknown")}</small><strong>${escapeHtml(mechanism?.strategy ?? "unavailable")}</strong></div><code>${escapeHtml(mechanism?.input_form ?? "")} → ${escapeHtml(mechanism?.output_form ?? "")}</code><p>Revision ${escapeHtml(mechanism?.revision_id ?? "none")} · ${mechanism?.proposals.length ?? 0} evaluated proposals · ${mechanism?.accepted_operators.length ?? 0} retained operators · utility ${mechanism?.utility.toFixed(1) ?? "0.0"}</p></article>
     <div><h3>Observed predicate vocabulary</h3><div class="chips">${predicates.map((item) => `<code>${escapeHtml(item)}</code>`).join("") || "<span class='empty'>No predicates observed.</span>"}</div></div>
-    ${abstractions.language_operators.map((operator) => `<article class="language-operator"><div><small>COMPILED OPERATOR</small><strong>${escapeHtml(operator.signature)}</strong></div><code>${escapeHtml(operator.algebra)}</code><p>Replaces ${operator.replaces.map(escapeHtml).join(", ")} · ${operator.support} support · ${operator.raw_description_length} → ${operator.compiled_description_length} units · +${operator.utility.toFixed(1)} utility</p></article>`).join("")}
+    ${abstractions.language_operators.map((operator) => `<article class="language-operator"><div><small>COMPILED OPERATOR</small><strong>${escapeHtml(operator.signature)}</strong></div><code>${escapeHtml(operator.algebra)}</code><p>Replaces ${operator.replaces.map(escapeHtml).join(", ")} · ${operator.support} support · ${operator.raw_description_length} → ${operator.compiled_description_length} units · +${operator.utility.toFixed(1)} utility · invented by ${escapeHtml(short(operator.invented_by, 24))}</p></article>`).join("")}
+    <div><h3>Mechanism trials</h3><div class="schema-list">${abstractions.language_proposals.map((proposal) => `<article class="schema-row"><div><strong>${escapeHtml(proposal.signature)}</strong><small>${proposal.support} support · ${proposal.replaces.length} predicates</small></div><span class="confidence ${proposal.accepted ? "high" : "low"}">${escapeHtml(proposal.accepted ? "accepted" : proposal.reason)}</span></article>`).join("") || "<span class='empty'>No language proposals yet.</span>"}</div></div>
     <div class="language-timeline">${abstractions.language_history.map((version, index) => `<div class="language-history"><span class="${index === abstractions.language_history.length - 1 ? "current" : ""}"></span><article><small>${index === abstractions.language_history.length - 1 ? "ACTIVE" : "ANCESTOR"}</small><strong>${escapeHtml(version.version_id)}</strong><p>${version.operators.length ? `${version.operators.length} operators from ${version.evidence.length} evidence schemas` : "Primitive typed atom language."}</p></article></div>`).join("")}</div>
   </div>`;
 }

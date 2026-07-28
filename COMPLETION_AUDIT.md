@@ -52,7 +52,7 @@ test merely passed.
 | Recoverable redundancy diagnostics | Proven as approximation | `compression.py` detects rediscovery, equivalent structures, missing retained information, and repeated planning work. |
 | Counterfactual suffix replay and description/planner savings | Proven as trace-only approximation | Counterfactual/compression commands and tests label fixed-observation limitations. |
 | True counterfactual action savings | Missing | Requires restorable official environment branches; current trace injection cannot establish alternate outcomes. |
-| Reflection over mechanisms that invent new languages | Partial | Language operators and their evidence are explicit, but the invention mechanism itself is not yet an independently represented, revisable object. |
+| Reflection over mechanisms that invent new languages | Proven as a bounded first mechanism | The cyclic-predicate inducer is a parented, serializable object with rejected/accepted proposals, evidence, complexity utility, retained products, dependency edges, UI visibility, and a causal ablation. This is not general autonomous DSL or source-code invention. |
 | General Piagetian equilibration or psychological fidelity | Deliberately unclaimed | Theory, decision log, and validation protocols constrain claims to implemented mechanisms. |
 
 ## Meta-evolver and evaluation control plane
@@ -108,8 +108,8 @@ hosted-service dependency.
 5. Publish a participant-owned public repository and complete eligibility,
    competition publication, and Paper Track actions.
 6. If the original deepest research scope remains mandatory, add genuine
-   restorable environment branching, meta-reflection over the language-invention
-   mechanism, autonomous concept retirement, and the remaining specialized UI
+   restorable environment branching, general autonomous language/source
+   invention, autonomous concept retirement, and the remaining specialized UI
    leaderboards.
 
 Until these are evidenced, neither “competition validated” nor “prize ready”

@@ -3,7 +3,9 @@
 from .abstraction import (
     AbstractionStore,
     ConceptType,
+    LanguageInventionMechanism,
     LanguageOperator,
+    LanguageProposal,
     LanguageVersion,
     ProcedureAbstraction,
     SchemaFamily,
@@ -75,6 +77,8 @@ __all__ = [
     "Goal",
     "HypothesisStore",
     "LanguageOperator",
+    "LanguageProposal",
+    "LanguageInventionMechanism",
     "LanguageVersion",
     "MindConfig",
     "ModalReachability",

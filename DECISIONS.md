@@ -283,3 +283,20 @@ operator is therefore accepted into the Kaggle inference path with a fixed
 three-hop bound and ordered provenance. This is evidence for one finite
 two-step synthetic family, not arbitrary morphisms, unrestricted category
 theory, or official ARC generalization.
+
+## 2026-07-27 — Represent language invention, but do not claim general invention
+
+Recording an accepted operator and a language-version label does not establish
+reflection over the mechanism that invented it. The cyclic-predicate inducer
+is therefore promoted to a serializable, parented structure. It emits explicit
+accepted or rejected proposals, pays a separate complexity cost, records the
+evidence and products that revise it, and appears in the dependency graph and
+replay UI. Accepted operators preserve immutable provenance to the mechanism
+revision that proposed them.
+
+The same-schema ablation disables this mechanism and produces neither proposals
+nor an orientation operator. A repeated-evidence test also distinguishes a
+provisional mechanism from one whose product utility pays the mechanism-level
+complexity charge. The accepted claim is limited to explicit meta-evaluation of
+one bounded, hand-authored invention strategy. It is not autonomous discovery
+of arbitrary DSLs, source-code evolution, or official ARC generalization.

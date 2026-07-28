@@ -70,6 +70,7 @@ class LanguageOperator:
     compiled_description_length: int
     complexity: int
     utility: float
+    invented_by: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -83,9 +84,75 @@ class LanguageVersion:
     evidence: tuple[str, ...]
     description_length: int
     utility: float
+    invention_mechanism_revision: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class LanguageProposal:
+    """One falsifiable trial made by a represented invention mechanism."""
+
+    proposal_id: str
+    mechanism_revision_id: str
+    candidate_name: str
+    signature: str
+    algebra: str
+    replaces: tuple[str, ...]
+    evidence: tuple[str, ...]
+    support: int
+    raw_description_length: int
+    compiled_description_length: int
+    complexity: int
+    utility: float
+    accepted: bool
+    reason: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class LanguageInventionMechanism:
+    """A parented, evidence-bearing strategy for constructing a DSL operator."""
+
+    revision_id: str
+    parent_id: str | None
+    strategy: str
+    input_form: str
+    output_form: str
+    required_distinct_predicates: int
+    minimum_support: int
+    proposals: tuple[str, ...]
+    accepted_operators: tuple[str, ...]
+    rejected_proposals: tuple[str, ...]
+    evidence: tuple[str, ...]
+    complexity: int
+    utility: float
+    status: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def _initial_language_mechanism() -> LanguageInventionMechanism:
+    return LanguageInventionMechanism(
+        revision_id="language-inducer-v1-cyclic-predicates",
+        parent_id=None,
+        strategy="compile-enumerated-cyclic-predicates",
+        input_form="predicate_stem_discrete_magnitude(object)",
+        output_form="typed_group_operator(object,k)",
+        required_distinct_predicates=3,
+        minimum_support=4,
+        proposals=(),
+        accepted_operators=(),
+        rejected_proposals=(),
+        evidence=(),
+        complexity=0,
+        utility=0.0,
+        status="untested",
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,9 +189,16 @@ class AbstractionStore:
     """Reflect over learned structures without arbitrary code generation."""
 
     complexity_pressure: float = 1.0
+    enable_language_meta_reflection: bool = True
     schema_families: dict[str, SchemaFamily] = field(default_factory=dict)
     concept_types: dict[str, ConceptType] = field(default_factory=dict)
     language_operators: dict[str, LanguageOperator] = field(default_factory=dict)
+    language_proposals: dict[str, LanguageProposal] = field(
+        default_factory=dict
+    )
+    language_mechanism_history: list[LanguageInventionMechanism] = field(
+        default_factory=lambda: [_initial_language_mechanism()]
+    )
     procedures: dict[str, ProcedureAbstraction] = field(default_factory=dict)
     language_history: list[LanguageVersion] = field(
         default_factory=lambda: [
@@ -152,6 +226,11 @@ class AbstractionStore:
             set(self.schema_families)
             | set(self.concept_types)
             | set(self.language_operators)
+            | set(self.language_proposals)
+            | {
+                item.revision_id
+                for item in self.language_mechanism_history
+            }
         )
         self._reflect_schema_families(schemas)
         self._reflect_concept_types(concepts)
@@ -160,6 +239,11 @@ class AbstractionStore:
             set(self.schema_families)
             | set(self.concept_types)
             | set(self.language_operators)
+            | set(self.language_proposals)
+            | {
+                item.revision_id
+                for item in self.language_mechanism_history
+            }
         )
         return tuple(sorted(after - before))
 
@@ -479,6 +563,8 @@ class AbstractionStore:
             )
 
     def _reflect_language(self, schemas: SchemaStore) -> None:
+        if not self.enable_language_meta_reflection:
+            return
         evidence: dict[str, set[str]] = {}
         support: dict[str, int] = {}
         for schema in schemas.schemas.values():
@@ -490,7 +576,7 @@ class AbstractionStore:
                 normalized = "rotated_0" if match.group(1) == "360" else predicate
                 evidence.setdefault(normalized, set()).add(schema.schema_id)
                 support[normalized] = support.get(normalized, 0) + schema.support
-        if len(evidence) < 3 or sum(support.values()) < 4:
+        if not evidence:
             return
         replaces = tuple(sorted(evidence))
         evidence_ids = tuple(
@@ -499,15 +585,57 @@ class AbstractionStore:
         raw = sum(len(name) * support[name] for name in replaces)
         signature = "orientation_delta(object,k)"
         algebra = "k in Z4; compose(a,b)=(a+b) mod 4"
+        operator_id = _identifier("operator", signature, *replaces)
+        mechanism = self.language_mechanism_history[-1]
+        existing_operator = self.language_operators.get(operator_id)
+        if existing_operator is not None and mechanism.status == "validated":
+            return
         complexity = len(signature) + len(algebra)
         compiled = round(self.complexity_pressure * complexity) + sum(
             support.values()
         ) * 3
         utility = raw - compiled
-        if utility <= 0:
+        total_support = sum(support.values())
+        accepted = (
+            len(evidence) >= mechanism.required_distinct_predicates
+            and total_support >= mechanism.minimum_support
+            and utility > 0
+        )
+        reason = (
+            "insufficient-distinct-predicates"
+            if len(evidence) < mechanism.required_distinct_predicates
+            else "insufficient-support"
+            if total_support < mechanism.minimum_support
+            else "nonpositive-counterfactual-utility"
+            if utility <= 0
+            else "accepted"
+        )
+        proposal_id = _identifier(
+            "language-proposal",
+            mechanism.revision_id,
+            signature,
+            str(total_support),
+            *replaces,
+            *evidence_ids,
+        )
+        self.language_proposals[proposal_id] = LanguageProposal(
+            proposal_id=proposal_id,
+            mechanism_revision_id=mechanism.revision_id,
+            candidate_name="orientation_delta",
+            signature=signature,
+            algebra=algebra,
+            replaces=replaces,
+            evidence=evidence_ids,
+            support=total_support,
+            raw_description_length=raw,
+            compiled_description_length=compiled,
+            complexity=complexity,
+            utility=utility,
+            accepted=accepted,
+            reason=reason,
+        )
+        if not accepted:
             return
-        operator_id = _identifier("operator", signature, *replaces)
-        is_new = operator_id not in self.language_operators
         operator = LanguageOperator(
             operator_id=operator_id,
             name="orientation_delta",
@@ -520,10 +648,71 @@ class AbstractionStore:
             compiled_description_length=compiled,
             complexity=complexity,
             utility=utility,
+            invented_by=(
+                existing_operator.invented_by
+                if existing_operator is not None
+                else mechanism.revision_id
+            ),
         )
         self.language_operators[operator_id] = operator
-        if not is_new:
+        proposal_ids = tuple(sorted(self.language_proposals))
+        rejected = tuple(
+            item.proposal_id
+            for item in sorted(
+                self.language_proposals.values(),
+                key=lambda value: value.proposal_id,
+            )
+            if not item.accepted
+        )
+        mechanism_complexity = (
+            len(mechanism.strategy.split("-"))
+            + len(mechanism.input_form.split("_"))
+            + len(mechanism.output_form.split("_"))
+            + mechanism.required_distinct_predicates
+            + mechanism.minimum_support
+            + 8
+        )
+        mechanism_utility = utility - round(
+            self.complexity_pressure * mechanism_complexity
+        )
+        if (
+            existing_operator is not None
+            and mechanism.status == "provisional"
+            and mechanism_utility <= 0
+        ):
             return
+        mechanism_revision = _identifier(
+            "language-inducer",
+            mechanism.revision_id,
+            operator_id,
+            *proposal_ids,
+        )
+        revised = LanguageInventionMechanism(
+            revision_id=mechanism_revision,
+            parent_id=mechanism.revision_id,
+            strategy=mechanism.strategy,
+            input_form=mechanism.input_form,
+            output_form=mechanism.output_form,
+            required_distinct_predicates=(
+                mechanism.required_distinct_predicates
+            ),
+            minimum_support=mechanism.minimum_support,
+            proposals=proposal_ids,
+            accepted_operators=tuple(
+                sorted(
+                    {
+                        *mechanism.accepted_operators,
+                        *self.language_operators,
+                    }
+                )
+            ),
+            rejected_proposals=rejected,
+            evidence=tuple(sorted({*evidence_ids, proposal_id})),
+            complexity=mechanism_complexity,
+            utility=mechanism_utility,
+            status="validated" if mechanism_utility > 0 else "provisional",
+        )
+        self.language_mechanism_history.append(revised)
         previous = self.language_history[-1]
         version_id = _identifier(
             "language",
@@ -543,6 +732,7 @@ class AbstractionStore:
                 utility=sum(
                     item.utility for item in self.language_operators.values()
                 ),
+                invention_mechanism_revision=revised.revision_id,
             )
         )
 
@@ -568,6 +758,16 @@ class AbstractionStore:
                     self.language_operators.values(),
                     key=lambda value: value.operator_id,
                 )
+            ],
+            "language_proposals": [
+                item.to_dict()
+                for item in sorted(
+                    self.language_proposals.values(),
+                    key=lambda value: value.proposal_id,
+                )
+            ],
+            "language_mechanism_history": [
+                item.to_dict() for item in self.language_mechanism_history
             ],
             "procedures": [
                 item.to_dict()
