@@ -88,6 +88,20 @@ wall time/action count/levels, and the full trace metrics:
   --recordings-dir /tmp/reflector-recordings
 ```
 
+After attaching the accepted 25-game public data, run the strict coverage path:
+
+```bash
+.venv/bin/reflector official-public-run \
+  --environments-dir /path/to/environment_files \
+  --recordings-dir /tmp/reflector-public-recordings \
+  --output official-public-evaluation.json
+```
+
+This inventories official metadata, requires exactly the rule-snapshot game
+count, hashes every metadata file and the complete manifest, runs every game
+through the unchanged official `Swarm`, and refuses to write a successful
+report unless every game has an agent result.
+
 Generate, replay, evaluate, and compare deterministic traces:
 
 ```bash
@@ -172,7 +186,8 @@ consume the symbolic package but may never be imported by its Kaggle path.
 
 See [KAGGLE.md](KAGGLE.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 [THEORY.md](THEORY.md), [EVALUATION.md](EVALUATION.md), and
-[PRIZE_READINESS.md](PRIZE_READINESS.md).
+[PRIZE_READINESS.md](PRIZE_READINESS.md). Requirement-by-requirement status is
+maintained in [COMPLETION_AUDIT.md](COMPLETION_AUDIT.md).
 
 ## Status
 

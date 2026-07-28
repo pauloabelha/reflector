@@ -22,6 +22,7 @@
   "internet_enabled": false,
   "only_notebook_submissions": true,
   "private_evaluation_games": 110,
+  "public_development_games": 25,
   "public_leaderboard_fraction": 0.5,
   "winner_license": "CC-BY-4.0",
   "competition_data_license": "Apache-2.0",

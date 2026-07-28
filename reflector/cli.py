@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 from contextlib import redirect_stdout
 from importlib import import_module
@@ -28,6 +29,10 @@ from .mutations import (
     MutationProposal,
     MutationProvider,
     OpenAICompatibleMutationProvider,
+)
+from .official_eval import (
+    expected_public_game_count,
+    inventory_official_environments,
 )
 from .policy import SymbolicPolicy
 from .population import pareto_archive
@@ -144,6 +149,20 @@ def main() -> None:
     official_run.add_argument("--environments-dir", type=Path, required=True)
     official_run.add_argument("--recordings-dir", type=Path, required=True)
     official_run.add_argument(
+        "--config",
+        type=Path,
+        help="MindConfig JSON or serialized Candidate JSON to deploy",
+    )
+
+    official_public = commands.add_parser("official-public-run")
+    official_public.add_argument(
+        "--environments-dir", type=Path, required=True
+    )
+    official_public.add_argument(
+        "--recordings-dir", type=Path, required=True
+    )
+    official_public.add_argument("--output", type=Path, required=True)
+    official_public.add_argument(
         "--config",
         type=Path,
         help="MindConfig JSON or serialized Candidate JSON to deploy",
@@ -301,7 +320,21 @@ def main() -> None:
             print(args.output)
         else:
             print(rendered)
-    elif args.command == "official-run":
+    elif args.command in {"official-run", "official-public-run"}:
+        inventory = None
+        games = getattr(args, "games", None)
+        if args.command == "official-public-run":
+            project_root = Path(__file__).resolve().parent.parent
+            try:
+                inventory = inventory_official_environments(
+                    args.environments_dir,
+                    expected_games=expected_public_game_count(project_root),
+                )
+            except ValueError as error:
+                parser.error(str(error))
+            games = list(inventory.games)
+        if not games:
+            raise RuntimeError("official run has no games")
         if args.config is not None:
             raw_config = json.loads(args.config.read_text(encoding="utf-8"))
             if not isinstance(raw_config, dict):
@@ -322,7 +355,7 @@ def main() -> None:
             swarm = swarm_class(
                 agent="reflector",
                 ROOT_URL="http://localhost:8001",
-                games=args.games,
+                games=games,
             )
             scorecard = swarm.main()
         if scorecard is None:
@@ -336,20 +369,54 @@ def main() -> None:
                     "actions": agent.action_counter,
                     "seconds": agent.seconds,
                     "levels_completed": agent.levels_completed,
+                    "mind_config": official_policy.mind.config.to_dict(),
+                    "agent_version": official_policy.trace.agent_version,
                     "trace_metrics": evaluate_trace(
                         official_policy.trace
                     ).to_dict(),
                 }
             )
-        print(
-            json.dumps(
-                {
-                    "scorecard": scorecard.model_dump(mode="json"),
-                    "agents": agent_reports,
-                },
-                indent=2,
-            )
+        source_result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).resolve().parent.parent,
+            capture_output=True,
+            text=True,
+            check=False,
         )
+        official_payload: dict[str, object] = {
+            "scorecard": scorecard.model_dump(mode="json"),
+            "agents": agent_reports,
+            "source_commit": (
+                source_result.stdout.strip()
+                if source_result.returncode == 0
+                else None
+            ),
+        }
+        if inventory is not None:
+            coverage: dict[str, int | bool] = {
+                "expected_games": inventory.expected_games,
+                "discovered_games": len(inventory.games),
+                "reported_agents": len(agent_reports),
+                "complete": (
+                    len(inventory.games)
+                    == inventory.expected_games
+                    == len(agent_reports)
+                ),
+            }
+            official_payload["environment_inventory"] = inventory.to_dict()
+            official_payload["coverage"] = coverage
+            if coverage["complete"] is not True:
+                raise RuntimeError(
+                    "official public run returned incomplete agent coverage"
+                )
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(
+                json.dumps(official_payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            print(args.output)
+        else:
+            print(json.dumps(official_payload, indent=2))
     else:
         serve(
             trace=load_trace(args.trace),

@@ -32,3 +32,35 @@ def test_official_run_emits_machine_readable_score_and_metrics(
     assert report["agents"][0]["levels_completed"] == 5
     assert report["agents"][0]["trace_metrics"]["prediction_accuracy"] >= 0
     assert report["agents"][0]["trace_metrics"]["action_efficiency"] > 0
+    assert report["agents"][0]["mind_config"]["enable_comparison_composition"]
+    assert len(report["source_commit"]) == 40
+
+
+def test_public_run_refuses_incomplete_environment_inventory(
+    tmp_path: Path,
+) -> None:
+    root = Path(__file__).parents[2]
+    fixture = root / "tests" / "fixtures" / "official_toolkit"
+    output = tmp_path / "public-report.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "reflector.cli",
+            "official-public-run",
+            "--environments-dir",
+            str(fixture),
+            "--recordings-dir",
+            str(tmp_path / "recordings"),
+            "--output",
+            str(output),
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert completed.returncode == 2
+    assert "expected 25 unique games, found 1" in completed.stderr
+    assert not output.exists()

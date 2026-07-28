@@ -125,6 +125,7 @@ def audit(root: Path = ROOT) -> PrizeAudit:
             "rules_snapshot",
             competition.get("max_cpu_runtime_minutes") == 540
             and competition.get("internet_enabled") is False
+            and competition.get("public_development_games") == 25
             and competition.get("required_submission_filename")
             == "submission.parquet",
             "The dated machine-readable snapshot records the 9-hour, "

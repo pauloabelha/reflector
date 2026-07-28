@@ -108,6 +108,26 @@ Upload or copy the generated notebook into the competition, attach the
 competition data source, keep internet disabled, commit it, and submit that
 committed version.
 
+## Strict public-environment evaluation
+
+Once the accepted `environment_files/` data is available locally:
+
+```bash
+.venv/bin/reflector official-public-run \
+  --environments-dir /path/to/environment_files \
+  --recordings-dir /tmp/reflector-public-recordings \
+  --output official-public-evaluation.json
+```
+
+The command discovers versioned `metadata.json` files exactly as the toolkit
+does, reduces versions to unique game IDs, and requires the
+`public_development_games` count in the dated rules snapshot—currently 25. It
+hashes each metadata file and the canonical inventory, records the source
+commit and deployed `MindConfig`, invokes the official `Swarm` once over every
+game, and fails if agent-report coverage is incomplete. A fixture-only checkout
+therefore fails before evaluation instead of accidentally presenting `bt11` as
+a public-suite result.
+
 ## Permanent smoke test
 
 ```bash

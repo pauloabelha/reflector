@@ -105,6 +105,9 @@ These cannot be completed from a local checkout:
 - Run the official agent on all 25 public environments after accepting the
   data rules and obtaining an ARC API key; report completion and RHAE, not
   only `bt11`. Anonymous API access currently returns HTTP 401.
+- Use `reflector official-public-run --environments-dir ... --recordings-dir
+  ... --output official-public-evaluation.json`; it fails before execution
+  unless the accepted metadata inventory contains exactly 25 unique games.
 - Replace transformed-trace “holdouts” with held-out environments for the main
   generalization claim.
 - Compare the symbolic system against random, rare-color, schema-disabled,

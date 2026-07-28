@@ -95,3 +95,11 @@ resource metrics. The trace format stores the complete deployed `MindConfig`;
 deterministic
 replay and structural metrics therefore evaluate the submitted descendant,
 not an implicit default genome. Trace replay never fabricates an official score.
+
+`reflector official-public-run` is the strict multi-game evidence path. It
+requires the exact public-game count from the machine-readable competition
+snapshot, inventories and hashes recursively discovered official metadata,
+runs all unique game IDs through the same official lifecycle, and writes a
+report only if every discovered game has an agent result. The report includes
+the environment-manifest hash, source commit, deployed configuration,
+scorecard, per-game completion/actions/runtime, and trace metrics.
