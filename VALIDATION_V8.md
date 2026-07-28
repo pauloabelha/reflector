@@ -1,6 +1,7 @@
 # Reflector validation protocol v8
 
-Status: protocol frozen; confirmation seeds have not been executed.
+Status: runner and protocol frozen after a passing development run;
+confirmation seeds have not been executed.
 
 V8 tests the narrow claim that a represented language-invention mechanism can
 record falsifiable trials, distinguish insufficient from sufficient evidence,
@@ -129,6 +130,14 @@ The canonical command will be:
 
 The output must embed a SHA-256 over canonical JSON before the hash field. The
 archived file hash must also be recorded after the single run.
+
+The runner, oracle, controls, criteria, and output schema were frozen in commit
+`19dda26`. Development seeds 0–29 passed all fourteen criteria. An immediate
+second execution reproduced the report byte-for-byte. The canonical
+development report is `validation-v8-development.json`, with file SHA-256
+`a56eec45d98bf7c47c69ca53cc0794cbf99f81584e007bca595210a14b4572cf`
+and embedded result SHA-256
+`8b514ac3ddb890e355802b71d27d2008686ec5d8d0013dc58d84b0a7981d1739`.
 
 ## Preregistered support criteria
 
