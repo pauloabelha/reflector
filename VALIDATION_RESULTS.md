@@ -2,6 +2,49 @@
 
 Run date: 2026-07-27.
 
+## V5 conclusion
+
+The narrow finite-modal-control claim is **supported** on its untouched
+confirmation split. After identical learning histories, a Kaggle-exportable
+symbolic descendant exhaustively distinguished long-but-possible adjacency
+goals from impossible ones under its learned operator set, then used that
+judgment to choose a shortest-path action or an evidence-grounded
+impossibility response.
+
+This is causal evidence that bounded possible/impossible reachability improves
+control on one synthetic family. It does not establish general modal logic,
+necessity, obstacle reasoning, unobserved inverse transfer, causal morphism
+use, or ARC-AGI-3 generalization.
+
+## V5 untouched confirmation set
+
+The single run used paired seeds 120,000–120,029 after freeze commit `6ecec4f`
+and passed all nine frozen criteria:
+
+| Preregistered criterion | Result |
+| --- | --- |
+| All actions legal | Pass: 100% |
+| Identical training histories | Pass within every paired seed |
+| Isolated modal completion | Pass: 100% |
+| Default full-policy completion | Pass: 96.67% |
+| Modal minus ablation efficiency | Pass: +0.7281, 95% bootstrap CI [0.5878, 0.8638] |
+| Modal minus ablation first-attempt accuracy | Pass: +0.5014, 95% CI [0.4597, 0.5497] |
+| Impossibility response is evidence-grounded | Pass |
+| Modal decisions are operative | Pass |
+| Ablation has no modal side channel | Pass |
+
+The isolated modal descendant completed every run in the 26-action oracle
+minimum. The no-modal descendant won 33.33% and averaged 75% completion within
+the 72-action budget.
+
+The canonical report is
+[`validation-v5-holdout.json`](validation-v5-holdout.json), file SHA-256
+`d44df73b84a021242842afcc320645a8cf3f9ee73848eb5ed4fe83d2cdfdb36b`
+and embedded result SHA-256
+`f40b50baba47a31645f6fa6cce3fe9ac187e4f20845bcd2cf4c7085718542f2b`.
+The frozen protocol, development confound, and claim boundary are recorded in
+[`VALIDATION_V5.md`](VALIDATION_V5.md).
+
 ## V4 conclusion
 
 The narrow transformation-composition claim is **supported** on its untouched

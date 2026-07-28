@@ -1,6 +1,6 @@
 # Reflector validation protocol v5
 
-Status: frozen after development. Confirmation seeds have not been viewed.
+Status: confirmed on the untouched preregistered split.
 
 V5 tests whether an exhaustive finite reachability judgment over learned
 transformations improves held-out control. It does not test general modal
@@ -100,6 +100,27 @@ The canonical development report has file SHA-256
 and embedded result SHA-256
 `cc57f63e839958904fe10340d18c20a10d7b6ad0683e41bac61fb0ebee83efb7`.
 An immediate second run reproduced the JSON byte-for-byte.
+
+## Untouched confirmation result
+
+All nine criteria passed on the single execution of seeds
+120,000–120,029 after the protocol and implementation were frozen in commit
+`6ecec4f`. The isolated modal descendant completed every run at the 26-action
+oracle minimum. The no-modal descendant won 33.33% of runs and averaged 75%
+completion within the 72-action budget. The default full policy averaged
+96.67% completion and won 93.33% of runs, exceeding its frozen threshold.
+
+Modal reasoning improved paired first-attempt intervention accuracy by
+`0.50139` (95% bootstrap CI `[0.45972, 0.54972]`) and efficiency by `0.72810`
+(CI `[0.58778, 0.86381]`). Every action was legal, training histories were
+identical, impossibility responses retained transition and exhaustive-state
+evidence, and the ablation emitted no modal decision.
+
+The canonical report is `validation-v5-holdout.json`, with file SHA-256
+`d44df73b84a021242842afcc320645a8cf3f9ee73848eb5ed4fe83d2cdfdb36b`
+and embedded result SHA-256
+`f40b50baba47a31645f6fa6cce3fe9ac187e4f20845bcd2cf4c7085718542f2b`.
+No code or criterion changed after this result was viewed.
 
 ## Commands
 

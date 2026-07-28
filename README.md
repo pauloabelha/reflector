@@ -108,16 +108,19 @@ Run the latest preregistered synthetic mechanism benchmark:
   --output validation-v3-holdout.json
 .venv/bin/reflector validate --suite v4 --seed-start 90000 --seeds 30 \
   --output validation-v4-holdout.json
+.venv/bin/reflector validate --suite v5 --seed-start 120000 --seeds 30 \
+  --output validation-v5-holdout.json
 ```
 
 This benchmark compares the deployed policy with ablations and simple
 baselines. It is explicitly not an ARC score; see
-[`VALIDATION_V4.md`](VALIDATION_V4.md) for the latest frozen claim boundary and
+[`VALIDATION_V5.md`](VALIDATION_V5.md) for the latest frozen claim boundary and
 criteria, and [`VALIDATION_RESULTS.md`](VALIDATION_RESULTS.md) for the original
-falsification plus the v2–v4 confirmation results. V3 supports narrow
+falsification plus the v2–v5 confirmation results. V3 supports narrow
 conditional accommodation; v4 supports executable transformation composition
-under identical training histories. Neither is evidence of general
-equilibration, category-theoretic cognition, or official-game generalization.
+and v5 supports bounded possible/impossible reachability in control under
+identical training histories. None is evidence of general equilibration,
+category-theoretic cognition, or official-game generalization.
 
 Run a reproducible population evaluation (network isolation is on by default):
 

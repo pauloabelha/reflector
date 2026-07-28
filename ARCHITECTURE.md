@@ -55,7 +55,11 @@ operative goal, a bounded breadth-first planner composes those operators in
 future layouts. Validation v4 shows a causal control effect for this narrow
 composition mechanism on one synthetic family. It also represents observed
 inverse partners and can exhaust a finite bounded state graph for calibrated
-possible/impossible reachability.
+possible/impossible reachability. Frame bounds are perceived facts, and an
+expansion cap yields `unknown`, never an impossibility claim. Validation v5
+shows that this exhaustive distinction causally improves control when possible
+goals exceed the ordinary short-planner horizon. This remains bounded spatial
+reachability, not general modal logic.
 
 The higher-order substrate keeps two explicitly separate structures. The
 transformation set contains state-changing operators and executable temporal

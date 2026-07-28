@@ -221,3 +221,20 @@ facts, not causal evidence for morphisms or transfer to an unobserved inverse.
 Modal reachability has finite unit coverage but no held-out causal validation.
 Category-theoretic cognition and official ARC generalization remain
 unvalidated.
+
+## 2026-07-27 — Accept bounded modal control, not general modal logic
+
+Validation v5 froze its revised task and implementation in commit `6ecec4f`,
+then ran seeds 120,000–120,029 once. Long-but-possible and impossible goals
+both exceeded the ordinary planner horizon, eliminating short-plan failure as
+an implicit modal side channel. The isolated modal descendant solved all runs
+at the 26-action oracle; disabling only modal access reduced win rate to
+33.33%. First-attempt accuracy improved by 0.5014 (95% paired bootstrap CI
+[0.4597, 0.5497]) and efficiency by 0.7281 (CI [0.5878, 0.8638]).
+
+Exhaustive finite possible/impossible reachability is therefore accepted into
+the operative Kaggle path. Impossibility requires explicit perceived bounds
+and frontier exhaustion; exceeding the expansion budget returns `unknown`.
+The claim excludes necessity, arbitrary obstacles, general modal logic,
+unobserved inverse construction, causal morphism use, and official ARC
+generalization.
