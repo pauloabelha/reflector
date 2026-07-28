@@ -1,0 +1,19 @@
+{
+  "candidate_id": "candidate-3c81af7ca738ef44",
+  "games": ["ft09", "lp85", "r11l", "s5i5", "tn36", "vc33", "su15", "lf52"],
+  "score": 0.3024283522357517,
+  "levels_completed": 2,
+  "actions": 3200,
+  "per_game": {
+    "ft09": {"levels_completed": 0, "actions": 400},
+    "lp85": {"levels_completed": 0, "actions": 400},
+    "r11l": {"levels_completed": 0, "actions": 400},
+    "s5i5": {"levels_completed": 0, "actions": 400},
+    "tn36": {"levels_completed": 1, "actions": 400},
+    "vc33": {"levels_completed": 0, "actions": 400},
+    "su15": {"levels_completed": 0, "actions": 400},
+    "lf52": {"levels_completed": 1, "actions": 400}
+  },
+  "decision": "rejected",
+  "reason": "Discovered a new tn36 completion but regressed the accepted r11l completion."
+}

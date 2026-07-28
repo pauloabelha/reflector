@@ -4,6 +4,8 @@ Evaluation date: 2026-07-28
 
 Primary evidence:
 
+- [v18 accommodated-affordance result](reports/official-public-evaluation-v18-accommodated-400.json)
+- [v17 targeted rejected-descendant summary](reports/official-targeted-evaluation-v17-summary.json)
 - [v14 epistemic-graph result](reports/official-public-evaluation-v14-graph-400.json)
 - [v14 exact equal-budget control](reports/official-public-evaluation-v14-control-400.json)
 - [v15 targeted rejected-descendant summary](reports/official-targeted-evaluation-v15-summary.json)
@@ -14,9 +16,9 @@ Primary evidence:
 
 ## Verdict
 
-**The current accepted Reflector v14 agent scores 0.2548989649 on the 25
-official public ARC-AGI-3 games. It completes two levels across two games.
-This is a causal improvement over both v8 and an exact equal-budget v14
+**The current accepted Reflector v18 agent scores 0.2645681905 on the 25
+official public ARC-AGI-3 games. It completes three levels across three games.
+This is a reproducible improvement over v14 and its exact equal-budget
 control, but it is still far from competitive performance.**
 
 This is the first legitimate environment-level test of the research platform.
@@ -24,12 +26,22 @@ It proves that the agent is runnable, submission-compatible, and capable of
 limited public-game progress. It still contradicts any claim that the current
 symbolic mechanisms are competitive.
 
-| Result | Reflector v14 graph | v14 control | Reflector v8 | Random starter |
+| Result | Reflector v18 | Reflector v14 | v14 control | Reflector v8 |
 | --- | ---: | ---: | ---: | ---: |
 | Public games reported | 25/25 | 25/25 | 25/25 | 25/25 |
-| ARC score | 0.2548989649 | 0.0 | 0.0 | 0.0 |
-| Levels completed | 2 | 0 | 0 | 0 |
-| Actions | 10,000 | 10,000 | 2,025 | 2,025 |
+| ARC score | 0.2645681905 | 0.2548989649 | 0.0 | 0.0 |
+| Levels completed | 3 | 2 | 0 | 0 |
+| Actions | 10,000 | 10,000 | 10,000 | 2,025 |
+
+V18 retained the v14 completions of `r11l` level 1 in 18 actions and `lf52`
+level 1 in 34 actions. It additionally completed `tn36` level 1 at action 123:
+the original ontology failed after 60 actions, then multicolor perceptual
+accommodation completed the level in the next 61-action attempt.
+
+- frozen source commit:
+  `6cc4d0ebeb45f00d390e3aff596552dd9b5cba18`
+- v18 structured result SHA-256:
+  `47818ed04b29be265b0fcd65f182f824b81f33f383f38fbdded2247882dd852e`
 
 The v14 graph completed level 1 of `r11l` in 18 actions and level 1 of
 `lf52` in 34 actions. The exact control changed only
@@ -51,6 +63,11 @@ Two isolated mechanisms were tested after v14:
 2. v16 compiled successful trajectories into coordinate-free action-role
    programs. It preserved both v14 wins but advanced no additional level, so it
    was retained as a neutral ablation and not promoted.
+3. v17 grouped multicolor foreground regions unconditionally. It discovered a
+   `tn36` completion but regressed `r11l`, so it was rejected.
+4. v18 activates that alternate ontology only after `GAME_OVER` and clears
+   graph evidence whose meaning depended on the replaced ontology. It retained
+   both v14 wins and added `tn36`, so it was promoted.
 
 These negative results are intentionally retained. The evidence indicates that
 flat coordinate novelty is weak, but equal action-family allocation is too

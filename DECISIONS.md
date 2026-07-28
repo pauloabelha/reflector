@@ -1,5 +1,26 @@
 # Decision log
 
+## 2026-07-28 — Accept failure-driven perceptual accommodation
+
+The frozen v18 candidate completed three levels across the complete 25-game
+official public suite, scoring 0.2645681905 with 10,000 actions. The accepted
+v14 parent completed two levels and scored 0.2548989649 under the same action
+budget. Both retained `lf52` and `r11l`; v18 additionally completed `tn36`.
+
+The isolated unconditional multicolor descendant v17 discovered the `tn36`
+win but regressed `r11l`. V18 preserves the same-color component ontology
+until `GAME_OVER` supplies explicit contradiction, then replaces it with
+multicolor affordance grouping and invalidates graph evidence indexed by the
+superseded representation. `tn36` failed after 60 actions under the original
+ontology and completed at action 123 after the accommodated 61-action attempt.
+
+This is accepted as bounded failure-driven perceptual accommodation, not
+general equilibration or object understanding. The mechanism uses only
+rendered observations and legal actions, is disabled by an exact configuration
+ablation, and remains in the Kaggle inference closure. Frozen source commit:
+`6cc4d0ebeb45f00d390e3aff596552dd9b5cba18`. Full evidence is recorded in
+`reports/official-public-evaluation-v18-accommodated-400.json`.
+
 ## 2026-07-28 — Official public behavior outranks synthetic structure
 
 The first complete 25-game official-API public run scored 0.0 with no level
