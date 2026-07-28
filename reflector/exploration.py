@@ -6,7 +6,7 @@ from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
 
-from .symbolic import Observation, Scene
+from .symbolic import ObjectState, Observation, Scene
 
 StateKey = tuple[int, str, str]
 
@@ -58,6 +58,7 @@ class EpistemicExplorer:
     multicolor_click_objects: bool = False
     click_object_accommodation: bool = False
     productive_role_reuse: bool = False
+    local_relation_solver: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -423,6 +424,8 @@ class EpistemicExplorer:
         """Represent object hypotheses first, then a bounded coarse scan."""
 
         candidates: list[tuple[int, int]] = []
+        if self.local_relation_solver:
+            candidates.extend(self._local_relation_candidates(observation, scene))
         if self.multicolor_click_objects or (
             self.click_object_accommodation and self.level_failures > 0
         ):
@@ -476,6 +479,125 @@ class EpistemicExplorer:
         if not unique and width and height:
             unique.append((width // 2, height // 2))
         return tuple(unique)
+
+    def _local_relation_candidates(
+        self,
+        observation: Observation,
+        scene: Scene,
+    ) -> tuple[tuple[int, int], ...]:
+        """Induce equality constraints from repeated 3x3 visual panels."""
+
+        blocks = tuple(
+            item
+            for item in scene.objects
+            if 16 <= item.area <= 100
+            and item.bbox[2] - item.bbox[0] == item.bbox[3] - item.bbox[1]
+            and item.area
+            == (item.bbox[2] - item.bbox[0] + 1)
+            * (item.bbox[3] - item.bbox[1] + 1)
+        )
+        if len(blocks) < 24:
+            return ()
+        sizes = Counter(item.bbox[2] - item.bbox[0] + 1 for item in blocks)
+        size, _support = max(sizes.items(), key=lambda item: (item[1], item[0]))
+        blocks = tuple(
+            item for item in blocks if item.bbox[2] - item.bbox[0] + 1 == size
+        )
+        if len(blocks) < 24 or size % 3:
+            return ()
+        origins = {(item.bbox[0], item.bbox[1]): item for item in blocks}
+        x_values = sorted({point[0] for point in origins})
+        y_values = sorted({point[1] for point in origins})
+        deltas = [
+            right - left
+            for values in (x_values, y_values)
+            for left, right in zip(values, values[1:])
+            if size < right - left <= size * 2
+        ]
+        if not deltas:
+            return ()
+        step, _count = Counter(deltas).most_common(1)[0]
+        directions = (
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+            (-1, 0),
+            (1, 0),
+            (-1, 1),
+            (0, 1),
+            (1, 1),
+        )
+        panels: list[
+            tuple[
+                tuple[int, ...],
+                int,
+                tuple[tuple[ObjectState, int], ...],
+            ]
+        ] = []
+        frame = observation.frame
+        for origin_x, origin_y in sorted(origins):
+            center_x = origin_x + step
+            center_y = origin_y + step
+            neighbors: list[tuple[ObjectState, int]] = []
+            valid = True
+            for dx, dy in directions:
+                item = origins.get((center_x + dx * step, center_y + dy * step))
+                if item is None:
+                    valid = False
+                    break
+                neighbors.append((item, item.color))
+            if not valid:
+                continue
+            if (
+                center_y < 0
+                or center_x < 0
+                or center_y + size > len(frame)
+                or not frame
+                or center_x + size > len(frame[0])
+            ):
+                continue
+            subcell = size // 3
+            clue = tuple(
+                frame[center_y + row * subcell + subcell // 2][
+                    center_x + column * subcell + subcell // 2
+                ]
+                for row in range(3)
+                for column in range(3)
+            )
+            center_color = clue[4]
+            if len(set(clue)) < 2:
+                continue
+            panels.append((clue, center_color, tuple(neighbors)))
+        if len(panels) < 3:
+            return ()
+
+        relation_counts: dict[int, Counter[bool]] = {}
+        clue_indexes = (0, 1, 2, 3, 5, 6, 7, 8)
+        for clue, center_color, panel_neighbors in panels:
+            for clue_index, (_item, color) in zip(clue_indexes, panel_neighbors):
+                relation_counts.setdefault(clue[clue_index], Counter())[
+                    color == center_color
+                ] += 1
+        relation = {
+            symbol: max(counts, key=lambda value: (counts[value], value))
+            for symbol, counts in relation_counts.items()
+        }
+
+        ranked: list[tuple[int, tuple[tuple[int, int], ...]]] = []
+        for clue, center_color, panel_neighbors in panels:
+            violations = []
+            for clue_index, (item, color) in zip(clue_indexes, panel_neighbors):
+                expected_same = relation.get(clue[clue_index])
+                if expected_same is None:
+                    continue
+                if (color == center_color) != expected_same:
+                    violations.append(item.centroid)
+            if violations:
+                ranked.append((len(violations), tuple(violations)))
+        if not ranked:
+            return ()
+        _count, output = max(ranked, key=lambda item: (item[0], item[1]))
+        return output
 
     def _multicolor_candidates(
         self,

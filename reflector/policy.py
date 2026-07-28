@@ -36,6 +36,7 @@ class SymbolicPolicy:
                 self.mind.config.enable_click_object_accommodation
             ),
             productive_role_reuse=self.mind.config.enable_productive_role_reuse,
+            local_relation_solver=self.mind.config.enable_local_relation_solver,
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

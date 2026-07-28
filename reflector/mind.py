@@ -58,6 +58,7 @@ class MindConfig:
     enable_multicolor_click_objects: bool = False
     enable_click_object_accommodation: bool = False
     enable_productive_role_reuse: bool = False
+    enable_local_relation_solver: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -87,6 +88,7 @@ class MindConfig:
             "enable_multicolor_click_objects",
             "enable_click_object_accommodation",
             "enable_productive_role_reuse",
+            "enable_local_relation_solver",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")

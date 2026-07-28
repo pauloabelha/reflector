@@ -283,6 +283,60 @@ def test_productive_role_reuse_activates_only_after_repeated_failure() -> None:
     assert after.reason.endswith("reuse-productive-action-role")
 
 
+def test_local_relation_solver_induces_and_repairs_repeated_panel_rule() -> None:
+    size = 64
+    pixels = [[5 for _x in range(size)] for _y in range(size)]
+    directions = (
+        (-1, -1),
+        (0, -1),
+        (1, -1),
+        (-1, 0),
+        (1, 0),
+        (-1, 1),
+        (0, 1),
+        (1, 1),
+    )
+    clues = (
+        ((2, 0, 2, 0, 8, 2, 2, 0, 0), (9, 8, 9, 8, 9, 9, 8, 8)),
+        ((2, 0, 2, 0, 8, 0, 2, 0, 2), (9, 8, 9, 8, 8, 9, 8, 9)),
+        ((0, 2, 2, 0, 8, 0, 2, 2, 0), (9, 9, 9, 8, 8, 9, 9, 8)),
+        ((0, 2, 2, 0, 8, 0, 0, 2, 2), (9, 9, 9, 9, 9, 9, 9, 9)),
+    )
+    origins = ((4, 2), (38, 2), (4, 36), (36, 36))
+    block_size = 6
+    step = 8
+    subcell = block_size // 3
+    for (origin_x, origin_y), (clue, colors) in zip(origins, clues):
+        center_x = origin_x + step
+        center_y = origin_y + step
+        for (dx, dy), color in zip(directions, colors):
+            block_x = center_x + dx * step
+            block_y = center_y + dy * step
+            for y in range(block_y, block_y + block_size):
+                for x in range(block_x, block_x + block_size):
+                    pixels[y][x] = color
+        for clue_index, color in enumerate(clue):
+            clue_x = center_x + clue_index % 3 * subcell
+            clue_y = center_y + clue_index // 3 * subcell
+            for y in range(clue_y, clue_y + subcell):
+                for x in range(clue_x, clue_x + subcell):
+                    pixels[y][x] = color
+
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=tuple(tuple(row) for row in pixels),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(local_relation_solver=True)
+    explorer.observe(observation, scene)
+
+    choice = explorer.select(observation, scene, (6,))
+
+    assert choice.token.data == (("x", 38), ("y", 38))
+    assert "untried" in choice.reason
+
+
 def test_policy_explorer_is_an_exact_configuration_ablation() -> None:
     from reflector.mind import MindConfig
     from reflector.policy import SymbolicPolicy
