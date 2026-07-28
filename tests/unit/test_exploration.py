@@ -183,6 +183,80 @@ def test_successful_level_compiles_and_replays_coordinate_free_roles() -> None:
     assert explorer.to_dict()["successful_program_length"] == 1
 
 
+def test_multicolor_affordance_precedes_fragmented_color_objects() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (0, 0, 0, 0, 0, 0, 0),
+            (0, 2, 2, 3, 3, 0, 0),
+            (0, 2, 4, 4, 3, 0, 0),
+            (0, 0, 0, 0, 0, 0, 0),
+            (0, 0, 0, 0, 0, 5, 0),
+        ),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(multicolor_click_objects=True)
+    explorer.observe(observation, scene)
+
+    choice = explorer.select(observation, scene, (6,))
+
+    assert choice.token.data == (("x", 2), ("y", 1))
+
+
+def test_multicolor_affordance_is_an_exact_disabled_ablation() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (0, 0, 0, 0, 0, 0, 0),
+            (0, 2, 2, 3, 3, 0, 0),
+            (0, 2, 4, 4, 3, 0, 0),
+            (0, 0, 0, 0, 0, 0, 0),
+            (0, 0, 0, 0, 0, 5, 0),
+        ),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(multicolor_click_objects=False)
+    explorer.observe(observation, scene)
+
+    choice = explorer.select(observation, scene, (6,))
+
+    assert choice.token.data == (("x", 5), ("y", 4))
+
+
+def test_click_object_ontology_accommodates_only_after_failure() -> None:
+    active = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (0, 0, 0, 0, 0, 0, 0),
+            (0, 2, 2, 3, 3, 0, 0),
+            (0, 2, 4, 4, 3, 0, 0),
+            (0, 0, 0, 0, 0, 0, 0),
+            (0, 0, 0, 0, 0, 5, 0),
+        ),
+    )
+    failed = Observation.create(
+        state="GAME_OVER",
+        available_actions=(0,),
+        frame=active.frame,
+    )
+    scene = _scene(active)
+    explorer = EpistemicExplorer(click_object_accommodation=True)
+    explorer.observe(active, scene)
+
+    before = explorer.select(active, scene, (6,))
+    explorer.observe(failed, _scene(failed))
+    explorer.observe(active, scene)
+    after = explorer.select(active, scene, (6,))
+
+    assert before.token.data == (("x", 5), ("y", 4))
+    assert after.token.data == (("x", 2), ("y", 1))
+    assert explorer.to_dict()["perceptual_accommodations"] == 1
+    assert explorer.to_dict()["attempts"] == 1
+
+
 def test_policy_explorer_is_an_exact_configuration_ablation() -> None:
     from reflector.mind import MindConfig
     from reflector.policy import SymbolicPolicy

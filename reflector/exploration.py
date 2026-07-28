@@ -55,6 +55,8 @@ class EpistemicExplorer:
     max_click_candidates: int = 256
     hierarchical_action_fairness: bool = False
     successful_role_replay: bool = False
+    multicolor_click_objects: bool = False
+    click_object_accommodation: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -71,6 +73,7 @@ class EpistemicExplorer:
     episode_roles: list[ActionRole] = field(default_factory=list)
     successful_program: tuple[ActionRole, ...] = ()
     program_cursor: int = 0
+    level_failures: int = 0
 
     def observe(self, observation: Observation, scene: Scene) -> StateKey:
         """Record the outcome of the last issued intervention exactly once."""
@@ -84,9 +87,13 @@ class EpistemicExplorer:
                 self.program_cursor = 0
             self.episode_roles.clear()
             self.current_level = observation.levels_completed
+            self.level_failures = 0
         elif observation.state == "GAME_OVER":
             self.episode_roles.clear()
             self.program_cursor = 0
+            self.level_failures += 1
+            if self.click_object_accommodation and self.level_failures == 1:
+                self._reorganize_click_ontology()
         if state not in self.state_status:
             if len(self.visit_order) >= self.max_states:
                 self._forget_oldest_state()
@@ -98,6 +105,20 @@ class EpistemicExplorer:
             self.pending = None
         self.current_state = state
         return state
+
+    def _reorganize_click_ontology(self) -> None:
+        """Invalidate graph evidence whose action tokens changed meaning."""
+
+        self.attempts.clear()
+        self.global_attempts.clear()
+        self.family_attempts.clear()
+        self.global_family_attempts.clear()
+        self.edges.clear()
+        self.tokens_by_state.clear()
+        self.state_status.clear()
+        self.visit_order.clear()
+        self.current_state = None
+        self.pending = None
 
     def select(
         self,
@@ -326,6 +347,10 @@ class EpistemicExplorer:
         """Represent object hypotheses first, then a bounded coarse scan."""
 
         candidates: list[tuple[int, int]] = []
+        if self.multicolor_click_objects or (
+            self.click_object_accommodation and self.level_failures > 0
+        ):
+            candidates.extend(self._multicolor_candidates(observation))
         objects = sorted(
             scene.objects,
             key=lambda item: (
@@ -376,6 +401,74 @@ class EpistemicExplorer:
             unique.append((width // 2, height // 2))
         return tuple(unique)
 
+    def _multicolor_candidates(
+        self,
+        observation: Observation,
+    ) -> tuple[tuple[int, int], ...]:
+        """Group adjacent foreground colors into bounded visual affordances."""
+
+        frame = observation.frame
+        if not frame or not frame[0]:
+            return ()
+        height = len(frame)
+        width = len(frame[0])
+        counts = Counter(cell for row in frame for cell in row)
+        background = max(counts, key=lambda color: (counts[color], -color))
+        seen: set[tuple[int, int]] = set()
+        regions: list[tuple[tuple[int, int], ...]] = []
+        for y in range(height):
+            for x in range(width):
+                if frame[y][x] == background or (x, y) in seen:
+                    continue
+                queue = deque([(x, y)])
+                seen.add((x, y))
+                points: list[tuple[int, int]] = []
+                while queue:
+                    px, py = queue.popleft()
+                    points.append((px, py))
+                    for dy in (-1, 0, 1):
+                        for dx in (-1, 0, 1):
+                            if dx == dy == 0:
+                                continue
+                            nx, ny = px + dx, py + dy
+                            if (
+                                0 <= nx < width
+                                and 0 <= ny < height
+                                and (nx, ny) not in seen
+                                and frame[ny][nx] != background
+                            ):
+                                seen.add((nx, ny))
+                                queue.append((nx, ny))
+                if 2 <= len(points) <= 512:
+                    regions.append(tuple(points))
+
+        output: list[tuple[int, int]] = []
+        for region_points in sorted(
+            regions,
+            key=lambda region: (
+                len(region),
+                min(point[1] for point in region),
+                min(point[0] for point in region),
+            ),
+        ):
+            xs = tuple(point[0] for point in region_points)
+            ys = tuple(point[1] for point in region_points)
+            center = (
+                (min(xs) + max(xs)) // 2,
+                (min(ys) + max(ys)) // 2,
+            )
+            output.append(
+                min(
+                    region_points,
+                    key=lambda point: (
+                        abs(point[0] - center[0]) + abs(point[1] - center[1]),
+                        point[1],
+                        point[0],
+                    ),
+                )
+            )
+        return tuple(output)
+
     @staticmethod
     def _state_key(
         observation: Observation,
@@ -410,6 +503,7 @@ class EpistemicExplorer:
             "action_families": len(self.global_family_attempts),
             "successful_program_length": len(self.successful_program),
             "program_cursor": self.program_cursor,
+            "perceptual_accommodations": self.level_failures,
             "frontier_states": sum(
                 self._has_frontier(state) for state in self.tokens_by_state
             ),

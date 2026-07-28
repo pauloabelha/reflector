@@ -31,6 +31,10 @@ class SymbolicPolicy:
                 self.mind.config.enable_hierarchical_action_fairness
             ),
             successful_role_replay=self.mind.config.enable_successful_role_replay,
+            multicolor_click_objects=self.mind.config.enable_multicolor_click_objects,
+            click_object_accommodation=(
+                self.mind.config.enable_click_object_accommodation
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

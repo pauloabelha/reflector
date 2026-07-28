@@ -55,6 +55,8 @@ class MindConfig:
     enable_epistemic_state_graph: bool = False
     enable_hierarchical_action_fairness: bool = False
     enable_successful_role_replay: bool = False
+    enable_multicolor_click_objects: bool = False
+    enable_click_object_accommodation: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -81,6 +83,8 @@ class MindConfig:
             "enable_epistemic_state_graph",
             "enable_hierarchical_action_fairness",
             "enable_successful_role_replay",
+            "enable_multicolor_click_objects",
+            "enable_click_object_accommodation",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
