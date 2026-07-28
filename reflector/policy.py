@@ -26,7 +26,12 @@ class SymbolicPolicy:
         self.action_counts: dict[int, int] = {}
         self.mind = SymbolicMind(config)
         self.trace = EpisodeTrace(mind_config=self.mind.config.to_dict())
-        self.explorer = EpistemicExplorer()
+        self.explorer = EpistemicExplorer(
+            hierarchical_action_fairness=(
+                self.mind.config.enable_hierarchical_action_fairness
+            ),
+            successful_role_replay=self.mind.config.enable_successful_role_replay,
+        )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
         self._last_update: MindUpdate | None = None
@@ -72,9 +77,7 @@ class SymbolicPolicy:
             return decision
 
         legal = tuple(
-            action
-            for action in observation.available_actions
-            if action != self.RESET
+            action for action in observation.available_actions if action != self.RESET
         )
         if not legal:
             raise ValueError("active observation exposes no legal non-reset action")
@@ -131,8 +134,7 @@ class SymbolicPolicy:
                 scene=update.scene,
                 incoming_transition=update.transition,
                 new_concepts=tuple(
-                    concept.concept_id
-                    for concept in update.new_concepts
+                    concept.concept_id for concept in update.new_concepts
                 ),
                 new_hypotheses=update.new_hypotheses,
                 new_abstractions=update.new_abstractions,

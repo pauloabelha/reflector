@@ -1,0 +1,13 @@
+{
+  "candidate_id": "candidate-88a7481adc75ac70",
+  "games": ["r11l", "lf52"],
+  "score": 3.186237061669588,
+  "levels_completed": 2,
+  "actions": 800,
+  "per_game": {
+    "r11l": {"levels_completed": 1, "actions": 400},
+    "lf52": {"levels_completed": 1, "actions": 400}
+  },
+  "decision": "not_promoted",
+  "reason": "Preserved both accepted completions but did not improve either."
+}

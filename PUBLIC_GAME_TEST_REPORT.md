@@ -4,33 +4,58 @@ Evaluation date: 2026-07-28
 
 Primary evidence:
 
+- [v14 epistemic-graph result](reports/official-public-evaluation-v14-graph-400.json)
+- [v14 exact equal-budget control](reports/official-public-evaluation-v14-control-400.json)
+- [v15 targeted rejected-descendant summary](reports/official-targeted-evaluation-v15-summary.json)
+- [v16 targeted neutral-descendant summary](reports/official-targeted-evaluation-v16-summary.json)
 - [complete official-harness result](reports/official-public-evaluation-v8.json)
 - [compact result summary](reports/official-public-evaluation-v8-summary.json)
 - [historical access preflight](reports/public-game-evaluation-2026-07-28.json)
 
 ## Verdict
 
-**The current accepted Reflector agent scores 0.0 on the 25 official public
-ARC-AGI-3 games. It completes zero levels and does not beat the official random
-starter baseline.**
+**The current accepted Reflector v14 agent scores 0.2548989649 on the 25
+official public ARC-AGI-3 games. It completes two levels across two games.
+This is a causal improvement over both v8 and an exact equal-budget v14
+control, but it is still far from competitive performance.**
 
 This is the first legitimate environment-level test of the research platform.
-It proves that the agent is runnable and submission-compatible, but it
-contradicts any claim that its current symbolic mechanisms produce competitive
-ARC-AGI-3 behavior.
+It proves that the agent is runnable, submission-compatible, and capable of
+limited public-game progress. It still contradicts any claim that the current
+symbolic mechanisms are competitive.
 
-| Result | Reflector v8 | Official random starter |
-| --- | ---: | ---: |
-| Public games reported | 25/25 | 25/25 |
-| ARC score | 0.0 | 0.0 |
-| Levels completed | 0 | 0 |
-| Actions | 2,025 | 2,025 |
-| Games ending `GAME_OVER` | 12 | Not used for comparison |
-| Games ending `NOT_FINISHED` | 13 | Not used for comparison |
+| Result | Reflector v14 graph | v14 control | Reflector v8 | Random starter |
+| --- | ---: | ---: | ---: | ---: |
+| Public games reported | 25/25 | 25/25 | 25/25 | 25/25 |
+| ARC score | 0.2548989649 | 0.0 | 0.0 | 0.0 |
+| Levels completed | 2 | 0 | 0 | 0 |
+| Actions | 10,000 | 10,000 | 2,025 | 2,025 |
+
+The v14 graph completed level 1 of `r11l` in 18 actions and level 1 of
+`lf52` in 34 actions. The exact control changed only
+`enable_epistemic_state_graph` to false while retaining the 400-action budget;
+it completed no levels. The public-suite result SHA-256 values are:
+
+- graph: `39c5a7ed678650be9dd0b4638e889a9fdcde6c6a9da3a0a25e08fb2f16602d75`
+- control: `3a509ddb474f711920330d55aae24aa7db08aa904f30e9e2334e4d481f28598d`
 
 The random result is one stochastic reference run, not a confidence interval.
-It is sufficient to establish that Reflector has not yet cleared the trivial
-baseline.
+The paired deterministic control is the stronger causal comparison.
+
+## Subsequent descendants
+
+Two isolated mechanisms were tested after v14:
+
+1. v15 hierarchical action-family fairness balanced mixed action spaces, but
+   regressed `lf52` from one level to zero. It was rejected.
+2. v16 compiled successful trajectories into coordinate-free action-role
+   programs. It preserved both v14 wins but advanced no additional level, so it
+   was retained as a neutral ablation and not promoted.
+
+These negative results are intentionally retained. The evidence indicates that
+flat coordinate novelty is weak, but equal action-family allocation is too
+aggressive and coarse roles `(action, color, area, shape)` omit the relational
+structure required for transfer.
 
 ## Provenance and execution
 
@@ -130,6 +155,14 @@ The official adapter converts `FrameDataRaw` to `FrameData` without preserving
 
 This defect needs a regression test and a corrected rerun before the public
 games are used in the web replay interface.
+
+### Resolution
+
+The adapter now preserves `action_input`, freezes gameplay duration before
+post-run analysis, and has regression coverage for legal non-reset actions and
+symbolic explanations. The faithful v14 recordings contain the actual action
+coordinates and were used for the subsequent trajectory analysis. The original
+v8 files remain explicitly invalid as action replays.
 
 ## Kaggle status
 

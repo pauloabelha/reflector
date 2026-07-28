@@ -1,0 +1,14 @@
+{
+  "candidate_id": "candidate-e23de78b7f48b9ba",
+  "games": ["r11l", "lf52", "ar25"],
+  "score": 1.5873015873015872,
+  "levels_completed": 1,
+  "actions": 1200,
+  "per_game": {
+    "r11l": {"levels_completed": 1, "actions": 400},
+    "lf52": {"levels_completed": 0, "actions": 400},
+    "ar25": {"levels_completed": 0, "actions": 400}
+  },
+  "decision": "rejected",
+  "reason": "Balanced action families but regressed the accepted lf52 completion."
+}

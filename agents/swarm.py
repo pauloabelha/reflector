@@ -37,12 +37,14 @@ class Swarm:
         ROOT_URL: str,
         games: list[str],
         tags: list[str] = [],
+        record: bool = True,
     ) -> None:
         from . import AVAILABLE_AGENTS
 
         self.GAMES = games
         self.ROOT_URL = ROOT_URL
         self.agent_name = agent
+        self.record = record
         self.agent_class = AVAILABLE_AGENTS[agent]
         self.threads = []
         self.agents = []
@@ -80,7 +82,7 @@ class Swarm:
                 game_id=g,
                 agent_name=self.agent_name,
                 ROOT_URL=self.ROOT_URL,
-                record=True,
+                record=self.record,
                 arc_env=self._arc.make(g, scorecard_id=self.card_id),
                 tags=self.tags,
             )

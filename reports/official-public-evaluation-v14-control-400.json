@@ -1,0 +1,3387 @@
+{
+  "scorecard": {
+    "source_url": null,
+    "tags": [
+      "agent",
+      "reflector"
+    ],
+    "opaque": null,
+    "card_id": "297f1c6b-cbc3-4121-a0d7-44d4deb268e2",
+    "api_key": null,
+    "score": 0.0,
+    "environments": [
+      {
+        "id": "ar25-0c556536",
+        "runs": [
+          {
+            "id": null,
+            "guid": "89369778-940e-4c3c-9f9f-15dbc2940824",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 5,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              32,
+              50,
+              75,
+              37,
+              89,
+              159,
+              233,
+              73
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 8,
+        "resets": 5
+      },
+      {
+        "id": "bp35-0a0ad940",
+        "runs": [
+          {
+            "id": null,
+            "guid": "9c792fff-6b41-45a5-a772-5d7e4315a817",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 6,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              21,
+              48,
+              44,
+              38,
+              33,
+              87,
+              86,
+              131,
+              163
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 9,
+        "resets": 6
+      },
+      {
+        "id": "cd82-fb555c5d",
+        "runs": [
+          {
+            "id": null,
+            "guid": "ee461895-6286-4398-880f-8339099aaf89",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 3,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              55,
+              8,
+              41,
+              21,
+              23,
+              23
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 3
+      },
+      {
+        "id": "cn04-2fe56bfb",
+        "runs": [
+          {
+            "id": null,
+            "guid": "0f17debb-d36e-41cb-8e7d-16d494950863",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 5,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              29,
+              54,
+              85,
+              300,
+              208,
+              113
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 5
+      },
+      {
+        "id": "dc22-fdcac232",
+        "runs": [
+          {
+            "id": null,
+            "guid": "f911cb3f-15eb-4ea6-8b3d-5fcdac0fe809",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 3,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              59,
+              102,
+              67,
+              98,
+              324,
+              578
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 3
+      },
+      {
+        "id": "ft09-0d8bbf25",
+        "runs": [
+          {
+            "id": null,
+            "guid": "895dcc69-1f8f-487a-9a87-b696aaec2ba5",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 0,
+            "state": "NOT_FINISHED",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              43,
+              12,
+              23,
+              28,
+              65,
+              37
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 0
+      },
+      {
+        "id": "g50t-5849a774",
+        "runs": [
+          {
+            "id": null,
+            "guid": "dc844671-2019-45cc-833d-c5849b8af109",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 3,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              78,
+              175,
+              179,
+              230,
+              96,
+              54,
+              67
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 7,
+        "resets": 3
+      },
+      {
+        "id": "ka59-38d34dbb",
+        "runs": [
+          {
+            "id": null,
+            "guid": "6e740831-28cc-4294-9b59-d726e7b678a2",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 3,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              28,
+              109,
+              51,
+              51,
+              33,
+              132,
+              326
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 7,
+        "resets": 3
+      },
+      {
+        "id": "lf52-271a04aa",
+        "runs": [
+          {
+            "id": null,
+            "guid": "fbe0c74d-0538-41c1-a6ee-6751a55005fc",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 5,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              32,
+              81,
+              60,
+              71,
+              205,
+              148,
+              244,
+              109,
+              164,
+              225
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 10,
+        "resets": 5
+      },
+      {
+        "id": "lp85-305b61c3",
+        "runs": [
+          {
+            "id": null,
+            "guid": "1beae9b6-8680-4567-9f18-f1c1fab07440",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 0,
+            "state": "NOT_FINISHED",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              17,
+              38,
+              31,
+              16,
+              41,
+              60,
+              26,
+              159
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 8,
+        "resets": 0
+      },
+      {
+        "id": "ls20-9607627b",
+        "runs": [
+          {
+            "id": null,
+            "guid": "69c6f9d8-f844-4090-86c9-c608f8acda4a",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 2,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              22,
+              123,
+              73,
+              84,
+              96,
+              192,
+              186
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 7,
+        "resets": 2
+      },
+      {
+        "id": "m0r0-492f87ba",
+        "runs": [
+          {
+            "id": null,
+            "guid": "e78f1415-3039-425e-b610-ed65864000e8",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 2,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              30,
+              111,
+              203,
+              26,
+              500,
+              237
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 2
+      },
+      {
+        "id": "r11l-495a7899",
+        "runs": [
+          {
+            "id": null,
+            "guid": "07c6c127-5058-4ced-af4c-4c9e4bb1b441",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 6,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              22,
+              33,
+              51,
+              26,
+              52,
+              49
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 6
+      },
+      {
+        "id": "re86-8af5384d",
+        "runs": [
+          {
+            "id": null,
+            "guid": "9e5818e5-35eb-4aa1-ae87-b1f2486d4d18",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 3,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              26,
+              42,
+              86,
+              108,
+              189,
+              139,
+              424,
+              241
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 8,
+        "resets": 3
+      },
+      {
+        "id": "s5i5-18d95033",
+        "runs": [
+          {
+            "id": null,
+            "guid": "aab6e3b7-0430-4d1d-9419-e4da7174a54e",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 7,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              20,
+              89,
+              106,
+              54,
+              162,
+              38,
+              86,
+              83
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 8,
+        "resets": 7
+      },
+      {
+        "id": "sb26-7fbdac44",
+        "runs": [
+          {
+            "id": null,
+            "guid": "2bc39b83-b5eb-43df-923f-b3b6a295beab",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 1,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              18,
+              28,
+              18,
+              19,
+              31,
+              23,
+              58,
+              18
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 8,
+        "resets": 1
+      },
+      {
+        "id": "sc25-635fd71a",
+        "runs": [
+          {
+            "id": null,
+            "guid": "98966770-3461-48ee-9cbc-6ea28b268e78",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 7,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              36,
+              6,
+              32,
+              83,
+              143,
+              50
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 7
+      },
+      {
+        "id": "sk48-d8078629",
+        "runs": [
+          {
+            "id": null,
+            "guid": "54074770-b5ad-4839-a8ba-5ca4f7379b93",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 1,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              61,
+              177,
+              101,
+              103,
+              230,
+              181,
+              125,
+              92
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 8,
+        "resets": 1
+      },
+      {
+        "id": "sp80-589a99af",
+        "runs": [
+          {
+            "id": null,
+            "guid": "d3d71a78-cc74-467d-a68a-067cc1c33d63",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 12,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              39,
+              58,
+              25,
+              148,
+              96,
+              152
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 12
+      },
+      {
+        "id": "su15-1944f8ab",
+        "runs": [
+          {
+            "id": null,
+            "guid": "af826654-0fdf-4c0e-b89e-ff89b0f3c873",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 0,
+            "state": "NOT_FINISHED",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              22,
+              42,
+              26,
+              115,
+              36,
+              31,
+              8,
+              40,
+              41
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 9,
+        "resets": 0
+      },
+      {
+        "id": "tn36-ef4dde99",
+        "runs": [
+          {
+            "id": null,
+            "guid": "aee4e8dc-2742-485a-be95-81feb883f5e2",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 6,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              32,
+              72,
+              26,
+              40,
+              30,
+              55,
+              62
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 7,
+        "resets": 6
+      },
+      {
+        "id": "tr87-cd924810",
+        "runs": [
+          {
+            "id": null,
+            "guid": "d82f4b5b-0b76-4795-8d2f-bbea95a7119a",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 3,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              54,
+              58,
+              40,
+              45,
+              71,
+              146
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 6,
+        "resets": 3
+      },
+      {
+        "id": "tu93-0768757b",
+        "runs": [
+          {
+            "id": null,
+            "guid": "1f32af68-f960-4542-8ef3-60f90696acca",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 7,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              19,
+              16,
+              34,
+              42,
+              123,
+              80,
+              14,
+              23,
+              111
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 9,
+        "resets": 7
+      },
+      {
+        "id": "vc33-5430563c",
+        "runs": [
+          {
+            "id": null,
+            "guid": "d7e79288-2065-41f9-9b9b-85fcd956a7a2",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 7,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              7,
+              18,
+              44,
+              61,
+              131,
+              34,
+              152
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 7,
+        "resets": 7
+      },
+      {
+        "id": "wa30-ee6fef47",
+        "runs": [
+          {
+            "id": null,
+            "guid": "e6c060d9-b17c-4dfe-9896-7393bcffa6f3",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 1,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              71,
+              119,
+              183,
+              98,
+              368,
+              68,
+              79,
+              442,
+              415
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 9,
+        "resets": 1
+      }
+    ],
+    "tags_scores": [
+      {
+        "id": "keyboard_click",
+        "guid": null,
+        "score": 0.0,
+        "levels_completed": 0,
+        "actions": 5200,
+        "resets": null,
+        "state": null,
+        "completed": null,
+        "level_scores": null,
+        "level_actions": null,
+        "level_baseline_actions": null,
+        "number_of_levels": 93,
+        "number_of_environments": 13,
+        "message": null
+      },
+      {
+        "id": "keyboard",
+        "guid": null,
+        "score": 0.0,
+        "levels_completed": 0,
+        "actions": 1600,
+        "resets": null,
+        "state": null,
+        "completed": null,
+        "level_scores": null,
+        "level_actions": null,
+        "level_baseline_actions": null,
+        "number_of_levels": 29,
+        "number_of_environments": 4,
+        "message": null
+      },
+      {
+        "id": "click",
+        "guid": null,
+        "score": 0.0,
+        "levels_completed": 0,
+        "actions": 2800,
+        "resets": null,
+        "state": null,
+        "completed": null,
+        "level_scores": null,
+        "level_actions": null,
+        "level_baseline_actions": null,
+        "number_of_levels": 55,
+        "number_of_environments": 7,
+        "message": null
+      }
+    ],
+    "competition_mode": null,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "total_levels_completed": 0,
+    "total_levels": 183,
+    "total_actions": 10000
+  },
+  "agents": [
+    {
+      "game_id": "ar25",
+      "actions": 400,
+      "seconds": 230.47,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 5,
+        "1": 181,
+        "2": 214
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 5
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 181
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 214
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 5,
+        "schema-selection": 395
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "bp35",
+      "actions": 400,
+      "seconds": 392.89,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 6,
+        "3": 47,
+        "4": 1,
+        "6": 345,
+        "7": 1
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 6
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 47
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 63
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 38
+          },
+          "count": 223
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 38
+          },
+          "count": 110
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 62,
+            "y": 63
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 63,
+            "y": 63
+          },
+          "count": 4
+        },
+        {
+          "action_id": 7,
+          "data": {},
+          "count": 1
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 6,
+        "schema-selection": 394
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "cd82",
+      "actions": 400,
+      "seconds": 237.43,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 3,
+        "1": 127,
+        "2": 209,
+        "3": 10,
+        "4": 1,
+        "5": 50
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 3
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 127
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 209
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 10
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 1
+        },
+        {
+          "action_id": 5,
+          "data": {},
+          "count": 50
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 3,
+        "schema-selection": 397
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "cn04",
+      "actions": 400,
+      "seconds": 158.57,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 5,
+        "1": 192,
+        "2": 190,
+        "3": 13
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 5
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 192
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 190
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 13
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 5,
+        "schema-selection": 395
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "dc22",
+      "actions": 400,
+      "seconds": 393.0,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 3,
+        "1": 150,
+        "2": 241,
+        "3": 6
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 3
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 150
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 241
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 6
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 3,
+        "schema-selection": 397
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "ft09",
+      "actions": 400,
+      "seconds": 218.15,
+      "levels_completed": 0,
+      "action_counts": {
+        "6": 400
+      },
+      "decision_distribution": [
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 29
+          },
+          "count": 400
+        }
+      ],
+      "reason_counts": {
+        "schema-selection": 400
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "g50t",
+      "actions": 400,
+      "seconds": 266.78,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 3,
+        "1": 35,
+        "2": 164,
+        "3": 85,
+        "4": 112,
+        "5": 1
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 3
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 35
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 164
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 85
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 112
+        },
+        {
+          "action_id": 5,
+          "data": {},
+          "count": 1
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 3,
+        "schema-selection": 397
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "ka59",
+      "actions": 400,
+      "seconds": 214.37,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 3,
+        "1": 196,
+        "2": 201
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 3
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 196
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 201
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 3,
+        "schema-selection": 397
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "lf52",
+      "actions": 400,
+      "seconds": 309.56,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 5,
+        "1": 223,
+        "2": 2,
+        "3": 61,
+        "4": 46,
+        "6": 2,
+        "7": 61
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 5
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 223
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 2
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 61
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 46
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 24
+          },
+          "count": 2
+        },
+        {
+          "action_id": 7,
+          "data": {},
+          "count": 61
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 5,
+        "schema-selection": 395
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "lp85",
+      "actions": 400,
+      "seconds": 151.76,
+      "levels_completed": 0,
+      "action_counts": {
+        "6": 400
+      },
+      "decision_distribution": [
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 1
+          },
+          "count": 400
+        }
+      ],
+      "reason_counts": {
+        "schema-selection": 400
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "ls20",
+      "actions": 400,
+      "seconds": 266.57,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 2,
+        "1": 149,
+        "2": 249
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 2
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 149
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 249
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 2,
+        "schema-selection": 398
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "m0r0",
+      "actions": 400,
+      "seconds": 319.18,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 2,
+        "1": 199,
+        "2": 194,
+        "3": 5
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 2
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 199
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 194
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 5
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 2,
+        "schema-selection": 398
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "r11l",
+      "actions": 400,
+      "seconds": 218.46,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 6,
+        "6": 394
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 6
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 47
+          },
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 53
+          },
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 56
+          },
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 57
+          },
+          "count": 373
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 6,
+        "schema-selection": 394
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "re86",
+      "actions": 400,
+      "seconds": 335.35,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 3,
+        "1": 214,
+        "2": 183
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 3
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 214
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 183
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 3,
+        "schema-selection": 397
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "s5i5",
+      "actions": 400,
+      "seconds": 212.8,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 7,
+        "6": 393
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 29
+          },
+          "count": 393
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 7,
+        "schema-selection": 393
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "sb26",
+      "actions": 400,
+      "seconds": 360.75,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 1,
+        "5": 127,
+        "6": 137,
+        "7": 135
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 1
+        },
+        {
+          "action_id": 5,
+          "data": {},
+          "count": 127
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 30
+          },
+          "count": 136
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 29
+          },
+          "count": 1
+        },
+        {
+          "action_id": 7,
+          "data": {},
+          "count": 135
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 1,
+        "schema-selection": 399
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "sc25",
+      "actions": 400,
+      "seconds": 245.67,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 7,
+        "1": 154,
+        "2": 140,
+        "3": 97,
+        "4": 1,
+        "6": 1
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 7
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 154
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 140
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 97
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 54
+          },
+          "count": 1
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 7,
+        "schema-selection": 393
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "sk48",
+      "actions": 400,
+      "seconds": 304.26,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 1,
+        "1": 267,
+        "2": 1,
+        "3": 67,
+        "4": 1,
+        "6": 62,
+        "7": 1
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 1
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 267
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 1
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 67
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 52
+          },
+          "count": 62
+        },
+        {
+          "action_id": 7,
+          "data": {},
+          "count": 1
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 1,
+        "schema-selection": 399
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "sp80",
+      "actions": 400,
+      "seconds": 193.71,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 12,
+        "1": 93,
+        "2": 105,
+        "3": 190
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 12
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 93
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 105
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 190
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 12,
+        "schema-selection": 388
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "su15",
+      "actions": 400,
+      "seconds": 214.4,
+      "levels_completed": 0,
+      "action_counts": {
+        "6": 334,
+        "7": 66
+      },
+      "decision_distribution": [
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 63
+          },
+          "count": 307
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 6,
+            "y": 60
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 32
+          },
+          "count": 26
+        },
+        {
+          "action_id": 7,
+          "data": {},
+          "count": 66
+        }
+      ],
+      "reason_counts": {
+        "schema-selection": 400
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "tn36",
+      "actions": 400,
+      "seconds": 324.29,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 6,
+        "6": 394
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 6
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 43
+          },
+          "count": 282
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 1
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 1
+          },
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 1
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 1
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 57,
+            "y": 1
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 1
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 59,
+            "y": 1
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 1
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 61,
+            "y": 1
+          },
+          "count": 7
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 6,
+        "schema-selection": 394
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "tr87",
+      "actions": 400,
+      "seconds": 380.83,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 3,
+        "1": 221,
+        "2": 176
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 3
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 221
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 176
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 3,
+        "schema-selection": 397
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "tu93",
+      "actions": 400,
+      "seconds": 304.29,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 7,
+        "1": 145,
+        "2": 2,
+        "3": 120,
+        "4": 126
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 7
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 145
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 2
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 120
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 126
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 7,
+        "schema-selection": 393
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "vc33",
+      "actions": 400,
+      "seconds": 230.2,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 7,
+        "6": 393
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 0
+          },
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 1,
+            "y": 0
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 2,
+            "y": 0
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 3,
+            "y": 0
+          },
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 0
+          },
+          "count": 15
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 5,
+            "y": 0
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 6,
+            "y": 0
+          },
+          "count": 16
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 7,
+            "y": 0
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 0
+          },
+          "count": 16
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 9,
+            "y": 0
+          },
+          "count": 16
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 39
+          },
+          "count": 240
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 43
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 46
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 37
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 39
+          },
+          "count": 8
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 7,
+        "schema-selection": 393
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    },
+    {
+      "game_id": "wa30",
+      "actions": 400,
+      "seconds": 196.39,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 1,
+        "1": 200,
+        "2": 199
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 1
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 200
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 199
+        }
+      ],
+      "reason_counts": {
+        "reset-required": 1,
+        "schema-selection": 399
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": false,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v14"
+    }
+  ],
+  "source_commit": "e20c0d1b239ce0f401d8357c4afc5f79d8ef32d1",
+  "environment_inventory": {
+    "root": "/home/pauloabelha/arc-agi-3-public-games-2026/environment_files",
+    "expected_games": 25,
+    "games": [
+      "ar25",
+      "bp35",
+      "cd82",
+      "cn04",
+      "dc22",
+      "ft09",
+      "g50t",
+      "ka59",
+      "lf52",
+      "lp85",
+      "ls20",
+      "m0r0",
+      "r11l",
+      "re86",
+      "s5i5",
+      "sb26",
+      "sc25",
+      "sk48",
+      "sp80",
+      "su15",
+      "tn36",
+      "tr87",
+      "tu93",
+      "vc33",
+      "wa30"
+    ],
+    "artifacts": [
+      {
+        "game_id": "ar25",
+        "versioned_game_id": "ar25-0c556536",
+        "metadata_path": "ar25/0c556536/metadata.json",
+        "metadata_sha256": "391bea77723c9bde079a2ac08c36097aa11f3ed99a3ed8d70927d34ae289c693",
+        "date_downloaded": "2026-07-28T17:40:02.236424+00:00"
+      },
+      {
+        "game_id": "bp35",
+        "versioned_game_id": "bp35-0a0ad940",
+        "metadata_path": "bp35/0a0ad940/metadata.json",
+        "metadata_sha256": "876b8a789c583f587f0dd3da5b13fb0fe4d2abd62530bb0a28a7636b72cdc6c7",
+        "date_downloaded": "2026-07-28T17:40:02.236719+00:00"
+      },
+      {
+        "game_id": "cd82",
+        "versioned_game_id": "cd82-fb555c5d",
+        "metadata_path": "cd82/fb555c5d/metadata.json",
+        "metadata_sha256": "5923334225403735209f10956aac01f5dcdc191e313a2bf487e36b91c959928a",
+        "date_downloaded": "2026-07-28T17:40:02.236973+00:00"
+      },
+      {
+        "game_id": "cn04",
+        "versioned_game_id": "cn04-2fe56bfb",
+        "metadata_path": "cn04/2fe56bfb/metadata.json",
+        "metadata_sha256": "055899cd26fb0243ae1c7c7c212d65a358a42b12f9eef53c4ca894508ee581bf",
+        "date_downloaded": "2026-07-28T17:40:02.237194+00:00"
+      },
+      {
+        "game_id": "dc22",
+        "versioned_game_id": "dc22-fdcac232",
+        "metadata_path": "dc22/fdcac232/metadata.json",
+        "metadata_sha256": "20f8e6fdfe7105c548142cff77a8c659782e0e5d109ce8b74076a59455a04bac",
+        "date_downloaded": "2026-07-28T17:40:02.237418+00:00"
+      },
+      {
+        "game_id": "ft09",
+        "versioned_game_id": "ft09-0d8bbf25",
+        "metadata_path": "ft09/0d8bbf25/metadata.json",
+        "metadata_sha256": "5f6d3107c99386da244e3d78463a08d28a8adfad47177ce60568efc4c534abf6",
+        "date_downloaded": "2026-07-28T17:40:02.237635+00:00"
+      },
+      {
+        "game_id": "g50t",
+        "versioned_game_id": "g50t-5849a774",
+        "metadata_path": "g50t/5849a774/metadata.json",
+        "metadata_sha256": "0964cde203b470e8612148bd13f871175447b898c5296cc068ea2fbdc66f49f9",
+        "date_downloaded": "2026-07-28T17:40:02.237840+00:00"
+      },
+      {
+        "game_id": "ka59",
+        "versioned_game_id": "ka59-38d34dbb",
+        "metadata_path": "ka59/38d34dbb/metadata.json",
+        "metadata_sha256": "e5adf45486a5803bd70150f3ac1cf3027560fa6091ed429c1cca4a281ad58b99",
+        "date_downloaded": "2026-07-28T17:40:02.238039+00:00"
+      },
+      {
+        "game_id": "lf52",
+        "versioned_game_id": "lf52-271a04aa",
+        "metadata_path": "lf52/271a04aa/metadata.json",
+        "metadata_sha256": "ed5ccadf4518e6ae7838b43dbc6ad60b75c62b021938ca5d32f0165353240c39",
+        "date_downloaded": "2026-07-28T17:40:02.238251+00:00"
+      },
+      {
+        "game_id": "lp85",
+        "versioned_game_id": "lp85-305b61c3",
+        "metadata_path": "lp85/305b61c3/metadata.json",
+        "metadata_sha256": "aaab4b72a55ac7a494a50c81886a03aa57aa974b1bae04f5b27c97d72877f3fc",
+        "date_downloaded": "2026-07-28T17:40:02.238453+00:00"
+      },
+      {
+        "game_id": "ls20",
+        "versioned_game_id": "ls20-9607627b",
+        "metadata_path": "ls20/9607627b/metadata.json",
+        "metadata_sha256": "21bf33826e958c4dcc3d322cc1eaf559ccd4c3673b80c59a75244405860d4cff",
+        "date_downloaded": "2026-07-28T17:40:02.238653+00:00"
+      },
+      {
+        "game_id": "m0r0",
+        "versioned_game_id": "m0r0-492f87ba",
+        "metadata_path": "m0r0/492f87ba/metadata.json",
+        "metadata_sha256": "3abfd1865d5eba72f1db8e0494bd6179478d2ca8944f5f9cf098b38e34aedd43",
+        "date_downloaded": "2026-07-28T17:40:02.238854+00:00"
+      },
+      {
+        "game_id": "r11l",
+        "versioned_game_id": "r11l-495a7899",
+        "metadata_path": "r11l/495a7899/metadata.json",
+        "metadata_sha256": "3b3e2d8768e6b83c03fe40a6d4a35259ebf64ec01a140c2d27e803b4af9b8265",
+        "date_downloaded": "2026-07-28T17:40:02.239065+00:00"
+      },
+      {
+        "game_id": "re86",
+        "versioned_game_id": "re86-8af5384d",
+        "metadata_path": "re86/8af5384d/metadata.json",
+        "metadata_sha256": "7eb93ad8a910efd45988ebcff6bbfa720e21dd4c8d1c579761e8b9ad380e0a5e",
+        "date_downloaded": "2026-07-28T17:40:02.239270+00:00"
+      },
+      {
+        "game_id": "s5i5",
+        "versioned_game_id": "s5i5-18d95033",
+        "metadata_path": "s5i5/18d95033/metadata.json",
+        "metadata_sha256": "49f65edbb9d37b6e78612209676e24958eedc88479d65a97725f13d916d0fcad",
+        "date_downloaded": "2026-07-28T17:40:02.239474+00:00"
+      },
+      {
+        "game_id": "sb26",
+        "versioned_game_id": "sb26-7fbdac44",
+        "metadata_path": "sb26/7fbdac44/metadata.json",
+        "metadata_sha256": "93fdcc1915eb9339ac84d88556486bf0d917d30703e9c8bcfc266e57f2730d59",
+        "date_downloaded": "2026-07-28T17:40:02.239681+00:00"
+      },
+      {
+        "game_id": "sc25",
+        "versioned_game_id": "sc25-635fd71a",
+        "metadata_path": "sc25/635fd71a/metadata.json",
+        "metadata_sha256": "b2aa3a5ba6b869ea4442f37ec1fa4cf78f9d40701a8816950cfe088ce1fe2f6b",
+        "date_downloaded": "2026-07-28T17:40:02.239883+00:00"
+      },
+      {
+        "game_id": "sk48",
+        "versioned_game_id": "sk48-d8078629",
+        "metadata_path": "sk48/d8078629/metadata.json",
+        "metadata_sha256": "e028043fafb976f7a84d8bfa5dd499110245a79117db3c8ca98adc0b672f0de7",
+        "date_downloaded": "2026-07-28T17:40:02.240085+00:00"
+      },
+      {
+        "game_id": "sp80",
+        "versioned_game_id": "sp80-589a99af",
+        "metadata_path": "sp80/589a99af/metadata.json",
+        "metadata_sha256": "665a76d24635a46c5a607c2ac814f4408f8b97ed849893dc8724fff58b17e36b",
+        "date_downloaded": "2026-07-28T17:40:02.240336+00:00"
+      },
+      {
+        "game_id": "su15",
+        "versioned_game_id": "su15-1944f8ab",
+        "metadata_path": "su15/1944f8ab/metadata.json",
+        "metadata_sha256": "3789d9ef9a1d3649a0527a7bb31e31b016271d654c88c8c555be9ad99721567d",
+        "date_downloaded": "2026-07-28T17:40:02.240533+00:00"
+      },
+      {
+        "game_id": "tn36",
+        "versioned_game_id": "tn36-ef4dde99",
+        "metadata_path": "tn36/ef4dde99/metadata.json",
+        "metadata_sha256": "bee1380b879a9a3083d00f5612b2e8436061e2ba1232f9085ebe5656031de581",
+        "date_downloaded": "2026-07-28T17:40:02.240735+00:00"
+      },
+      {
+        "game_id": "tr87",
+        "versioned_game_id": "tr87-cd924810",
+        "metadata_path": "tr87/cd924810/metadata.json",
+        "metadata_sha256": "4527e7f2666afd4cae406f9f26d3ed84cf7d8f8b53bc8859dd2d094db7fe7bf7",
+        "date_downloaded": "2026-07-28T17:40:02.240928+00:00"
+      },
+      {
+        "game_id": "tu93",
+        "versioned_game_id": "tu93-0768757b",
+        "metadata_path": "tu93/0768757b/metadata.json",
+        "metadata_sha256": "e0ebe600f0bc2a2cb20840bcf5c3f68ff47b487d9229c299f40b8b0f89de7c61",
+        "date_downloaded": "2026-07-28T17:40:02.241152+00:00"
+      },
+      {
+        "game_id": "vc33",
+        "versioned_game_id": "vc33-5430563c",
+        "metadata_path": "vc33/5430563c/metadata.json",
+        "metadata_sha256": "aaf2189ae2678d05af184a3aec2d7af05052ff9c449cbe664ce231c312ed5188",
+        "date_downloaded": "2026-07-28T17:40:02.241372+00:00"
+      },
+      {
+        "game_id": "wa30",
+        "versioned_game_id": "wa30-ee6fef47",
+        "metadata_path": "wa30/ee6fef47/metadata.json",
+        "metadata_sha256": "c61d6347b82bf0b54a7a8ebfd1b780f28bdf84cbf42d98a713b846f75f8826b9",
+        "date_downloaded": "2026-07-28T17:40:02.241572+00:00"
+      }
+    ],
+    "manifest_sha256": "d3ea8336b4534e4a8f5a5789fa910ad0cc9be2e40943e0803f9ec5ef88b9b25a"
+  },
+  "coverage": {
+    "expected_games": 25,
+    "discovered_games": 25,
+    "reported_agents": 25,
+    "complete": true
+  }
+}

@@ -154,19 +154,35 @@ def main() -> None:
         type=Path,
         help="MindConfig JSON or serialized Candidate JSON to deploy",
     )
+    official_run.add_argument(
+        "--no-recordings",
+        action="store_true",
+        help="skip development replay recordings",
+    )
+    official_run.add_argument(
+        "--lightweight",
+        action="store_true",
+        help="skip expensive post-run trace analysis",
+    )
 
     official_public = commands.add_parser("official-public-run")
-    official_public.add_argument(
-        "--environments-dir", type=Path, required=True
-    )
-    official_public.add_argument(
-        "--recordings-dir", type=Path, required=True
-    )
+    official_public.add_argument("--environments-dir", type=Path, required=True)
+    official_public.add_argument("--recordings-dir", type=Path, required=True)
     official_public.add_argument("--output", type=Path, required=True)
     official_public.add_argument(
         "--config",
         type=Path,
         help="MindConfig JSON or serialized Candidate JSON to deploy",
+    )
+    official_public.add_argument(
+        "--no-recordings",
+        action="store_true",
+        help="skip development replay recordings",
+    )
+    official_public.add_argument(
+        "--lightweight",
+        action="store_true",
+        help="skip expensive post-run trace analysis",
     )
 
     web = commands.add_parser("web")
@@ -195,9 +211,7 @@ def main() -> None:
         print(json.dumps(compare_traces(load_named_traces(args.traces)), indent=2))
     elif args.command == "compression":
         print(
-            json.dumps(
-                analyze_redundancy(load_trace(args.trace)).to_dict(), indent=2
-            )
+            json.dumps(analyze_redundancy(load_trace(args.trace)).to_dict(), indent=2)
         )
     elif args.command == "counterfactual":
         print(
@@ -222,9 +236,7 @@ def main() -> None:
         print(json.dumps(dependency_graph.to_dict(), indent=2))
     elif args.command == "population-evaluate":
         config = (
-            MindConfig.from_dict(
-                json.loads(args.config.read_text(encoding="utf-8"))
-            )
+            MindConfig.from_dict(json.loads(args.config.read_text(encoding="utf-8")))
             if args.config is not None
             else MindConfig()
         )
@@ -289,9 +301,7 @@ def main() -> None:
             if args.candidate:
                 payload: object = [
                     candidate.to_dict()
-                    for candidate in store.lineage(
-                        args.experiment, args.candidate
-                    )
+                    for candidate in store.lineage(args.experiment, args.candidate)
                 ]
             else:
                 payload = [
@@ -304,9 +314,7 @@ def main() -> None:
         print(json.dumps(payload, indent=2))
     elif args.command == "evolution-ablations":
         with ExperimentStore(args.db) as store:
-            payload = evaluate_evolution_ablations(
-                store.evaluated(args.experiment)
-            )
+            payload = evaluate_evolution_ablations(store.evaluated(args.experiment))
         print(json.dumps(payload, indent=2))
     elif args.command == "validate":
         payload = run_validation(
@@ -357,6 +365,7 @@ def main() -> None:
                 agent="reflector",
                 ROOT_URL="http://localhost:8001",
                 games=games,
+                record=not args.no_recordings,
             )
             scorecard = swarm.main()
         if scorecard is None:
@@ -372,34 +381,39 @@ def main() -> None:
                 step.decision.reason.split(":", 1)[0]
                 for step in official_policy.trace.steps
             )
-            agent_reports.append(
-                {
-                    "game_id": agent.game_id,
-                    "actions": agent.action_counter,
-                    "seconds": agent.seconds,
-                    "levels_completed": agent.levels_completed,
-                    "action_counts": dict(
-                        sorted(official_policy.action_counts.items())
-                    ),
-                    "decision_distribution": [
-                        {
-                            "action_id": action_id,
-                            "data": dict(data),
-                            "count": count,
-                        }
-                        for (
-                            action_id,
-                            data,
-                        ), count in sorted(decision_distribution.items())
-                    ],
-                    "reason_counts": dict(sorted(reason_distribution.items())),
-                    "mind_config": official_policy.mind.config.to_dict(),
-                    "agent_version": official_policy.trace.agent_version,
-                    "trace_metrics": evaluate_trace(
-                        official_policy.trace
-                    ).to_dict(),
-                }
+            reason_detail_distribution = Counter(
+                step.decision.reason for step in official_policy.trace.steps
             )
+            agent_report = {
+                "game_id": agent.game_id,
+                "actions": agent.action_counter,
+                "seconds": agent.seconds,
+                "levels_completed": agent.levels_completed,
+                "action_counts": dict(sorted(official_policy.action_counts.items())),
+                "decision_distribution": [
+                    {
+                        "action_id": action_id,
+                        "data": dict(data),
+                        "count": count,
+                    }
+                    for (
+                        action_id,
+                        data,
+                    ), count in sorted(decision_distribution.items())
+                ],
+                "reason_counts": dict(sorted(reason_distribution.items())),
+                "reason_detail_counts": dict(
+                    sorted(reason_detail_distribution.items())
+                ),
+                "mind_config": official_policy.mind.config.to_dict(),
+                "agent_version": official_policy.trace.agent_version,
+                "exploration_metrics": official_policy.explorer.to_dict(),
+            }
+            if not args.lightweight:
+                agent_report["trace_metrics"] = evaluate_trace(
+                    official_policy.trace
+                ).to_dict()
+            agent_reports.append(agent_report)
         source_result = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=Path(__file__).resolve().parent.parent,
@@ -411,9 +425,7 @@ def main() -> None:
             "scorecard": scorecard.model_dump(mode="json"),
             "agents": agent_reports,
             "source_commit": (
-                source_result.stdout.strip()
-                if source_result.returncode == 0
-                else None
+                source_result.stdout.strip() if source_result.returncode == 0 else None
             ),
         }
         if inventory is not None:

@@ -105,6 +105,84 @@ def test_explorer_balances_interventions_across_novel_states() -> None:
     assert action_two.token.action_id == 2
 
 
+def test_hierarchical_fairness_prevents_click_coordinates_crowding_actions() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2, 6),
+        frame=(
+            (1, 0, 2, 0, 3),
+            (0, 4, 0, 5, 0),
+        ),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(hierarchical_action_fairness=True)
+    explorer.observe(observation, scene)
+
+    choices = []
+    for _ in range(6):
+        choices.append(explorer.select(observation, scene, (1, 2, 6)).token.action_id)
+        explorer.observe(observation, scene)
+
+    assert choices == [1, 2, 6, 1, 2, 6]
+
+
+def test_flat_exploration_preserves_coordinate_level_ablation() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2, 6),
+        frame=(
+            (1, 0, 2, 0, 3),
+            (0, 4, 0, 5, 0),
+        ),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(hierarchical_action_fairness=False)
+    explorer.observe(observation, scene)
+
+    choices = []
+    for _ in range(6):
+        choices.append(explorer.select(observation, scene, (1, 2, 6)).token.action_id)
+        explorer.observe(observation, scene)
+
+    assert choices == [1, 2, 6, 6, 6, 6]
+
+
+def test_successful_level_compiles_and_replays_coordinate_free_roles() -> None:
+    first_level = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (0, 0, 0, 0),
+            (0, 1, 0, 0),
+            (0, 0, 0, 0),
+        ),
+        levels_completed=0,
+    )
+    second_level = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (0, 0, 0, 0),
+            (0, 0, 0, 0),
+            (0, 0, 1, 0),
+        ),
+        levels_completed=1,
+    )
+    first_scene = _scene(first_level)
+    second_scene = _scene(second_level)
+    explorer = EpistemicExplorer(successful_role_replay=True)
+    explorer.observe(first_level, first_scene)
+
+    learned = explorer.select(first_level, first_scene, (6,))
+    explorer.observe(second_level, second_scene)
+    replayed = explorer.select(second_level, second_scene, (6,))
+
+    assert learned.token.data == (("x", 1), ("y", 1))
+    assert replayed.token.data == (("x", 2), ("y", 2))
+    assert replayed.reason.endswith("replay-successful-action-role")
+    assert explorer.to_dict()["successful_program_length"] == 1
+
+
 def test_policy_explorer_is_an_exact_configuration_ablation() -> None:
     from reflector.mind import MindConfig
     from reflector.policy import SymbolicPolicy
@@ -114,12 +192,8 @@ def test_policy_explorer_is_an_exact_configuration_ablation() -> None:
         available_actions=(6,),
         frame=((0, 0, 0), (0, 9, 0), (0, 0, 0)),
     )
-    enabled = SymbolicPolicy(
-        MindConfig(enable_epistemic_state_graph=True)
-    )
-    ablated = SymbolicPolicy(
-        MindConfig(enable_epistemic_state_graph=False)
-    )
+    enabled = SymbolicPolicy(MindConfig(enable_epistemic_state_graph=True))
+    ablated = SymbolicPolicy(MindConfig(enable_epistemic_state_graph=False))
 
     enabled_decision = enabled.choose_action(observation)
     ablated_decision = ablated.choose_action(observation)

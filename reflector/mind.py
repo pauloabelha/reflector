@@ -53,6 +53,8 @@ class MindConfig:
     enable_language_meta_reflection: bool = True
     enable_concept_retirement: bool = True
     enable_epistemic_state_graph: bool = False
+    enable_hierarchical_action_fairness: bool = False
+    enable_successful_role_replay: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -77,6 +79,8 @@ class MindConfig:
             "enable_language_meta_reflection",
             "enable_concept_retirement",
             "enable_epistemic_state_graph",
+            "enable_hierarchical_action_fairness",
+            "enable_successful_role_replay",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -127,9 +131,7 @@ class SymbolicMind:
             complexity_pressure=(
                 1.0 if self.config.enable_schema_complexity_pressure else 0.0
             ),
-            require_counterfactual_utility=(
-                self.config.enable_counterfactual_pressure
-            ),
+            require_counterfactual_utility=(self.config.enable_counterfactual_pressure),
             enable_retirement=self.config.enable_concept_retirement,
         )
         self.hypotheses = HypothesisStore()
@@ -183,9 +185,7 @@ class SymbolicMind:
                 context=canonical_atoms(
                     (
                         *transition.context,
-                        *self.concepts.context_atoms(
-                            transition.action_id
-                        ),
+                        *self.concepts.context_atoms(transition.action_id),
                     )
                 ),
                 action_id=transition.action_id,
@@ -251,9 +251,7 @@ class SymbolicMind:
                                 self.transformations.observe_impossible_touching(
                                     transition,
                                     self._last_scene,
-                                    max_expansions=(
-                                        self.config.planner_max_expansions
-                                    ),
+                                    max_expansions=(self.config.planner_max_expansions),
                                 )
                             )
                         )
@@ -271,11 +269,7 @@ class SymbolicMind:
                 new_abstractions = tuple(
                     sorted(
                         set(new_abstractions)
-                        | set(
-                            self.abstractions.reflect(
-                                self.schemas, self.concepts
-                            )
-                        )
+                        | set(self.abstractions.reflect(self.schemas, self.concepts))
                     )
                 )
                 integrated = self.reinforcement.integrate(
@@ -287,9 +281,7 @@ class SymbolicMind:
                     )
                     for family in self.abstractions.schema_families.values()
                 )
-                new_assessments = tuple(
-                    sorted(set(new_assessments) | set(integrated))
-                )
+                new_assessments = tuple(sorted(set(new_assessments) | set(integrated)))
         self._last_scene = scene
         return MindUpdate(
             scene,
@@ -315,13 +307,10 @@ class SymbolicMind:
         )
         experiment_by_action = {item.action_id: item for item in experiments}
         self.last_experiment = experiments[0] if experiments else None
-        context = (
-            self._last_scene.context() if self._last_scene is not None else ()
-        )
+        context = self._last_scene.context() if self._last_scene is not None else ()
         procedure = (
             self.abstractions.procedure_match(context, legal_actions)
-            if self.config.enable_planning
-            and self.config.enable_reflecting_abstraction
+            if self.config.enable_planning and self.config.enable_reflecting_abstraction
             else None
         )
         transformation_plan = (
@@ -422,9 +411,7 @@ class SymbolicMind:
             )
         if modal_action is not None:
             modal_kind = (
-                "modal-possible:"
-                if modal_action[1].possible
-                else "modal-impossible:"
+                "modal-possible:" if modal_action[1].possible else "modal-impossible:"
             )
             return (
                 modal_action[0],
@@ -433,15 +420,11 @@ class SymbolicMind:
                 f"expansions={modal_action[1].expansions}",
             )
 
-        scored: list[
-            tuple[float, int, float, float, float, float, float]
-        ] = []
+        scored: list[tuple[float, int, float, float, float, float, float]] = []
         for action in legal_actions:
             trials = self.schemas.contextual_trials(action, context)
             transfer_value = (
-                self.abstractions.action_transfer_value(
-                    action, self.schemas, context
-                )
+                self.abstractions.action_transfer_value(action, self.schemas, context)
                 if self.config.enable_reflecting_abstraction
                 else 0.0
             )
@@ -458,21 +441,15 @@ class SymbolicMind:
                 )
                 if accommodated is not None and any(
                     evidence in self.reinforcement.accommodations
-                    and self.reinforcement.accommodations[
-                        evidence
-                    ].proposition
+                    and self.reinforcement.accommodations[evidence].proposition
                     in {"level_advanced", "WIN", "GAME_OVER"}
                     for evidence in accommodated.evidence
                 ):
-                    predicted = self.schemas.result_value(
-                        accommodated.result
-                    )
+                    predicted = self.schemas.result_value(accommodated.result)
             information = 1.0 / math.sqrt(trials + 1)
             experiment = experiment_by_action.get(action)
             experiment_bonus = (
-                experiment.score * self.config.experiment_weight
-                if experiment
-                else 0.0
+                experiment.score * self.config.experiment_weight if experiment else 0.0
             )
             epistemic_progress = self.schemas.event_probability(
                 action, "novel_state_reached"

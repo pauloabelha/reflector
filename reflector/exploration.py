@@ -28,6 +28,16 @@ class ExplorationChoice:
     reason: str
 
 
+@dataclass(frozen=True, order=True, slots=True)
+class ActionRole:
+    """Coordinate-free structural role of an observed intervention."""
+
+    action_id: int
+    color: int | None = None
+    area: int | None = None
+    shape: tuple[tuple[int, int], ...] = ()
+
+
 @dataclass(slots=True)
 class EpistemicExplorer:
     """Construct and traverse a finite graph of tried interventions.
@@ -43,13 +53,13 @@ class EpistemicExplorer:
     reset_action: int = 0
     max_states: int = 4096
     max_click_candidates: int = 256
-    attempts: Counter[tuple[StateKey, ActionToken]] = field(
-        default_factory=Counter
-    )
+    hierarchical_action_fairness: bool = False
+    successful_role_replay: bool = False
+    attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
-    edges: dict[tuple[StateKey, ActionToken], StateKey] = field(
-        default_factory=dict
-    )
+    family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
+    global_family_attempts: Counter[int] = field(default_factory=Counter)
+    edges: dict[tuple[StateKey, ActionToken], StateKey] = field(default_factory=dict)
     tokens_by_state: dict[StateKey, tuple[ActionToken, ...]] = field(
         default_factory=dict
     )
@@ -57,11 +67,26 @@ class EpistemicExplorer:
     visit_order: list[StateKey] = field(default_factory=list)
     current_state: StateKey | None = None
     pending: tuple[StateKey, ActionToken] | None = None
+    current_level: int | None = None
+    episode_roles: list[ActionRole] = field(default_factory=list)
+    successful_program: tuple[ActionRole, ...] = ()
+    program_cursor: int = 0
 
     def observe(self, observation: Observation, scene: Scene) -> StateKey:
         """Record the outcome of the last issued intervention exactly once."""
 
         state = self._state_key(observation, scene)
+        if self.current_level is None:
+            self.current_level = observation.levels_completed
+        elif observation.levels_completed > self.current_level:
+            if self.successful_role_replay and self.episode_roles:
+                self.successful_program = tuple(self.episode_roles)
+                self.program_cursor = 0
+            self.episode_roles.clear()
+            self.current_level = observation.levels_completed
+        elif observation.state == "GAME_OVER":
+            self.episode_roles.clear()
+            self.program_cursor = 0
         if state not in self.state_status:
             if len(self.visit_order) >= self.max_states:
                 self._forget_oldest_state()
@@ -90,14 +115,41 @@ class EpistemicExplorer:
             raise ValueError("epistemic explorer has no represented legal action")
         self.tokens_by_state[state] = tokens
 
-        untried = tuple(
-            token for token in tokens if self.attempts[(state, token)] == 0
-        )
+        replay = self._select_program_role(tokens, scene)
+        if replay is not None:
+            return self._issue(
+                state,
+                replay,
+                "epistemic-frontier:replay-successful-action-role",
+                scene,
+            )
+
+        if self.hierarchical_action_fairness:
+            _index, balanced = min(
+                enumerate(tokens),
+                key=lambda item: (
+                    self.global_family_attempts[item[1].action_id],
+                    self.family_attempts[(state, item[1].action_id)],
+                    item[1].action_id,
+                    self.attempts[(state, item[1])],
+                    self.global_attempts[item[1]],
+                    item[0],
+                ),
+            )
+            return self._issue(
+                state,
+                balanced,
+                "epistemic-frontier:hierarchical-action-family",
+                scene,
+            )
+
+        untried = tuple(token for token in tokens if self.attempts[(state, token)] == 0)
         if untried:
             _index, novel = min(
                 enumerate(untried),
-                key=lambda item: (
-                    self.global_attempts[item[1]],
+                key=lambda item: self._novelty_rank(
+                    state,
+                    item[1],
                     item[0],
                 ),
             )
@@ -105,6 +157,7 @@ class EpistemicExplorer:
                 state,
                 novel,
                 "epistemic-frontier:untried-current-state",
+                scene,
             )
 
         navigation = self._path_to_frontier(state)
@@ -113,11 +166,17 @@ class EpistemicExplorer:
                 state,
                 navigation[0],
                 "epistemic-frontier:navigate-known-state-graph",
+                scene,
             )
 
         fallback = min(
             tokens,
             key=lambda token: (
+                (
+                    self.family_attempts[(state, token.action_id)]
+                    if self.hierarchical_action_fairness
+                    else 0
+                ),
                 self.attempts[(state, token)],
                 token,
             ),
@@ -126,6 +185,7 @@ class EpistemicExplorer:
             state,
             fallback,
             "epistemic-frontier:least-repeated-exhausted-state",
+            scene,
         )
 
     def _issue(
@@ -133,19 +193,83 @@ class EpistemicExplorer:
         state: StateKey,
         token: ActionToken,
         reason: str,
+        scene: Scene,
     ) -> ExplorationChoice:
         self.attempts[(state, token)] += 1
         self.global_attempts[token] += 1
+        self.family_attempts[(state, token.action_id)] += 1
+        self.global_family_attempts[token.action_id] += 1
+        if self.successful_role_replay:
+            self.episode_roles.append(self._role(token, scene))
         self.pending = (state, token)
         return ExplorationChoice(token, reason)
+
+    def _select_program_role(
+        self,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+    ) -> ActionToken | None:
+        if not self.successful_role_replay or not self.successful_program:
+            return None
+        while self.program_cursor < len(self.successful_program):
+            role = self.successful_program[self.program_cursor]
+            self.program_cursor += 1
+            matches = tuple(
+                token for token in tokens if self._role(token, scene) == role
+            )
+            if matches:
+                return min(
+                    matches,
+                    key=lambda token: (
+                        self.global_attempts[token],
+                        token,
+                    ),
+                )
+        return None
+
+    def _role(self, token: ActionToken, scene: Scene) -> ActionRole:
+        if token.action_id != self.complex_action:
+            return ActionRole(token.action_id)
+        data = dict(token.data)
+        x = data.get("x")
+        y = data.get("y")
+        if x is None or y is None:
+            return ActionRole(token.action_id)
+        point = (x, y)
+        for item in scene.objects:
+            min_x, min_y, _max_x, _max_y = item.bbox
+            absolute_shape = {
+                (min_x + local_x, min_y + local_y) for local_x, local_y in item.shape
+            }
+            if point in absolute_shape:
+                return ActionRole(
+                    token.action_id,
+                    color=item.color,
+                    area=item.area,
+                    shape=item.shape,
+                )
+        return ActionRole(token.action_id)
+
+    def _novelty_rank(
+        self,
+        state: StateKey,
+        token: ActionToken,
+        stable_index: int,
+    ) -> tuple[int, ...]:
+        if self.hierarchical_action_fairness:
+            return (
+                self.global_family_attempts[token.action_id],
+                self.family_attempts[(state, token.action_id)],
+                self.global_attempts[token],
+                stable_index,
+            )
+        return (self.global_attempts[token], stable_index)
 
     def _path_to_frontier(
         self,
         start: StateKey,
     ) -> tuple[ActionToken, ...]:
-        queue: deque[tuple[StateKey, tuple[ActionToken, ...]]] = deque(
-            [(start, ())]
-        )
+        queue: deque[tuple[StateKey, tuple[ActionToken, ...]]] = deque([(start, ())])
         seen = {start}
         while queue:
             state, path = queue.popleft()
@@ -215,16 +339,14 @@ class EpistemicExplorer:
         for item in objects:
             min_x, min_y, _max_x, _max_y = item.bbox
             points = tuple(
-                (min_x + local_x, min_y + local_y)
-                for local_x, local_y in item.shape
+                (min_x + local_x, min_y + local_y) for local_x, local_y in item.shape
             )
             if not points:
                 continue
             representative = min(
                 points,
                 key=lambda point: (
-                    abs(point[0] - item.centroid[0])
-                    + abs(point[1] - item.centroid[1]),
+                    abs(point[0] - item.centroid[0]) + abs(point[1] - item.centroid[1]),
                     point[1],
                     point[0],
                 ),
@@ -272,6 +394,9 @@ class EpistemicExplorer:
         for key in tuple(self.attempts):
             if key[0] == oldest:
                 del self.attempts[key]
+        for family_key in tuple(self.family_attempts):
+            if family_key[0] == oldest:
+                del self.family_attempts[family_key]
         for edge, destination in tuple(self.edges.items()):
             if edge[0] == oldest or destination == oldest:
                 del self.edges[edge]
@@ -282,8 +407,10 @@ class EpistemicExplorer:
             "edges": len(self.edges),
             "attempts": sum(self.attempts.values()),
             "global_interventions": len(self.global_attempts),
+            "action_families": len(self.global_family_attempts),
+            "successful_program_length": len(self.successful_program),
+            "program_cursor": self.program_cursor,
             "frontier_states": sum(
-                self._has_frontier(state)
-                for state in self.tokens_by_state
+                self._has_frontier(state) for state in self.tokens_by_state
             ),
         }

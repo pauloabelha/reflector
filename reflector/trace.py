@@ -17,7 +17,7 @@ from .symbolic import (
 )
 
 TRACE_FORMAT_VERSION = 3
-AGENT_VERSION = "reflector-symbolic-v14"
+AGENT_VERSION = "reflector-symbolic-v16"
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,9 +83,7 @@ class TraceStep:
                     area=item["area"],
                     bbox=tuple(item["bbox"]),
                     centroid=tuple(item["centroid"]),
-                    shape=tuple(
-                        tuple(point) for point in item.get("shape", ())
-                    ),
+                    shape=tuple(tuple(point) for point in item.get("shape", ())),
                 )
                 for item in raw_scene["objects"]
             ),
@@ -103,9 +101,7 @@ class TraceStep:
             transition = Transition(
                 before_index=raw_transition["before_index"],
                 after_index=raw_transition["after_index"],
-                context=tuple(
-                    Atom.parse(atom) for atom in raw_transition["context"]
-                ),
+                context=tuple(Atom.parse(atom) for atom in raw_transition["context"]),
                 action_id=raw_transition["action_id"],
                 action_data=tuple(sorted(raw_transition["action_data"].items())),
                 result=tuple(result),
