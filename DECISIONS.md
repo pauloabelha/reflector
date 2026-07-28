@@ -32,7 +32,7 @@ current best agent without environment-level progress.
 
 Future accepted descendants must first demonstrate reproducible official-game
 improvement, then isolate the responsible mechanism with a same-environment
-ablation. The full negative result remains in `PUBLIC_GAME_TEST_REPORT.md`.
+ablation. The full result history remains in `REAL_GAMES_REPORT.md`.
 
 ## 2026-07-28 — Public recordings are evidence only if actions survive
 

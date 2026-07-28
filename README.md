@@ -15,6 +15,23 @@ synthetic concepts only when repeated evidence pays their complexity cost. It
 selects only reported legal actions and runs with no LLM, internet, remote
 service, database, or web server.
 
+## Live score status
+
+Last verified: 2026-07-28
+
+| Surface | Reflector | Score | Levels | Status |
+| --- | --- | ---: | ---: | --- |
+| Official 25-game public-development suite | v21 accepted | **0.8359967620** | **5** | 25/25 complete |
+| Kaggle public leaderboard | submission-ready package | — | — | not submitted |
+| Kaggle private leaderboard | — | — | — | unavailable |
+| Current target experiment | v22 on `ft09` | 16.7556638306 | 3 | target-only, not promoted |
+
+See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
+actions, causal mechanism attribution, evidence hashes, and the distinction
+between local and Kaggle scores. This table and that report must be updated
+together whenever a candidate is promoted or a Kaggle submission changes
+state.
+
 ## Verified baseline
 
 The same `reflector.SymbolicPolicy` powers the official local adapter and the
@@ -102,11 +119,10 @@ count, hashes every metadata file and the complete manifest, runs every game
 through the unchanged official `Swarm`, and refuses to write a successful
 report unless every game has an agent result.
 
-The first frozen 25-game run is recorded in
-[`PUBLIC_GAME_TEST_REPORT.md`](PUBLIC_GAME_TEST_REPORT.md). It is valid
-negative evidence: Reflector v8 scored `0.0`, completed no levels, and tied
-one official random-starter reference run. Kaggle compatibility is proven
-locally; competitive performance is not.
+The complete score history is recorded in
+[`REAL_GAMES_REPORT.md`](REAL_GAMES_REPORT.md). Reflector progressed from v8's
+zero-level result to v21's five levels across four public-development games.
+Kaggle compatibility is proven locally; competitive hidden performance is not.
 
 Generate, replay, evaluate, and compare deterministic traces:
 

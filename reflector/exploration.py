@@ -192,6 +192,20 @@ class EpistemicExplorer:
                 scene,
             )
 
+        local_repair = self._select_local_relation_repair(
+            observation,
+            scene,
+            state,
+            tokens,
+        )
+        if local_repair is not None:
+            return self._issue(
+                state,
+                local_repair,
+                "epistemic-frontier:repair-local-relation",
+                scene,
+            )
+
         if self.hierarchical_action_fairness:
             _index, balanced = min(
                 enumerate(tokens),
@@ -255,6 +269,24 @@ class EpistemicExplorer:
             "epistemic-frontier:least-repeated-exhausted-state",
             scene,
         )
+
+    def _select_local_relation_repair(
+        self,
+        observation: Observation,
+        scene: Scene,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Prefer an evidenced constraint repair over undirected novelty."""
+
+        if not self.local_relation_solver:
+            return None
+        represented = set(tokens)
+        for x, y in self._local_relation_candidates(observation, scene):
+            token = ActionToken(self.complex_action, (("x", x), ("y", y)))
+            if token in represented and self.attempts[(state, token)] == 0:
+                return token
+        return None
 
     def _issue(
         self,
@@ -570,7 +602,7 @@ class EpistemicExplorer:
                 continue
             panels.append((clue, center_color, tuple(neighbors)))
         clue_indexes = (0, 1, 2, 3, 5, 6, 7, 8)
-        if len(panels) >= 3:
+        if len(panels) >= 3 and not self.learned_local_relation:
             relation_counts: dict[int, Counter[bool]] = {}
             for clue, center_color, panel_neighbors in panels:
                 for clue_index, (_item, color) in zip(clue_indexes, panel_neighbors):

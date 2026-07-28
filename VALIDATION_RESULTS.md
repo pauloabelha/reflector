@@ -22,7 +22,7 @@ SHA-256
 `cca07a3f571697ceea4b93d1cb308a5f1700bee47de83a769f537bc45a52f3d9`.
 The interpretation, provenance, random reference, artifact hashes, and a
 recording-fidelity defect are documented in
-[`PUBLIC_GAME_TEST_REPORT.md`](PUBLIC_GAME_TEST_REPORT.md).
+[`REAL_GAMES_REPORT.md`](REAL_GAMES_REPORT.md).
 
 ## V8 conclusion
 

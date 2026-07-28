@@ -42,7 +42,7 @@ test merely passed.
 | Bounded possible/impossible modal control | Proven synthetically | Preregistered v5 untouched result; search-cap exhaustion returns unknown. |
 | Direct typed comparison transfer | Proven synthetically | Preregistered v6 untouched result with leakage and negative controls. |
 | Endpoint-valid comparison composition | Proven synthetically | Preregistered v7 untouched result with composition-only ablation. |
-| General ARC transfer | Contradicted for v8 | The frozen v8 agent scored 0.0 and completed 0 levels across all 25 official API public games. It tied one official random-starter run. See `PUBLIC_GAME_TEST_REPORT.md`. |
+| General ARC transfer | Partially supported, not competitive | The accepted v21 agent scores 0.8359967620 and completes five levels across four of the 25 official public-development games. See `REAL_GAMES_REPORT.md`. |
 
 ## Reflecting abstraction and epistemic compression
 

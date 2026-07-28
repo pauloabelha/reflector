@@ -1,4 +1,4 @@
-from reflector.exploration import ActionRole, EpistemicExplorer
+from reflector.exploration import ActionRole, ActionToken, EpistemicExplorer
 from reflector.perception import SceneTracker
 from reflector.symbolic import Observation
 
@@ -334,7 +334,7 @@ def test_local_relation_solver_induces_and_repairs_repeated_panel_rule() -> None
     choice = explorer.select(observation, scene, (6,))
 
     assert choice.token.data == (("x", 38), ("y", 38))
-    assert "untried" in choice.reason
+    assert choice.reason.endswith("repair-local-relation")
 
     transfer_pixels = [[5 for _x in range(size)] for _y in range(size)]
     transfer_clues = (
@@ -363,11 +363,47 @@ def test_local_relation_solver_induces_and_repairs_repeated_panel_rule() -> None
     )
     transfer_scene = _scene(transfer)
     explorer.observe(transfer, transfer_scene)
+    expected_transfer = ActionToken(6, (("x", 22), ("y", 16)))
+    explorer.global_attempts[expected_transfer] = 10
 
     transferred_choice = explorer.select(transfer, transfer_scene, (6,))
 
-    assert transferred_choice.token.data == (("x", 22), ("y", 16))
+    assert transferred_choice.token == expected_transfer
+    assert transferred_choice.reason.endswith("repair-local-relation")
     assert explorer.to_dict()["learned_local_relations"] == 2
+
+    conservation_pixels = [[5 for _x in range(size)] for _y in range(size)]
+    conservation_clue = (2, 2, 2, 2, 8, 2, 2, 2, 2)
+    for origin_x, origin_y in origins[:3]:
+        center_x = origin_x + step
+        center_y = origin_y + step
+        for dx, dy in directions:
+            block_x = center_x + dx * step
+            block_y = center_y + dy * step
+            for y in range(block_y, block_y + block_size):
+                for x in range(block_x, block_x + block_size):
+                    conservation_pixels[y][x] = 8
+        for clue_index, color in enumerate(conservation_clue):
+            clue_x = center_x + clue_index % 3 * subcell
+            clue_y = center_y + clue_index // 3 * subcell
+            for y in range(clue_y, clue_y + subcell):
+                for x in range(clue_x, clue_x + subcell):
+                    conservation_pixels[y][x] = color
+    conservation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=tuple(tuple(row) for row in conservation_pixels),
+        levels_completed=2,
+    )
+    conservation_scene = _scene(conservation)
+
+    conserved_candidates = explorer._local_relation_candidates(
+        conservation,
+        conservation_scene,
+    )
+
+    assert conserved_candidates
+    assert explorer.learned_local_relation == {0: True, 2: False}
 
 
 def test_policy_explorer_is_an_exact_configuration_ablation() -> None:

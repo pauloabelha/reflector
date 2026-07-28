@@ -68,3 +68,53 @@ test together before doing research-layer work.
 Do not label an LLM-generated name as a synthetic concept, epistemic
 compression, or reflecting abstraction. Record its definition, evidence,
 dependencies, counterfactual utility, complexity cost, and measurable effect.
+
+## Persistent evolution protocol
+
+`PLAN.md` is the durable continuation state for this repository. At the start
+of every Codex session:
+
+1. read this file and `PLAN.md` completely;
+2. inspect the worktree, current branch, recent commits, configured remotes,
+   accepted candidate, and referenced result artifacts;
+3. resume the first unfinished plan item unless the user explicitly changes
+   direction;
+4. update `PLAN.md` whenever evidence changes the accepted baseline, active
+   hypothesis, next experiment, or blocker;
+5. update `REAL_GAMES_REPORT.md` whenever a real-game evaluation or Kaggle
+   submission changes;
+6. leave the long-running goal active until Reflector scores competitively on
+   the actual Kaggle evaluation—not merely on fixtures or the 25 development
+   games.
+
+The default research loop is:
+
+1. analyze recorded failures without reading hidden evaluation data;
+2. state a general symbolic hypothesis and its falsifier;
+3. implement it behind the shared `MindConfig` inference path;
+4. add a unit-level structural test and verify it on recorded observations;
+5. run a narrow official-harness target test;
+6. reject regressions or run the accepted-win promotion gate;
+7. freeze the exact source commit, run all 25 official public-development
+   games, export the same candidate, and run the network-disabled Kaggle smoke;
+8. promote only with complete evidence, document causal attribution, commit,
+   and push to the participant-owned repository;
+9. begin the next failure analysis.
+
+Do not silently stop at a promising target result. A candidate is accepted
+only after it preserves every accepted real-game completion, passes the full
+suite and Kaggle packaging checks, and has a permanent report. Keep negative
+descendants and ablations as evidence.
+
+`REAL_GAMES_REPORT.md` is the only root-level real-game score report. Raw,
+immutable scorecards belong under `reports/`. Always distinguish:
+
+- local official public-development score;
+- Kaggle public-leaderboard score;
+- Kaggle private-leaderboard score;
+- target-only experimental results.
+
+Never infer a leaderboard score from a local run. Record “not submitted” or
+“unavailable” when that is the truth. For each gain, identify the parent,
+mechanism, controlled comparison, affected game/level, action efficiency, and
+remaining limitation.
