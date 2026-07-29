@@ -1,0 +1,1146 @@
+{
+  "kind": "process-isolated-official-evaluation",
+  "scorecard": {
+    "source_url": null,
+    "tags": [
+      "agent",
+      "reflector",
+      "process-isolated"
+    ],
+    "opaque": null,
+    "card_id": null,
+    "api_key": null,
+    "score": 47.61904761904761,
+    "environments": [
+      {
+        "id": "ft09-0d8bbf25",
+        "runs": [
+          {
+            "id": null,
+            "guid": "d851876a-237c-44b0-81db-ba9159d4f5c4",
+            "score": 47.61904761904761,
+            "levels_completed": 4,
+            "actions": 400,
+            "resets": 2,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              115.0,
+              115.0,
+              115.0,
+              115.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              4,
+              7,
+              14,
+              16,
+              359,
+              0
+            ],
+            "level_baseline_actions": [
+              43,
+              12,
+              23,
+              28,
+              65,
+              37
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 47.61904761904761,
+        "actions": 400,
+        "levels_completed": 4,
+        "completed": false,
+        "level_count": 6,
+        "resets": 2
+      }
+    ],
+    "tags_scores": [],
+    "competition_mode": null,
+    "total_environments_completed": 0,
+    "total_environments": 1,
+    "total_levels_completed": 4,
+    "total_levels": 6,
+    "total_actions": 400
+  },
+  "agents": [
+    {
+      "game_id": "ft09",
+      "actions": 400,
+      "seconds": 39.95,
+      "levels_completed": 4,
+      "action_counts": {
+        "0": 2,
+        "6": 398
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 6,
+            "y": 30
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 22
+          },
+          "count": 12
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 30
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 32
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 38
+          },
+          "count": 12
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 30
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 32
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 52
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 60
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 22
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 5
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 6
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 8
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 14
+          },
+          "count": 16
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 22
+          },
+          "count": 13
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 30
+          },
+          "count": 13
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 38
+          },
+          "count": 13
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 46
+          },
+          "count": 10
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 54
+          },
+          "count": 12
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 6
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 8
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 6
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 14
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 16
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 32
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 38
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 48
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 54
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 6
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 22
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 54
+          },
+          "count": 10
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 6
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 22
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 32
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 48
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 54
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 6
+          },
+          "count": 11
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 14
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 22
+          },
+          "count": 11
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 30
+          },
+          "count": 11
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 38
+          },
+          "count": 11
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 46
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 54
+          },
+          "count": 11
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 6
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 32
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 48
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 54
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 22
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 38
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 54
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 32
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 52
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 22
+          },
+          "count": 11
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 30
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 38
+          },
+          "count": 11
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 46
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 32
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 3
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 22
+          },
+          "count": 8
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 38
+          },
+          "count": 8
+        }
+      ],
+      "reason_counts": {
+        "epistemic-frontier": 398,
+        "reset-required": 2
+      },
+      "reason_detail_counts": {
+        "epistemic-frontier:relational-scheme-binding:feature-manner:006ee8adceb2": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:031fa011dcba": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:1beba6b6bc9a": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:2009f9d02da4": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:444731097ef2": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:681e28da6140": 84,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:7a6952823843": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:ad9517c1636d": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:b0c915ce1cf0": 74,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:b42998224b58": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:cdeceddc7ed7": 1,
+        "epistemic-frontier:relational-scheme-binding:feature-manner:ea4602847516": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:1d10b6dbf00e": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:2950bedf7c0d": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:2e7e7609a940": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:576ac1af0154": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:74c8268c1c1f": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:7955f2c34f99": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:85e1e81fa43a": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:8e1b7b35bb40": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:8f6cd065c453": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:e1838149c6b1": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:eab701bb05cc": 1,
+        "epistemic-frontier:relational-scheme-binding:full-manner:f9d552d0d831": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:752ea2c03497": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:8879a3acf937": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:94a0d37b3872": 2,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:98edfcfd5c71": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:9ed31e72e7a9": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:b2a5782cadcc": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:c14f9410f898": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:c70b948577ab": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:cde102290399": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:e8b00c601a62": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:eda5471f63ad": 1,
+        "epistemic-frontier:relational-scheme-binding:spatial-manner:fd4a721a094b": 1,
+        "epistemic-frontier:repair-local-relation": 203,
+        "epistemic-frontier:untried-current-state": 2,
+        "reset-required": 2
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": true,
+        "enable_hierarchical_action_fairness": false,
+        "enable_successful_role_replay": false,
+        "enable_multicolor_click_objects": false,
+        "enable_click_object_accommodation": true,
+        "enable_productive_role_reuse": false,
+        "enable_local_relation_solver": true,
+        "enable_constraint_first_role_replay": false,
+        "enable_global_relation_constraint_solver": true,
+        "enable_preregistered_structural_credit": false,
+        "enable_parameterized_scheme_variation": false,
+        "enable_starter_schemas": false,
+        "enable_relational_scheme_binding": true,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v26",
+      "exploration_metrics": {
+        "states": 130,
+        "edges": 220,
+        "attempts": 220,
+        "global_interventions": 86,
+        "action_families": 1,
+        "successful_program_length": 16,
+        "program_cursor": 0,
+        "perceptual_accommodations": 2,
+        "productive_roles": 5,
+        "learned_local_relations": 2,
+        "successful_schemes": 0,
+        "parameterized_schemes": 0,
+        "parameterized_scheme_trials": 0,
+        "starter_schemas": 0,
+        "starter_schema_ids": [],
+        "successful_relational_schemes": 4,
+        "relational_schemes": 36,
+        "relational_scheme_trials": 193,
+        "responsive_relational_schemes": 3,
+        "falsified_relational_schemes": 33,
+        "last_relational_binding": {
+          "scheme_id": "b0c915ce1cf0",
+          "base_id": "4a1ea02d4857",
+          "modifier_id": "23dd73409078",
+          "operator": "feature-manner",
+          "slot_index": 6,
+          "action_id": 6,
+          "constraint": {
+            "color": "same",
+            "area": "same",
+            "shape": "same",
+            "horizontal": "any",
+            "vertical": "any"
+          },
+          "had_previous_grounding": true
+        },
+        "frontier_states": 127
+      },
+      "trace_metrics": {
+        "actions": 400,
+        "action_efficiency": 0.01,
+        "resets": 2,
+        "transitions": 399,
+        "levels_advanced": 4,
+        "failed_experiments": 66,
+        "prediction_accuracy": 0.5379072681704261,
+        "schema_count": 339,
+        "concept_count": 4,
+        "retired_concept_count": 629,
+        "concept_lifecycle_events": 1266,
+        "schema_reuse": 60,
+        "concept_reuse": 609,
+        "duplicate_schemas": 5,
+        "contradictory_schemas": 61,
+        "dead_schemas": 6,
+        "orphan_concepts": 0,
+        "schema_family_count": 329,
+        "concept_type_count": 5,
+        "language_operator_count": 0,
+        "language_proposal_count": 1,
+        "language_mechanism_revision_count": 1,
+        "procedure_count": 0,
+        "causal_hypotheses": 20,
+        "temporal_hypotheses": 86,
+        "mean_schema_reliability": 0.6289169412739454,
+        "schema_description_length": 1360732,
+        "abstraction_description_savings": 9507608,
+        "planner_expansions": 0,
+        "recoverable_redundancy": 6209,
+        "counterfactual_replay_savings": 51045,
+        "deterministic_replay_rate": 1.0
+      }
+    }
+  ],
+  "source_commit": "808676a475530214cc519011aeec3074f212b3f8",
+  "execution": {
+    "isolation": "one fresh Python process per game",
+    "parallel": true,
+    "max_workers": 1,
+    "games": [
+      "ft09"
+    ],
+    "child_report_sha256": {
+      "ft09": "5b354c010b194e7676b0d9994d6455d4a6e1a722183d5b68bc4dfed7a6024e03"
+    },
+    "claim_boundary": "Local official public-development evidence; not a Kaggle leaderboard score."
+  }
+}

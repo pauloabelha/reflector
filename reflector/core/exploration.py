@@ -162,6 +162,8 @@ class EpistemicExplorer:
     reset_action: int = 0
     max_states: int = 4096
     max_click_candidates: int = 256
+    max_relational_trials_per_level: int = 8
+    max_relational_application_steps: int = 4
     hierarchical_action_fairness: bool = False
     successful_role_replay: bool = False
     multicolor_click_objects: bool = False
@@ -217,7 +219,12 @@ class EpistemicExplorer:
     relational_last: dict[str, GroundedRole] = field(default_factory=dict)
     relational_trials: Counter[str] = field(default_factory=Counter)
     relational_responses: Counter[str] = field(default_factory=Counter)
+    relational_progress: Counter[str] = field(default_factory=Counter)
     relational_stagnations: Counter[str] = field(default_factory=Counter)
+    relational_application_steps: Counter[str] = field(
+        default_factory=Counter
+    )
+    relational_level_trials: int = 0
     pending_relational_scheme: str | None = None
     last_relational_binding: dict[str, Any] = field(default_factory=dict)
     last_scheme_components: tuple[str, ...] = ()
@@ -318,6 +325,7 @@ class EpistemicExplorer:
                 scheme_id: 0 for scheme_id in self.relational_schemes
             }
             self.relational_last.clear()
+            self.relational_level_trials = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
         elif observation.state == "GAME_OVER":
@@ -332,6 +340,7 @@ class EpistemicExplorer:
                 scheme_id: 0 for scheme_id in self.relational_schemes
             }
             self.relational_last.clear()
+            self.relational_level_trials = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
@@ -374,14 +383,33 @@ class EpistemicExplorer:
             for y in range(margin, height - margin)
             for x in range(margin, width - margin)
         )
-        if changed >= 4:
+        changed_frame = changed >= 4
+        if changed_frame:
             self.role_responses[role] += 1
             if grounding is not None:
                 self.productive_groundings.append(grounding)
             if relational_scheme is not None:
                 self.relational_responses[relational_scheme] += 1
-        elif relational_scheme is not None:
-            self.relational_stagnations[relational_scheme] += 1
+        if relational_scheme is not None:
+            progressed = (
+                self.current_level is not None
+                and observation.levels_completed > self.current_level
+            )
+            scheme = self.relational_schemes.get(relational_scheme)
+            application_limit = min(
+                self.max_relational_application_steps,
+                len(scheme.action_slots) if scheme is not None else 1,
+            )
+            application_complete = (
+                self.relational_application_steps[relational_scheme]
+                >= application_limit
+            )
+            if progressed:
+                self.relational_progress[relational_scheme] += 1
+                self.relational_application_steps[relational_scheme] = 0
+            elif not changed_frame or application_complete:
+                self.relational_stagnations[relational_scheme] += 1
+                self.relational_application_steps[relational_scheme] = 0
 
     def _reorganize_click_ontology(self) -> None:
         """Invalidate graph evidence whose action tokens changed meaning."""
@@ -974,6 +1002,8 @@ class EpistemicExplorer:
             not self.relational_scheme_binding
             or not pragmatic_disequilibrium
             or not self.relational_schemes
+            or self.relational_level_trials
+            >= self.max_relational_trials_per_level
         ):
             return None
         represented = tuple(
@@ -987,7 +1017,7 @@ class EpistemicExplorer:
                         f"scheme:{scheme.scheme_id}",
                         0,
                     )
-                    + self.relational_responses[scheme.scheme_id] * 4
+                    + self.relational_progress[scheme.scheme_id] * 4
                     - self.relational_stagnations[scheme.scheme_id]
                 ),
                 self.relational_trials[scheme.scheme_id],
@@ -997,7 +1027,7 @@ class EpistemicExplorer:
         for scheme in schemes:
             pragmatic_score = (
                 structure_scores.get(f"scheme:{scheme.scheme_id}", 0)
-                + self.relational_responses[scheme.scheme_id] * 4
+                + self.relational_progress[scheme.scheme_id] * 4
                 - self.relational_stagnations[scheme.scheme_id]
             )
             if pragmatic_score < 0:
@@ -1032,6 +1062,8 @@ class EpistemicExplorer:
             self.relational_cursors[scheme.scheme_id] = cursor + 1
             self.relational_last[scheme.scheme_id] = grounding
             self.relational_trials[scheme.scheme_id] += 1
+            self.relational_application_steps[scheme.scheme_id] += 1
+            self.relational_level_trials += 1
             self.last_relational_binding = {
                 "scheme_id": scheme.scheme_id,
                 "base_id": scheme.base_id,
@@ -1628,13 +1660,17 @@ class EpistemicExplorer:
             "responsive_relational_schemes": sum(
                 value > 0 for value in self.relational_responses.values()
             ),
+            "progressing_relational_schemes": sum(
+                value > 0 for value in self.relational_progress.values()
+            ),
             "falsified_relational_schemes": sum(
-                self.relational_responses[scheme_id] * 4
+                self.relational_progress[scheme_id] * 4
                 - stagnations
                 < 0
                 for scheme_id, stagnations
                 in self.relational_stagnations.items()
             ),
+            "relational_level_trials": self.relational_level_trials,
             "last_relational_binding": dict(self.last_relational_binding),
             "frontier_states": sum(
                 self._has_frontier(state) for state in self.tokens_by_state
