@@ -1,0 +1,59 @@
+{
+  "kind": "official-process-isolated-targeted-evaluation-summary",
+  "source_commit": "ba77795",
+  "inference_fingerprint": "48551e1440a9b864d07f47c2436caa1d2a1b9b1883310826202e9b40d6903ad3",
+  "parent": {
+    "version": "v25",
+    "candidate_id": "candidate-036a55bfb6956008"
+  },
+  "offspring": {
+    "credit_only": "candidate-f95c117b03f84e2c",
+    "scheme_variation_only": "candidate-343e563ca51a2c29",
+    "combined": "candidate-4c5e4d04a21b8369",
+    "bred_with_successful_replay": "candidate-b13a52a058dff27f"
+  },
+  "population_report": {
+    "path": "reports/official-population-v26-ft09.json",
+    "sha256": "9edc46ee0d8b57ce1fdfd66f4e9f51589584f26c7e2a7b1e488ac25a8ab13762",
+    "strategies": 7,
+    "reruns_per_strategy": 2,
+    "qualifying_trait": "enable_successful_role_replay"
+  },
+  "combined_offspring_ft09": {
+    "reruns": 2,
+    "exact": true,
+    "score": 66.14660803207657,
+    "levels_completed": 5,
+    "level_actions": [4, 7, 14, 16, 94, 265],
+    "runtime_construction": {
+      "primed_hypotheses": 400,
+      "successful_schemes": 5,
+      "parameterized_schemes": 37,
+      "parameterized_scheme_trials": 12,
+      "credited_component_kinds": [
+        "base",
+        "argument",
+        "operator",
+        "scheme"
+      ]
+    }
+  },
+  "bred_offspring_ft09": {
+    "reruns": 2,
+    "exact": true,
+    "score": 66.39275666330816,
+    "levels_completed": 5,
+    "level_actions": [4, 9, 14, 16, 93, 264]
+  },
+  "accepted_win_gate": {
+    "games": ["ft09", "lf52", "r11l", "tn36"],
+    "reruns": 2,
+    "exact": true,
+    "parent_score": 18.190203198929666,
+    "offspring_score": 18.251740356737564,
+    "parent_levels": 8,
+    "offspring_levels": 8,
+    "regressed_completions": []
+  },
+  "claim_boundary": "Target and four-game local development evidence only. The new runtime construction capacity is operative and deterministic, but v26d is not accepted until a complete 25-game process-isolated evaluation passes."
+}
