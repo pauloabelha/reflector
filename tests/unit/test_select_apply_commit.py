@@ -103,6 +103,51 @@ def _multiline_mapping_frame() -> tuple[tuple[int, ...], ...]:
     return tuple(tuple(row) for row in pixels)
 
 
+def _nested_mapping_frame(
+    *,
+    connector_color: int = 14,
+) -> tuple[tuple[int, ...], ...]:
+    reference = (3, 5, 7, 9, 11, 13, 15)
+    selectors = (7, 15, 11, 3, 13, 9, 5)
+    pixels = [[0 for _x in range(56)] for _y in range(30)]
+    for index, color in enumerate(reference):
+        _paint(
+            pixels,
+            left=2 + index * 7,
+            top=1,
+            color=color,
+            size=3,
+            outline=True,
+        )
+    for color, top in ((8, 6), (14, 13)):
+        for x in range(13, 38):
+            pixels[top][x] = color
+            pixels[top + 6][x] = color
+        for y in range(top, top + 7):
+            pixels[y][13] = color
+            pixels[y][37] = color
+    for left, top in (
+        (16, 8),
+        (22, 8),
+        (34, 8),
+        (16, 15),
+        (22, 15),
+        (28, 15),
+        (34, 15),
+    ):
+        _paint(pixels, left=left, top=top, color=2, size=2)
+    _paint(pixels, left=28, top=8, color=connector_color, size=2)
+    for index, color in enumerate(selectors):
+        _paint(
+            pixels,
+            left=2 + index * 7,
+            top=26,
+            color=color,
+            size=2,
+        )
+    return tuple(tuple(row) for row in pixels)
+
+
 def test_parameterized_mapping_binds_attributes_then_applies_and_commits() -> None:
     observation = _observation(_mapping_frame())
     scene, _events = SceneTracker().perceive(observation)
@@ -210,6 +255,54 @@ def test_multiline_order_is_a_bounded_symbolic_variation() -> None:
         {"x": 22, "y": 12},
         {"x": 16, "y": 12},
     )
+
+
+def test_nested_container_link_parameterizes_target_traversal() -> None:
+    observation = _observation(_nested_mapping_frame())
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token for _step in range(15)
+    )
+    target_clicks = tuple(
+        dict(token.data)
+        for token in choices
+        if token.action_id == 6 and dict(token.data).get("y") in {8, 15}
+    )
+
+    assert target_clicks == (
+        {"x": 16, "y": 8},
+        {"x": 22, "y": 8},
+        {"x": 16, "y": 15},
+        {"x": 22, "y": 15},
+        {"x": 28, "y": 15},
+        {"x": 34, "y": 15},
+        {"x": 34, "y": 8},
+    )
+    assert choices[-1] == ActionToken(5)
+    assert explorer.nested_target_plan_active
+
+
+def test_nested_container_traversal_abstains_on_unmatched_link() -> None:
+    observation = _observation(_nested_mapping_frame(connector_color=6))
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+    )
+    explorer.observe(observation, scene)
+
+    explorer.select(observation, scene, (5, 6, 7))
+
+    assert explorer.select_apply_program == ()
+    assert not explorer.nested_target_plan_active
 
 
 def test_multiline_accommodation_is_silent_without_exact_cardinality() -> None:

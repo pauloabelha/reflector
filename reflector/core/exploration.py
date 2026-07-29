@@ -237,6 +237,7 @@ class EpistemicExplorer:
     parameterized_select_apply_commit: bool = False
     multiline_target_binding: bool = False
     spatial_order_variation: bool = False
+    nested_target_traversal: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -297,6 +298,7 @@ class EpistemicExplorer:
     select_apply_cursor: int = 0
     select_apply_attempted: bool = False
     select_apply_level_trials: int = 0
+    nested_target_plan_active: bool = False
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -408,6 +410,7 @@ class EpistemicExplorer:
             self.select_apply_cursor = 0
             self.select_apply_attempted = False
             self.select_apply_level_trials = 0
+            self.nested_target_plan_active = False
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -612,6 +615,10 @@ class EpistemicExplorer:
                 "operator:select",
                 "operator:apply",
                 "operator:commit",
+            ) + (
+                ("operator:nested-container-traversal",)
+                if self.nested_target_plan_active
+                else ()
             )
             return self._issue(
                 state,
@@ -825,6 +832,7 @@ class EpistemicExplorer:
             tuple[
                 tuple[int, int, int, tuple[int, ...]],
                 tuple[ActionToken, ...],
+                bool,
             ]
         ] = []
         for reference in rows:
@@ -869,9 +877,20 @@ class EpistemicExplorer:
                     if not commit_actions:
                         continue
                     target_orders: tuple[tuple[_FrameObject, ...], ...] = (targets,)
-                    if self.spatial_order_variation and len(
+                    is_multiline = len(
                         {item.centroid[1] for item in targets}
-                    ) > 1:
+                    ) > 1
+                    nested_plan = False
+                    if self.nested_target_traversal and is_multiline:
+                        nested_order = self._nested_target_order(
+                            observation.frame,
+                            targets,
+                        )
+                        if nested_order is None:
+                            continue
+                        target_orders = (nested_order,)
+                        nested_plan = True
+                    elif self.spatial_order_variation and is_multiline:
                         target_orders = self._spatial_target_orderings(targets)
                     programs = []
                     for target_order in target_orders:
@@ -929,11 +948,148 @@ class EpistemicExplorer:
                                 reference_colors,
                             ),
                             tuple(combined),
+                            nested_plan,
                         )
                     )
         if not candidates:
             return ()
-        return min(candidates, key=lambda item: item[0])[1]
+        winner = min(candidates, key=lambda item: item[0])
+        self.nested_target_plan_active = winner[2]
+        return winner[1]
+
+    @staticmethod
+    def _nested_target_order(
+        frame: tuple[tuple[int, ...], ...],
+        targets: tuple[_FrameObject, ...],
+    ) -> tuple[_FrameObject, ...] | None:
+        """Expand rendered container links into a bounded depth-first order."""
+
+        if not frame or not frame[0] or not 3 <= len(targets) <= 12:
+            return None
+        target_rows: dict[int, dict[int, _FrameObject]] = {}
+        for item in targets:
+            target_rows.setdefault(item.centroid[1], {})[item.centroid[0]] = item
+        if not 2 <= len(target_rows) <= 4:
+            return None
+        if any(len(row) < 2 for row in target_rows.values()):
+            return None
+
+        columns = tuple(
+            sorted({x for row in target_rows.values() for x in row})
+        )
+        if not 3 <= len(columns) <= 8:
+            return None
+        pitches = {
+            right - left for left, right in zip(columns, columns[1:])
+        }
+        if len(pitches) != 1:
+            return None
+        pitch = pitches.pop()
+        if pitch <= 0:
+            return None
+
+        counts = Counter(cell for row in frame for cell in row)
+        background = max(counts, key=lambda color: (counts[color], -color))
+        target_color = targets[0].color
+        height = len(frame)
+        width = len(frame[0])
+
+        def boundary_color(
+            y: int,
+            start_x: int,
+            direction: int,
+        ) -> int | None:
+            for distance in range(1, pitch + 1):
+                x = start_x + direction * distance
+                if not (0 <= x < width and 0 <= y < height):
+                    return None
+                color = frame[y][x]
+                if color not in {background, target_color}:
+                    return color
+            return None
+
+        container_colors: dict[int, int] = {}
+        for y, row in target_rows.items():
+            left_item = row[min(row)]
+            right_item = row[max(row)]
+            left_color = boundary_color(y, left_item.bbox[0], -1)
+            right_color = boundary_color(y, right_item.bbox[2], 1)
+            if left_color is None or left_color != right_color:
+                return None
+            container_colors[y] = left_color
+        if len(set(container_colors.values())) != len(container_colors):
+            return None
+
+        links: dict[tuple[int, int], int] = {}
+        in_degree = Counter[int]()
+        for y, row in target_rows.items():
+            for x in columns:
+                if x in row:
+                    continue
+                radius = max(1, pitch // 2)
+                sampled = {
+                    frame[sample_y][sample_x]
+                    for sample_y in range(
+                        max(0, y - radius),
+                        min(height, y + radius + 1),
+                    )
+                    for sample_x in range(
+                        max(0, x - radius),
+                        min(width, x + radius + 1),
+                    )
+                    if frame[sample_y][sample_x]
+                    not in {
+                        background,
+                        target_color,
+                        container_colors[y],
+                    }
+                }
+                if len(sampled) != 1:
+                    return None
+                connector_color = sampled.pop()
+                children = tuple(
+                    child_y
+                    for child_y, color in container_colors.items()
+                    if child_y != y and color == connector_color
+                )
+                if len(children) != 1:
+                    return None
+                child_y = children[0]
+                links[(y, x)] = child_y
+                in_degree[child_y] += 1
+                if in_degree[child_y] > 1:
+                    return None
+
+        roots = tuple(y for y in target_rows if in_degree[y] == 0)
+        if len(roots) != 1:
+            return None
+        root = roots[0]
+        ordered: list[_FrameObject] = []
+        visiting: set[int] = set()
+        visited: set[int] = set()
+
+        def expand(y: int) -> bool:
+            if y in visiting or y in visited:
+                return False
+            visiting.add(y)
+            row = target_rows[y]
+            for x in columns:
+                target = row.get(x)
+                if target is not None:
+                    ordered.append(target)
+                    continue
+                child_y = links.get((y, x))
+                if child_y is None or not expand(child_y):
+                    return False
+            visiting.remove(y)
+            visited.add(y)
+            return True
+
+        if not expand(root):
+            return None
+        if visited != set(target_rows) or set(ordered) != set(targets):
+            return None
+        return tuple(ordered)
 
     @staticmethod
     def _spatial_target_orderings(

@@ -69,6 +69,9 @@ class SymbolicPolicy:
             spatial_order_variation=(
                 self.mind.config.enable_spatial_order_variation
             ),
+            nested_target_traversal=(
+                self.mind.config.enable_nested_target_traversal
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
