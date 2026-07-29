@@ -173,6 +173,7 @@ class EpistemicExplorer:
     max_click_candidates: int = 256
     max_relational_trials_per_level: int = 8
     max_relational_application_steps: int = 4
+    max_productive_reuse_trials_per_level: int = 8
     hierarchical_action_fairness: bool = False
     successful_role_replay: bool = False
     multicolor_click_objects: bool = False
@@ -210,6 +211,7 @@ class EpistemicExplorer:
     pending_grounding: GroundedRole | None = None
     role_trials: Counter[ActionRole] = field(default_factory=Counter)
     role_responses: Counter[ActionRole] = field(default_factory=Counter)
+    productive_reuse_level_trials: int = 0
     learned_local_relation: dict[int, bool] = field(default_factory=dict)
     successful_schemes: dict[str, tuple[ActionRole, ...]] = field(
         default_factory=dict
@@ -342,6 +344,7 @@ class EpistemicExplorer:
             }
             self.relational_last.clear()
             self.relational_level_trials = 0
+            self.productive_reuse_level_trials = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
         elif observation.state == "GAME_OVER":
@@ -357,6 +360,7 @@ class EpistemicExplorer:
             }
             self.relational_last.clear()
             self.relational_level_trials = 0
+            self.productive_reuse_level_trials = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
@@ -519,6 +523,7 @@ class EpistemicExplorer:
 
         productive = self._select_productive_role(tokens, scene, state)
         if productive is not None:
+            self.productive_reuse_level_trials += 1
             return self._issue(
                 state,
                 productive,
@@ -709,6 +714,11 @@ class EpistemicExplorer:
         if not self.productive_role_reuse or (
             self.level_failures < 2
             and not self.pragmatic_disequilibrium_active
+        ):
+            return None
+        if (
+            self.productive_reuse_level_trials
+            >= self.max_productive_reuse_trials_per_level
         ):
             return None
         candidates = tuple(
@@ -1752,6 +1762,9 @@ class EpistemicExplorer:
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()
+            ),
+            "productive_reuse_level_trials": (
+                self.productive_reuse_level_trials
             ),
             "learned_local_relations": len(self.learned_local_relation),
             "successful_schemes": len(self.successful_schemes),

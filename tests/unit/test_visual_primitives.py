@@ -311,6 +311,18 @@ def test_disequilibrium_reuses_a_causally_responsive_action_role() -> None:
     assert reused.token.action_id == 1
     assert "reuse-productive-action-role" in reused.reason
 
+    explorer.productive_reuse_level_trials = (
+        explorer.max_productive_reuse_trials_per_level
+    )
+    released = explorer.select(
+        after,
+        after_scene,
+        (1, 2),
+        pragmatic_disequilibrium=True,
+    )
+    assert released.token.action_id == 2
+    assert "untried-current-state" in released.reason
+
 
 def test_primitive_actions_require_primitive_perception() -> None:
     try:
