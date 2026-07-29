@@ -253,12 +253,12 @@ class EpistemicExplorer:
             order.append("constraint-first-relation-repair")
         if self.successful_role_replay:
             order.append("successful-role-replay")
+        if self.local_relation_solver and not self.constraint_first_role_replay:
+            order.append("local-relation-repair")
         if self.relational_scheme_binding:
             order.append("relational-scheme-binding")
         if self.productive_role_reuse:
             order.append("productive-role-reuse")
-        if self.local_relation_solver and not self.constraint_first_role_replay:
-            order.append("local-relation-repair")
         if self.parameterized_scheme_variation:
             order.append("parameterized-scheme-variation")
         if self.uses_action_family_schema:
@@ -502,15 +502,6 @@ class EpistemicExplorer:
                 scene,
             )
 
-        productive = self._select_productive_role(tokens, scene, state)
-        if productive is not None:
-            return self._issue(
-                state,
-                productive,
-                "epistemic-frontier:reuse-productive-action-role",
-                scene,
-            )
-
         if not self.constraint_first_role_replay:
             local_repair = self._select_local_relation_repair(
                 observation,
@@ -525,6 +516,15 @@ class EpistemicExplorer:
                     "epistemic-frontier:repair-local-relation",
                     scene,
                 )
+
+        productive = self._select_productive_role(tokens, scene, state)
+        if productive is not None:
+            return self._issue(
+                state,
+                productive,
+                "epistemic-frontier:reuse-productive-action-role",
+                scene,
+            )
 
         relational = self._select_relational_binding(
             state,
