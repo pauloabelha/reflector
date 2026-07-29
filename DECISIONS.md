@@ -489,3 +489,30 @@ V29 is promoted. The accepted claim is narrow: mature pragmatic stagnation can
 open a bounded window for reuse of causally responsive action roles. This is
 not evidence that the visual primitives generalize, that a game was beaten, or
 that Reflector has a Kaggle leaderboard score.
+
+## 2026-07-29 — Promote learned marker-relative cyclic transport composition
+
+The v29 cognitive stream showed that `lp85` level 1 advanced when a token at a
+structurally marked anchor matched four surrounding corner markers. Level 2
+contained two equivalent anchors and three cyclic transports with shared
+positions. V29 discovered responsive controllers but represented each joint
+configuration as an unrelated state, exhausting 363 actions without another
+level.
+
+V30 constructs the goal relation only after an already evidenced exact cyclic
+shift predicts real level progress. It never retains the source marker color,
+coordinate, scale, or game identity. On the next level it rebinds that relation
+to perceived anchors, factors an outer perimeter and collinear cyclic tracks,
+associates paired controllers by relative geometry, and searches their composed
+effects under an 8,192-expansion and 24-intervention bound.
+
+Two independent isolated runs solved `lp85` levels in `[37, 8, 355]`. The
+five-game gate preserved every v29 completion at its exact action count. The
+full exact-off control reproduced v29 at 9/183 levels and
+2.9338884001/100; the enabled candidate reached 10/183 and
+3.1894439557/100 with complete 25-game coverage. No game was fully beaten.
+
+V30 is promoted. The accepted claim is finite: one progress-constructed,
+appearance-relative goal can parameterize and compose observed cyclic
+transports. It is not evidence of arbitrary visual program induction,
+cross-game transfer, a beaten game, or a Kaggle leaderboard score.

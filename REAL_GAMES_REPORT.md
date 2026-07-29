@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 9 of 183 levels across 5 games. The suite ran all 25 games,
+> It has solved 10 of 183 levels across 5 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v29 result | Meaning |
+| Outcome metric | Accepted v30 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
 | Games with progress | **5 / 25** | At least one level was solved in five games. |
-| Levels solved | **9 / 183** | Five in `ft09`; one each in `lf52`, `lp85`, `r11l`, and `tn36`. |
-| Official local score | **2.9338884001 / 100** | About **2.93%**, not 293%. |
+| Levels solved | **10 / 183** | Five in `ft09`; two in `lp85`; one each in `lf52`, `r11l`, and `tn36`. |
+| Official local score | **3.1894439557 / 100** | About **3.19%**, not 319%. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,13 +23,14 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v29 accepted | **2.9338884001 / 100** | 0 games beaten; 9/183 levels | 25/25 coverage |
-| Source-matched process-isolated suite | v29 control / v25 genome | 2.9104325118 / 100 | 0 games beaten; 8/183 levels | exact parent reproduction |
+| Process-isolated official local suite | v30 accepted | **3.1894439557 / 100** | 0 games beaten; 10/183 levels | 25/25 coverage |
+| Source-matched process-isolated suite | v30 control / v29 genome | 2.9338884001 / 100 | 0 games beaten; 9/183 levels | exact parent reproduction |
+| Process-isolated official local suite | v29 historical accepted | 2.9338884001 / 100 | 0 games beaten; 9/183 levels | superseded by v30 |
 | Process-isolated official local suite | v28 object/flow offspring | 2.8820272500 / 100 | 0 games beaten; 9/183 levels | rejected: lost `tn36`, slowed two wins |
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v29 package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v30 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -116,14 +117,87 @@ Raw evidence:
 | v25 | 2.9104325118 | 8 | 4 | 0 | Global overlapping relation constraints | accepted parent |
 | v26d | 2.9202784571 | 8 | 4 | 0 | Successful coordinate-free role replay plus neutral construction machinery | experimental; complexity not earned |
 | v28 | 2.8820272500 | 9 | 5 | 0 | Visual/temporal object primitives plus bounded role reuse | rejected: one accepted level regressed |
-| v29 | **2.9338884001** | **9** | **5** | **0** | Mature-stall bounded causal role reuse | **current accepted** |
+| v29 | 2.9338884001 | 9 | 5 | 0 | Mature-stall bounded causal role reuse | historical accepted |
+| v30 | **3.1894439557** | **10** | **5** | **0** | Learned marker-relative goals plus composed cyclic transports | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v29 result
+## Accepted v30 result
+
+V30 adds one exact-off mechanism to v29. It detects a token structurally marked
+by four smaller, identical corner components. Responsive interventions are
+credited as cyclic transports only when they conserve the ordered token
+multiset and produce an exact one-step rotation. A marker-match goal is learned
+only when an already evidenced transport predicts the transition that advances
+the level; the winning transition is construction evidence and is not
+retroactively credited to the newly constructed scheme.
+
+On the next level, the learned scheme is rebound to translated, resized, and
+recolored structures. The agent factors one outer perimeter and two horizontal
+tracks whose positions overlap, associates mirrored controllers by relative
+position, and searches their composed effects. Search is capped at 8,192
+expansions and the advisor at 24 interventions per level.
+
+The `lp85` trace supplied the causal falsifier. V29 solved level 1 in 37 actions
+but spent the remaining 363 interventions on level 2. V30 preserved the same
+37-action first level, constructed the marker-match relation from progress,
+and solved level 2 in exactly eight cyclic-advisor actions. Two independent
+isolated runs reproduced `[37, 8, 355]`. The five-game gate preserved every
+v29 action count. The source-matched full control reproduced v29 exactly at
+9/183 and `2.9338884001495003/100`; v30 reached 10/183 and
+`3.1894439557050553/100`. No game was fully beaten.
+
+### Accepted progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ft09` | **5** | 6 | `[4, 7, 14, 16, 94]` | 66.1466080321 | No |
+| `lp85` | **2** | 8 | `[37, 8]` | 6.9752860969 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| Remaining 20 games | **0** | 146 | `[]` | 0 | No |
+| **Total** | **10** | **183** | — | **3.1894439557 overall** | **0 / 25** |
+
+The trailing action counts in each raw run are budget spent on the next
+unsolved level: `ft09` 265, `lp85` 355, `lf52` 366, `r11l` 382, and `tn36`
+277. They are not additional solved-level costs.
+
+Frozen inference commit: `e2ba274042ca453d359dc86964b5b55374940a2d`
+
+Candidate: `candidate-2fabaa20cd4cd160`
+
+Candidate inference fingerprint:
+`bf5a5b1fdbac7bd6f7c971d1e2c271aa6b8f2a0d5840c0acdd2af3680d00e69f`
+
+Candidate SHA-256:
+`2911747c27a6fd1ee1f29755525a454c2cf9b018e7b6777c84aa80ecf9aa9f94`
+
+Full report SHA-256:
+`70f2ad4689f4e0b2883f42a4cea8da0c4687c3fb7407931ea3b154a17e617d6c`
+
+Source-control report SHA-256:
+`bbd6a01b4efed6768a68571f956c08170af11a8f127e3de0869599451daa2421`
+
+Verification: 153 tests passed (3 skipped), Ruff passed, mypy passed, the
+generic and exact-candidate network-disabled smoke paths passed, and the exact
+candidate exported without translation. The overlay SHA-256 is
+`ccea9c9ebbf2f0687e120c02d1cf64751e9bf2287afabbb16525acd7a107cb8a`;
+the notebook SHA-256 is
+`8a630a11c34b8d0d1e77a100057ad5e711a38bbe2693797a58639a160d34d92b`.
+
+Raw evidence:
+
+- [v30 accepted 25-game scorecard](reports/official-isolated-public-v30-marker-relative-cyclic-transport-400.json)
+- [v30 source-matched v29 control](reports/official-isolated-public-v30-source-control-400.json)
+- [v30 five-game preservation gate](reports/official-isolated-v30-five-game-r2.json)
+- [v30 exact `lp85` rerun](reports/official-isolated-v30-lp85-r3.json)
+- [v30 candidate](candidates/v30-marker-relative-cyclic-transport-400.json)
+
+## Historical accepted v29 result
 
 V29 adds one bounded policy to the accepted v25 parent. After 32 interventions
 without level progress, the explorer may reuse an action role only if that role
