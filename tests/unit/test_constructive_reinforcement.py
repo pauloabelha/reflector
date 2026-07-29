@@ -215,3 +215,87 @@ def test_learned_negation_is_falsifiable_not_a_reward_penalty() -> None:
     assert assessment.pragmatic == ()
     assert assessment.response == "differentiate"
     assert assessment.is_disequilibrium
+
+
+def test_preregistered_hypothesis_credits_prediction_and_utility_separately() -> None:
+    prediction = SchemaPrediction(
+        action_id=1,
+        result=("no_observed_change(scene)",),
+        evidence=("schema-stable",),
+        evidence_contexts=(("mode(stable)",),),
+        support=4,
+        confidence=0.8,
+        transferred=False,
+    )
+    context = (Atom("mode", ("stable",)),)
+    ledger = StructuralCreditLedger(
+        pragmatic_disequilibrium_threshold=2
+    )
+
+    hypothesis_id = ledger.prime(
+        before_index=0,
+        action_id=1,
+        context=context,
+        prediction=prediction,
+        scheme_components=("scheme:composed", "base:carry"),
+    )
+    primed = ledger.consume_primed(1)
+    assert primed is not None
+    first_id = ledger.assess(
+        _transition(0, context, (Event("no_observed_change"),)),
+        primed.prediction(),
+        primed,
+    )
+    first = ledger.assessments[first_id]
+
+    assert first.hypothesis_id == hypothesis_id
+    assert first.confirmed == ("no_observed_change(scene)",)
+    assert not first.is_disequilibrium
+    assert first.scheme_components == ("base:carry", "scheme:composed")
+    assert ledger.typed_credit["schema-stable"] == {
+        "pragmatic_stagnation": 1,
+        "predictive_support": 1,
+    }
+
+    ledger.prime(
+        before_index=1,
+        action_id=1,
+        context=context,
+        prediction=prediction,
+        scheme_components=("scheme:composed",),
+    )
+    second = ledger.consume_primed(1)
+    assert second is not None
+    ledger.assess(
+        _transition(1, context, (Event("no_observed_change"),)),
+        second.prediction(),
+        second,
+    )
+
+    assert ledger.pragmatic_disequilibrium
+    assert ledger.consecutive_without_progress == 2
+    assert ledger.typed_credit["schema-stable"][
+        "predictive_support"
+    ] == 2
+    assert ledger.typed_credit["schema-stable"][
+        "pragmatic_stagnation"
+    ] == 2
+    assert ledger.pragmatic_structure_scores()["scheme:composed"] == -2
+
+    ledger.prime(
+        before_index=2,
+        action_id=1,
+        context=context,
+        prediction=prediction,
+        scheme_components=("scheme:composed",),
+    )
+    progress = ledger.consume_primed(1)
+    assert progress is not None
+    ledger.assess(
+        _transition(2, context, (Event("level_advanced"),)),
+        progress.prediction(),
+        progress,
+    )
+    assert not ledger.pragmatic_disequilibrium
+    assert ledger.consecutive_without_progress == 0
+    assert ledger.typed_credit["scheme:composed"]["pragmatic_progress"] == 1

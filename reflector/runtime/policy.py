@@ -48,6 +48,9 @@ class SymbolicPolicy:
             global_relation_constraint_solver=(
                 self.mind.config.enable_global_relation_constraint_solver
             ),
+            parameterized_scheme_variation=(
+                self.mind.config.enable_parameterized_scheme_variation
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
@@ -104,6 +107,12 @@ class SymbolicPolicy:
                 observation,
                 update.scene,
                 legal,
+                pragmatic_disequilibrium=(
+                    self.mind.reinforcement.pragmatic_disequilibrium
+                ),
+                structure_scores=(
+                    self.mind.reinforcement.pragmatic_structure_scores()
+                ),
             )
             action_id = exploration.token.action_id
             reason = exploration.reason
@@ -130,6 +139,10 @@ class SymbolicPolicy:
             )
         else:
             decision = self._record(Decision(action_id, reason=reason))
+        self.mind.prime_hypothesis(
+            decision,
+            scheme_components=self.explorer.last_scheme_components,
+        )
         self._append_trace(observation, decision, update)
         self._previous_decision = decision
         self._decision_epoch += 1
@@ -189,6 +202,7 @@ class SymbolicPolicy:
                 assessments.append(
                     {
                         "assessment_id": assessment.assessment_id,
+                        "hypothesis_id": assessment.hypothesis_id,
                         "action_id": assessment.action_id,
                         "predicted": list(assessment.predicted),
                         "observed": list(assessment.observed),
@@ -205,6 +219,9 @@ class SymbolicPolicy:
                         "support": assessment.support,
                         "licensing_structures": list(
                             assessment.licensing_structures
+                        ),
+                        "scheme_components": list(
+                            assessment.scheme_components
                         ),
                         "context_count": len(assessment.context),
                         "context_sample": [
@@ -265,6 +282,18 @@ class SymbolicPolicy:
                 "procedure_count": len(abstractions.procedures),
                 "accommodation_count": len(
                     self.mind.reinforcement.accommodations
+                ),
+                "primed_hypothesis_count": len(
+                    self.mind.reinforcement.hypothesis_history
+                ),
+                "typed_credit_structure_count": len(
+                    self.mind.reinforcement.typed_credit
+                ),
+                "consecutive_without_progress": (
+                    self.mind.reinforcement.consecutive_without_progress
+                ),
+                "pragmatic_disequilibrium": (
+                    self.mind.reinforcement.pragmatic_disequilibrium
                 ),
                 "learned_local_relation": dict(
                     sorted(self.explorer.learned_local_relation.items())

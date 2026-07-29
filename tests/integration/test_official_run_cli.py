@@ -193,14 +193,14 @@ def test_official_population_isolates_parallel_candidate_configs(
     )
     report = json.loads(output.read_text())
     assert completed.stdout.strip() == str(output)
-    assert len(report["strategies"]) == 5
-    assert len(report["outcomes"]) == 10
+    assert len(report["strategies"]) == 7
+    assert len(report["outcomes"]) == 14
     assert len(
         {
             item["candidate"]["candidate_id"]
             for item in report["strategies"]
         }
-    ) == 5
+    ) == 7
     by_strategy = {
         name: [
             (

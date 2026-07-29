@@ -183,6 +183,57 @@ def test_successful_level_compiles_and_replays_coordinate_free_roles() -> None:
     assert explorer.to_dict()["successful_program_length"] == 1
 
 
+def test_successful_schemes_become_inputs_to_bounded_variations() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2, 3),
+        frame=((0, 0), (0, 9)),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(parameterized_scheme_variation=True)
+    explorer.observe(observation, scene)
+    explorer._learn_parameterized_variations(
+        (ActionRole(1), ActionRole(2))
+    )
+    assert explorer.parameterized_schemes == {}
+
+    explorer._learn_parameterized_variations(
+        (ActionRole(3), ActionRole(2))
+    )
+
+    operators = {
+        scheme.operator for scheme in explorer.parameterized_schemes.values()
+    }
+    assert {"prefix", "suffix", "interleave"}.issubset(operators)
+    assert all(
+        len(scheme.roles) <= 32
+        and scheme.base_id
+        and scheme.argument_id
+        and len(scheme.evidence) == 2
+        for scheme in explorer.parameterized_schemes.values()
+    )
+
+    choice = explorer.select(
+        observation,
+        scene,
+        (1, 2, 3),
+        pragmatic_disequilibrium=True,
+        structure_scores={},
+    )
+
+    assert "parameterized-scheme-variation" in choice.reason
+    assert explorer.last_scheme_components
+    assert any(
+        component.startswith("base:")
+        for component in explorer.last_scheme_components
+    )
+    assert any(
+        component.startswith("argument:")
+        for component in explorer.last_scheme_components
+    )
+    assert explorer.to_dict()["parameterized_scheme_trials"] == 1
+
+
 def test_multicolor_affordance_precedes_fragmented_color_objects() -> None:
     observation = Observation.create(
         state="NOT_FINISHED",

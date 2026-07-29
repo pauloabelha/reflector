@@ -61,6 +61,8 @@ class MindConfig:
     enable_local_relation_solver: bool = False
     enable_constraint_first_role_replay: bool = False
     enable_global_relation_constraint_solver: bool = False
+    enable_preregistered_structural_credit: bool = False
+    enable_parameterized_scheme_variation: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -93,6 +95,8 @@ class MindConfig:
             "enable_local_relation_solver",
             "enable_constraint_first_role_replay",
             "enable_global_relation_constraint_solver",
+            "enable_preregistered_structural_credit",
+            "enable_parameterized_scheme_variation",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -207,11 +211,20 @@ class SymbolicMind:
             # Freeze the forecast before the observed transition updates any
             # schema.  This prevents hindsight from masquerading as
             # prediction and gives contradiction a structural target.
-            prediction = self.schemas.predict(
-                transition.action_id,
-                transition.context,
+            primed = (
+                self.reinforcement.consume_primed(transition.action_id)
+                if self.config.enable_preregistered_structural_credit
+                else None
             )
-            if self.config.enable_accommodation:
+            prediction = (
+                primed.prediction()
+                if primed is not None
+                else self.schemas.predict(
+                    transition.action_id,
+                    transition.context,
+                )
+            )
+            if self.config.enable_accommodation and primed is None:
                 prediction = self.reinforcement.accommodate_prediction(
                     action_id=transition.action_id,
                     context=transition.context,
@@ -220,6 +233,7 @@ class SymbolicMind:
             assessment_id = self.reinforcement.assess(
                 transition,
                 prediction,
+                primed,
             )
             new_assessments = (assessment_id,)
             if self.config.enable_accommodation:
@@ -302,6 +316,40 @@ class SymbolicMind:
             new_hypotheses,
             new_abstractions,
             new_assessments,
+        )
+
+    def prime_hypothesis(
+        self,
+        decision: Decision,
+        *,
+        scheme_components: tuple[str, ...] = (),
+    ) -> str | None:
+        """Put exact symbolic dependencies at risk before an intervention."""
+
+        if (
+            not self.config.enable_preregistered_structural_credit
+            or self._last_scene is None
+        ):
+            return None
+        context = canonical_atoms(
+            (
+                *self._last_scene.context(),
+                *self.concepts.context_atoms(decision.action_id),
+            )
+        )
+        prediction = self.schemas.predict(decision.action_id, context)
+        if self.config.enable_accommodation:
+            prediction = self.reinforcement.accommodate_prediction(
+                action_id=decision.action_id,
+                context=context,
+                prediction=prediction,
+            )
+        return self.reinforcement.prime(
+            before_index=self._last_scene.index,
+            action_id=decision.action_id,
+            context=context,
+            prediction=prediction,
+            scheme_components=scheme_components,
         )
 
     def select_action(self, legal_actions: tuple[int, ...]) -> tuple[int, str]:

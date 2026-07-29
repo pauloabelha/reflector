@@ -24,6 +24,7 @@ class StructuralAssessment:
     """Separate evidence channels for one pre-outcome symbolic prediction."""
 
     assessment_id: str
+    hypothesis_id: str | None
     before_index: int
     after_index: int
     context: tuple[str, ...]
@@ -31,6 +32,7 @@ class StructuralAssessment:
     predicted: tuple[str, ...]
     observed: tuple[str, ...]
     licensing_structures: tuple[str, ...]
+    scheme_components: tuple[str, ...]
     confirmed: tuple[str, ...]
     contradicted: tuple[str, ...]
     predicted_absent: tuple[str, ...]
@@ -65,6 +67,39 @@ class StructuralEligibility:
 
 
 @dataclass(frozen=True, slots=True)
+class PrimedCausalHypothesis:
+    """A pre-intervention forecast naming every structure put at risk."""
+
+    hypothesis_id: str
+    before_index: int
+    action_id: int
+    context: tuple[str, ...]
+    predicted: tuple[str, ...]
+    predicted_absent: tuple[str, ...]
+    licensing_structures: tuple[str, ...]
+    scheme_components: tuple[str, ...]
+    support: int
+    confidence: float
+
+    def prediction(self) -> SchemaPrediction | None:
+        if not self.predicted and not self.predicted_absent:
+            return None
+        return SchemaPrediction(
+            action_id=self.action_id,
+            result=self.predicted,
+            evidence=self.licensing_structures,
+            evidence_contexts=(self.context,),
+            support=self.support,
+            confidence=self.confidence,
+            transferred=False,
+            negated_predicates=self.predicted_absent,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
 class ConditionalAccommodation:
     """A learned context condition that adds or suppresses a proposition."""
 
@@ -93,6 +128,13 @@ class StructuralCreditLedger:
     assessments: dict[str, StructuralAssessment] = field(default_factory=dict)
     eligibility: list[StructuralEligibility] = field(default_factory=list)
     credited_structures: dict[str, dict[str, int]] = field(default_factory=dict)
+    typed_credit: dict[str, dict[str, int]] = field(default_factory=dict)
+    hypothesis_history: dict[str, PrimedCausalHypothesis] = field(
+        default_factory=dict
+    )
+    pending_hypothesis: PrimedCausalHypothesis | None = None
+    consecutive_without_progress: int = 0
+    pragmatic_disequilibrium_threshold: int = 8
     accommodations: dict[str, ConditionalAccommodation] = field(
         default_factory=dict
     )
@@ -101,10 +143,81 @@ class StructuralCreditLedger:
     )
     last_constructed: tuple[str, ...] = ()
 
+    @property
+    def pragmatic_disequilibrium(self) -> bool:
+        return (
+            self.consecutive_without_progress
+            >= self.pragmatic_disequilibrium_threshold
+        )
+
+    def prime(
+        self,
+        *,
+        before_index: int,
+        action_id: int,
+        context: tuple[Atom, ...],
+        prediction: SchemaPrediction | None,
+        scheme_components: tuple[str, ...] = (),
+    ) -> str:
+        """Preregister a causal forecast before its intervention is executed."""
+
+        context_terms = tuple(sorted(atom.text() for atom in context))
+        predicted = prediction.result if prediction is not None else ()
+        absent = (
+            prediction.negated_predicates if prediction is not None else ()
+        )
+        licensing = prediction.evidence if prediction is not None else ()
+        hypothesis_id = (
+            "primed-"
+            + hashlib.sha256(
+                "|".join(
+                    (
+                        str(before_index),
+                        str(action_id),
+                        *context_terms,
+                        "predict",
+                        *predicted,
+                        "absent",
+                        *absent,
+                        "structures",
+                        *licensing,
+                        "schemes",
+                        *scheme_components,
+                    )
+                ).encode()
+            ).hexdigest()[:12]
+        )
+        hypothesis = PrimedCausalHypothesis(
+            hypothesis_id=hypothesis_id,
+            before_index=before_index,
+            action_id=action_id,
+            context=context_terms,
+            predicted=predicted,
+            predicted_absent=absent,
+            licensing_structures=tuple(sorted(set(licensing))),
+            scheme_components=tuple(sorted(set(scheme_components))),
+            support=prediction.support if prediction is not None else 0,
+            confidence=prediction.confidence if prediction is not None else 0.0,
+        )
+        self.pending_hypothesis = hypothesis
+        self.hypothesis_history[hypothesis_id] = hypothesis
+        return hypothesis_id
+
+    def consume_primed(
+        self,
+        action_id: int,
+    ) -> PrimedCausalHypothesis | None:
+        hypothesis = self.pending_hypothesis
+        self.pending_hypothesis = None
+        if hypothesis is None or hypothesis.action_id != action_id:
+            return None
+        return hypothesis
+
     def assess(
         self,
         transition: Transition,
         prediction: SchemaPrediction | None,
+        primed: PrimedCausalHypothesis | None = None,
     ) -> str:
         """Assess a transition against a prediction frozen before learning."""
 
@@ -191,8 +304,18 @@ class StructuralCreditLedger:
             if contradicted or contradicted_absent
             else "retain"
         )
-        licensing = prediction.evidence if prediction is not None else ()
+        licensing = (
+            primed.licensing_structures
+            if primed is not None
+            else prediction.evidence
+            if prediction is not None
+            else ()
+        )
+        scheme_components = (
+            primed.scheme_components if primed is not None else ()
+        )
         assessment_id = _identifier(
+            primed.hypothesis_id if primed is not None else "unprimed",
             str(transition.before_index),
             str(transition.after_index),
             str(transition.action_id),
@@ -203,6 +326,9 @@ class StructuralCreditLedger:
         previous = self.assessments.get(assessment_id)
         self.assessments[assessment_id] = StructuralAssessment(
             assessment_id=assessment_id,
+            hypothesis_id=(
+                primed.hypothesis_id if primed is not None else None
+            ),
             before_index=transition.before_index,
             after_index=transition.after_index,
             context=context,
@@ -210,6 +336,7 @@ class StructuralCreditLedger:
             predicted=predicted,
             observed=observed,
             licensing_structures=licensing,
+            scheme_components=scheme_components,
             confirmed=confirmed,
             contradicted=contradicted,
             predicted_absent=predicted_absent,
@@ -221,6 +348,12 @@ class StructuralCreditLedger:
             perturbation=perturbation,
             response=response,
             support=1 if previous is None else previous.support + 1,
+        )
+        self._assign_typed_credit(
+            (*licensing, *scheme_components),
+            confirmed=confirmed,
+            contradicted=(*contradicted, *contradicted_absent),
+            observed=observed,
         )
         self._advance_eligibility(observed)
         for structure_id in licensing:
@@ -235,6 +368,57 @@ class StructuralCreditLedger:
         self.eligibility = self.eligibility[-256:]
         self.last_constructed = self._rebuild_accommodations()
         return assessment_id
+
+    def _assign_typed_credit(
+        self,
+        structures: tuple[str, ...],
+        *,
+        confirmed: tuple[str, ...],
+        contradicted: tuple[str, ...],
+        observed: tuple[str, ...],
+    ) -> None:
+        observed_kinds = {_kind(term) for term in observed}
+        progress = bool(observed_kinds & {"level_advanced", "WIN"})
+        terminal_failure = any("GAME_OVER" in term for term in observed)
+        no_effect = observed_kinds == {"no_observed_change"}
+        self.consecutive_without_progress = (
+            0 if progress else self.consecutive_without_progress + 1
+        )
+        for structure_id in sorted(set(structures)):
+            channels = self.typed_credit.setdefault(structure_id, {})
+            if confirmed:
+                channels["predictive_support"] = (
+                    channels.get("predictive_support", 0) + len(confirmed)
+                )
+            if contradicted:
+                channels["predictive_refutation"] = (
+                    channels.get("predictive_refutation", 0)
+                    + len(contradicted)
+                )
+            if progress:
+                channels["pragmatic_progress"] = (
+                    channels.get("pragmatic_progress", 0) + 1
+                )
+            elif terminal_failure:
+                channels["pragmatic_failure"] = (
+                    channels.get("pragmatic_failure", 0) + 1
+                )
+            elif no_effect:
+                channels["pragmatic_stagnation"] = (
+                    channels.get("pragmatic_stagnation", 0) + 1
+                )
+
+    def pragmatic_structure_scores(self) -> dict[str, int]:
+        """Return only pragmatic credit; never collapse prediction into reward."""
+
+        return {
+            structure_id: (
+                channels.get("pragmatic_progress", 0) * 4
+                - channels.get("pragmatic_stagnation", 0)
+                - channels.get("pragmatic_failure", 0) * 4
+            )
+            for structure_id, channels in self.typed_credit.items()
+        }
 
     def accommodate_prediction(
         self,
@@ -452,6 +636,24 @@ class StructuralCreditLedger:
                     self.credited_structures.items()
                 )
             },
+            "typed_credit": {
+                structure: dict(sorted(channels.items()))
+                for structure, channels in sorted(self.typed_credit.items())
+            },
+            "hypothesis_history": [
+                item.to_dict()
+                for item in sorted(
+                    self.hypothesis_history.values(),
+                    key=lambda value: value.hypothesis_id,
+                )
+            ],
+            "pending_hypothesis": (
+                self.pending_hypothesis.to_dict()
+                if self.pending_hypothesis is not None
+                else None
+            ),
+            "consecutive_without_progress": self.consecutive_without_progress,
+            "pragmatic_disequilibrium": self.pragmatic_disequilibrium,
             "accommodations": [
                 item.to_dict()
                 for item in sorted(

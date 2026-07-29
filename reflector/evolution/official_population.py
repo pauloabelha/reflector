@@ -178,6 +178,24 @@ def operative_strategy_population(
             "Reject if constraint-first replay fails to improve levels or "
             "equal-budget score without a control regression.",
         ),
+        (
+            "preregistered-structural-credit",
+            "enable_preregistered_structural_credit",
+            True,
+            "Prime the exact symbolic dependencies of a causal forecast before "
+            "intervention and keep predictive and pragmatic credit typed.",
+            "Reject if preregistration changes control behavior without a "
+            "reproducible gain or cannot name the credited structure.",
+        ),
+        (
+            "parameterized-scheme-variation",
+            "enable_parameterized_scheme_variation",
+            True,
+            "Use one successful coordinate-free scheme as a typed prefix, "
+            "suffix, interleaving, or role-binding argument to another.",
+            "Reject if bounded scheme variation fails to improve progress "
+            "without regressing a control completion.",
+        ),
     )
     control = Candidate.create(
         parent.config,

@@ -58,3 +58,33 @@ def test_cognitive_event_exposes_auditable_state_without_prose_reasoning() -> No
     )
     assert event["operative_state"]["exploration"]["states"] == 1
     assert "thought" not in json.dumps(event).lower()
+
+
+def test_policy_preregisters_hypothesis_before_observing_outcome() -> None:
+    policy = SymbolicPolicy(
+        MindConfig(enable_preregistered_structural_credit=True)
+    )
+    first = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1,),
+        frame=((0, 0), (0, 9)),
+    )
+    second = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1,),
+        frame=first.frame,
+    )
+
+    policy.choose_action(first)
+    pending = policy.mind.reinforcement.pending_hypothesis
+    assert pending is not None
+    assert pending.before_index == 0
+    assert pending.action_id == 1
+
+    decision = policy.choose_action(second)
+    event = policy.cognitive_event(second, decision)
+
+    assessment = event["construction_delta"]["assessments"][0]
+    assert assessment["hypothesis_id"] == pending.hypothesis_id
+    assert event["operative_state"]["primed_hypothesis_count"] == 2
+    assert event["operative_state"]["consecutive_without_progress"] == 1

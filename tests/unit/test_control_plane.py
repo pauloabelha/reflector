@@ -228,8 +228,10 @@ def test_official_population_runs_in_parallel_and_breeds_only_gated_traits(
         "successful-structural-replay",
         "productive-role-reuse",
         "constraint-first-structural-replay",
+        "preregistered-structural-credit",
+        "parameterized-scheme-variation",
     ]
-    assert len({item.candidate.candidate_id for item in strategies}) == 5
+    assert len({item.candidate.candidate_id for item in strategies}) == 7
 
     active = 0
     maximum_active = 0
@@ -293,7 +295,7 @@ def test_official_population_runs_in_parallel_and_breeds_only_gated_traits(
     )
 
     assert maximum_active > 1
-    assert len(result.outcomes) == 10
+    assert len(result.outcomes) == 14
     assert [item.field for item in result.inherited_traits] == [
         "enable_productive_role_reuse",
         "enable_successful_role_replay",

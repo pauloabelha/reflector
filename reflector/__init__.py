@@ -22,11 +22,13 @@ from .core.comparisons import (
     ContextOperator,
     SystemComparison,
 )
+from .core.exploration import ParameterizedScheme
 from .core.graph import DependencyEdge, DependencyGraph
 from .core.mind import MindConfig, SymbolicMind
 from .core.planning import Goal, Plan, SymbolicPlanner
 from .core.reinforcement import (
     ConditionalAccommodation,
+    PrimedCausalHypothesis,
     StructuralAssessment,
     StructuralCreditLedger,
     StructuralEligibility,
@@ -88,6 +90,8 @@ __all__ = [
     "Observation",
     "OperatoryTransformation",
     "Plan",
+    "ParameterizedScheme",
+    "PrimedCausalHypothesis",
     "ProcedureAbstraction",
     "Scene",
     "Schema",

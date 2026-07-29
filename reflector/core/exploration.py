@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
@@ -38,6 +39,26 @@ class ActionRole:
     shape: tuple[tuple[int, int], ...] = ()
 
 
+@dataclass(frozen=True, slots=True)
+class ParameterizedScheme:
+    """One learned scheme supplied as a typed modifier to another."""
+
+    scheme_id: str
+    base_id: str
+    argument_id: str
+    operator: str
+    roles: tuple[ActionRole, ...]
+    evidence: tuple[str, ...]
+
+    def components(self) -> tuple[str, ...]:
+        return (
+            f"scheme:{self.scheme_id}",
+            f"base:{self.base_id}",
+            f"argument:{self.argument_id}",
+            f"operator:{self.operator}",
+        )
+
+
 @dataclass(slots=True)
 class EpistemicExplorer:
     """Construct and traverse a finite graph of tried interventions.
@@ -61,6 +82,7 @@ class EpistemicExplorer:
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
+    parameterized_scheme_variation: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -84,6 +106,15 @@ class EpistemicExplorer:
     role_trials: Counter[ActionRole] = field(default_factory=Counter)
     role_responses: Counter[ActionRole] = field(default_factory=Counter)
     learned_local_relation: dict[int, bool] = field(default_factory=dict)
+    successful_schemes: dict[str, tuple[ActionRole, ...]] = field(
+        default_factory=dict
+    )
+    parameterized_schemes: dict[str, ParameterizedScheme] = field(
+        default_factory=dict
+    )
+    variation_cursors: dict[str, int] = field(default_factory=dict)
+    variation_trials: Counter[str] = field(default_factory=Counter)
+    last_scheme_components: tuple[str, ...] = ()
 
     def arbitration_snapshot(self, selected_reason: str) -> tuple[dict[str, str], ...]:
         """Explain deterministic advisor priority without inventing prose."""
@@ -97,6 +128,8 @@ class EpistemicExplorer:
             order.append("productive-role-reuse")
         if self.local_relation_solver and not self.constraint_first_role_replay:
             order.append("local-relation-repair")
+        if self.parameterized_scheme_variation:
+            order.append("parameterized-scheme-variation")
         if self.hierarchical_action_fairness:
             order.append("hierarchical-action-fairness")
         order.extend(("untried-state-intervention", "known-frontier-navigation"))
@@ -110,6 +143,8 @@ class EpistemicExplorer:
             if "reuse-productive-action-role" in selected_reason
             else "local-relation-repair"
             if "repair-local-relation" in selected_reason
+            else "parameterized-scheme-variation"
+            if "parameterized-scheme-variation" in selected_reason
             else "hierarchical-action-fairness"
             if "hierarchical-action-family" in selected_reason
             else "untried-state-intervention"
@@ -148,15 +183,25 @@ class EpistemicExplorer:
         if self.current_level is None:
             self.current_level = observation.levels_completed
         elif observation.levels_completed > self.current_level:
-            if self.successful_role_replay and self.episode_roles:
+            if (
+                self.successful_role_replay
+                or self.parameterized_scheme_variation
+            ) and self.episode_roles:
                 self.successful_program = tuple(self.episode_roles)
                 self.program_cursor = 0
+                if self.parameterized_scheme_variation:
+                    self._learn_parameterized_variations(
+                        self.successful_program
+                    )
             self.episode_roles.clear()
             self.current_level = observation.levels_completed
             self.level_failures = 0
         elif observation.state == "GAME_OVER":
             self.episode_roles.clear()
             self.program_cursor = 0
+            self.variation_cursors = {
+                scheme_id: 0 for scheme_id in self.parameterized_schemes
+            }
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
@@ -219,6 +264,9 @@ class EpistemicExplorer:
         observation: Observation,
         scene: Scene,
         legal_actions: tuple[int, ...],
+        *,
+        pragmatic_disequilibrium: bool = False,
+        structure_scores: dict[str, int] | None = None,
     ) -> ExplorationChoice:
         """Choose an untried intervention or navigate to a known frontier."""
 
@@ -230,6 +278,7 @@ class EpistemicExplorer:
             raise ValueError("epistemic explorer has no represented legal action")
         self.tokens_by_state[state] = tokens
         self.selection_frame = observation.frame
+        self.last_scheme_components = ()
 
         local_repair = None
         if self.constraint_first_role_replay:
@@ -279,6 +328,23 @@ class EpistemicExplorer:
                     "epistemic-frontier:repair-local-relation",
                     scene,
                 )
+
+        variation = self._select_scheme_variation(
+            tokens,
+            scene,
+            pragmatic_disequilibrium=pragmatic_disequilibrium,
+            structure_scores=structure_scores or {},
+        )
+        if variation is not None:
+            token, scheme = variation
+            self.last_scheme_components = scheme.components()
+            return self._issue(
+                state,
+                token,
+                "epistemic-frontier:parameterized-scheme-variation:"
+                f"{scheme.scheme_id}",
+                scene,
+            )
 
         if self.hierarchical_action_fairness:
             _index, balanced = min(
@@ -373,7 +439,7 @@ class EpistemicExplorer:
         self.global_attempts[token] += 1
         self.family_attempts[(state, token.action_id)] += 1
         self.global_family_attempts[token.action_id] += 1
-        if self.successful_role_replay:
+        if self.successful_role_replay or self.parameterized_scheme_variation:
             self.episode_roles.append(self._role(token, scene))
         self.pending_frame = self.selection_frame
         self.pending_role = self._role(token, scene)
@@ -430,6 +496,131 @@ class EpistemicExplorer:
                         token,
                     ),
                 )
+        return None
+
+    @staticmethod
+    def _role_key(role: ActionRole) -> str:
+        return repr((role.action_id, role.color, role.area, role.shape))
+
+    @classmethod
+    def _scheme_id(
+        cls,
+        prefix: str,
+        roles: tuple[ActionRole, ...],
+        *parts: str,
+    ) -> str:
+        raw = "|".join(
+            (prefix, *parts, *(cls._role_key(role) for role in roles))
+        )
+        return hashlib.sha256(raw.encode()).hexdigest()[:12]
+
+    def _learn_parameterized_variations(
+        self,
+        program: tuple[ActionRole, ...],
+    ) -> None:
+        """Construct bounded higher-order variations from successful schemes."""
+
+        if not program:
+            return
+        argument_id = self._scheme_id("operative", program)
+        previous = tuple(self.successful_schemes.items())
+        self.successful_schemes[argument_id] = program
+        for base_id, base in previous:
+            if base_id == argument_id:
+                continue
+            interleaved = tuple(
+                role
+                for pair in zip(base, program)
+                for role in pair
+            )
+            shared_actions = {
+                role.action_id for role in base
+            } & {role.action_id for role in program}
+            rebound = tuple(
+                next(
+                    (
+                        modifier
+                        for modifier in program
+                        if modifier.action_id == role.action_id
+                    ),
+                    role,
+                )
+                if role.action_id in shared_actions
+                else role
+                for role in base
+            )
+            variants = (
+                ("prefix", (*program[:1], *base)),
+                ("suffix", (*base, *program[-1:])),
+                ("interleave", interleaved),
+                ("role-bind", rebound),
+            )
+            for operator, roles in variants:
+                bounded = tuple(roles[:32])
+                if not bounded or bounded == base:
+                    continue
+                scheme_id = self._scheme_id(
+                    "parameterized",
+                    bounded,
+                    base_id,
+                    argument_id,
+                    operator,
+                )
+                self.parameterized_schemes[scheme_id] = ParameterizedScheme(
+                    scheme_id=scheme_id,
+                    base_id=base_id,
+                    argument_id=argument_id,
+                    operator=operator,
+                    roles=bounded,
+                    evidence=(base_id, argument_id),
+                )
+                self.variation_cursors.setdefault(scheme_id, 0)
+        if len(self.parameterized_schemes) > 64:
+            retained = dict(
+                sorted(self.parameterized_schemes.items())[-64:]
+            )
+            self.parameterized_schemes = retained
+            self.variation_cursors = {
+                key: self.variation_cursors.get(key, 0) for key in retained
+            }
+
+    def _select_scheme_variation(
+        self,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+        *,
+        pragmatic_disequilibrium: bool,
+        structure_scores: dict[str, int],
+    ) -> tuple[ActionToken, ParameterizedScheme] | None:
+        if (
+            not self.parameterized_scheme_variation
+            or not pragmatic_disequilibrium
+            or not self.parameterized_schemes
+        ):
+            return None
+        represented = tuple((token, self._role(token, scene)) for token in tokens)
+        schemes = sorted(
+            self.parameterized_schemes.values(),
+            key=lambda scheme: (
+                -structure_scores.get(f"scheme:{scheme.scheme_id}", 0),
+                self.variation_trials[scheme.scheme_id],
+                scheme.scheme_id,
+            ),
+        )
+        for scheme in schemes:
+            cursor = self.variation_cursors.get(scheme.scheme_id, 0)
+            while cursor < len(scheme.roles):
+                role = scheme.roles[cursor]
+                cursor += 1
+                self.variation_cursors[scheme.scheme_id] = cursor
+                matches = [
+                    token
+                    for token, represented_role in represented
+                    if represented_role == role
+                ]
+                if matches:
+                    self.variation_trials[scheme.scheme_id] += 1
+                    return min(matches), scheme
         return None
 
     def _role(self, token: ActionToken, scene: Scene) -> ActionRole:
@@ -935,6 +1126,9 @@ class EpistemicExplorer:
                 response > 0 for response in self.role_responses.values()
             ),
             "learned_local_relations": len(self.learned_local_relation),
+            "successful_schemes": len(self.successful_schemes),
+            "parameterized_schemes": len(self.parameterized_schemes),
+            "parameterized_scheme_trials": sum(self.variation_trials.values()),
             "frontier_states": sum(
                 self._has_frontier(state) for state in self.tokens_by_state
             ),
