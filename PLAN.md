@@ -453,7 +453,7 @@ bounded recursive expansion and parent resumption. This is not evidence of
 general object hierarchy, cross-game transfer, a completed game, or a Kaggle
 leaderboard score.
 
-## Active experiment: v38 connector relocation as topology construction
+## Rejected experiment: v38 connector relocation as topology construction
 
 Parent: accepted v37 `candidate-445450df91872736`
 
@@ -503,6 +503,24 @@ Falsifier:
   predicted 17-action program fails to advance level 4, or if any accepted
   completion regresses.
 
+Evidence:
+
+- the frozen candidate inferred the unique relocation and emitted the exact
+  predicted 17-action program;
+- the connector-color selector remained outlined across the level transition,
+  so the offspring normalized filled and outlined rectangular selectors before
+  recovering the exact color bijection;
+- selecting the filled child marker and applying it to the aligned parent slot
+  produced no rendered change: the marker remained at `(25, 36)` and the
+  parent slot remained neutral at `(25, 22)`;
+- both frozen candidate runs and the source-matched exact-off control reproduced
+  3/8 levels, 16.6666666667/100, and `[9, 15, 15, 361]`.
+
+V38 is rejected. The negative result distinguishes structural plausibility from
+causal affordance: appearance and alignment did not establish that the marker
+was movable. The exact-off implementation and cognitive telemetry remain as
+evidence; v37 stays accepted.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -526,19 +544,18 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Test the preregistered v38 topology-construction program on `sb26` level 4.
-2. Implement `ar25` action-family causal attribution, exact-shape
+1. Implement `ar25` action-family causal attribution, exact-shape
    mover/target correspondence, and monotone learned translation composition;
    the rendered black-box control solved L1 in 15 actions.
-3. Treat `g50t` separately as landmark/phase-conditioned topology; fixed
+2. Treat `g50t` separately as landmark/phase-conditioned topology; fixed
    endpoint orders were falsified.
-4. Route qualitative frame difference and flow into causal policy only through
+3. Route qualitative frame difference and flow into causal policy only through
    typed, bounded advisors; passive perception alone is not task credit.
-5. Evaluate diverse operators in isolated populations across games; require a
+4. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
-6. Run source-matched target ablations and the full 25-game gate only for a
+5. Run source-matched target ablations and the full 25-game gate only for a
    qualifying offspring; keep v37 accepted otherwise.
-7. Prepare the first real Kaggle notebook submission as an explicit external
+6. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.
 

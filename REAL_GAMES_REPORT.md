@@ -33,6 +33,8 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Source-matched process-isolated suite | v32 control / v31 genome | 3.2992976365 / 100 | 0 games beaten; 11/183 levels | exact parent reproduction |
 | Process-isolated official local suite | v31 historical accepted | 3.2992976365 / 100 | 0 games beaten; 11/183 levels | superseded by v32 |
 | Process-isolated official local suite | v28 object/flow offspring | 2.8820272500 / 100 | 0 games beaten; 9/183 levels | rejected: lost `tn36`, slowed two wins |
+| Target-only `sb26` reruns | v38 connector relocation | 16.6666666667 for one game | 3/8 levels; `[9, 15, 15, 361]` | rejected: predicted 17-action program did not advance |
+| Target-only `sb26` control | v38 exact-off / v37 policy | 16.6666666667 for one game | 3/8 levels; `[9, 15, 15, 361]` | source-matched control |
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
@@ -204,6 +206,55 @@ Raw evidence:
 - [v37 six-game preservation gate](reports/official-isolated-v37-six-game-preservation.json)
 - [v37 six-game v35 control](reports/official-isolated-v37-six-game-v35-control.json)
 - [v37 candidate](candidates/v37-enclosure-sibling-composition-400.json)
+
+## Rejected v38 connector-relocation hypothesis
+
+The stable `sb26` level-4 frame contained two exact enclosures, seven neutral
+targets, and one filled child-colored marker aligned with a parent target.
+V38 preregistered the hypothesis that relocating the marker would construct a
+parent-to-child connector while turning its old position into a neutral child
+slot.
+
+The offspring normalized the one outlined, currently selected palette object,
+recovered the exact seven-color selector bijection, inferred the unique
+relocation, and emitted the predicted 17 actions. The critical intervention
+failed causally: selecting the marker at `(25, 36)` and applying it to
+`(25, 22)` changed neither rendered location. The agent then filled the seven
+predicted payload locations and committed, but the level did not advance.
+
+Two frozen candidate runs and the current-source exact-off control all
+reproduced 3/8 levels, 16.6666666667/100, and
+`[9, 15, 15, 361]`. V38 is rejected without a preservation or full-suite gate.
+The earned negative lesson is that geometric alignment and appearance matching
+do not establish an object's action affordance; intervention must first confirm
+that the proposed structural operation is executable.
+
+Frozen inference commit: `f6b7eb579316a34a504ce6a02b19229184e297f0`
+
+Candidate: `candidate-b3262e0992f5fae7`
+
+Candidate inference fingerprint:
+`b92f0aa94aac1f48925c1a1bff1cb18881b1712160ddb0eb5d762567168914d0`
+
+Candidate SHA-256:
+`75f8dccdb340126fa6858baf30b0c731b9672f54cbe7a3d5b1e21a0ed6d9bdce`
+
+Frozen report SHA-256:
+`c92340a5c78e9dd4f924b84fbf68409d16adb1418018dc88329485b4ca1d5f96`
+
+Frozen rerun SHA-256:
+`0de879868ceb7a59ae969e921810154b0ac59c6168f62e7c0afa59cc4abfb23d`
+
+Source-control report SHA-256:
+`43761fca742ff86a4e5880a6c32e26f64cbeab4a0807d53adade1d915cb07d04`
+
+Raw evidence:
+
+- [v38 frozen rejected target](reports/official-isolated-v38-connector-relocation-rejected.json)
+- [v38 frozen rejected target rerun](reports/official-isolated-v38-connector-relocation-rejected-r2.json)
+- [v38 source-matched exact-off control](reports/official-isolated-v38-connector-relocation-control.json)
+- [v38 candidate](candidates/v38-connector-relocation-400.json)
+- [v38 source-matched control candidate](candidates/v38-connector-relocation-control-400.json)
 
 ## Historical accepted v31 result
 
@@ -542,7 +593,7 @@ Candidate:
 
 ## What our scheme is learning
 
-The real-game evidence currently supports ten bounded insights:
+The real-game evidence currently supports twelve bounded insights:
 
 1. **Exploration needs memory of intervention identity.** Treating every frame
    independently scored zero; an epistemic transition graph produced the first
@@ -583,6 +634,11 @@ The real-game evidence currently supports ten bounded insights:
    failed. V35 represented an occupied slot as a link to a child procedure,
    expanded it recursively, resumed the parent, and added a level without
    regression.
+12. **Structural resemblance does not establish causal affordance.** V38
+   correctly detected an aligned marker and executed its complete predicted
+   program, but the proposed relocation produced no rendered change. Before
+   composing a structural operation, the agent must earn its executability
+   through intervention.
 
 These are narrow environment-level results. They do not yet prove general
 Piagetian equilibration, arbitrary schema induction, cross-game transfer, or

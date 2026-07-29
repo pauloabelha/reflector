@@ -653,3 +653,22 @@ V37 is promoted. The accepted claim is limited to distinguishing and composing
 same-height sibling procedures from exact rendered enclosures. It is not
 evidence of arbitrary scene graphs, broad transfer, or a Kaggle leaderboard
 score.
+
+## 2026-07-29 — Reject v38 connector relocation
+
+The stable `sb26` level-4 frame contained two exact enclosures, seven neutral
+targets, and one filled child-colored marker aligned with a parent target.
+V38 hypothesized that moving the marker would construct the missing
+parent-to-child topology and expose its old child position as a neutral slot.
+
+The frozen offspring recovered the exact selector bijection despite one
+outlined selected palette object, inferred the unique relocation, and executed
+the preregistered 17-action program. The decisive intervention had no rendered
+effect: the marker did not move and the parent target did not change. The
+subsequent payload fill and commit did not advance the level.
+
+Two frozen runs and the current-source v37 exact-off control all reproduced
+3/8 levels, 16.6666666667/100, and `[9, 15, 15, 361]`. V38 is rejected before
+wider gates, and v37 remains accepted. The bounded lesson is that geometric
+and attribute correspondence can propose an affordance but cannot license it;
+the operation must receive causal intervention evidence before composition.

@@ -43,6 +43,14 @@ full run is retained as invalidated methodological evidence. The exact package
 passes 166 tests (3 skipped), Ruff, mypy, both offline smoke paths, and export.
 No hidden Kaggle score exists.
 
+The subsequent v38 experiment is rejected and does not change these scores.
+It inferred and executed a 17-action `sb26` level-4 program based on relocating
+an aligned child marker, but the two relocation clicks produced no rendered
+change and the level did not advance. Two frozen runs matched the source-matched
+v37 control at `[9, 15, 15, 361]`. This negative result is retained because it
+shows that visual alignment and attribute matching cannot substitute for
+intervention evidence that an object is actually movable.
+
 The v26 research branch now preregisters intervention hypotheses, keeps
 predictive and pragmatic credit separate, and treats successful action-role
 programs as first-class inputs to bounded prefix, suffix, interleaving, and
