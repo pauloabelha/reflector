@@ -78,6 +78,9 @@ class SymbolicPolicy:
             enclosure_target_traversal=(
                 self.mind.config.enable_enclosure_target_traversal
             ),
+            connector_relocation=(
+                self.mind.config.enable_connector_relocation
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

@@ -240,6 +240,7 @@ class EpistemicExplorer:
     nested_target_traversal: bool = False
     nested_source_traversal: bool = False
     enclosure_target_traversal: bool = False
+    connector_relocation: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -302,6 +303,7 @@ class EpistemicExplorer:
     select_apply_level_trials: int = 0
     nested_target_plan_active: bool = False
     nested_source_plan_active: bool = False
+    connector_relocation_plan_active: bool = False
     select_apply_diagnostic: str = "not-attempted"
 
     @property
@@ -416,6 +418,7 @@ class EpistemicExplorer:
             self.select_apply_level_trials = 0
             self.nested_target_plan_active = False
             self.nested_source_plan_active = False
+            self.connector_relocation_plan_active = False
             self.select_apply_diagnostic = "not-attempted"
             self.level_interventions = 0
             self.current_level = observation.levels_completed
@@ -628,6 +631,10 @@ class EpistemicExplorer:
             ) + (
                 ("operator:nested-source-flattening",)
                 if self.nested_source_plan_active
+                else ()
+            ) + (
+                ("operator:relocate-connector",)
+                if self.connector_relocation_plan_active
                 else ()
             )
             return self._issue(
@@ -846,6 +853,7 @@ class EpistemicExplorer:
                 tuple[ActionToken, ...],
                 bool,
                 bool,
+                bool,
             ]
         ] = []
         for reference in rows:
@@ -854,7 +862,16 @@ class EpistemicExplorer:
             color_set = set(reference_colors)
             if len(color_set) != size:
                 continue
-            for selectors in rows:
+            selector_layouts = list(rows)
+            if self.connector_relocation:
+                selector_layouts.extend(
+                    self._rectangular_selector_variants(
+                        objects,
+                        colors=color_set,
+                        below=reference[0].centroid[1],
+                    )
+                )
+            for selectors in selector_layouts:
                 if len(selectors) != size:
                     continue
                 if selectors[0].centroid[1] <= reference[0].centroid[1]:
@@ -894,6 +911,8 @@ class EpistemicExplorer:
                         {item.centroid[1] for item in targets}
                     ) > 1
                     nested_plan = False
+                    connector_plan = False
+                    relocation_prefix: tuple[ActionToken, ...] = ()
                     if self.nested_target_traversal and is_multiline:
                         nested_order = None
                         if self.enclosure_target_traversal:
@@ -907,6 +926,34 @@ class EpistemicExplorer:
                                 observation.frame,
                                 targets,
                             )
+                        if (
+                            nested_order is None
+                            and self.connector_relocation
+                        ):
+                            relocation = self._relocated_connector_order(
+                                observation.frame,
+                                targets,
+                                objects,
+                            )
+                            if relocation is not None:
+                                marker, destination, nested_order = relocation
+                                relocation_prefix = (
+                                    ActionToken(
+                                        self.complex_action,
+                                        (
+                                            ("x", marker.centroid[0]),
+                                            ("y", marker.centroid[1]),
+                                        ),
+                                    ),
+                                    ActionToken(
+                                        self.complex_action,
+                                        (
+                                            ("x", destination.centroid[0]),
+                                            ("y", destination.centroid[1]),
+                                        ),
+                                    ),
+                                )
+                                connector_plan = True
                         if nested_order is None:
                             continue
                         target_orders = (nested_order,)
@@ -915,16 +962,19 @@ class EpistemicExplorer:
                         target_orders = self._spatial_target_orderings(targets)
                     programs = []
                     for target_order in target_orders:
-                        actions: list[ActionToken] = []
+                        actions = list(relocation_prefix)
                         for source, target in zip(reference, target_order):
                             selector = selector_by_color[source.color]
+                            selector_x, selector_y = self._object_click_point(
+                                selector
+                            )
                             actions.extend(
                                 (
                                     ActionToken(
                                         self.complex_action,
                                         (
-                                            ("x", selector.centroid[0]),
-                                            ("y", selector.centroid[1]),
+                                            ("x", selector_x),
+                                            ("y", selector_y),
                                         ),
                                     ),
                                     ActionToken(
@@ -971,6 +1021,7 @@ class EpistemicExplorer:
                             tuple(combined),
                             nested_plan,
                             False,
+                            connector_plan,
                         )
                     )
             if self.nested_source_traversal:
@@ -1065,6 +1116,7 @@ class EpistemicExplorer:
                                 tuple(actions),
                                 False,
                                 True,
+                                False,
                             )
                         )
                         self.select_apply_diagnostic = "nested-source-program"
@@ -1073,9 +1125,12 @@ class EpistemicExplorer:
         winner = min(candidates, key=lambda item: item[0])
         self.nested_target_plan_active = winner[2]
         self.nested_source_plan_active = winner[3]
+        self.connector_relocation_plan_active = winner[4]
         self.select_apply_diagnostic = (
             "nested-source-selected"
             if winner[3]
+            else "connector-relocation-selected"
+            if winner[4]
             else "nested-target-selected"
             if winner[2]
             else "select-apply-selected"
@@ -1242,6 +1297,194 @@ class EpistemicExplorer:
         if visited != set(containers) or set(ordered) != set(targets):
             return None
         return tuple(ordered)
+
+    @staticmethod
+    def _object_click_point(item: _FrameObject) -> tuple[int, int]:
+        """Choose a represented colored pixel nearest an object's centroid."""
+
+        min_x, min_y, _max_x, _max_y = item.bbox
+        points = tuple(
+            (min_x + local_x, min_y + local_y)
+            for local_x, local_y in item.shape
+        )
+        return min(
+            points,
+            key=lambda point: (
+                abs(point[0] - item.centroid[0])
+                + abs(point[1] - item.centroid[1]),
+                point[1],
+                point[0],
+            ),
+        )
+
+    @staticmethod
+    def _rectangular_selector_variants(
+        objects: tuple[_FrameObject, ...],
+        *,
+        colors: set[int],
+        below: int,
+    ) -> tuple[tuple[_FrameObject, ...], ...]:
+        """Normalize a selected outline among otherwise filled selectors."""
+
+        size = len(colors)
+        grouped: dict[tuple[int, int, int], list[_FrameObject]] = {}
+        for item in objects:
+            min_x, min_y, max_x, max_y = item.bbox
+            width = max_x - min_x + 1
+            height = max_y - min_y + 1
+            if (
+                item.color in colors
+                and item.centroid[1] > below
+                and 3 <= width <= 6
+                and width == height
+            ):
+                grouped.setdefault((item.centroid[1], width, height), []).append(
+                    item
+                )
+        variants = []
+        for items in grouped.values():
+            if (
+                len(items) != size
+                or {item.color for item in items} != colors
+                or len({item.centroid[0] for item in items}) != size
+            ):
+                continue
+            width = items[0].bbox[2] - items[0].bbox[0] + 1
+            full_area = width * width
+            outline_area = 4 * width - 4
+            if all(item.area in {full_area, outline_area} for item in items):
+                variants.append(tuple(sorted(items, key=lambda item: item.centroid)))
+        return tuple(variants)
+
+    @staticmethod
+    def _relocated_connector_order(
+        frame: tuple[tuple[int, ...], ...],
+        targets: tuple[_FrameObject, ...],
+        objects: tuple[_FrameObject, ...],
+    ) -> tuple[_FrameObject, _FrameObject, tuple[_FrameObject, ...]] | None:
+        """Construct a unique two-enclosure link by relocating its marker."""
+
+        if not frame or not frame[0] or not 3 <= len(targets) <= 12:
+            return None
+
+        def is_outline_rectangle(item: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = item.bbox
+            width = max_x - min_x + 1
+            height = max_y - min_y + 1
+            if width < 3 or height < 3:
+                return False
+            perimeter = {
+                (x, y)
+                for y in range(height)
+                for x in range(width)
+                if x in {0, width - 1} or y in {0, height - 1}
+            }
+            return item.area == len(perimeter) and set(item.shape) == perimeter
+
+        def encloses(container: _FrameObject, item: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = container.bbox
+            x, y = item.centroid
+            return min_x < x < max_x and min_y < y < max_y
+
+        containers = tuple(
+            item
+            for item in objects
+            if is_outline_rectangle(item)
+            and sum(encloses(item, target) for target in targets) >= 2
+        )
+        if len(containers) != 2:
+            return None
+
+        assigned: dict[_FrameObject, list[_FrameObject]] = {
+            container: [] for container in containers
+        }
+        for target in targets:
+            enclosing = tuple(
+                container for container in containers if encloses(container, target)
+            )
+            if not enclosing:
+                return None
+            smallest_area = min(container.area for container in enclosing)
+            smallest = tuple(
+                container
+                for container in enclosing
+                if container.area == smallest_area
+            )
+            if len(smallest) != 1:
+                return None
+            assigned[smallest[0]].append(target)
+        if any(len(items) < 2 for items in assigned.values()):
+            return None
+
+        columns = tuple(sorted({item.centroid[0] for item in targets}))
+        pitches = {
+            right - left for left, right in zip(columns, columns[1:])
+        }
+        if len(pitches) != 1:
+            return None
+        pitch = pitches.pop()
+        if pitch <= 0:
+            return None
+
+        candidates: list[
+            tuple[_FrameObject, _FrameObject, _FrameObject, _FrameObject]
+        ] = []
+        target_set = set(targets)
+        container_set = set(containers)
+        for child in containers:
+            parent = next(item for item in containers if item != child)
+            child_markers = tuple(
+                item
+                for item in objects
+                if item not in target_set
+                and item not in container_set
+                and item.color == child.color
+                and encloses(child, item)
+                and item.area
+                == (item.bbox[2] - item.bbox[0] + 1)
+                * (item.bbox[3] - item.bbox[1] + 1)
+            )
+            for marker in child_markers:
+                destinations = tuple(
+                    target
+                    for target in assigned[parent]
+                    if target.centroid[0] == marker.centroid[0]
+                )
+                if len(destinations) == 1:
+                    candidates.append((marker, child, destinations[0], parent))
+        if len(candidates) != 1:
+            return None
+        marker, child, destination, parent = candidates[0]
+
+        child_slots = tuple(
+            sorted((*assigned[child], marker), key=lambda item: item.centroid)
+        )
+        if len({item.centroid[1] for item in child_slots}) != 1:
+            return None
+        child_x = tuple(item.centroid[0] for item in child_slots)
+        if any(right - left != pitch for left, right in zip(child_x, child_x[1:])):
+            return None
+
+        parent_slots = tuple(
+            sorted(assigned[parent], key=lambda item: item.centroid)
+        )
+        if len({item.centroid[1] for item in parent_slots}) != 1:
+            return None
+        parent_x = tuple(item.centroid[0] for item in parent_slots)
+        if any(
+            right - left != pitch for left, right in zip(parent_x, parent_x[1:])
+        ):
+            return None
+
+        ordered: list[_FrameObject] = []
+        for target in parent_slots:
+            if target == destination:
+                ordered.extend(child_slots)
+            else:
+                ordered.append(target)
+        if len(ordered) != len(targets) or len(set(ordered)) != len(targets):
+            return None
+        return marker, destination, tuple(ordered)
 
     @staticmethod
     def _nested_target_order(
