@@ -14,6 +14,7 @@ from ..core.symbolic import (
     Observation,
     Scene,
     Transition,
+    VisualPrimitive,
 )
 
 TRACE_FORMAT_VERSION = 3
@@ -89,6 +90,22 @@ class TraceStep:
             ),
             facts=tuple(Atom.parse(atom) for atom in raw_scene["facts"]),
             frame_digest=raw_scene["frame_digest"],
+            primitives=tuple(
+                VisualPrimitive(
+                    primitive_id=item["primitive_id"],
+                    kind=item["kind"],
+                    area=item["area"],
+                    bbox=tuple(item["bbox"]),
+                    centroid=tuple(item["centroid"]),
+                    colors=tuple(item.get("colors", ())),
+                    shape=tuple(tuple(point) for point in item.get("shape", ())),
+                    members=tuple(item.get("members", ())),
+                    properties=tuple(item.get("properties", ())),
+                    evidence=tuple(item.get("evidence", ())),
+                    complexity_cost=item.get("complexity_cost", 1),
+                )
+                for item in raw_scene.get("primitives", ())
+            ),
         )
         raw_transition = value["incoming_transition"]
         transition = None

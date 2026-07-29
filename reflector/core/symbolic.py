@@ -96,6 +96,76 @@ class ObjectState:
         return asdict(self)
 
 
+@dataclass(frozen=True, slots=True)
+class ObjectConcept:
+    """A content-free constructor supplied before task experience."""
+
+    concept_id: str
+    constructor: str
+    invariants: tuple[str, ...]
+    complexity_cost: int
+
+
+STARTER_OBJECT_CONCEPTS = (
+    ObjectConcept(
+        "persistent-component",
+        "track",
+        ("4_connected", "same_color", "frame_to_frame_correspondence"),
+        2,
+    ),
+    ObjectConcept(
+        "composite-region",
+        "group",
+        ("8_connected", "non_substrate", "multiple_colors"),
+        3,
+    ),
+    ObjectConcept(
+        "enclosed-region",
+        "bound",
+        ("4_connected", "background", "not_frame_connected"),
+        3,
+    ),
+    ObjectConcept(
+        "shape-form",
+        "abstract",
+        ("normalized_occupancy", "translation_invariant"),
+        2,
+    ),
+    ObjectConcept(
+        "frame-difference",
+        "differentiate",
+        ("connected_changed_cells", "ordered_before_after"),
+        2,
+    ),
+    ObjectConcept(
+        "object-flow",
+        "correspond",
+        ("persistent_identity", "discrete_displacement"),
+        2,
+    ),
+)
+
+
+@dataclass(frozen=True, slots=True)
+class VisualPrimitive:
+    """A bounded structural grouping constructed from rendered pixels."""
+
+    primitive_id: str
+    kind: str
+    area: int
+    bbox: tuple[int, int, int, int]
+    centroid: tuple[int, int]
+    colors: tuple[int, ...] = ()
+    shape: tuple[tuple[int, int], ...] = ()
+    members: tuple[str, ...] = ()
+    properties: tuple[str, ...] = ()
+    evidence: tuple[str, ...] = ()
+    complexity_cost: int = 1
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
 @dataclass(frozen=True, order=True, slots=True)
 class Event:
     """A symbolic change between consecutive scenes."""
@@ -122,6 +192,7 @@ class Scene:
     objects: tuple[ObjectState, ...]
     facts: tuple[Atom, ...]
     frame_digest: str
+    primitives: tuple[VisualPrimitive, ...] = ()
 
     def context(self) -> tuple[Atom, ...]:
         """Return a compact context suitable for cross-state schema reuse."""
@@ -138,17 +209,31 @@ class Scene:
                 "frame_bounds",
             }
         }
-        for item in self.objects:
+        for object_state in self.objects:
             reusable.add(
                 Atom(
                     "object_signature",
                     (
-                        str(item.color),
-                        str(item.area),
-                        str(item.centroid[0]),
-                        str(item.centroid[1]),
-                        str(item.bbox[2] - item.bbox[0] + 1),
-                        str(item.bbox[3] - item.bbox[1] + 1),
+                        str(object_state.color),
+                        str(object_state.area),
+                        str(object_state.centroid[0]),
+                        str(object_state.centroid[1]),
+                        str(object_state.bbox[2] - object_state.bbox[0] + 1),
+                        str(object_state.bbox[3] - object_state.bbox[1] + 1),
+                    ),
+                )
+            )
+        for primitive in self.primitives:
+            reusable.add(
+                Atom(
+                    "primitive_signature",
+                    (
+                        primitive.kind,
+                        str(primitive.area),
+                        str(len(primitive.colors)),
+                        str(primitive.bbox[2] - primitive.bbox[0] + 1),
+                        str(primitive.bbox[3] - primitive.bbox[1] + 1),
+                        *primitive.properties,
                     ),
                 )
             )
@@ -163,6 +248,7 @@ class Scene:
             "objects": [item.to_dict() for item in self.objects],
             "facts": [atom.text() for atom in self.facts],
             "frame_digest": self.frame_digest,
+            "primitives": [item.to_dict() for item in self.primitives],
         }
 
 

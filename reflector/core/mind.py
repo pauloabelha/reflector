@@ -65,6 +65,9 @@ class MindConfig:
     enable_parameterized_scheme_variation: bool = False
     enable_starter_schemas: bool = False
     enable_relational_scheme_binding: bool = False
+    enable_visual_primitives: bool = False
+    enable_visual_primitive_actions: bool = False
+    enable_temporal_primitives: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -101,9 +104,19 @@ class MindConfig:
             "enable_parameterized_scheme_variation",
             "enable_starter_schemas",
             "enable_relational_scheme_binding",
+            "enable_visual_primitives",
+            "enable_visual_primitive_actions",
+            "enable_temporal_primitives",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
+        if (
+            self.enable_visual_primitive_actions
+            and not self.enable_visual_primitives
+        ):
+            raise ValueError(
+                "visual primitive actions require visual primitive perception"
+            )
         if type(self.planner_max_depth) is not int:
             raise ValueError("planner_max_depth must be an integer")
         if type(self.planner_max_expansions) is not int:
@@ -145,7 +158,10 @@ class SymbolicMind:
 
     def __init__(self, config: MindConfig | None = None) -> None:
         self.config = config or MindConfig()
-        self.tracker = SceneTracker()
+        self.tracker = SceneTracker(
+            enable_visual_primitives=self.config.enable_visual_primitives,
+            enable_temporal_primitives=self.config.enable_temporal_primitives,
+        )
         self.schemas = SchemaStore()
         self.concepts = ConceptStore(
             complexity_pressure=(

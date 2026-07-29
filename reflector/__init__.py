@@ -48,13 +48,16 @@ from .core.schemas import (
     SyntheticConcept,
 )
 from .core.symbolic import (
+    STARTER_OBJECT_CONCEPTS,
     Atom,
     Decision,
     Event,
+    ObjectConcept,
     ObjectState,
     Observation,
     Scene,
     Transition,
+    VisualPrimitive,
 )
 from .core.transformations import (
     ComparisonLawReport,
@@ -93,6 +96,7 @@ __all__ = [
     "MindConfig",
     "ModalReachability",
     "ObjectState",
+    "ObjectConcept",
     "Observation",
     "OperatoryTransformation",
     "Plan",
@@ -112,6 +116,7 @@ __all__ = [
     "StructuralCreditLedger",
     "StructuralEligibility",
     "STARTER_SCHEMA_SET",
+    "STARTER_OBJECT_CONCEPTS",
     "StarterSchema",
     "SymbolicPolicy",
     "SyntheticConcept",
@@ -119,6 +124,7 @@ __all__ = [
     "TemporalHypothesis",
     "TraceStep",
     "Transition",
+    "VisualPrimitive",
     "TransformationComposition",
     "TransformationMorphism",
     "TransformationSystem",

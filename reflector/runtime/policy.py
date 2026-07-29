@@ -55,6 +55,9 @@ class SymbolicPolicy:
             relational_scheme_binding=(
                 self.mind.config.enable_relational_scheme_binding
             ),
+            visual_primitives=(
+                self.mind.config.enable_visual_primitive_actions
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
@@ -241,6 +244,12 @@ class SymbolicPolicy:
                     }
                 )
         abstractions = self.mind.abstractions
+        primitive_counts: dict[str, int] = {}
+        if update is not None:
+            for primitive in update.scene.primitives:
+                primitive_counts[primitive.kind] = (
+                    primitive_counts.get(primitive.kind, 0) + 1
+                )
         return {
             "format": "reflector-cognitive-event-v1",
             "sequence": max(0, self._decision_epoch - 1),
@@ -251,6 +260,10 @@ class SymbolicPolicy:
                 "frame_digest": (
                     update.scene.frame_digest if update is not None else None
                 ),
+                "object_count": (
+                    len(update.scene.objects) if update is not None else 0
+                ),
+                "primitive_counts": primitive_counts,
             },
             "decision": decision.to_dict(),
             "advisor_arbitration": self.explorer.arbitration_snapshot(

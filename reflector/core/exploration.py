@@ -37,6 +37,8 @@ class ActionRole:
     color: int | None = None
     area: int | None = None
     shape: tuple[tuple[int, int], ...] = ()
+    primitive_kind: str | None = None
+    primitive_properties: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,6 +68,12 @@ STARTER_SCHEMA_SET = (
         2,
     ),
     StarterSchema(
+        "intervene-on-region",
+        "intervene",
+        ("action", "visual-region"),
+        3,
+    ),
+    StarterSchema(
         "repair-relation",
         "intervene",
         ("action", "source", "relation", "target"),
@@ -92,6 +100,7 @@ class GroundedRole:
 
     role: ActionRole
     centroid: tuple[int, int] | None = None
+    primitive_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,6 +184,7 @@ class EpistemicExplorer:
     parameterized_scheme_variation: bool = False
     starter_schemas: bool = False
     relational_scheme_binding: bool = False
+    visual_primitives: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -669,13 +679,19 @@ class EpistemicExplorer:
             schema_id = "repair-relation"
         elif "hierarchical-action-family" in reason:
             schema_id = "probe-action-family"
+        elif grounding.primitive_id is not None:
+            schema_id = "intervene-on-region"
         elif grounding.centroid is not None:
             schema_id = "intervene-on-object"
         else:
             schema_id = "bounded-novelty"
         components = {f"scheme:starter:{schema_id}"}
         if grounding.centroid is not None:
-            components.add("scheme:starter:intervene-on-object")
+            components.add(
+                "scheme:starter:intervene-on-region"
+                if grounding.primitive_id is not None
+                else "scheme:starter:intervene-on-object"
+            )
         return tuple(sorted(components))
 
     def _select_productive_role(
@@ -738,7 +754,16 @@ class EpistemicExplorer:
 
     @staticmethod
     def _role_key(role: ActionRole) -> str:
-        return repr((role.action_id, role.color, role.area, role.shape))
+        return repr(
+            (
+                role.action_id,
+                role.color,
+                role.area,
+                role.shape,
+                role.primitive_kind,
+                role.primitive_properties,
+            )
+        )
 
     @classmethod
     def _scheme_id(
@@ -1147,6 +1172,42 @@ class EpistemicExplorer:
         if x is None or y is None:
             return GroundedRole(ActionRole(token.action_id))
         point = (x, y)
+        if self.visual_primitives:
+            containing_primitives = []
+            for primitive in scene.primitives:
+                if primitive.kind not in {
+                    "multicolor_region",
+                    "enclosed_region",
+                }:
+                    continue
+                min_x, min_y, _max_x, _max_y = primitive.bbox
+                absolute_shape = {
+                    (min_x + local_x, min_y + local_y)
+                    for local_x, local_y in primitive.shape
+                }
+                if point in absolute_shape:
+                    containing_primitives.append(primitive)
+            if containing_primitives:
+                primitive = min(
+                    containing_primitives,
+                    key=lambda item: (
+                        item.complexity_cost,
+                        item.area,
+                        item.kind,
+                        item.primitive_id,
+                    ),
+                )
+                return GroundedRole(
+                    ActionRole(
+                        token.action_id,
+                        area=primitive.area,
+                        shape=primitive.shape,
+                        primitive_kind=primitive.kind,
+                        primitive_properties=primitive.properties,
+                    ),
+                    centroid=primitive.centroid,
+                    primitive_id=primitive.primitive_id,
+                )
         for item in scene.objects:
             min_x, min_y, _max_x, _max_y = item.bbox
             absolute_shape = {
@@ -1249,6 +1310,41 @@ class EpistemicExplorer:
             self.click_object_accommodation and self.level_failures > 0
         ):
             candidates.extend(self._multicolor_candidates(observation))
+        if self.visual_primitives and self.level_failures > 0:
+            primitives = sorted(
+                (
+                    item
+                    for item in scene.primitives
+                    if item.kind
+                    in {"multicolor_region", "enclosed_region"}
+                ),
+                key=lambda item: (
+                    item.complexity_cost,
+                    item.area,
+                    item.kind,
+                    item.bbox,
+                    item.primitive_id,
+                ),
+            )
+            for primitive in primitives:
+                min_x, min_y, _max_x, _max_y = primitive.bbox
+                points = tuple(
+                    (min_x + local_x, min_y + local_y)
+                    for local_x, local_y in primitive.shape
+                )
+                if not points:
+                    continue
+                candidates.append(
+                    min(
+                        points,
+                        key=lambda point: (
+                            abs(point[0] - primitive.centroid[0])
+                            + abs(point[1] - primitive.centroid[1]),
+                            point[1],
+                            point[0],
+                        ),
+                    )
+                )
         objects = sorted(
             scene.objects,
             key=lambda item: (
