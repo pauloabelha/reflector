@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 10 of 183 levels across 5 games. The suite ran all 25 games,
+> It has solved 11 of 183 levels across 5 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v30 result | Meaning |
+| Outcome metric | Accepted v31 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
 | Games with progress | **5 / 25** | At least one level was solved in five games. |
-| Levels solved | **10 / 183** | Five in `ft09`; two in `lp85`; one each in `lf52`, `r11l`, and `tn36`. |
-| Official local score | **3.1894439557 / 100** | About **3.19%**, not 319%. |
+| Levels solved | **11 / 183** | Five in `ft09`; three in `lp85`; one each in `lf52`, `r11l`, and `tn36`. |
+| Official local score | **3.2992976365 / 100** | About **3.30%**, not 330%. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,14 +23,14 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v30 accepted | **3.1894439557 / 100** | 0 games beaten; 10/183 levels | 25/25 coverage |
-| Source-matched process-isolated suite | v30 control / v29 genome | 2.9338884001 / 100 | 0 games beaten; 9/183 levels | exact parent reproduction |
-| Process-isolated official local suite | v29 historical accepted | 2.9338884001 / 100 | 0 games beaten; 9/183 levels | superseded by v30 |
+| Process-isolated official local suite | v31 accepted | **3.2992976365 / 100** | 0 games beaten; 11/183 levels | 25/25 coverage |
+| Source-matched process-isolated suite | v31 control / v30 genome | 3.1894439557 / 100 | 0 games beaten; 10/183 levels | exact parent reproduction |
+| Process-isolated official local suite | v30 historical accepted | 3.1894439557 / 100 | 0 games beaten; 10/183 levels | superseded by v31 |
 | Process-isolated official local suite | v28 object/flow offspring | 2.8820272500 / 100 | 0 games beaten; 9/183 levels | rejected: lost `tn36`, slowed two wins |
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v30 package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v31 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -118,14 +118,86 @@ Raw evidence:
 | v26d | 2.9202784571 | 8 | 4 | 0 | Successful coordinate-free role replay plus neutral construction machinery | experimental; complexity not earned |
 | v28 | 2.8820272500 | 9 | 5 | 0 | Visual/temporal object primitives plus bounded role reuse | rejected: one accepted level regressed |
 | v29 | 2.9338884001 | 9 | 5 | 0 | Mature-stall bounded causal role reuse | historical accepted |
-| v30 | **3.1894439557** | **10** | **5** | **0** | Learned marker-relative goals plus composed cyclic transports | **current accepted** |
+| v30 | 3.1894439557 | 10 | 5 | 0 | Learned marker-relative goals plus composed cyclic transports | historical accepted |
+| v31 | **3.2992976365** | **11** | **5** | **0** | Grounded non-axis-aligned graph-cycle transport | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v30 result
+## Accepted v31 result
+
+V31 adds one exact-off mechanism to v30. When the rectangular transport
+language does not explain a marked scene, it enumerates a bounded set of
+chordless token cycles. A controller is bound to a cycle only after the
+rendered transition is an exact conserved one-step rotation. The agent retains
+that episode-local permutation, identifies shared slots between cycles, and
+composes only evidenced transports toward the already learned marker-match
+goal.
+
+On `lp85` level 3, the two target marker appearances begin on opposite
+16-token cycles and must pass through two shared junctions. V30 never invoked
+its rectangular advisor and exhausted 355 actions. V31 spent 34 actions
+discovering two causal controller permutations, then executed a 20-action
+bounded plan and advanced. Independent runs reproduced level actions
+`[37, 8, 54, 301]`.
+
+The first six-worker full-suite attempt was terminated without a scorecard
+because the graph frontier was not operationally bounded. That descendant was
+not accepted. The corrected inference path caps token nodes at 64, graph
+degree at four, DFS expansions/frontier at 8,192, and cyclic interventions at
+24. It reproduced the target, completed the full 25-game suite with three
+isolated workers, and preserved every v30 action count.
+
+The exact-off full control reproduced v30 at 10/183 and
+`3.1894439557050553/100`. V31 reached 11/183 and
+`3.2992976365463904/100`. No game was fully beaten.
+
+Frozen inference commit: `cde92a9da104c3bb2d3662b6f50de268cae3d51f`
+
+Candidate: `candidate-98a22d6f908c6eb7`
+
+Candidate inference fingerprint:
+`4b9a3640759805debe7bbfec4f664ea4ae5df60d5f3905cba6ab8f4f93a601bf`
+
+Candidate SHA-256:
+`8ba6a13412dcf91693c2b56b49bc14df6e882cc638b3ce9e72acc3a1880b604a`
+
+Full report SHA-256:
+`16420b1f870353fe4287c0d4e3df0d2e13a5aa6402a3a6680d05517ca2c3f2ea`
+
+Source-control report SHA-256:
+`7977d4e1e87ae47bac507983a594332fe702172f2794ac85184ed6032afc9531`
+
+Verification: 155 tests passed (3 skipped), Ruff passed, mypy passed, the
+generic and exact-candidate network-disabled smoke paths passed, and the exact
+candidate exported without translation. The overlay SHA-256 is
+`9aa5bb707e769eaefebbfa085132a7544c424c58fe1b9a98df8014d5492ac266`;
+the notebook SHA-256 is
+`75f82cdfa847e725acdf69f81c6c77590f9b0502b8d00c1574562f0ae8e8b464`.
+
+### Accepted progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ft09` | **5** | 6 | `[4, 7, 14, 16, 94]` | 66.1466080321 | No |
+| `lp85` | **3** | 8 | `[37, 8, 54]` | 9.7216281179 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| Remaining 20 games | **0** | 146 | `[]` | 0 | No |
+| **Total** | **11** | **183** | — | **3.2992976365 overall** | **0 / 25** |
+
+Raw evidence:
+
+- [v31 accepted 25-game scorecard](reports/official-isolated-public-v31-grounded-graph-cycle-transport-400.json)
+- [v31 source-matched v30 control](reports/official-isolated-public-v31-source-control-400.json)
+- [v31 bounded exact `lp85` rerun](reports/official-isolated-v31-bounded-lp85-r3.json)
+- [v31 five-game preservation gate](reports/official-isolated-v31-five-game-r2.json)
+- [v31 candidate](candidates/v31-grounded-graph-cycle-transport-400.json)
+
+## Historical accepted v30 result
 
 V30 adds one exact-off mechanism to v29. It detects a token structurally marked
 by four smaller, identical corner components. Responsive interventions are

@@ -516,3 +516,27 @@ V30 is promoted. The accepted claim is finite: one progress-constructed,
 appearance-relative goal can parameterize and compose observed cyclic
 transports. It is not evidence of arbitrary visual program induction,
 cross-game transfer, a beaten game, or a Kaggle leaderboard score.
+
+## 2026-07-29 — Promote grounded graph-cycle transport after bounding the frontier
+
+V30 solved two `lp85` levels but could not represent level 3's two
+non-axis-aligned 16-token cycles. Rendered transitions showed that two
+controllers induce exact conserved rotations and that the target tokens must
+cross shared junctions between cycles. V31 enumerates chordless cycle
+hypotheses, binds only permutations confirmed by a rendered transition, and
+plans their composed effects toward the previously earned marker-match goal.
+
+The first six-worker full-suite attempt terminated without a scorecard because
+the DFS frontier was not operationally bounded. That version was rejected.
+The repaired mechanism caps token nodes, degree, path length, cycles,
+expansions, frontier growth, and advisor interventions. It reproduced `lp85`
+level actions `[37, 8, 54, 301]` and completed the 25-game suite.
+
+The current-source exact-off control reproduced v30 at 10/183 and
+3.1894439557/100. V31 preserved every accepted action count, added `lp85`
+level 3, and reached 11/183 and 3.2992976365/100. No game was fully beaten.
+
+V31 is promoted. The accepted claim is narrow: a goal relation learned on
+axis-aligned tracks can control dynamically evidenced non-axis-aligned cyclic
+permutations with shared slots. This is not arbitrary graph induction,
+cross-game transfer, or a Kaggle leaderboard result.

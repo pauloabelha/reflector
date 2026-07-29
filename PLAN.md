@@ -21,14 +21,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-2fabaa20cd4cd160`
-- Accepted agent: Reflector v30
-- Accepted frozen inference commit: `e2ba274`
+- Accepted candidate: `candidate-98a22d6f908c6eb7`
+- Accepted agent: Reflector v31
+- Accepted frozen inference commit: `cde92a9`
 - Accepted public-development report:
-  `reports/official-isolated-public-v30-marker-relative-cyclic-transport-400.json`
-- Accepted score: `3.1894439557050553`
+  `reports/official-isolated-public-v31-grounded-graph-cycle-transport-400.json`
+- Accepted score: `3.2992976365463904`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 10 levels across 5 games
+- Accepted completions: 11 levels across 5 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -46,6 +46,7 @@ generalization.
 | Cross-level relation retention | v21 preserved v20 and added `ft09` L2 in 7 actions on an overlapping layout with no solved example. |
 | Mature-stall causal role reuse | v29 preserved all eight v25 levels at exact action counts and added `lp85` L1 in 37 actions; the source-matched control remained at zero on `lp85`. |
 | Marker-relative cyclic transport composition | v30 learned a goal relation only from level progress, preserved every v29 action count, and solved `lp85` L2 in eight composed transport actions; its exact-off full control reproduced v29. |
+| Grounded graph-cycle transport | v31 bound controllers only after exact conserved cycle shifts, planned over shared junctions, preserved every v30 action count, and solved `lp85` L3 in 54 actions. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -136,6 +137,35 @@ Evidence:
 
 V30 is accepted.
 
+## Accepted experiment: v31 grounded graph-cycle transport
+
+Candidate: `candidate-98a22d6f908c6eb7`
+
+File: `candidates/v31-grounded-graph-cycle-transport-400.json`
+
+Mechanism:
+
+- enumerate only bounded, chordless cycles around already marked anchors;
+- bind a controller only after an exact conserved one-step token rotation;
+- retain grounded episode-local permutations and their shared slots;
+- compose at most 24 interventions toward the v30 marker-match goal.
+
+Evidence:
+
+- independent `lp85` runs reproduced `[37, 8, 54, 301]`;
+- the bounded full candidate preserved all ten v30 levels exactly and added
+  `lp85` level 3;
+- the exact-off full source control reproduced v30 at
+  `3.1894439557050553/100` and 10/183;
+- the full v31 candidate reached 11/183 and
+  `3.2992976365463904/100` with 25/25 coverage;
+- the unbounded six-worker attempt was terminated without a score and caused
+  an explicit node/degree/expansion/frontier repair before promotion;
+- 155 tests passed (3 skipped), Ruff and mypy passed, both network-disabled
+  smoke paths passed, and the exact genome exported without translation.
+
+V31 is accepted.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -159,18 +189,21 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Inspect `lp85` level 3 plus the zero-progress `ar25`, `g50t`, and `sb26`
-   streams. Prioritize controllable-object attribution, topology, and delayed
-   select-then-confirm composition.
-2. Generalize v30 transport construction beyond explicit rectangular and
-   collinear tracks only when a new real level earns that complexity.
-3. Route qualitative frame difference and flow into causal policy only through
+1. Implement the preregistered `sb26` parameterized
+   `select(attribute) -> apply(slot) -> commit` composition behind an exact-off
+   flag; the rendered black-box control solved L1 in nine actions.
+2. Implement `ar25` action-family causal attribution, exact-shape
+   mover/target correspondence, and monotone learned translation composition;
+   the rendered black-box control solved L1 in 15 actions.
+3. Treat `g50t` separately as landmark/phase-conditioned topology; fixed
+   endpoint orders were falsified.
+4. Route qualitative frame difference and flow into causal policy only through
    typed, bounded advisors; passive perception alone is not task credit.
-4. Evaluate diverse operators in isolated populations across games; require a
+5. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
-5. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v30 accepted otherwise.
-6. Prepare the first real Kaggle notebook submission as an explicit external
+6. Run source-matched target ablations and the full 25-game gate only for a
+   qualifying offspring; keep v31 accepted otherwise.
+7. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.
 
