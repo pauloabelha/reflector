@@ -604,6 +604,72 @@ V39 is accepted. The earned claim is limited to composing
 transition-evidenced translations toward a unique rendered shape goal and
 maintaining bounded latent identity through predicted partial occlusion.
 
+## Active experiment: v40 relational-phase-conditioned translation
+
+Parent: accepted v39 `candidate-e4c6c38c898dcc08`
+
+Observed disequilibrium:
+
+- v39 advances `ar25` level 1 in 17 actions but stalls on level 2 for the
+  remaining 383 actions;
+- level 2 still contains a unique exact-shape mover/goal pair, and v39
+  correctly grounds and completes the first displacement axis;
+- one plain action then reassigns 29 rare interior marker pixels from one
+  persistent major host to another while preserving the major objects'
+  anchors, areas, normalized shapes, and bounding boxes;
+- after that visible relational phase change, an old action displacement is
+  no longer valid and a previously inert action becomes the productive
+  translation;
+- v39 invalidates the stale prediction correctly, but probes and action effects
+  are keyed only by level and action, so it never re-probes the newly active
+  action in the new phase;
+- two rendered black-box runs independently advanced level 2 with
+  `ACTION3 × 2 -> ACTION5 -> ACTION2 × 8`, using 11 actions versus the
+  50-action human baseline.
+
+Preregistered mutation:
+
+- retain v39 unchanged behind an exact-off flag;
+- construct a phase signature only from rare small interior marker components
+  assigned by containment to persistent major interior hosts, using
+  host-relative offsets and normalized host structure;
+- ignore edge-touching sparse timer/border components and mover/goal
+  translation when computing phase;
+- recognize a phase-transition token only when the marker-host signature
+  changes while the mover and target anchors, areas, normalized shapes, and
+  bounding boxes remain stable;
+- key translation effects, evidence, probes, and invalid actions by
+  `(phase signature, action id)`;
+- on an evidenced phase transition, clear pending and occlusion state,
+  quarantine rather than delete the prior phase model, and permit every plain
+  action one new probe in the new phase;
+- select a phase-changing token only after the current phase has no evidenced
+  reducer for a remaining displacement axis, and require a newly observed
+  stable reducer before repeating it;
+- admit at most three phase signatures and four phase transitions per level,
+  probe each plain action at most once per phase, retain the 32-application
+  cap, and abstain on ambiguous marker hosts or a phase cycle without a new
+  reducer.
+
+Predicted `ar25` level-2 behavior:
+
+- ground and apply the phase-A horizontal reducer;
+- discover the marker-host phase transition without treating it as a mover
+  translation;
+- re-probe plain actions under the new signature;
+- ground and repeat the phase-B vertical reducer;
+- advance level 2 within 20 actions, with about 16 expected under sorted
+  probing, without a fixed action ID, coordinate, color, game ID, or source
+  import.
+
+Falsifier:
+
+- reject v40 if the phase transition cannot be inferred solely from rendered
+  marker-host reassignment, if edge animation creates a phase, if any
+  prior-phase effect is applied after a phase change, if a newly probed action
+  does not yield a stable reducer, if level 2 fails to advance within 20
+  actions twice, or if any accepted completion regresses.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -627,10 +693,10 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Treat `g50t` separately as landmark/phase-conditioned topology; fixed
+1. Implement and test the preregistered v40 relational-phase-conditioned
+   translation offspring.
+2. Treat `g50t` separately as landmark/phase-conditioned topology; fixed
    endpoint orders were falsified.
-2. Inspect `ar25` level 2 independently; do not assume level-1 translations or
-   goal semantics transfer unless new rendered interventions earn them.
 3. Route qualitative frame difference and flow into causal policy only through
    typed, bounded advisors; passive perception alone is not task credit.
 4. Evaluate diverse operators in isolated populations across games; require a
