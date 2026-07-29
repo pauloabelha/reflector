@@ -197,6 +197,36 @@ Evidence:
 
 V32 is accepted.
 
+## Active experiment: v33 multiline target accommodation
+
+Parent: v32 `candidate-e9c00d0968c2832a`
+
+Observed disequilibrium:
+
+- v32 reaches `sb26` level 2 in nine actions, then exhausts the remaining 391;
+- level 2 retains an ordered row of seven distinct reference attributes and an
+  unordered selector row with the exact same attribute set;
+- the seven identical neutral targets are partitioned into two intervening
+  rows of three and four, so v32's single-row cardinality test rejects them.
+
+Preregistered mutation:
+
+- preserve v32's exact reference/selector bijection;
+- when no single neutral row has the required cardinality, merge only
+  identical-color, identical-shape neutral targets between the reference and
+  selector rows;
+- require two or more target rows, exact total cardinality, and bounded size;
+- bind the ordered reference attributes to targets in deterministic visual
+  reading order, then use the already bounded commit hypothesis.
+
+Falsifier:
+
+- the advisor stays silent without an exact reference/selector attribute
+  bijection and exact neutral-target cardinality;
+- the mutation is rejected if it does not reproduce `sb26` level 1 and advance
+  level 2 in the predicted 15 additional actions, or if any accepted
+  completion regresses.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
