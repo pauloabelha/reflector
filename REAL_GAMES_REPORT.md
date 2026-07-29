@@ -29,6 +29,8 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
 | Four-game accepted-win gate | v23 experimental | 13.5583130957 across four games | 7 levels; all v21 wins preserved | passed; not a 25-game score |
+| Target-only `ft09` run | v25 experimental | 66.1466080321 for one game | 5/6 levels; `[4, 7, 14, 16, 94]` actions | deterministic twice |
+| Official local public-development suite | v25 rejected | **1.9584957457 / 100** | 0 games beaten; 6/183 levels | lost accepted `r11l` and `tn36` wins |
 
 These surfaces must not be combined. The accepted local result uses 25 known
 public-development games. Kaggle evaluates a separate hidden set of 110 games:
@@ -102,52 +104,82 @@ Raw evidence:
 | v18 | 0.2645681905 | 3 | 3 | 0 | Failure-driven click ontology accommodation | promoted |
 | v20 | 0.4550443810 | 4 | 4 | 0 | Within-frame local relation induction | promoted |
 | v21 | **0.8359967620** | **5** | **4** | **0** | Cross-level relation transfer | **current accepted** |
+| v25 | 1.9584957457 | 6 | 2 | 0 | Global overlapping relation constraints | rejected: per-game regression |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Current experiment: v23
+## Current experiment: v25 rejected after the full gate
 
-V23 keeps v22's conserved `{0: same, 2: different}` operative relation and
-changes action arbitration: an untried repair implied by that active relation
-is selected before globally novel, goal-insensitive coordinates.
+V25 coordinates overlapping clue constraints on one inferred tile lattice. It
+does not use game IDs, fixed coordinates, or fixed colors. Each deployed action
+also flushes a bounded cognitive event containing advisor arbitration,
+transition evidence, and construction deltas; the deployed agent never calls
+an LLM.
 
-### Target and regression-gate evidence
+### Evidence and decision
 
 | Surface | Result | Interpretation |
 | --- | --- | --- |
-| `ft09` target run 1 | 4/6 levels; `[4, 7, 14, 16]` actions | Added levels 3–4. |
-| `ft09` target run 2 | 4/6 levels; `[4, 7, 14, 16]` actions | Exact deterministic rerun. |
-| Four-game gate | 7 levels in 1,600 actions | Preserved v21's five accepted completions and added two. |
+| `ft09` target runs 1–2 | 5/6; `[4, 7, 14, 16, 94]` both times | Added level 5 by coordinating overlapping constraints. |
+| Four-game gate | 8 levels | Preserved the five accepted v21 completions and added three. |
+| Strict 25-game run | 6/183 levels; `1.9584957457/100` | Five `ft09` levels and one `lf52` level; 25/25 coverage. |
+| Promotion decision | rejected | Lost accepted `r11l` and `tn36` completions. |
 
-The four-game result breaks down as follows:
+The full run used 10,000 actions and completed `ft09` levels in
+`[7, 38, 25, 21, 119]` actions and `lf52` level 1 in 36 actions. Its
+environment manifest and all 25 metadata hashes exactly match v21's, so an
+environment-version change does not explain the discrepancy. The target and
+full-harness action counts also differ substantially. The current official
+threaded harness therefore does not establish cross-context deterministic
+reproducibility; game/process isolation is required before attributing all
+variance to the mutation.
 
-| Game | V23 level actions | Comparison with accepted v21 |
-| --- | --- | --- |
-| `ft09` | `[4, 7, 14, 16]` | Preserved levels 1–2 and added levels 3–4. |
-| `r11l` | `[18]` | Preserved. |
-| `tn36` | `[123]` | Preserved. |
-| `lf52` | `[34]` | Preserved. |
+The bounded positive result is real: one symbolic relation progressed from
+isolated panels to overlapping constraints and solved another level. It is
+still within one game family and did not preserve broader competence.
 
-Levels 3 and 4 of `ft09` took 14 and 16 actions versus human baselines of 23
-and 28. This supports the narrow claim that prioritizing currently violated
-evidenced constraints can coordinate this relation task far more efficiently
-than undirected novelty. It does not establish cross-game transfer: the added
-levels are later levels of the same game.
+### What the cognitive stream exposed
 
-V23 passes 119 tests (3 skipped), Ruff, mypy, exact-candidate export, and the
-network-disabled packaged smoke test. It remains experimental because the
-strict 25-game run has not been performed. Therefore the accepted headline
-remains v21's 5/183 levels and 0.8359967620/100 local score.
+All 10,000 actions produced a structured JSONL event. Advisor selection was:
+
+| Selected advisor | Actions |
+| --- | ---: |
+| Untried state intervention | 9,781 |
+| Global/local relation repair | 126 |
+| Known state-graph navigation | 4 |
+| Reset handled outside arbitration | 89 |
+
+At least 3,013 construction assessments confirmed a predicted no-effect. This
+is not necessarily predictive failure: the model can correctly expect that an
+action changes nothing. It is pragmatic failure when the policy continues to
+spend its finite budget without progress. The next design must therefore keep
+three credits typed and separate:
+
+1. external task progress and delayed action credit;
+2. prediction confirmation or contradiction;
+3. construction credit for a representation that improves future control.
+
+This is the concrete RL/genetic-epistemology junction. Prediction error can
+trigger accommodation, while sustained zero-progress return must create a
+separate pragmatic disequilibrium signal. One scalar reward or one generic
+“surprise” signal would erase the distinction revealed by these traces.
+
+V25 passes 124 tests (3 skipped), Ruff, mypy, exact-candidate export, and both
+offline package smoke paths. The accepted headline remains v21's 5/183 levels
+and 0.8359967620/100 score because acceptance requires per-game
+non-regression, not merely a larger aggregate.
 
 Raw evidence:
 
+- [v25 full 25-game scorecard](reports/official-public-evaluation-v25-global-relations-400.json)
+- [v25 candidate](candidates/v25-global-relation-constraints-400.json)
 - [v23 targeted evaluation summary](reports/official-targeted-evaluation-v23-summary.json)
 - [v23 candidate](candidates/v23-goal-directed-relation-repair-400.json)
 
-### V22 parent result
+### V22–v23 parent results
 
 V21 failed `ft09` level 3 because it overwrote a proven relation when it saw
 four new unsolved panels. V22 conserves the induced relation until outcome
@@ -174,7 +206,7 @@ Candidate:
 
 ## What our scheme is learning
 
-The real-game gains currently support five bounded insights:
+The real-game gains currently support six bounded insights:
 
 1. **Exploration needs memory of intervention identity.** Treating every frame
    independently scored zero; an epistemic transition graph produced the first
@@ -192,6 +224,10 @@ The real-game gains currently support five bounded insights:
    relation-implied repairs ahead of undirected novelty reduced level 3 from
    152 to 14 actions and added level 4 in 16 actions. This is within-game
    evidence only.
+6. **Construction and policy credit must remain separate.** V25's global
+   constraint structure adds an `ft09` level while the full policy regresses
+   on two previously solved games. A useful abstraction in one context is not
+   evidence that the whole descendant should be inherited.
 
 These are narrow environment-level results. They do not yet prove general
 Piagetian equilibration, arbitrary schema induction, cross-game transfer, or
@@ -217,13 +253,13 @@ Artifact hashes:
 Package readiness is not evaluation. The next external milestone is an
 explicit Kaggle notebook submission and its returned public score.
 
-The experimental v23 candidate also exports and passes the network-disabled
+The rejected v25 candidate also exports and passes the network-disabled
 smoke test without translation. Its current generated artifact hashes are:
 
 - overlay:
-  `ebfc523f5edbcef62a05c6532d9fe337b33d1cedc5589dce66c2ba61b66a6779`
+  `076c1232035fc4399c1064ddd4365373ea46bd76b0e29b946a63d0b8b66f3882`
 - notebook:
-  `a367a5cb2320da491c6c7ed28c34230a6094ed2b0ed0702fd61ebc23339d1fcb`
+  `2e8fdaa5c2c1e9ca2fe64715b0a2bc91ca5b010b3d5d0a6df95a14931671367e`
 
 These hashes prove package identity and compatibility, not promotion or score.
 

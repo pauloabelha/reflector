@@ -1,5 +1,26 @@
 # Decision log
 
+## 2026-07-28 — Reject v25 despite the larger aggregate score
+
+Frozen v25 completed five `ft09` levels and one `lf52` level on the complete
+25-game suite, scoring 1.9584957457/100 with 10,000 actions. This is higher
+than v21's aggregate, but v25 lost the accepted `r11l` and `tn36` completions.
+The non-regression rule therefore rejects v25 and keeps v21 accepted.
+
+The environment manifest and every metadata hash match v21 exactly, ruling
+out a changed game artifact. However, v25's two exact target runs, four-game
+gate, and threaded full run produced materially different action counts.
+The official `Swarm` runs games in threads in one process, so deterministic
+cross-context attribution has not been established. The next evaluation
+protocol must isolate each parallel game in its own process and compare frozen
+v21 and v25 under paired conditions.
+
+The positive claim remains narrow: coordinating overlapping constraints adds
+one later level in `ft09`. It does not establish cross-game transfer or justify
+inheriting the complete policy. Full evidence:
+`reports/official-public-evaluation-v25-global-relations-400.json`, frozen
+source `fcf93ff4595b4a515ed5caba73b976869e42316a`.
+
 ## 2026-07-28 — Accept failure-driven perceptual accommodation
 
 The frozen v18 candidate completed three levels across the complete 25-game

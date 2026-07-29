@@ -37,14 +37,12 @@ The `0.8359967620` result is about **0.836% of the 100-point scale**, not
 not a Kaggle public-leaderboard score. The v21 package is submission-ready, but
 hidden public and private scores remain unavailable until an actual submission.
 
-The current v23 experiment has solved four of six `ft09` levels with level
-action counts `[4, 7, 14, 16]` in two identical target-only runs. Its
-four-game gate preserved all five accepted v21 completions and added two
-`ft09` levels, for seven target-gate levels total. The full test suite, static
-checks, exact-candidate export, and network-disabled package smoke pass.
-V23 is still **experimental**, not the accepted agent: its 25-game evaluation
-has not been run, so neither a new all-games local score nor a hidden Kaggle
-score exists.
+V25 completed five of six `ft09` levels and scored `1.9584957457/100` on a
+complete 25-game local run. It nevertheless remains **rejected**, not
+accepted: that run lost v21's `r11l` and `tn36` completions and reached only
+6/183 levels across two games. The accepted headline therefore remains v21.
+The exact v25 package passes 124 tests (3 skipped), Ruff, mypy, both offline
+smoke paths, and export. No hidden Kaggle score exists.
 
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction
@@ -142,9 +140,9 @@ report unless every game has an agent result.
 The complete score history is recorded in
 [`REAL_GAMES_REPORT.md`](REAL_GAMES_REPORT.md). Reflector progressed from v8's
 zero-level result to v21's five levels across four public-development games.
-The target-only v23 result reaches four `ft09` levels while preserving the
-accepted wins in its regression gate. Kaggle compatibility is proven locally;
-full-suite generalization and competitive hidden performance are not.
+V25 reaches five `ft09` levels but fails the accepted-win non-regression gate
+in its full run. Kaggle compatibility is proven locally; full-suite
+generalization and competitive hidden performance are not.
 
 Generate, replay, evaluate, and compare deterministic traces:
 

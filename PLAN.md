@@ -69,16 +69,16 @@ Current evidence:
   policy.
 - Full verification passes: 124 tests (3 skipped), Ruff, mypy, both packaged
   smoke paths, and exact-v25 export.
-- V25 remains experimental until its frozen-source strict 25-game evaluation
-  preserves the accepted v21 baseline.
+- The frozen-source strict run scored 1.9584957457/100 with 6/183 levels and
+  complete coverage, but lost accepted `r11l` and `tn36` completions. V25 is
+  rejected; v21 remains accepted.
 
 ## Next actions
 
-1. Freeze the current v25 inference source and execute all 25 official public
-   games with
-   400 actions each.
-2. Reject v25 if any accepted completion regresses or strict coverage is
-   incomplete; otherwise compare its full score and level count with v21.
+1. Replace threaded in-process game evaluation with parallel process-isolated
+   games so environment state and random streams cannot interact.
+2. Re-run frozen v21 and v25 under that paired protocol before assigning the
+   `r11l`/`tn36` losses wholly to the mutation.
 3. Inspect the streamed cognitive evidence for systematic stagnation, while
    keeping predictive contradiction distinct from pragmatic failure.
 4. Update `REAL_GAMES_REPORT.md`, `DECISIONS.md`, and this plan; commit and
