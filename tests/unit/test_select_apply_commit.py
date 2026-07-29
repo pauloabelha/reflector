@@ -68,6 +68,41 @@ def _observation(
     )
 
 
+def _multiline_mapping_frame() -> tuple[tuple[int, ...], ...]:
+    reference = (3, 5, 7, 9, 11, 13, 15)
+    selectors = (7, 15, 11, 3, 13, 9, 5)
+    pixels = [[0 for _x in range(56)] for _y in range(23)]
+    for index, color in enumerate(reference):
+        _paint(
+            pixels,
+            left=2 + index * 7,
+            top=1,
+            color=color,
+            size=3,
+            outline=True,
+        )
+    targets = (
+        (16, 7),
+        (22, 7),
+        (28, 7),
+        (16, 12),
+        (22, 12),
+        (28, 12),
+        (34, 12),
+    )
+    for left, top in targets:
+        _paint(pixels, left=left, top=top, color=2, size=2)
+    for index, color in enumerate(selectors):
+        _paint(
+            pixels,
+            left=2 + index * 7,
+            top=19,
+            color=color,
+            size=2,
+        )
+    return tuple(tuple(row) for row in pixels)
+
+
 def test_parameterized_mapping_binds_attributes_then_applies_and_commits() -> None:
     observation = _observation(_mapping_frame())
     scene, _events = SceneTracker().perceive(observation)
@@ -88,6 +123,67 @@ def test_parameterized_mapping_binds_attributes_then_applies_and_commits() -> No
         ActionToken(5),
     )
     assert explorer.select_apply_level_trials == 7
+
+
+def test_multiline_targets_accommodate_the_same_attribute_binding() -> None:
+    observation = _observation(_multiline_mapping_frame())
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token for _step in range(15)
+    )
+
+    expected_targets = (
+        (16, 7),
+        (22, 7),
+        (28, 7),
+        (16, 12),
+        (22, 12),
+        (28, 12),
+        (34, 12),
+    )
+    selector_x_by_color = {7: 2, 15: 9, 11: 16, 3: 23, 13: 30, 9: 37, 5: 44}
+    expected = []
+    for color, target in zip((3, 5, 7, 9, 11, 13, 15), expected_targets):
+        expected.extend(
+            (
+                ActionToken(
+                    6,
+                    (("x", selector_x_by_color[color]), ("y", 19)),
+                ),
+                ActionToken(6, (("x", target[0]), ("y", target[1]))),
+            )
+        )
+    expected.append(ActionToken(5))
+    assert choices == tuple(expected)
+
+
+def test_multiline_accommodation_is_silent_without_exact_cardinality() -> None:
+    frame = [list(row) for row in _multiline_mapping_frame()]
+    frame[12][34] = 0
+    frame[12][35] = 0
+    frame[13][34] = 0
+    frame[13][35] = 0
+    observation = _observation(tuple(tuple(row) for row in frame))
+    scene, _events = SceneTracker().perceive(observation)
+    enabled = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+    )
+    parent = EpistemicExplorer(parameterized_select_apply_commit=True)
+    enabled.observe(observation, scene)
+    parent.observe(observation, scene)
+
+    assert enabled.select(observation, scene, (5, 6, 7)) == parent.select(
+        observation,
+        scene,
+        (5, 6, 7),
+    )
 
 
 def test_mapping_requires_an_exact_reference_selector_color_bijection() -> None:

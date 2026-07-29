@@ -63,6 +63,9 @@ class SymbolicPolicy:
             parameterized_select_apply_commit=(
                 self.mind.config.enable_parameterized_select_apply_commit
             ),
+            multiline_target_binding=(
+                self.mind.config.enable_multiline_target_binding
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

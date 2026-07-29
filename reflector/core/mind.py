@@ -71,6 +71,7 @@ class MindConfig:
     enable_cyclic_sequence_alignment: bool = False
     enable_graph_cycle_transport: bool = False
     enable_parameterized_select_apply_commit: bool = False
+    enable_multiline_target_binding: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -113,6 +114,7 @@ class MindConfig:
             "enable_cyclic_sequence_alignment",
             "enable_graph_cycle_transport",
             "enable_parameterized_select_apply_commit",
+            "enable_multiline_target_binding",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -125,6 +127,13 @@ class MindConfig:
             and not self.enable_cyclic_sequence_alignment
         ):
             raise ValueError("graph cycle transport requires cyclic sequence alignment")
+        if (
+            self.enable_multiline_target_binding
+            and not self.enable_parameterized_select_apply_commit
+        ):
+            raise ValueError(
+                "multiline target binding requires parameterized select/apply/commit"
+            )
         if type(self.planner_max_depth) is not int:
             raise ValueError("planner_max_depth must be an integer")
         if type(self.planner_max_expansions) is not int:

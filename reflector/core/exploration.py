@@ -235,6 +235,7 @@ class EpistemicExplorer:
     cyclic_sequence_alignment: bool = False
     graph_cycle_transport: bool = False
     parameterized_select_apply_commit: bool = False
+    multiline_target_binding: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -839,7 +840,17 @@ class EpistemicExplorer:
                 if {item.color for item in selectors} != color_set:
                     continue
                 selector_by_color = {item.color: item for item in selectors}
-                for targets in rows:
+                target_layouts = list(rows)
+                if self.multiline_target_binding:
+                    target_layouts.extend(
+                        self._multiline_target_layouts(
+                            objects,
+                            size=size,
+                            above=reference[0].centroid[1],
+                            below=selectors[0].centroid[1],
+                        )
+                    )
+                for targets in target_layouts:
                     if len(targets) != size or len({item.color for item in targets}) != 1:
                         continue
                     target_y = targets[0].centroid[1]
@@ -898,6 +909,37 @@ class EpistemicExplorer:
         if not candidates:
             return ()
         return min(candidates, key=lambda item: item[0])[1]
+
+    @staticmethod
+    def _multiline_target_layouts(
+        objects: tuple[_FrameObject, ...],
+        *,
+        size: int,
+        above: int,
+        below: int,
+    ) -> tuple[tuple[_FrameObject, ...], ...]:
+        """Merge only exact neutral-object types across bounded visual rows."""
+
+        groups: dict[
+            tuple[int, int, tuple[tuple[int, int], ...]],
+            list[_FrameObject],
+        ] = {}
+        for item in objects:
+            if above < item.centroid[1] < below:
+                groups.setdefault((item.color, item.area, item.shape), []).append(item)
+        layouts = []
+        for items in groups.values():
+            if len(items) != size:
+                continue
+            row_counts = Counter(item.centroid[1] for item in items)
+            if not 2 <= len(row_counts) <= 4:
+                continue
+            if any(count < 2 for count in row_counts.values()):
+                continue
+            layouts.append(
+                tuple(sorted(items, key=lambda item: (item.centroid[1], item.centroid[0])))
+            )
+        return tuple(sorted(layouts, key=lambda items: tuple(item.centroid for item in items)))
 
     def _issue(
         self,
