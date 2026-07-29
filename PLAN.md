@@ -1,6 +1,6 @@
 # Reflector persistent plan
 
-Last updated: 2026-07-28
+Last updated: 2026-07-29
 
 ## End state
 
@@ -21,14 +21,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-036a55bfb6956008`
-- Accepted agent: Reflector v25
-- Accepted frozen evaluation commit: `b308d00`
+- Accepted candidate: `candidate-309548c858c10616`
+- Accepted agent: Reflector v29
+- Accepted frozen inference commit: `54db179`
 - Accepted public-development report:
-  `reports/official-isolated-public-evaluation-v25-global-relations-400.json`
-- Accepted score: `2.9104325118287466`
+  `reports/official-isolated-public-v29-mature-causal-role-reuse-400.json`
+- Accepted score: `2.9338884001495003`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 8 levels across 4 games
+- Accepted completions: 9 levels across 5 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -44,8 +44,9 @@ generalization.
 | Failure-driven click-ontology accommodation | v18 preserved both v14 wins and added `tn36` L1 in 123 actions; unconditional multicolor grouping had regressed `r11l`. |
 | Within-frame local relation induction | v20 preserved v18 and added `ft09` L1 in 4 actions by inducing same/different constraints from solved panels. |
 | Cross-level relation retention | v21 preserved v20 and added `ft09` L2 in 7 actions on an overlapping layout with no solved example. |
+| Mature-stall causal role reuse | v29 preserved all eight v25 levels at exact action counts and added `lp85` L1 in 37 actions; the source-matched control remained at zero on `lp85`. |
 
-## Accepted experiment: v25 global relation constraints
+## Accepted parent mechanism: v25 global relation constraints
 
 Candidate: `candidate-036a55bfb6956008`
 
@@ -76,6 +77,43 @@ Current evidence:
   and complete coverage. Its one-factor ablation scored 2.1693300953 with
   7/183. V25 is accepted.
 
+## Accepted experiment: v29 mature-stall causal role reuse
+
+Candidate: `candidate-309548c858c10616`
+
+File: `candidates/v29-mature-causal-role-reuse-400.json`
+
+Mechanism:
+
+- after 32 interventions without level progress, reuse only roles with an
+  observed rendered response;
+- cap reuse at eight trials per level, then return to variation;
+- suppress the advisor when a conserved learned relation is active.
+
+Evidence:
+
+- the watched five-game curriculum exposed that unbounded reuse solved
+  `lp85` but regressed `ft09`;
+- two exact six-game runs preserved all affected accepted action counts and
+  added `lp85` L1 in 37 actions;
+- the full source-matched v25 genome reproduced 8/183 and
+  `2.9104325118287466/100`;
+- the full v29 candidate preserved those eight levels exactly, added `lp85`,
+  and reached 9/183 and `2.9338884001495003/100`;
+- 148 tests passed (3 skipped), Ruff and mypy passed, both network-disabled
+  smoke paths passed, and the exact genome exported without translation.
+
+V29 is accepted.
+
+## Rejected experimental branch: v28 object and temporal primitives
+
+V28 implemented content-free persistent components, composite regions,
+enclosures, normalized shape forms, connected frame differences, discrete
+object flow, and primitive-grounded intervention provenance. The full
+offspring added `lp85` and `sp80`, but lost `tn36` and slowed `lf52` and
+`r11l`, scoring `2.8820272500/100`. The ontology remains behind exact-off
+genome flags, but none of its active policy traits are inherited by v29.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural
@@ -90,16 +128,15 @@ Current evidence:
 
 ## Next actions
 
-1. Replace exact-role sequence composition with relational role variables:
-   bind a modifier scheme to another scheme’s object, direction, ordering, and
-   control slots, then ground the binding recursively into legal actions.
-2. Let typed pragmatic credit select among alternative bindings and propagate
-   delayed progress through a bounded eligibility graph without converting
-   predictive support into reward.
-3. Evaluate diverse binder operators in an isolated population across games;
-   require a new level or material efficiency gain from the binder itself.
+1. Inspect `lp85` level 2 plus the zero-progress `ar25`, `g50t`, and `sb26`
+   streams. Prioritize ordered/cyclic comparison, controllable-object
+   attribution, topology, and delayed select-then-confirm composition.
+2. Route qualitative frame difference and flow into causal policy only through
+   typed, bounded advisors; passive perception alone is not task credit.
+3. Evaluate diverse operators in isolated populations across games; require a
+   new level or material efficiency gain from each operative trait.
 4. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v25 accepted otherwise.
+   qualifying offspring; keep v29 accepted otherwise.
 5. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.

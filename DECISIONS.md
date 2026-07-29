@@ -460,3 +460,32 @@ reducing replay actions from 55 to 12. Both reproduced 66.3927566633 and five
 solution. Therefore inhibition and falsification are retained as experimental
 knowledge, but neither offspring is promoted. The next falsifiable mechanism
 must construct relational role-variable bindings and earn its own task credit.
+
+## 2026-07-29 — Promote mature-stall causal role reuse; reject active v28 primitives
+
+A five-game rendered curriculum and cognitive-stream audit showed that the
+agent lacked typed composite/enclosure/shape representations and a path from
+responsive interventions back into policy. V28 implemented persistent object
+concepts, composite regions, enclosures, normalized shape forms, connected
+frame differences, discrete flow, primitive provenance, and bounded
+responsive-role reuse.
+
+The full v28 interaction was not acceptable. It added `lp85` and `sp80`, but
+lost the accepted `tn36` level and slowed `lf52` and `r11l`, scoring
+2.8820272500 versus the source-matched 2.9104325118 control. Target ablations
+showed that primitive intervention caused the lost completions, while
+unrestricted causal reuse caused efficiency regressions. The richer ontology
+is retained behind exact-off flags but receives no promotion credit.
+
+The bred v29 trait waits for 32 interventions without level progress, permits
+at most eight interventions whose structural roles have already caused a
+rendered response, and abstains when a conserved learned relation is active.
+Two exact six-game runs preserved every affected accepted action count and
+added `lp85` level 1 in 37 actions. The full 25-game run preserved all eight
+v25 levels exactly, added `lp85`, and scored 2.9338884001 with 9/183 levels
+across 5/25 games. Its source-matched control reproduced v25 exactly.
+
+V29 is promoted. The accepted claim is narrow: mature pragmatic stagnation can
+open a bounded window for reuse of causally responsive action roles. This is
+not evidence that the visual primitives generalize, that a game was beaten, or
+that Reflector has a Kaggle leaderboard score.

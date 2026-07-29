@@ -17,27 +17,30 @@ service, database, or web server.
 
 ## Live score status
 
-Last verified: 2026-07-28
+Last verified: 2026-07-29
 
 > **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
-> It has solved **8 of 183 levels across 4 games**. All 25 games were
+> It has solved **9 of 183 levels across 5 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v25 result |
+| Metric | Accepted v29 result |
 | --- | ---: |
 | Complete games beaten | **0 / 25** |
-| Games with at least one solved level | **4 / 25** |
-| Levels solved | **8 / 183** |
-| Official local score | **2.9104325118 / 100** |
+| Games with at least one solved level | **5 / 25** |
+| Levels solved | **9 / 183** |
+| Official local score | **2.9338884001 / 100** |
 | Games evaluated | **25 / 25** |
 | Kaggle submissions | **0** |
 
-The score is about **2.91% of the 100-point scale**, not 291%. It is a local
-public-development result, not a Kaggle leaderboard score. V25 preserves every
-source-matched control completion and adds `ft09` level 5. The corrected
+The score is about **2.93% of the 100-point scale**, not 293%. It is a local
+public-development result, not a Kaggle leaderboard score. V29 preserves every
+v25 completion at its exact action count and adds `lp85` level 1 in 37 actions.
+After 32 interventions without level progress, it permits at most eight
+evidenced responsive-role interventions, while conserving any learned
+relation language. The corrected
 protocol runs every parallel game in a fresh process; the original threaded
 full run is retained as invalidated methodological evidence. The exact package
-passes 126 tests (3 skipped), Ruff, mypy, both offline smoke paths, and export.
+passes 148 tests (3 skipped), Ruff, mypy, both offline smoke paths, and export.
 No hidden Kaggle score exists.
 
 The v26 research branch now preregisters intervention hypotheses, keeps
@@ -50,6 +53,15 @@ coordinate-free replay, while causal credit and scheme variation were neutral.
 Two trace-driven accommodations reduced stale composite/replay actions as
 predicted but did not improve task outcome. See the canonical report for the
 falsifying comparisons.
+
+The v28 object-perception branch adds content-free persistent-component,
+composite-region, enclosure, normalized-shape, frame-difference, and
+discrete-flow primitives with typed provenance. It remains experimental.
+Primitive-guided intervention improved `ft09` and helped discover levels in
+`lp85` and `sp80`, but the full offspring lost `tn36` and slowed `lf52` and
+`r11l`; it was rejected. V29 inherits only the causally earned mature-stall
+role-reuse policy. The richer ontology stays behind exact-off genome flags for
+future source-matched offspring.
 
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction

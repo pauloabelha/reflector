@@ -1,20 +1,20 @@
 # Reflector real-games scorecard
 
-Last updated: 2026-07-28  
+Last updated: 2026-07-29
 Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 8 of 183 levels across 4 games. The suite ran all 25 games,
+> It has solved 9 of 183 levels across 5 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v25 result | Meaning |
+| Outcome metric | Accepted v29 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
-| Games with progress | **4 / 25** | At least one level was solved in four games. |
-| Levels solved | **8 / 183** | Five in `ft09`; one each in `lf52`, `r11l`, and `tn36`. |
-| Official local score | **2.9104325118 / 100** | About **2.91%**, not 291%. |
+| Games with progress | **5 / 25** | At least one level was solved in five games. |
+| Levels solved | **9 / 183** | Five in `ft09`; one each in `lf52`, `lp85`, `r11l`, and `tn36`. |
+| Official local score | **2.9338884001 / 100** | About **2.93%**, not 293%. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,11 +23,13 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v25 accepted | **2.9104325118 / 100** | 0 games beaten; 8/183 levels | 25/25 coverage |
+| Process-isolated official local suite | v29 accepted | **2.9338884001 / 100** | 0 games beaten; 9/183 levels | 25/25 coverage |
+| Source-matched process-isolated suite | v29 control / v25 genome | 2.9104325118 / 100 | 0 games beaten; 8/183 levels | exact parent reproduction |
+| Process-isolated official local suite | v28 object/flow offspring | 2.8820272500 / 100 | 0 games beaten; 9/183 levels | rejected: lost `tn36`, slowed two wins |
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v25 package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v29 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -111,15 +113,66 @@ Raw evidence:
 | v20 | 0.4550443810 | 4 | 4 | 0 | Within-frame local relation induction | promoted |
 | v21 | 0.8359967620 | 5 | 4 | 0 | Cross-level relation transfer | historical threaded result |
 | v25 ablation | 2.1693300953 | 7 | 4 | 0 | Current source, global constraint solver disabled | process-isolated control |
-| v25 | **2.9104325118** | **8** | **4** | **0** | Global overlapping relation constraints | **current accepted** |
+| v25 | 2.9104325118 | 8 | 4 | 0 | Global overlapping relation constraints | accepted parent |
 | v26d | 2.9202784571 | 8 | 4 | 0 | Successful coordinate-free role replay plus neutral construction machinery | experimental; complexity not earned |
+| v28 | 2.8820272500 | 9 | 5 | 0 | Visual/temporal object primitives plus bounded role reuse | rejected: one accepted level regressed |
+| v29 | **2.9338884001** | **9** | **5** | **0** | Mature-stall bounded causal role reuse | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v25 result
+## Accepted v29 result
+
+V29 adds one bounded policy to the accepted v25 parent. After 32 interventions
+without level progress, the explorer may reuse an action role only if that role
+has already caused a rendered response. Reuse is capped at eight trials per
+level. A conserved learned relation suppresses this advisor, so causal reuse
+cannot displace the relation-repair mechanism that already solves `ft09`.
+
+The mutation came from watching five rendered games and inspecting their
+cognitive streams. The unbounded donor found `lp85` level 1 but regressed
+`ft09`; priority repair restored four `ft09` levels but still stalled; bounding
+reuse restored five. A six-game ablation then separated the traits:
+
+- primitive intervention alone improved `ft09` but lost `r11l` and `tn36`;
+- action-family fairness lost `lf52`;
+- causal reuse without primitive actions added `lp85` while preserving every
+  accepted level, but initially slowed `ft09` and `r11l`;
+- delaying reuse to mature stagnation restored the exact accepted action counts
+  and retained `lp85` in 37 actions, twice.
+
+The final source-matched 25-game gate reproduced v25 at
+`2.9104325118287466/100` and 8 levels. V29 scored
+`2.9338884001495003/100`, solved 9 levels across 5 games, and preserved
+`ft09`, `lf52`, `r11l`, and `tn36` at their exact parent action counts. It
+added only `lp85` level 1. No game was fully beaten.
+
+Frozen inference commit: `54db179`
+
+Candidate: `candidate-309548c858c10616`
+
+Candidate inference fingerprint:
+`2648e2005e0954ed9a31dbb181df49c442388821f7be06fea1ba8fc2db77f1d5`
+
+Full report SHA-256:
+`f2d7f21e634d72a77bc0044cd5456e6645cf7889228824017b4d028bc467b51d`
+
+Verification: 148 tests passed (3 skipped), Ruff passed, mypy passed, the
+generic and exact-candidate network-disabled smoke paths passed, and the exact
+candidate exported without translation.
+
+Raw evidence:
+
+- [v29 accepted 25-game scorecard](reports/official-isolated-public-v29-mature-causal-role-reuse-400.json)
+- [v29 source-matched control](reports/official-isolated-public-v29-source-control-400.json)
+- [v29 exact six-game run 1](reports/official-isolated-v29-six-game-r1.json)
+- [v29 exact six-game run 2](reports/official-isolated-v29-six-game-r2.json)
+- [v29 candidate](candidates/v29-mature-causal-role-reuse-400.json)
+- [rejected v28 full scorecard](reports/official-isolated-public-v28-bounded-causal-object-primitives-400.json)
+
+## Parent v25 result
 
 V25 coordinates overlapping clue constraints on one inferred tile lattice. It
 does not use game IDs, fixed coordinates, or fixed colors. Each deployed action
@@ -264,7 +317,7 @@ Candidate:
 
 ## What our scheme is learning
 
-The real-game evidence currently supports eight bounded insights:
+The real-game evidence currently supports ten bounded insights:
 
 1. **Exploration needs memory of intervention identity.** Treating every frame
    independently scored zero; an epistemic transition graph produced the first
@@ -292,6 +345,14 @@ The real-game evidence currently supports eight bounded insights:
    suspended a stale replay, but undirected novelty consumed the recovered
    budget. Falsification creates room for learning; it does not itself create
    the next relational scheme.
+9. **Responsive roles need mature-stall gating.** Immediate or unbounded reuse
+   slowed accepted wins. Waiting 32 interventions, capping reuse at eight, and
+   conserving an active relation retained all parent action counts and added
+   `lp85`.
+10. **A richer ontology is not automatically a better policy.** V28's
+   composite, enclosure, shape, frame-difference, and flow primitives were
+   typed and operative, but active use lost `tn36` and slowed two games.
+   Perceptual structure must earn control credit independently.
 
 These are narrow environment-level results. They do not yet prove general
 Piagetian equilibration, arbitrary schema induction, cross-game transfer, or
@@ -317,13 +378,13 @@ Artifact hashes:
 Package readiness is not evaluation. The next external milestone is an
 explicit Kaggle notebook submission and its returned public score.
 
-The rejected v25 candidate also exports and passes the network-disabled
-smoke test without translation. Its current generated artifact hashes are:
+The accepted v29 candidate exports and passes the network-disabled smoke test
+without translation. Its generated artifact hashes are:
 
 - overlay:
-  `076c1232035fc4399c1064ddd4365373ea46bd76b0e29b946a63d0b8b66f3882`
+  `29bc5577a692941e0ae22e946427b009a18db4c62250eb39581d5832e387e0d7`
 - notebook:
-  `2e8fdaa5c2c1e9ca2fe64715b0a2bc91ca5b010b3d5d0a6df95a14931671367e`
+  `3a30064d4504ab61db83b18f1e315657d42d7c2a8f982a278f50a622287c1600`
 
 These hashes prove package identity and compatibility, not promotion or score.
 
