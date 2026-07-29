@@ -239,6 +239,7 @@ class EpistemicExplorer:
     last_relational_binding: dict[str, Any] = field(default_factory=dict)
     last_scheme_components: tuple[str, ...] = ()
     primitive_accommodation_active: bool = False
+    pragmatic_disequilibrium_active: bool = False
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -460,6 +461,8 @@ class EpistemicExplorer:
         state = self._state_key(observation, scene)
         if self.current_state != state:
             self.observe(observation, scene)
+        if pragmatic_disequilibrium:
+            self.pragmatic_disequilibrium_active = True
         if self.visual_primitives and pragmatic_disequilibrium:
             self.primitive_accommodation_active = True
         tokens = self._tokens(observation, scene, legal_actions)
@@ -703,7 +706,10 @@ class EpistemicExplorer:
         scene: Scene,
         state: StateKey,
     ) -> ActionToken | None:
-        if not self.productive_role_reuse or self.level_failures < 2:
+        if not self.productive_role_reuse or (
+            self.level_failures < 2
+            and not self.pragmatic_disequilibrium_active
+        ):
             return None
         candidates = tuple(
             token

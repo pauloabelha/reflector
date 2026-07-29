@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Sequence
 
@@ -210,6 +211,12 @@ class Scene:
             }
         }
         for object_state in self.objects:
+            shape_form = (
+                "sf-"
+                + hashlib.sha256(repr(object_state.shape).encode()).hexdigest()[
+                    :12
+                ]
+            )
             reusable.add(
                 Atom(
                     "object_signature",
@@ -223,6 +230,7 @@ class Scene:
                     ),
                 )
             )
+            reusable.add(Atom("shape_form_present", (shape_form,)))
         for primitive in self.primitives:
             reusable.add(
                 Atom(
@@ -234,6 +242,18 @@ class Scene:
                         str(primitive.bbox[2] - primitive.bbox[0] + 1),
                         str(primitive.bbox[3] - primitive.bbox[1] + 1),
                         *primitive.properties,
+                    ),
+                )
+            )
+            reusable.add(
+                Atom(
+                    "primitive_shape_form",
+                    (
+                        primitive.kind,
+                        "sf-"
+                        + hashlib.sha256(
+                            repr(primitive.shape).encode()
+                        ).hexdigest()[:12],
                     ),
                 )
             )

@@ -232,6 +232,9 @@ def test_frame_difference_and_discrete_flow_are_typed_primitives() -> None:
         "contains_disappearance",
     }
     assert set(flow.properties) == {"dx_1", "dy_0", "shape_preserved"}
+    event_kinds = {event.kind for event in _events}
+    assert "frame_difference" in event_kinds
+    assert "object_flow" in event_kinds
 
 
 def test_shape_forms_assimilate_translation_and_recoloring() -> None:
@@ -265,6 +268,48 @@ def test_shape_forms_assimilate_translation_and_recoloring() -> None:
     }
 
     assert first_forms == second_forms
+    first_context_forms = {
+        fact
+        for fact in first_scene.context()
+        if fact.predicate == "shape_form_present"
+    }
+    second_context_forms = {
+        fact
+        for fact in second_scene.context()
+        if fact.predicate == "shape_form_present"
+    }
+    assert first_context_forms == second_context_forms
+
+
+def test_disequilibrium_reuses_a_causally_responsive_action_role() -> None:
+    before = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((0, 0, 0), (0, 0, 0), (0, 0, 0)),
+    )
+    after = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((2, 2, 2), (2, 2, 2), (2, 2, 2)),
+    )
+    tracker = SceneTracker()
+    before_scene, _events = tracker.perceive(before)
+    after_scene, _events = tracker.perceive(after)
+    explorer = EpistemicExplorer(productive_role_reuse=True)
+    explorer.observe(before, before_scene)
+    first = explorer.select(before, before_scene, (1, 2))
+    assert first.token.action_id == 1
+    explorer.observe(after, after_scene)
+
+    reused = explorer.select(
+        after,
+        after_scene,
+        (1, 2),
+        pragmatic_disequilibrium=True,
+    )
+
+    assert reused.token.action_id == 1
+    assert "reuse-productive-action-role" in reused.reason
 
 
 def test_primitive_actions_require_primitive_perception() -> None:

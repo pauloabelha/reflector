@@ -796,6 +796,30 @@ class SceneTracker:
             events.append(Event("state_changed", "game", (before.state, after.state)))
         if after.frame_digest != before.frame_digest:
             events.append(Event("frame_changed"))
+        for primitive in after.primitives:
+            if primitive.kind == "frame_delta_region":
+                area_band = (
+                    "small"
+                    if primitive.area <= 4
+                    else "medium"
+                    if primitive.area <= 32
+                    else "large"
+                )
+                events.append(
+                    Event(
+                        "frame_difference",
+                        "scene",
+                        (area_band, *primitive.properties),
+                    )
+                )
+            elif primitive.kind == "discrete_flow":
+                events.append(
+                    Event(
+                        "object_flow",
+                        "object",
+                        primitive.properties,
+                    )
+                )
         return tuple(sorted(set(events)))
 
     @staticmethod
