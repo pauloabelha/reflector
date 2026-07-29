@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 5 of 183 levels across 4 games. The suite ran all 25 games,
+> It has solved 8 of 183 levels across 4 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v21 result | Meaning |
+| Outcome metric | Accepted v25 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
 | Games with progress | **4 / 25** | At least one level was solved in four games. |
-| Levels solved | **5 / 183** | Two in `ft09`; one each in `lf52`, `r11l`, and `tn36`. |
-| Official local score | **0.8359967620 / 100** | About **0.836%**, not 83.6%. |
+| Levels solved | **8 / 183** | Five in `ft09`; one each in `lf52`, `r11l`, and `tn36`. |
+| Official local score | **2.9104325118 / 100** | About **2.91%**, not 291%. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,14 +23,16 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Official local public-development suite | v21 accepted | **0.8359967620 / 100** | 0 games beaten; 5/183 levels | reproducible |
-| Kaggle public leaderboard | v21 package ready | — | no returned score | **not submitted** |
+| Process-isolated official local suite | v25 accepted | **2.9104325118 / 100** | 0 games beaten; 8/183 levels | 25/25 coverage |
+| Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
+| Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
+| Kaggle public leaderboard | v25 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
 | Four-game accepted-win gate | v23 experimental | 13.5583130957 across four games | 7 levels; all v21 wins preserved | passed; not a 25-game score |
 | Target-only `ft09` run | v25 experimental | 66.1466080321 for one game | 5/6 levels; `[4, 7, 14, 16, 94]` actions | deterministic twice |
-| Official local public-development suite | v25 rejected | **1.9584957457 / 100** | 0 games beaten; 6/183 levels | lost accepted `r11l` and `tn36` wins |
+| Four-game process-isolated gate | v25 accepted | 18.1902031989 across four games | 8 levels; all prior wins preserved | exact twice |
 
 These surfaces must not be combined. The accepted local result uses 25 known
 public-development games. Kaggle evaluates a separate hidden set of 110 games:
@@ -56,7 +58,7 @@ Official competition links:
 - [Kaggle public leaderboard](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard)
 - [ARC Prize competition requirements](https://arcprize.org/competitions/2026/arc-agi-3)
 
-## Accepted v21 result
+## Historical v21 result
 
 Frozen inference commit: `e7037b4a5a2ac56b026f9ca3acbd559bbd0cb0fc`  
 Candidate: `candidate-3332b36c8afa95aa`  
@@ -103,15 +105,16 @@ Raw evidence:
 | v14 | 0.2548989649 | 2 | 2 | 0 | Epistemic state graph | promoted |
 | v18 | 0.2645681905 | 3 | 3 | 0 | Failure-driven click ontology accommodation | promoted |
 | v20 | 0.4550443810 | 4 | 4 | 0 | Within-frame local relation induction | promoted |
-| v21 | **0.8359967620** | **5** | **4** | **0** | Cross-level relation transfer | **current accepted** |
-| v25 | 1.9584957457 | 6 | 2 | 0 | Global overlapping relation constraints | rejected: per-game regression |
+| v21 | 0.8359967620 | 5 | 4 | 0 | Cross-level relation transfer | historical threaded result |
+| v25 ablation | 2.1693300953 | 7 | 4 | 0 | Current source, global constraint solver disabled | process-isolated control |
+| v25 | **2.9104325118** | **8** | **4** | **0** | Global overlapping relation constraints | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Current experiment: v25 rejected after the full gate
+## Accepted v25 result
 
 V25 coordinates overlapping clue constraints on one inferred tile lattice. It
 does not use game IDs, fixed coordinates, or fixed colors. Each deployed action
@@ -125,17 +128,19 @@ an LLM.
 | --- | --- | --- |
 | `ft09` target runs 1–2 | 5/6; `[4, 7, 14, 16, 94]` both times | Added level 5 by coordinating overlapping constraints. |
 | Four-game gate | 8 levels | Preserved the five accepted v21 completions and added three. |
-| Strict 25-game run | 6/183 levels; `1.9584957457/100` | Five `ft09` levels and one `lf52` level; 25/25 coverage. |
-| Promotion decision | rejected | Lost accepted `r11l` and `tn36` completions. |
+| Source-matched isolated ablation | 7/183; `2.1693300953/100` | Same source and genome except global constraint solver disabled. |
+| Process-isolated strict 25-game run | 8/183; `2.9104325118/100` | Preserved all control completions and added `ft09` level 5. |
+| Promotion decision | accepted | Positive one-factor result with 25/25 coverage and no per-game regression. |
 
-The full run used 10,000 actions and completed `ft09` levels in
-`[7, 38, 25, 21, 119]` actions and `lf52` level 1 in 36 actions. Its
-environment manifest and all 25 metadata hashes exactly match v21's, so an
-environment-version change does not explain the discrepancy. The target and
-full-harness action counts also differ substantially. The current official
-threaded harness therefore does not establish cross-context deterministic
-reproducibility; game/process isolation is required before attributing all
-variance to the mutation.
+The accepted run used 10,000 actions. It completed `ft09` levels in
+`[4, 7, 14, 16, 94]`, `lf52` level 1 in 34, `r11l` level 1 in 18, and `tn36`
+level 1 in 123. The source-matched ablation completed the first four `ft09`
+levels in `[4, 7, 14, 16]` and reproduced the other three games exactly.
+
+The earlier shared-process threaded run produced different results because the
+official `Swarm` interleaved all game environments in threads. It is retained
+for audit but no longer used for promotion. The corrected evaluator runs each
+game in a fresh Python process while retaining bounded parallel execution.
 
 The bounded positive result is real: one symbolic relation progressed from
 isolated panels to overlapping constraints and solved another level. It is
@@ -167,14 +172,14 @@ trigger accommodation, while sustained zero-progress return must create a
 separate pragmatic disequilibrium signal. One scalar reward or one generic
 “surprise” signal would erase the distinction revealed by these traces.
 
-V25 passes 124 tests (3 skipped), Ruff, mypy, exact-candidate export, and both
-offline package smoke paths. The accepted headline remains v21's 5/183 levels
-and 0.8359967620/100 score because acceptance requires per-game
-non-regression, not merely a larger aggregate.
+V25 passes 126 tests (3 skipped), Ruff, mypy, exact-candidate export, and both
+offline package smoke paths.
 
 Raw evidence:
 
-- [v25 full 25-game scorecard](reports/official-public-evaluation-v25-global-relations-400.json)
+- [v25 accepted process-isolated scorecard](reports/official-isolated-public-evaluation-v25-global-relations-400.json)
+- [v25 process-isolated ablation](reports/official-isolated-public-evaluation-v25-global-relations-ablation-400.json)
+- [invalidated threaded v25 scorecard](reports/official-public-evaluation-v25-global-relations-400.json)
 - [v25 candidate](candidates/v25-global-relation-constraints-400.json)
 - [v23 targeted evaluation summary](reports/official-targeted-evaluation-v23-summary.json)
 - [v23 candidate](candidates/v23-goal-directed-relation-repair-400.json)

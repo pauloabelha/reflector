@@ -21,14 +21,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-3332b36c8afa95aa`
-- Accepted agent: Reflector v21
-- Accepted frozen inference commit: `e7037b4`
+- Accepted candidate: `candidate-036a55bfb6956008`
+- Accepted agent: Reflector v25
+- Accepted frozen evaluation commit: `b308d00`
 - Accepted public-development report:
-  `reports/official-public-evaluation-v21-cross-level-relations-400.json`
-- Accepted score: `0.8359967619742551`
+  `reports/official-isolated-public-evaluation-v25-global-relations-400.json`
+- Accepted score: `2.9104325118287466`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 5 levels across 4 games
+- Accepted completions: 8 levels across 4 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -45,7 +45,7 @@ generalization.
 | Within-frame local relation induction | v20 preserved v18 and added `ft09` L1 in 4 actions by inducing same/different constraints from solved panels. |
 | Cross-level relation retention | v21 preserved v20 and added `ft09` L2 in 7 actions on an overlapping layout with no solved example. |
 
-## Active experiment: v25 global relation constraints
+## Accepted experiment: v25 global relation constraints
 
 Candidate: `candidate-036a55bfb6956008`
 
@@ -69,19 +69,23 @@ Current evidence:
   policy.
 - Full verification passes: 124 tests (3 skipped), Ruff, mypy, both packaged
   smoke paths, and exact-v25 export.
-- The frozen-source strict run scored 1.9584957457/100 with 6/183 levels and
-  complete coverage, but lost accepted `r11l` and `tn36` completions. V25 is
-  rejected; v21 remains accepted.
+- Two paired process-isolated gates exactly reproduced: the source-matched
+  ablation reached seven levels and v25 reached eight, preserving all prior
+  completions.
+- The strict isolated 25-game run scored 2.9104325118/100 with 8/183 levels
+  and complete coverage. Its one-factor ablation scored 2.1693300953 with
+  7/183. V25 is accepted.
 
 ## Next actions
 
-1. Replace threaded in-process game evaluation with parallel process-isolated
-   games so environment state and random streams cannot interact.
-2. Re-run frozen v21 and v25 under that paired protocol before assigning the
-   `r11l`/`tn36` losses wholly to the mutation.
-3. Inspect the streamed cognitive evidence for systematic stagnation, while
-   keeping predictive contradiction distinct from pragmatic failure.
-4. Update `REAL_GAMES_REPORT.md`, `DECISIONS.md`, and this plan; commit and
+1. Implement v26 preregistered causal hypotheses that prime exact symbolic
+   dependencies before intervention and assign typed predictive, pragmatic,
+   and structural credit afterward.
+2. Make procedures first-class typed scheme inputs and construct bounded
+   prefix, suffix, interleaving, and role-binding variations.
+3. Use pragmatic stagnation—not prediction error—to trigger scheme variation;
+   require component-wise falsification evidence.
+4. Run target and source-matched ablations, then update reports; commit and
    push only after promotion evidence is complete.
 5. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private

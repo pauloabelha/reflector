@@ -20,29 +20,25 @@ service, database, or web server.
 Last verified: 2026-07-28
 
 > **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
-> It has solved **5 of 183 levels across 4 games**. All 25 games were
+> It has solved **8 of 183 levels across 4 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v21 result |
+| Metric | Accepted v25 result |
 | --- | ---: |
 | Complete games beaten | **0 / 25** |
 | Games with at least one solved level | **4 / 25** |
-| Levels solved | **5 / 183** |
-| Official local score | **0.8359967620 / 100** |
+| Levels solved | **8 / 183** |
+| Official local score | **2.9104325118 / 100** |
 | Games evaluated | **25 / 25** |
 | Kaggle submissions | **0** |
 
-The `0.8359967620` result is about **0.836% of the 100-point scale**, not
-83.6%. It is a reproducible score on the known local public-development games,
-not a Kaggle public-leaderboard score. The v21 package is submission-ready, but
-hidden public and private scores remain unavailable until an actual submission.
-
-V25 completed five of six `ft09` levels and scored `1.9584957457/100` on a
-complete 25-game local run. It nevertheless remains **rejected**, not
-accepted: that run lost v21's `r11l` and `tn36` completions and reached only
-6/183 levels across two games. The accepted headline therefore remains v21.
-The exact v25 package passes 124 tests (3 skipped), Ruff, mypy, both offline
-smoke paths, and export. No hidden Kaggle score exists.
+The score is about **2.91% of the 100-point scale**, not 291%. It is a local
+public-development result, not a Kaggle leaderboard score. V25 preserves every
+source-matched control completion and adds `ft09` level 5. The corrected
+protocol runs every parallel game in a fresh process; the original threaded
+full run is retained as invalidated methodological evidence. The exact package
+passes 126 tests (3 skipped), Ruff, mypy, both offline smoke paths, and export.
+No hidden Kaggle score exists.
 
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction

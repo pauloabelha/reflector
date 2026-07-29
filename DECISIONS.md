@@ -1,5 +1,23 @@
 # Decision log
 
+## 2026-07-28 — Promote v25 after process-isolated causal control
+
+The shared-process threaded result below was misleading. The official `Swarm`
+interleaves game environments in threads, so environment-global state prevented
+attributable comparison. The corrected evaluator runs each game in a fresh
+process while keeping bounded parallelism.
+
+Two paired isolated four-game runs reproduced exactly. On the full 25-game
+suite, the current-source ablation with global constraint coordination disabled
+scored 2.1693300953/100 with seven levels. V25 changed only that operative flag,
+preserved every ablation completion, added `ft09` level 5, and scored
+2.9104325118/100 with eight levels. Coverage was 25/25 with 10,000 actions.
+
+V25 is therefore accepted. This supports only the bounded claim that one
+inferred lattice can coordinate overlapping learned constraints; it does not
+show cross-game transfer. Evaluation source: `b308d00`; accepted report:
+`reports/official-isolated-public-evaluation-v25-global-relations-400.json`.
+
 ## 2026-07-28 — Reject v25 despite the larger aggregate score
 
 Frozen v25 completed five `ft09` levels and one `lf52` level on the complete
