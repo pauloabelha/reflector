@@ -148,6 +148,33 @@ def _nested_mapping_frame(
     return tuple(tuple(row) for row in pixels)
 
 
+def _nested_source_mapping_frame(
+    *,
+    child_payload_color: int = 7,
+) -> tuple[tuple[int, ...], ...]:
+    pixels = [list(row) for row in _nested_mapping_frame()]
+    payloads = (
+        (16, 8, 3),
+        (22, 8, 5),
+        (34, 8, 15),
+        (16, 15, child_payload_color),
+        (22, 15, 9),
+        (28, 15, 11),
+        (34, 15, 13),
+    )
+    for left, top, color in payloads:
+        _paint(pixels, left=left, top=top, color=color, size=2)
+    for index in range(7):
+        _paint(
+            pixels,
+            left=2 + index * 7,
+            top=26,
+            color=2,
+            size=2,
+        )
+    return tuple(tuple(row) for row in pixels)
+
+
 def test_parameterized_mapping_binds_attributes_then_applies_and_commits() -> None:
     observation = _observation(_mapping_frame())
     scene, _events = SceneTracker().perceive(observation)
@@ -303,6 +330,64 @@ def test_nested_container_traversal_abstains_on_unmatched_link() -> None:
 
     assert explorer.select_apply_program == ()
     assert not explorer.nested_target_plan_active
+
+
+def test_nested_source_traversal_flattens_payloads_into_neutral_outputs() -> None:
+    observation = _observation(_nested_source_mapping_frame())
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        nested_source_traversal=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token for _step in range(15)
+    )
+    source_clicks = tuple(
+        dict(token.data)
+        for token in choices
+        if token.action_id == 6 and dict(token.data).get("y") in {8, 15}
+    )
+    output_clicks = tuple(
+        dict(token.data)
+        for token in choices
+        if token.action_id == 6 and dict(token.data).get("y") == 26
+    )
+
+    assert source_clicks == (
+        {"x": 16, "y": 8},
+        {"x": 22, "y": 8},
+        {"x": 16, "y": 15},
+        {"x": 22, "y": 15},
+        {"x": 28, "y": 15},
+        {"x": 34, "y": 15},
+        {"x": 34, "y": 8},
+    )
+    assert output_clicks == tuple({"x": 2 + index * 7, "y": 26} for index in range(7))
+    assert choices[-1] == ActionToken(5)
+    assert explorer.nested_source_plan_active
+
+
+def test_nested_source_traversal_requires_exact_reference_order() -> None:
+    observation = _observation(
+        _nested_source_mapping_frame(child_payload_color=6)
+    )
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        nested_source_traversal=True,
+    )
+    explorer.observe(observation, scene)
+
+    explorer.select(observation, scene, (5, 6, 7))
+
+    assert explorer.select_apply_program == ()
+    assert not explorer.nested_source_plan_active
 
 
 def test_multiline_accommodation_is_silent_without_exact_cardinality() -> None:

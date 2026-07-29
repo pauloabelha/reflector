@@ -238,6 +238,7 @@ class EpistemicExplorer:
     multiline_target_binding: bool = False
     spatial_order_variation: bool = False
     nested_target_traversal: bool = False
+    nested_source_traversal: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -299,6 +300,8 @@ class EpistemicExplorer:
     select_apply_attempted: bool = False
     select_apply_level_trials: int = 0
     nested_target_plan_active: bool = False
+    nested_source_plan_active: bool = False
+    select_apply_diagnostic: str = "not-attempted"
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -411,6 +414,8 @@ class EpistemicExplorer:
             self.select_apply_attempted = False
             self.select_apply_level_trials = 0
             self.nested_target_plan_active = False
+            self.nested_source_plan_active = False
+            self.select_apply_diagnostic = "not-attempted"
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -619,6 +624,10 @@ class EpistemicExplorer:
                 ("operator:nested-container-traversal",)
                 if self.nested_target_plan_active
                 else ()
+            ) + (
+                ("operator:nested-source-flattening",)
+                if self.nested_source_plan_active
+                else ()
             )
             return self._issue(
                 state,
@@ -809,7 +818,9 @@ class EpistemicExplorer:
         """Infer ``select(attribute) -> apply(slot) -> commit`` from layout."""
 
         if self.complex_action not in observation.available_actions:
+            self.select_apply_diagnostic = "complex-action-unavailable"
             return ()
+        self.select_apply_diagnostic = "no-structural-candidate"
         objects = tuple(
             item for item in self._frame_objects(observation.frame) if item.area >= 2
         )
@@ -832,6 +843,7 @@ class EpistemicExplorer:
             tuple[
                 tuple[int, int, int, tuple[int, ...]],
                 tuple[ActionToken, ...],
+                bool,
                 bool,
             ]
         ] = []
@@ -949,18 +961,124 @@ class EpistemicExplorer:
                             ),
                             tuple(combined),
                             nested_plan,
+                            False,
                         )
                     )
+            if self.nested_source_traversal:
+                for outputs in rows:
+                    if len(outputs) != size:
+                        continue
+                    output_y = outputs[0].centroid[1]
+                    if output_y <= reference[0].centroid[1]:
+                        continue
+                    if len({item.color for item in outputs}) != 1:
+                        continue
+                    source_layouts = self._multiline_source_layouts(
+                        objects,
+                        size=size,
+                        colors=color_set,
+                        above=reference[0].centroid[1],
+                        below=output_y,
+                    )
+                    if source_layouts:
+                        self.select_apply_diagnostic = "nested-source-layout"
+                    for sources in source_layouts:
+                        source_order = self._nested_target_order(
+                            observation.frame,
+                            sources,
+                            uniform_payload=False,
+                        )
+                        if source_order is None:
+                            self.select_apply_diagnostic = (
+                                "nested-source-topology-unresolved"
+                            )
+                            continue
+                        if tuple(item.color for item in source_order) != reference_colors:
+                            self.select_apply_diagnostic = (
+                                "nested-source-reference-mismatch"
+                            )
+                            continue
+                        commit_actions = sorted(
+                            action
+                            for action in observation.available_actions
+                            if action not in {self.reset_action, self.complex_action}
+                        )
+                        if not commit_actions:
+                            self.select_apply_diagnostic = (
+                                "nested-source-commit-unavailable"
+                            )
+                            continue
+                        actions = []
+                        for source, output in zip(source_order, outputs):
+                            actions.extend(
+                                (
+                                    ActionToken(
+                                        self.complex_action,
+                                        (
+                                            ("x", source.centroid[0]),
+                                            ("y", source.centroid[1]),
+                                        ),
+                                    ),
+                                    ActionToken(
+                                        self.complex_action,
+                                        (
+                                            ("x", output.centroid[0]),
+                                            ("y", output.centroid[1]),
+                                        ),
+                                    ),
+                                )
+                            )
+                        missing_actions = tuple(
+                            token for token in actions if token not in represented
+                        )
+                        if missing_actions:
+                            self.select_apply_diagnostic = (
+                                "nested-source-unrepresented:"
+                                f"{len(missing_actions)}"
+                            )
+                            continue
+                        actions.append(ActionToken(commit_actions[0]))
+                        source_y = sum(
+                            item.centroid[1] for item in sources
+                        ) // len(sources)
+                        candidates.append(
+                            (
+                                (
+                                    -size,
+                                    abs(
+                                        2 * source_y
+                                        - reference[0].centroid[1]
+                                        - output_y
+                                    ),
+                                    output_y - reference[0].centroid[1],
+                                    reference_colors,
+                                ),
+                                tuple(actions),
+                                False,
+                                True,
+                            )
+                        )
+                        self.select_apply_diagnostic = "nested-source-program"
         if not candidates:
             return ()
         winner = min(candidates, key=lambda item: item[0])
         self.nested_target_plan_active = winner[2]
+        self.nested_source_plan_active = winner[3]
+        self.select_apply_diagnostic = (
+            "nested-source-selected"
+            if winner[3]
+            else "nested-target-selected"
+            if winner[2]
+            else "select-apply-selected"
+        )
         return winner[1]
 
     @staticmethod
     def _nested_target_order(
         frame: tuple[tuple[int, ...], ...],
         targets: tuple[_FrameObject, ...],
+        *,
+        uniform_payload: bool = True,
     ) -> tuple[_FrameObject, ...] | None:
         """Expand rendered container links into a bounded depth-first order."""
 
@@ -990,7 +1108,9 @@ class EpistemicExplorer:
 
         counts = Counter(cell for row in frame for cell in row)
         background = max(counts, key=lambda color: (counts[color], -color))
-        target_color = targets[0].color
+        payload_backgrounds = {background}
+        if uniform_payload:
+            payload_backgrounds.add(targets[0].color)
         height = len(frame)
         width = len(frame[0])
 
@@ -1004,7 +1124,7 @@ class EpistemicExplorer:
                 if not (0 <= x < width and 0 <= y < height):
                     return None
                 color = frame[y][x]
-                if color not in {background, target_color}:
+                if color not in payload_backgrounds:
                     return color
             return None
 
@@ -1038,11 +1158,7 @@ class EpistemicExplorer:
                         min(width, x + radius + 1),
                     )
                     if frame[sample_y][sample_x]
-                    not in {
-                        background,
-                        target_color,
-                        container_colors[y],
-                    }
+                    not in payload_backgrounds | {container_colors[y]}
                 }
                 if len(sampled) != 1:
                     return None
@@ -1090,6 +1206,40 @@ class EpistemicExplorer:
         if visited != set(target_rows) or set(ordered) != set(targets):
             return None
         return tuple(ordered)
+
+    @staticmethod
+    def _multiline_source_layouts(
+        objects: tuple[_FrameObject, ...],
+        *,
+        size: int,
+        colors: set[int],
+        above: int,
+        below: int,
+    ) -> tuple[tuple[_FrameObject, ...], ...]:
+        """Find exact heterogeneous payload sets distributed across rows."""
+
+        groups: dict[
+            tuple[int, tuple[tuple[int, int], ...]],
+            list[_FrameObject],
+        ] = {}
+        for item in objects:
+            if above < item.centroid[1] < below and item.color in colors:
+                groups.setdefault((item.area, item.shape), []).append(item)
+        layouts = []
+        for items in groups.values():
+            if len(items) != size or {item.color for item in items} != colors:
+                continue
+            row_counts = Counter(item.centroid[1] for item in items)
+            if not 2 <= len(row_counts) <= 4:
+                continue
+            if any(count < 2 for count in row_counts.values()):
+                continue
+            if len({item.centroid for item in items}) != size:
+                continue
+            layouts.append(
+                tuple(sorted(items, key=lambda item: (item.centroid[1], item.centroid[0])))
+            )
+        return tuple(sorted(layouts, key=lambda items: tuple(item.centroid for item in items)))
 
     @staticmethod
     def _spatial_target_orderings(
@@ -2980,6 +3130,7 @@ class EpistemicExplorer:
             "select_apply_program_length": len(self.select_apply_program),
             "select_apply_cursor": self.select_apply_cursor,
             "select_apply_level_trials": self.select_apply_level_trials,
+            "select_apply_diagnostic": self.select_apply_diagnostic,
             "level_interventions": self.level_interventions,
             "learned_local_relations": len(self.learned_local_relation),
             "successful_schemes": len(self.successful_schemes),
