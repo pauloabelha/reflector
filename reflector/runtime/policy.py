@@ -60,6 +60,9 @@ class SymbolicPolicy:
                 self.mind.config.enable_cyclic_sequence_alignment
             ),
             graph_cycle_transport=(self.mind.config.enable_graph_cycle_transport),
+            parameterized_select_apply_commit=(
+                self.mind.config.enable_parameterized_select_apply_commit
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

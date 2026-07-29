@@ -234,6 +234,7 @@ class EpistemicExplorer:
     visual_primitives: bool = False
     cyclic_sequence_alignment: bool = False
     graph_cycle_transport: bool = False
+    parameterized_select_apply_commit: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -290,6 +291,10 @@ class EpistemicExplorer:
     grounded_cyclic_transports: dict[
         tuple[tuple[tuple[int, int], ...], tuple[int, int]], int
     ] = field(default_factory=dict)
+    select_apply_program: tuple[ActionToken, ...] = ()
+    select_apply_cursor: int = 0
+    select_apply_attempted: bool = False
+    select_apply_level_trials: int = 0
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -307,6 +312,8 @@ class EpistemicExplorer:
             order.append("local-relation-repair")
         if self.relational_scheme_binding:
             order.append("relational-scheme-binding")
+        if self.parameterized_select_apply_commit:
+            order.append("parameterized-select-apply-commit")
         if self.cyclic_sequence_alignment:
             order.append("cyclic-sequence-alignment")
         if self.productive_role_reuse:
@@ -328,6 +335,8 @@ class EpistemicExplorer:
             if "reuse-productive-action-role" in selected_reason
             else "cyclic-sequence-alignment"
             if "cyclic-sequence-alignment" in selected_reason
+            else "parameterized-select-apply-commit"
+            if "parameterized-select-apply-commit" in selected_reason
             else "local-relation-repair"
             if "repair-local-relation" in selected_reason
             else "parameterized-scheme-variation"
@@ -393,6 +402,10 @@ class EpistemicExplorer:
             self.productive_reuse_level_trials = 0
             self.cyclic_alignment_level_trials = 0
             self.grounded_cyclic_transports.clear()
+            self.select_apply_program = ()
+            self.select_apply_cursor = 0
+            self.select_apply_attempted = False
+            self.select_apply_level_trials = 0
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -412,6 +425,8 @@ class EpistemicExplorer:
             self.productive_reuse_level_trials = 0
             self.cyclic_alignment_level_trials = 0
             self.grounded_cyclic_transports.clear()
+            self.select_apply_program = ()
+            self.select_apply_cursor = 0
             self.level_interventions = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
@@ -583,6 +598,26 @@ class EpistemicExplorer:
                     scene,
                 )
 
+        select_apply = self._select_parameterized_select_apply_commit(
+            observation,
+            tokens,
+        )
+        if select_apply is not None:
+            self.select_apply_level_trials += 1
+            self.last_scheme_components = (
+                "scheme:parameterized-select-apply-commit",
+                "operator:bind-attribute",
+                "operator:select",
+                "operator:apply",
+                "operator:commit",
+            )
+            return self._issue(
+                state,
+                select_apply,
+                "epistemic-frontier:parameterized-select-apply-commit",
+                scene,
+            )
+
         cyclic = self._select_cyclic_alignment(
             observation,
             scene,
@@ -729,6 +764,140 @@ class EpistemicExplorer:
             if token in represented and self.attempts[(state, token)] == 0:
                 return token
         return None
+
+    def _select_parameterized_select_apply_commit(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Bind an ordered attribute template to selectors and neutral slots."""
+
+        if not self.parameterized_select_apply_commit:
+            return None
+        represented = set(tokens)
+        while self.select_apply_cursor < len(self.select_apply_program):
+            token = self.select_apply_program[self.select_apply_cursor]
+            self.select_apply_cursor += 1
+            if token in represented:
+                return token
+            self.select_apply_program = ()
+            return None
+        if self.select_apply_attempted:
+            return None
+        self.select_apply_attempted = True
+        program = self._infer_select_apply_program(observation, tokens)
+        if not program:
+            return None
+        self.select_apply_program = program
+        self.select_apply_cursor = 1
+        return program[0]
+
+    def _infer_select_apply_program(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> tuple[ActionToken, ...]:
+        """Infer ``select(attribute) -> apply(slot) -> commit`` from layout."""
+
+        if self.complex_action not in observation.available_actions:
+            return ()
+        objects = tuple(
+            item for item in self._frame_objects(observation.frame) if item.area >= 2
+        )
+        groups: dict[
+            tuple[int, tuple[tuple[int, int], ...], int],
+            list[_FrameObject],
+        ] = {}
+        for item in objects:
+            groups.setdefault((item.area, item.shape, item.centroid[1]), []).append(
+                item
+            )
+        rows = tuple(
+            tuple(sorted(items, key=lambda item: item.centroid))
+            for items in groups.values()
+            if 2 <= len(items) <= 8
+            and len({item.centroid[0] for item in items}) == len(items)
+        )
+        represented = set(tokens)
+        candidates: list[
+            tuple[
+                tuple[int, int, int, tuple[int, ...]],
+                tuple[ActionToken, ...],
+            ]
+        ] = []
+        for reference in rows:
+            size = len(reference)
+            reference_colors = tuple(item.color for item in reference)
+            color_set = set(reference_colors)
+            if len(color_set) != size:
+                continue
+            for selectors in rows:
+                if len(selectors) != size:
+                    continue
+                if selectors[0].centroid[1] <= reference[0].centroid[1]:
+                    continue
+                if {item.color for item in selectors} != color_set:
+                    continue
+                selector_by_color = {item.color: item for item in selectors}
+                for targets in rows:
+                    if len(targets) != size or len({item.color for item in targets}) != 1:
+                        continue
+                    target_y = targets[0].centroid[1]
+                    if not (
+                        reference[0].centroid[1]
+                        < target_y
+                        < selectors[0].centroid[1]
+                    ):
+                        continue
+                    actions: list[ActionToken] = []
+                    for source, target in zip(reference, targets):
+                        selector = selector_by_color[source.color]
+                        actions.extend(
+                            (
+                                ActionToken(
+                                    self.complex_action,
+                                    (
+                                        ("x", selector.centroid[0]),
+                                        ("y", selector.centroid[1]),
+                                    ),
+                                ),
+                                ActionToken(
+                                    self.complex_action,
+                                    (
+                                        ("x", target.centroid[0]),
+                                        ("y", target.centroid[1]),
+                                    ),
+                                ),
+                            )
+                        )
+                    commit_actions = sorted(
+                        action
+                        for action in observation.available_actions
+                        if action not in {self.reset_action, self.complex_action}
+                    )
+                    if not commit_actions or any(token not in represented for token in actions):
+                        continue
+                    actions.append(ActionToken(commit_actions[0]))
+                    vertical_span = selectors[0].centroid[1] - reference[0].centroid[1]
+                    midpoint_error = abs(
+                        2 * target_y
+                        - reference[0].centroid[1]
+                        - selectors[0].centroid[1]
+                    )
+                    candidates.append(
+                        (
+                            (
+                                -size,
+                                midpoint_error,
+                                vertical_span,
+                                reference_colors,
+                            ),
+                            tuple(actions),
+                        )
+                    )
+        if not candidates:
+            return ()
+        return min(candidates, key=lambda item: item[0])[1]
 
     def _issue(
         self,
@@ -2550,6 +2719,9 @@ class EpistemicExplorer:
             "cyclic_alignment_level_trials": (self.cyclic_alignment_level_trials),
             "cyclic_last_plan_length": self.cyclic_last_plan_length,
             "grounded_cyclic_transports": len(self.grounded_cyclic_transports),
+            "select_apply_program_length": len(self.select_apply_program),
+            "select_apply_cursor": self.select_apply_cursor,
+            "select_apply_level_trials": self.select_apply_level_trials,
             "level_interventions": self.level_interventions,
             "learned_local_relations": len(self.learned_local_relation),
             "successful_schemes": len(self.successful_schemes),
