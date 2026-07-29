@@ -27,6 +27,8 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Kaggle public leaderboard | v21 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
+| Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
+| Four-game accepted-win gate | v23 experimental | 13.5583130957 across four games | 7 levels; all v21 wins preserved | passed; not a 25-game score |
 
 These surfaces must not be combined. The accepted local result uses 25 known
 public-development games. Kaggle evaluates a separate hidden set of 110 games:
@@ -106,7 +108,46 @@ Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Current experiment: v22
+## Current experiment: v23
+
+V23 keeps v22's conserved `{0: same, 2: different}` operative relation and
+changes action arbitration: an untried repair implied by that active relation
+is selected before globally novel, goal-insensitive coordinates.
+
+### Target and regression-gate evidence
+
+| Surface | Result | Interpretation |
+| --- | --- | --- |
+| `ft09` target run 1 | 4/6 levels; `[4, 7, 14, 16]` actions | Added levels 3–4. |
+| `ft09` target run 2 | 4/6 levels; `[4, 7, 14, 16]` actions | Exact deterministic rerun. |
+| Four-game gate | 7 levels in 1,600 actions | Preserved v21's five accepted completions and added two. |
+
+The four-game result breaks down as follows:
+
+| Game | V23 level actions | Comparison with accepted v21 |
+| --- | --- | --- |
+| `ft09` | `[4, 7, 14, 16]` | Preserved levels 1–2 and added levels 3–4. |
+| `r11l` | `[18]` | Preserved. |
+| `tn36` | `[123]` | Preserved. |
+| `lf52` | `[34]` | Preserved. |
+
+Levels 3 and 4 of `ft09` took 14 and 16 actions versus human baselines of 23
+and 28. This supports the narrow claim that prioritizing currently violated
+evidenced constraints can coordinate this relation task far more efficiently
+than undirected novelty. It does not establish cross-game transfer: the added
+levels are later levels of the same game.
+
+V23 passes 119 tests (3 skipped), Ruff, mypy, exact-candidate export, and the
+network-disabled packaged smoke test. It remains experimental because the
+strict 25-game run has not been performed. Therefore the accepted headline
+remains v21's 5/183 levels and 0.8359967620/100 local score.
+
+Raw evidence:
+
+- [v23 targeted evaluation summary](reports/official-targeted-evaluation-v23-summary.json)
+- [v23 candidate](candidates/v23-goal-directed-relation-repair-400.json)
+
+### V22 parent result
 
 V21 failed `ft09` level 3 because it overwrote a proven relation when it saw
 four new unsolved panels. V22 conserves the induced relation until outcome
@@ -124,15 +165,16 @@ Interpretation:
 - The 152-action result is not yet good control.
 - Eleven initial relation-guided interventions were followed by a long flat
   fallback before the last required macro-cell corrections were rediscovered.
-- V22 remains experimental until it preserves all accepted wins, completes a
-  strict 25-game run, and passes the exact packaged Kaggle checks.
+- V22 supplied the conserved schema used by v23, but v23 supersedes it as the
+  active experiment because the goal-directed arbitration reduces level 3
+  from 152 to 14 actions and adds level 4.
 
 Candidate:
 [v22 conserved relation schema](candidates/v22-conserved-relation-schema-400.json)
 
 ## What our scheme is learning
 
-The real-game gains currently support four bounded insights:
+The real-game gains currently support five bounded insights:
 
 1. **Exploration needs memory of intervention identity.** Treating every frame
    independently scored zero; an epistemic transition graph produced the first
@@ -144,8 +186,12 @@ The real-game gains currently support four bounded insights:
    inducing a symbolic relation from rendered examples, without game IDs,
    fixed coordinates, or fixed colors.
 4. **Operative structure can transfer across changed layouts.** Level 2 reused
-   the relation on overlapping panels. Level 3 suggests the structure must be
-   conserved, but its constraints still need coordinated execution.
+   the relation on overlapping panels, and v22 showed that the structure must
+   remain conserved rather than be overwritten by unsolved examples.
+5. **Active constraints should guide exploration.** On `ft09`, moving
+   relation-implied repairs ahead of undirected novelty reduced level 3 from
+   152 to 14 actions and added level 4 in 16 actions. This is within-game
+   evidence only.
 
 These are narrow environment-level results. They do not yet prove general
 Piagetian equilibration, arbitrary schema induction, cross-game transfer, or
@@ -170,6 +216,16 @@ Artifact hashes:
 
 Package readiness is not evaluation. The next external milestone is an
 explicit Kaggle notebook submission and its returned public score.
+
+The experimental v23 candidate also exports and passes the network-disabled
+smoke test without translation. Its current generated artifact hashes are:
+
+- overlay:
+  `ebfc523f5edbcef62a05c6532d9fe337b33d1cedc5589dce66c2ba61b66a6779`
+- notebook:
+  `a367a5cb2320da491c6c7ed28c34230a6094ed2b0ed0702fd61ebc23339d1fcb`
+
+These hashes prove package identity and compatibility, not promotion or score.
 
 ## Reporting protocol
 

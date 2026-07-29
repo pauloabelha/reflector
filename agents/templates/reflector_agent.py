@@ -1,12 +1,20 @@
 """Official ARC-AGI-3 Agents adapter for Reflector's shared symbolic policy."""
 
+import json
+import os
 import time
-from typing import Any
+from pathlib import Path
+from typing import IO, Any
 
 from arcengine import FrameData, FrameDataRaw, GameAction, GameState
 
 from reflector import Observation, SymbolicPolicy
-from reflector.runtime.deployment import deployed_config
+from reflector.runtime.deployment import (
+    CANDIDATE_ID_ENV,
+    COGNITIVE_STREAM_DIR_ENV,
+    INFERENCE_FINGERPRINT_ENV,
+    deployed_config,
+)
 from reflector.runtime.trace import AGENT_VERSION
 
 from ..agent import Agent
@@ -24,6 +32,18 @@ class ReflectorAgent(Agent):
         # one to make the serialized genome's budget exact.
         self.MAX_ACTIONS = self.policy.mind.config.action_budget - 1
         self._finished_at: float | None = None
+        self._cognitive_stream: IO[str] | None = None
+        stream_root = os.environ.get(COGNITIVE_STREAM_DIR_ENV)
+        if stream_root:
+            directory = Path(stream_root)
+            directory.mkdir(parents=True, exist_ok=True)
+            safe_game_id = "".join(
+                character if character.isalnum() or character in "-_" else "_"
+                for character in self.game_id
+            )
+            self._cognitive_stream = (
+                directory / f"{safe_game_id}.cognitive.jsonl"
+            ).open("w", encoding="utf-8")
 
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
         return latest_frame.state is GameState.WIN
@@ -54,6 +74,9 @@ class ReflectorAgent(Agent):
     def cleanup(self, scorecard: Any | None = None) -> None:
         if self._finished_at is None:
             self._finished_at = time.time()
+        if self._cognitive_stream is not None:
+            self._cognitive_stream.close()
+            self._cognitive_stream = None
         super().cleanup(scorecard)
 
     def choose_action(
@@ -65,6 +88,26 @@ class ReflectorAgent(Agent):
         if decision.data:
             action.set_data(decision.data_dict())
         action.reasoning = {"policy": AGENT_VERSION, "why": decision.reason}
+        if self._cognitive_stream is not None:
+            event = self.policy.cognitive_event(observation, decision)
+            event["deployment"] = {
+                "game_id": self.game_id,
+                "candidate_id": os.environ.get(CANDIDATE_ID_ENV),
+                "inference_fingerprint": os.environ.get(
+                    INFERENCE_FINGERPRINT_ENV
+                ),
+                "agent_version": AGENT_VERSION,
+            }
+            self._cognitive_stream.write(
+                json.dumps(
+                    event,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=True,
+                )
+                + "\n"
+            )
+            self._cognitive_stream.flush()
         return action
 
     @staticmethod

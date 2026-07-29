@@ -295,7 +295,11 @@ export interface CandidateRecord {
 export interface ExperimentReport {
   manifest: Manifest;
   candidates: CandidateRecord[];
-  lineage_edges: { source: string; target: string }[];
+  lineage_edges: {
+    source: string;
+    target: string;
+    relationship: "backbone" | "contributor";
+  }[];
 }
 
 export interface BranchReport {

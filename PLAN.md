@@ -45,54 +45,45 @@ generalization.
 | Within-frame local relation induction | v20 preserved v18 and added `ft09` L1 in 4 actions by inducing same/different constraints from solved panels. |
 | Cross-level relation retention | v21 preserved v20 and added `ft09` L2 in 7 actions on an overlapping layout with no solved example. |
 
-## Active experiment: v22 schema conservation
+## Active experiment: v25 global relation constraints
 
-Candidate: `candidate-cf53e44f38d28623`  
-File: `candidates/v22-conserved-relation-schema-400.json`
+Candidate: `candidate-036a55bfb6956008`
 
-Observed v21 failure:
-
-- `ft09` level 3 contains four unsolved relation panels.
-- v21 overwrote its proven `{0: same, 2: different}` relation merely because
-  three or more panels were visible.
-- The resulting inversion caused failure after the 400-action budget.
+File: `candidates/v25-global-relation-constraints-400.json`
 
 Hypothesis:
 
-- Preserve an induced operative relation across novel layouts.
-- Do not replace it solely because several unsolved panels are present.
-- Require outcome contradiction before future accommodation.
+- Infer one coordinate-free tile lattice from observations.
+- Coordinate overlapping clue constraints on that lattice and act only where
+  all observed constraints agree that a block violates the learned relation.
 
 Current evidence:
 
-- Focused tests, Ruff, and mypy pass.
-- On official `ft09`, v22 completed levels 1–3 with level action counts
-  `[4, 7, 152]`.
-- Level 3 is a new completion but inefficient versus the 23-action human
-  baseline.
-- The recorded trace shows eleven relation-directed actions followed by a
-  long fallback; the final required macro-cell corrections were rediscovered
-  much later.
-- v22 is experimental and must not replace v21 until the accepted-win
-  regression gate, full 25-game evaluation, and Kaggle checks pass.
+- Two official `ft09` runs exactly matched: five levels with level action
+  counts `[4, 7, 14, 16, 94]`.
+- The four-game gate preserved all accepted v21 completions and reached eight
+  levels total.
+- Every runtime action can now emit a bounded cognitive JSONL event containing
+  advisor arbitration, transition evidence, and construction deltas. The LLM
+  may inspect these traces between runs but is never called by the deployed
+  policy.
+- Full verification passes: 124 tests (3 skipped), Ruff, mypy, both packaged
+  smoke paths, and exact-v25 export.
+- V25 remains experimental until its frozen-source strict 25-game evaluation
+  preserves the accepted v21 baseline.
 
 ## Next actions
 
-1. Analyze the v22 `ft09` level-3 recording to derive why correct relational
-   constraints are not exhausted efficiently.
-2. Test a general constraint-coordination improvement; do not add game IDs,
-   fixed coordinates, or fixed colors.
-3. Prefer a v23 descendant that retains level 3 while materially reducing its
-   152 actions.
-4. Run the promotion gate on `ft09`, `r11l`, `tn36`, and `lf52`; all five
-   accepted v21 completions must remain.
-5. Run all tests, Ruff, and mypy.
-6. Freeze the inference commit and execute all 25 official public games with
+1. Freeze the current v25 inference source and execute all 25 official public
+   games with
    400 actions each.
-7. Export the exact candidate and run the network-disabled Kaggle smoke test.
-8. Update `REAL_GAMES_REPORT.md`, `DECISIONS.md`, and this plan; commit and
+2. Reject v25 if any accepted completion regresses or strict coverage is
+   incomplete; otherwise compare its full score and level count with v21.
+3. Inspect the streamed cognitive evidence for systematic stagnation, while
+   keeping predictive contradiction distinct from pragmatic failure.
+4. Update `REAL_GAMES_REPORT.md`, `DECISIONS.md`, and this plan; commit and
    push only after promotion evidence is complete.
-9. Prepare the first real Kaggle notebook submission as an explicit external
+5. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.
 

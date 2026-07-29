@@ -405,6 +405,82 @@ def test_local_relation_solver_induces_and_repairs_repeated_panel_rule() -> None
     assert conserved_candidates
     assert explorer.learned_local_relation == {0: True, 2: False}
 
+    portfolio = EpistemicExplorer(
+        successful_role_replay=True,
+        local_relation_solver=True,
+        constraint_first_role_replay=True,
+    )
+    portfolio.learned_local_relation = dict(explorer.learned_local_relation)
+    portfolio.observe(conservation, conservation_scene)
+    repair = portfolio._local_relation_candidates(
+        conservation,
+        conservation_scene,
+    )[0]
+    represented = portfolio._tokens(conservation, conservation_scene, (6,))
+    replay_token = next(
+        token
+        for token in represented
+        if token.data != (("x", repair[0]), ("y", repair[1]))
+    )
+    portfolio.successful_program = (
+        portfolio._role(replay_token, conservation_scene),
+    )
+
+    portfolio_choice = portfolio.select(
+        conservation,
+        conservation_scene,
+        (6,),
+    )
+
+    assert portfolio_choice.token.data == (
+        ("x", repair[0]),
+        ("y", repair[1]),
+    )
+    assert portfolio_choice.reason.endswith(
+        "constraint-first-repair-local-relation"
+    )
+
+
+def test_global_relation_solver_coordinates_overlapping_clue_constraints() -> None:
+    width, height = 48, 32
+    pixels = [[5 for _x in range(width)] for _y in range(height)]
+    size = 6
+    clue_origins = {(12, 12), (28, 12)}
+    shared_origin = (20, 12)
+    for origin_y in (4, 12, 20):
+        for origin_x in (4, 12, 20, 28, 36):
+            origin = (origin_x, origin_y)
+            if origin in clue_origins:
+                continue
+            color = 9 if origin == shared_origin else 8
+            for y in range(origin_y, origin_y + size):
+                for x in range(origin_x, origin_x + size):
+                    pixels[y][x] = color
+    subcell = size // 3
+    clue = (0, 0, 0, 0, 8, 0, 0, 0, 0)
+    for origin_x, origin_y in clue_origins:
+        for clue_index, color in enumerate(clue):
+            start_x = origin_x + clue_index % 3 * subcell
+            start_y = origin_y + clue_index // 3 * subcell
+            for y in range(start_y, start_y + subcell):
+                for x in range(start_x, start_x + subcell):
+                    pixels[y][x] = color
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=tuple(tuple(row) for row in pixels),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(
+        local_relation_solver=True,
+        global_relation_constraint_solver=True,
+    )
+    explorer.learned_local_relation = {0: True}
+
+    candidates = explorer._local_relation_candidates(observation, scene)
+
+    assert candidates == ((22, 14),)
+
 
 def test_policy_explorer_is_an_exact_configuration_ablation() -> None:
     from reflector.mind import MindConfig

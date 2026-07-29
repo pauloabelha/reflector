@@ -59,6 +59,8 @@ class EpistemicExplorer:
     click_object_accommodation: bool = False
     productive_role_reuse: bool = False
     local_relation_solver: bool = False
+    constraint_first_role_replay: bool = False
+    global_relation_constraint_solver: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -82,6 +84,61 @@ class EpistemicExplorer:
     role_trials: Counter[ActionRole] = field(default_factory=Counter)
     role_responses: Counter[ActionRole] = field(default_factory=Counter)
     learned_local_relation: dict[int, bool] = field(default_factory=dict)
+
+    def arbitration_snapshot(self, selected_reason: str) -> tuple[dict[str, str], ...]:
+        """Explain deterministic advisor priority without inventing prose."""
+
+        order = []
+        if self.constraint_first_role_replay:
+            order.append("constraint-first-relation-repair")
+        if self.successful_role_replay:
+            order.append("successful-role-replay")
+        if self.productive_role_reuse:
+            order.append("productive-role-reuse")
+        if self.local_relation_solver and not self.constraint_first_role_replay:
+            order.append("local-relation-repair")
+        if self.hierarchical_action_fairness:
+            order.append("hierarchical-action-fairness")
+        order.extend(("untried-state-intervention", "known-frontier-navigation"))
+        order.append("least-repeated-fallback")
+        selected = (
+            "constraint-first-relation-repair"
+            if "constraint-first-repair-local-relation" in selected_reason
+            else "successful-role-replay"
+            if "replay-successful-action-role" in selected_reason
+            else "productive-role-reuse"
+            if "reuse-productive-action-role" in selected_reason
+            else "local-relation-repair"
+            if "repair-local-relation" in selected_reason
+            else "hierarchical-action-fairness"
+            if "hierarchical-action-family" in selected_reason
+            else "untried-state-intervention"
+            if "untried-current-state" in selected_reason
+            else "known-frontier-navigation"
+            if "navigate-known-state-graph" in selected_reason
+            else "least-repeated-fallback"
+            if "least-repeated-exhausted-state" in selected_reason
+            else None
+        )
+        if selected is None or selected not in order:
+            return tuple(
+                {"advisor": advisor, "status": "not_evaluated"}
+                for advisor in order
+            )
+        selected_index = order.index(selected)
+        return tuple(
+            {
+                "advisor": advisor,
+                "status": (
+                    "selected"
+                    if index == selected_index
+                    else "no_applicable_action"
+                    if index < selected_index
+                    else "preempted_by_selected_advisor"
+                ),
+            }
+            for index, advisor in enumerate(order)
+        )
 
     def observe(self, observation: Observation, scene: Scene) -> StateKey:
         """Record the outcome of the last issued intervention exactly once."""
@@ -174,6 +231,22 @@ class EpistemicExplorer:
         self.tokens_by_state[state] = tokens
         self.selection_frame = observation.frame
 
+        local_repair = None
+        if self.constraint_first_role_replay:
+            local_repair = self._select_local_relation_repair(
+                observation,
+                scene,
+                state,
+                tokens,
+            )
+            if local_repair is not None:
+                return self._issue(
+                    state,
+                    local_repair,
+                    "epistemic-frontier:constraint-first-repair-local-relation",
+                    scene,
+                )
+
         replay = self._select_program_role(tokens, scene)
         if replay is not None:
             return self._issue(
@@ -192,19 +265,20 @@ class EpistemicExplorer:
                 scene,
             )
 
-        local_repair = self._select_local_relation_repair(
-            observation,
-            scene,
-            state,
-            tokens,
-        )
-        if local_repair is not None:
-            return self._issue(
-                state,
-                local_repair,
-                "epistemic-frontier:repair-local-relation",
+        if not self.constraint_first_role_replay:
+            local_repair = self._select_local_relation_repair(
+                observation,
                 scene,
+                state,
+                tokens,
             )
+            if local_repair is not None:
+                return self._issue(
+                    state,
+                    local_repair,
+                    "epistemic-frontier:repair-local-relation",
+                    scene,
+                )
 
         if self.hierarchical_action_fairness:
             _index, balanced = min(
@@ -520,6 +594,14 @@ class EpistemicExplorer:
     ) -> tuple[tuple[int, int], ...]:
         """Induce equality constraints from repeated 3x3 visual panels."""
 
+        if self.global_relation_constraint_solver:
+            global_candidates = self._global_relation_candidates(
+                observation,
+                scene,
+            )
+            if global_candidates:
+                return global_candidates
+
         blocks = tuple(
             item
             for item in scene.objects
@@ -632,6 +714,119 @@ class EpistemicExplorer:
             return ()
         _count, output = max(ranked, key=lambda item: (item[0], item[1]))
         return output
+
+    def _global_relation_candidates(
+        self,
+        observation: Observation,
+        scene: Scene,
+    ) -> tuple[tuple[int, int], ...]:
+        """Coordinate consistent clue constraints on one inferred tile lattice."""
+
+        relation = self.learned_local_relation
+        frame = observation.frame
+        if not relation or not frame or not frame[0]:
+            return ()
+        blocks = tuple(
+            item
+            for item in scene.objects
+            if 16 <= item.area <= 100
+            and item.bbox[2] - item.bbox[0] == item.bbox[3] - item.bbox[1]
+            and item.area
+            == (item.bbox[2] - item.bbox[0] + 1)
+            * (item.bbox[3] - item.bbox[1] + 1)
+        )
+        if len(blocks) < 8:
+            return ()
+        sizes = Counter(item.bbox[2] - item.bbox[0] + 1 for item in blocks)
+        size, _support = max(sizes.items(), key=lambda item: (item[1], item[0]))
+        if size % 3:
+            return ()
+        blocks = tuple(
+            item for item in blocks if item.bbox[2] - item.bbox[0] + 1 == size
+        )
+        if len(blocks) < 8:
+            return ()
+        x_values = sorted({item.bbox[0] for item in blocks})
+        y_values = sorted({item.bbox[1] for item in blocks})
+        deltas = [
+            right - left
+            for values in (x_values, y_values)
+            for left, right in zip(values, values[1:])
+            if size < right - left <= size * 2
+        ]
+        if not deltas:
+            return ()
+        step, _count = Counter(deltas).most_common(1)[0]
+        x_phase, _x_support = Counter(
+            item.bbox[0] % step for item in blocks
+        ).most_common(1)[0]
+        y_phase, _y_support = Counter(
+            item.bbox[1] % step for item in blocks
+        ).most_common(1)[0]
+        origins = {(item.bbox[0], item.bbox[1]): item for item in blocks}
+        directions = (
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+            (-1, 0),
+            (1, 0),
+            (-1, 1),
+            (0, 1),
+            (1, 1),
+        )
+        clue_indexes = (0, 1, 2, 3, 5, 6, 7, 8)
+        subcell = size // 3
+        height = len(frame)
+        width = len(frame[0])
+        constraints: dict[tuple[int, int], list[bool]] = {}
+        support: Counter[tuple[int, int]] = Counter()
+        for origin_y in range(y_phase, height - size + 1, step):
+            for origin_x in range(x_phase, width - size + 1, step):
+                if (origin_x, origin_y) in origins:
+                    continue
+                clue = []
+                uniform = True
+                for row in range(3):
+                    for column in range(3):
+                        start_x = origin_x + column * subcell
+                        start_y = origin_y + row * subcell
+                        values = {
+                            frame[y][x]
+                            for y in range(start_y, start_y + subcell)
+                            for x in range(start_x, start_x + subcell)
+                        }
+                        if len(values) != 1:
+                            uniform = False
+                            break
+                        clue.append(next(iter(values)))
+                    if not uniform:
+                        break
+                if not uniform or len(clue) != 9 or len(set(clue)) < 2:
+                    continue
+                center_color = clue[4]
+                for clue_index, (dx, dy) in zip(clue_indexes, directions):
+                    expected_same = relation.get(clue[clue_index])
+                    neighbor = origins.get(
+                        (origin_x + dx * step, origin_y + dy * step)
+                    )
+                    if expected_same is None or neighbor is None:
+                        continue
+                    centroid = neighbor.centroid
+                    constraints.setdefault(centroid, []).append(
+                        (neighbor.color == center_color) != expected_same
+                    )
+                    support[centroid] += 1
+        candidates = [
+            centroid
+            for centroid, violations in constraints.items()
+            if violations and all(violations)
+        ]
+        return tuple(
+            sorted(
+                candidates,
+                key=lambda centroid: (-support[centroid], centroid),
+            )
+        )
 
     def _multicolor_candidates(
         self,

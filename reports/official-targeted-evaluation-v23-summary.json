@@ -1,0 +1,58 @@
+{
+  "candidate_id": "candidate-d2f2f4a3c01e3f82",
+  "agent_version": "reflector-symbolic-v23",
+  "parent_id": "candidate-cf53e44f38d28623",
+  "source_commit": "5bbe961d899c06e800bb943cecccc6833fde3c9b",
+  "mechanism": "Prioritize untried interventions derived from an active evidenced local relation before undirected novelty.",
+  "games": {
+    "ft09": {
+      "levels_completed": 4,
+      "level_actions": [4, 7, 14, 16],
+      "level_baseline_actions": [43, 12, 23, 28],
+      "score": 47.61904761904761,
+      "status": "improved"
+    },
+    "r11l": {
+      "levels_completed": 1,
+      "level_actions": [18],
+      "score": 4.761904761904762,
+      "status": "preserved"
+    },
+    "tn36": {
+      "levels_completed": 1,
+      "level_actions": [123],
+      "score": 0.24173064030291874,
+      "status": "preserved"
+    },
+    "lf52": {
+      "levels_completed": 1,
+      "level_actions": [34],
+      "score": 1.6105693614344134,
+      "status": "preserved"
+    }
+  },
+  "total_levels_completed": 7,
+  "total_actions": 1600,
+  "target_gate_score": 13.558313095672426,
+  "promotion_gate": {
+    "accepted_parent_wins_preserved": true,
+    "new_levels": 2,
+    "passed": true
+  },
+  "determinism_check": {
+    "game": "ft09",
+    "runs": 2,
+    "matching_level_actions": [4, 7, 14, 16],
+    "matching_score": 47.61904761904761,
+    "passed": true
+  },
+  "quality_checks": {
+    "pytest": "119 passed, 3 skipped",
+    "ruff": "passed",
+    "mypy": "passed",
+    "candidate_specific_kaggle_export": "passed",
+    "candidate_specific_network_disabled_smoke": "passed"
+  },
+  "scorecard_id": "20b46e98-e32c-41a7-8018-b2852bce2918",
+  "status": "experimental; full 25-game evaluation not run"
+}

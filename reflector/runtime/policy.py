@@ -7,6 +7,8 @@ the web UI, a database, or development-time services.
 
 from __future__ import annotations
 
+from typing import Any
+
 from ..core.exploration import EpistemicExplorer
 from ..core.mind import MindConfig, MindUpdate, SymbolicMind
 from ..core.symbolic import Decision, Observation
@@ -30,13 +32,22 @@ class SymbolicPolicy:
             hierarchical_action_fairness=(
                 self.mind.config.enable_hierarchical_action_fairness
             ),
-            successful_role_replay=self.mind.config.enable_successful_role_replay,
+            successful_role_replay=(
+                self.mind.config.enable_successful_role_replay
+                or self.mind.config.enable_constraint_first_role_replay
+            ),
             multicolor_click_objects=self.mind.config.enable_multicolor_click_objects,
             click_object_accommodation=(
                 self.mind.config.enable_click_object_accommodation
             ),
             productive_role_reuse=self.mind.config.enable_productive_role_reuse,
             local_relation_solver=self.mind.config.enable_local_relation_solver,
+            constraint_first_role_replay=(
+                self.mind.config.enable_constraint_first_role_replay
+            ),
+            global_relation_constraint_solver=(
+                self.mind.config.enable_global_relation_constraint_solver
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None
@@ -158,6 +169,109 @@ class SymbolicPolicy:
                 planner_expansions=self.mind.planner.last_expansions,
             )
         )
+
+    def cognitive_event(
+        self,
+        observation: Observation,
+        decision: Decision,
+    ) -> dict[str, Any]:
+        """Return bounded inspectable symbolic state for development streaming."""
+
+        update = self._last_update
+        assessments = []
+        if update is not None:
+            for assessment_id in update.new_assessments:
+                assessment = self.mind.reinforcement.assessments.get(
+                    assessment_id
+                )
+                if assessment is None:
+                    continue
+                assessments.append(
+                    {
+                        "assessment_id": assessment.assessment_id,
+                        "action_id": assessment.action_id,
+                        "predicted": list(assessment.predicted),
+                        "observed": list(assessment.observed),
+                        "confirmed": list(assessment.confirmed),
+                        "contradicted": list(assessment.contradicted),
+                        "confirmed_absent": list(assessment.confirmed_absent),
+                        "contradicted_absent": list(
+                            assessment.contradicted_absent
+                        ),
+                        "unpredicted": list(assessment.unpredicted),
+                        "pragmatic": list(assessment.pragmatic),
+                        "epistemic": list(assessment.epistemic),
+                        "response": assessment.response,
+                        "support": assessment.support,
+                        "licensing_structures": list(
+                            assessment.licensing_structures
+                        ),
+                        "context_count": len(assessment.context),
+                        "context_sample": [
+                            term
+                            for term in assessment.context
+                            if not term.startswith("object_signature(")
+                        ][:16],
+                        "object_signature_count": sum(
+                            term.startswith("object_signature(")
+                            for term in assessment.context
+                        ),
+                        "perturbation_count": len(assessment.perturbation),
+                    }
+                )
+        abstractions = self.mind.abstractions
+        return {
+            "format": "reflector-cognitive-event-v1",
+            "sequence": max(0, self._decision_epoch - 1),
+            "observation": {
+                "state": observation.state,
+                "levels_completed": observation.levels_completed,
+                "available_actions": list(observation.available_actions),
+                "frame_digest": (
+                    update.scene.frame_digest if update is not None else None
+                ),
+            },
+            "decision": decision.to_dict(),
+            "advisor_arbitration": self.explorer.arbitration_snapshot(
+                decision.reason
+            ),
+            "transition": (
+                update.transition.to_dict()
+                if update is not None and update.transition is not None
+                else None
+            ),
+            "construction_delta": {
+                "concepts": (
+                    [item.concept_id for item in update.new_concepts]
+                    if update is not None
+                    else []
+                ),
+                "hypotheses": (
+                    list(update.new_hypotheses) if update is not None else []
+                ),
+                "abstractions": (
+                    list(update.new_abstractions) if update is not None else []
+                ),
+                "assessments": assessments,
+            },
+            "operative_state": {
+                "schema_count": len(self.mind.schemas.schemas),
+                "active_concept_count": len(
+                    self.mind.concepts.active_concepts()
+                ),
+                "schema_family_count": len(abstractions.schema_families),
+                "concept_type_count": len(abstractions.concept_types),
+                "language_operator_count": len(abstractions.language_operators),
+                "procedure_count": len(abstractions.procedures),
+                "accommodation_count": len(
+                    self.mind.reinforcement.accommodations
+                ),
+                "learned_local_relation": dict(
+                    sorted(self.explorer.learned_local_relation.items())
+                ),
+                "exploration": self.explorer.to_dict(),
+            },
+        }
 
     def _record(self, decision: Decision) -> Decision:
         self.action_counts[decision.action_id] = (

@@ -1,8 +1,17 @@
 import json
+import subprocess
+import threading
+import time
+from pathlib import Path
 
 import pytest
 
 from reflector.cli import demo_trace
+from reflector.evolution.official_population import (
+    inference_fingerprint,
+    operative_strategy_population,
+    run_official_population_round,
+)
 from reflector.evolver import (
     descendants,
     evaluate_evolution_ablations,
@@ -169,3 +178,128 @@ def test_end_to_end_population_experiment(tmp_path) -> None:
         assert diagnostics["network_isolated"]
         assert store.evaluated(result.manifest.experiment_id)
     assert json.loads(json.dumps(result.to_dict()))["pareto_archive"]
+
+
+def test_candidate_preserves_legacy_and_multi_parent_provenance() -> None:
+    legacy = root_candidate().to_dict()
+    legacy.pop("contributor_ids")
+    legacy.pop("inference_fingerprint")
+    restored = Candidate.from_dict(legacy)
+    assert restored.contributor_ids == ()
+    assert restored.inference_fingerprint is None
+
+    donor = Candidate.create(
+        MindConfig(enable_productive_role_reuse=True),
+        parent_id=restored.candidate_id,
+    )
+    child = Candidate.create(
+        donor.config,
+        parent_id=restored.candidate_id,
+        contributor_ids=(donor.candidate_id,),
+        inference_fingerprint="a" * 64,
+    )
+    round_trip = Candidate.from_dict(child.to_dict())
+    assert round_trip == child
+    assert round_trip.contributor_ids == tuple(
+        sorted((restored.candidate_id, donor.candidate_id))
+    )
+
+
+def test_official_population_runs_in_parallel_and_breeds_only_gated_traits(
+    tmp_path,
+) -> None:
+    root = root_candidate(
+        MindConfig(
+            enable_epistemic_state_graph=True,
+            enable_click_object_accommodation=True,
+            enable_local_relation_solver=True,
+        )
+    )
+    project_root = Path(__file__).resolve().parents[2]
+    fingerprint = inference_fingerprint(project_root)
+    strategies = operative_strategy_population(
+        root,
+        source_fingerprint=fingerprint,
+    )
+    assert [item.name for item in strategies] == [
+        "relation-repair-control",
+        "action-family-fairness",
+        "successful-structural-replay",
+        "productive-role-reuse",
+        "constraint-first-structural-replay",
+    ]
+    assert len({item.candidate.candidate_id for item in strategies}) == 5
+
+    active = 0
+    maximum_active = 0
+    lock = threading.Lock()
+
+    def fake_run(command, **_kwargs):
+        nonlocal active, maximum_active
+        config_path = Path(command[command.index("--config") + 1])
+        config = json.loads(config_path.read_text())["config"]
+        with lock:
+            active += 1
+            maximum_active = max(maximum_active, active)
+        time.sleep(0.01)
+        with lock:
+            active -= 1
+
+        levels = 2
+        score = 10.0
+        if config["enable_hierarchical_action_fairness"]:
+            levels = 1
+            score = 5.0
+        elif config["enable_successful_role_replay"]:
+            score = 11.0
+        elif config["enable_productive_role_reuse"]:
+            levels = 3
+            score = 12.0
+        report = {
+            "scorecard": {
+                "score": score,
+                "total_levels_completed": levels,
+                "total_actions": 80,
+                "environments": [
+                    {
+                        "id": "game-a1b2",
+                        "levels_completed": levels,
+                        "actions": 80,
+                        "score": score,
+                        "completed": False,
+                        "runs": [{"level_actions": [4] * levels}],
+                    }
+                ],
+            },
+            "agents": [{"game_id": "game", "mind_config": config}],
+            "source_commit": "b" * 40,
+        }
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(report),
+            stderr="",
+        )
+
+    result = run_official_population_round(
+        parent=root,
+        games=("game",),
+        environments_dir=tmp_path,
+        project_root=project_root,
+        max_workers=4,
+        reruns=2,
+        command_runner=fake_run,
+    )
+
+    assert maximum_active > 1
+    assert len(result.outcomes) == 10
+    assert [item.field for item in result.inherited_traits] == [
+        "enable_productive_role_reuse",
+        "enable_successful_role_replay",
+    ]
+    assert result.offspring is not None
+    assert result.offspring.config.enable_productive_role_reuse
+    assert result.offspring.config.enable_successful_role_replay
+    assert not result.offspring.config.enable_hierarchical_action_fairness
+    assert len(result.offspring.contributor_ids) == 3
+    assert result.offspring.inference_fingerprint == fingerprint

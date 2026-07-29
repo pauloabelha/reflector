@@ -22,9 +22,11 @@ class Candidate:
     candidate_id: str
     config: MindConfig
     parent_id: str | None = None
+    contributor_ids: tuple[str, ...] = ()
     generation: int = 0
     rationale: str = "root"
     mutation_source: str = "root"
+    inference_fingerprint: str | None = None
 
     @classmethod
     def create(
@@ -34,21 +36,30 @@ class Candidate:
         generation: int = 0,
         rationale: str = "root",
         mutation_source: str = "root",
+        contributor_ids: tuple[str, ...] = (),
+        inference_fingerprint: str | None = None,
     ) -> "Candidate":
+        contributors = tuple(
+            sorted(set(contributor_ids) | ({parent_id} if parent_id else set()))
+        )
         identity = {
             "config": config.to_dict(),
             "parent_id": parent_id,
+            "contributor_ids": contributors,
             "generation": generation,
             "rationale": rationale,
             "mutation_source": mutation_source,
+            "inference_fingerprint": inference_fingerprint,
         }
         return cls(
             _stable_id("candidate", identity),
             config,
             parent_id,
+            contributors,
             generation,
             rationale,
             mutation_source,
+            inference_fingerprint,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -56,9 +67,11 @@ class Candidate:
             "candidate_id": self.candidate_id,
             "config": self.config.to_dict(),
             "parent_id": self.parent_id,
+            "contributor_ids": list(self.contributor_ids),
             "generation": self.generation,
             "rationale": self.rationale,
             "mutation_source": self.mutation_source,
+            "inference_fingerprint": self.inference_fingerprint,
         }
 
     @classmethod
@@ -67,9 +80,20 @@ class Candidate:
             candidate_id=value["candidate_id"],
             config=MindConfig.from_dict(value["config"]),
             parent_id=value.get("parent_id"),
+            contributor_ids=tuple(
+                value.get(
+                    "contributor_ids",
+                    (
+                        (value["parent_id"],)
+                        if value.get("parent_id") is not None
+                        else ()
+                    ),
+                )
+            ),
             generation=value["generation"],
             rationale=value["rationale"],
             mutation_source=value.get("mutation_source", "unknown"),
+            inference_fingerprint=value.get("inference_fingerprint"),
         )
 
 

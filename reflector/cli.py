@@ -28,7 +28,8 @@ from .evolution.mutations import (
     MutationProvider,
     OpenAICompatibleMutationProvider,
 )
-from .evolution.population import pareto_archive
+from .evolution.official_population import run_official_population_round
+from .evolution.population import Candidate, pareto_archive
 from .research.benchmark import run_validation
 from .research.compression import (
     analyze_redundancy,
@@ -44,7 +45,12 @@ from .research.official_eval import (
     expected_public_game_count,
     inventory_official_environments,
 )
-from .runtime.deployment import CONFIG_ENV
+from .runtime.deployment import (
+    CANDIDATE_ID_ENV,
+    COGNITIVE_STREAM_DIR_ENV,
+    CONFIG_ENV,
+    INFERENCE_FINGERPRINT_ENV,
+)
 from .runtime.policy import SymbolicPolicy
 from .runtime.trace import EpisodeTrace
 from .web_api import serve
@@ -172,6 +178,11 @@ def main() -> None:
         action="store_true",
         help="skip expensive post-run trace analysis",
     )
+    official_run.add_argument(
+        "--cognitive-stream-dir",
+        type=Path,
+        help="flush inspectable symbolic events to one JSONL file per game",
+    )
 
     official_public = commands.add_parser("official-public-run")
     official_public.add_argument("--environments-dir", type=Path, required=True)
@@ -191,6 +202,35 @@ def main() -> None:
         "--lightweight",
         action="store_true",
         help="skip expensive post-run trace analysis",
+    )
+    official_public.add_argument(
+        "--cognitive-stream-dir",
+        type=Path,
+        help="flush inspectable symbolic events to one JSONL file per game",
+    )
+
+    official_population = commands.add_parser("official-population-run")
+    official_population.add_argument("games", nargs="+")
+    official_population.add_argument(
+        "--parent",
+        type=Path,
+        required=True,
+        help="serialized parent Candidate JSON",
+    )
+    official_population.add_argument(
+        "--environments-dir",
+        type=Path,
+        required=True,
+    )
+    official_population.add_argument("--output", type=Path, required=True)
+    official_population.add_argument("--offspring-output", type=Path)
+    official_population.add_argument("--max-workers", type=int, default=4)
+    official_population.add_argument("--reruns", type=int, default=2)
+    official_population.add_argument("--timeout", type=float, default=1800.0)
+    official_population.add_argument(
+        "--cognitive-stream-dir",
+        type=Path,
+        help="persist per-candidate, per-rerun cognitive JSONL streams",
     )
 
     web = commands.add_parser("web")
@@ -337,6 +377,41 @@ def main() -> None:
             print(args.output)
         else:
             print(rendered)
+    elif args.command == "official-population-run":
+        raw_parent = json.loads(args.parent.read_text(encoding="utf-8"))
+        if not isinstance(raw_parent, dict) or "candidate_id" not in raw_parent:
+            parser.error("--parent must contain a serialized Candidate")
+        parent = Candidate.from_dict(raw_parent)
+        try:
+            population_round = run_official_population_round(
+                parent=parent,
+                games=args.games,
+                environments_dir=args.environments_dir,
+                project_root=Path(__file__).resolve().parent.parent,
+                max_workers=args.max_workers,
+                reruns=args.reruns,
+                timeout=args.timeout,
+                cognitive_stream_dir=args.cognitive_stream_dir,
+            )
+        except (RuntimeError, ValueError) as error:
+            parser.error(str(error))
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            json.dumps(population_round.to_dict(), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        if args.offspring_output is not None:
+            if population_round.offspring is None:
+                parser.error(
+                    "no offspring qualified; report was written with falsifying "
+                    "evidence"
+                )
+            args.offspring_output.parent.mkdir(parents=True, exist_ok=True)
+            args.offspring_output.write_text(
+                json.dumps(population_round.offspring.to_dict(), indent=2) + "\n",
+                encoding="utf-8",
+            )
+        print(args.output)
     elif args.command in {"official-run", "official-public-run"}:
         inventory = None
         games = getattr(args, "games", None)
@@ -363,6 +438,16 @@ def main() -> None:
                 MindConfig.from_dict(selected_config).to_dict(),
                 sort_keys=True,
                 separators=(",", ":"),
+            )
+            candidate_id = raw_config.get("candidate_id")
+            fingerprint = raw_config.get("inference_fingerprint")
+            if isinstance(candidate_id, str):
+                os.environ[CANDIDATE_ID_ENV] = candidate_id
+            if isinstance(fingerprint, str):
+                os.environ[INFERENCE_FINGERPRINT_ENV] = fingerprint
+        if args.cognitive_stream_dir is not None:
+            os.environ[COGNITIVE_STREAM_DIR_ENV] = str(
+                args.cognitive_stream_dir.resolve()
             )
         os.environ["OPERATION_MODE"] = "offline"
         os.environ["ENVIRONMENTS_DIR"] = str(args.environments_dir.resolve())

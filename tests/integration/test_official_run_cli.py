@@ -50,6 +50,7 @@ def test_official_run_lightweight_without_recordings(
     root = Path(__file__).parents[2]
     fixture = root / "tests" / "fixtures" / "official_toolkit"
     recordings = tmp_path / "recordings"
+    cognitive_streams = tmp_path / "cognitive-streams"
     completed = subprocess.run(
         [
             sys.executable,
@@ -63,6 +64,8 @@ def test_official_run_lightweight_without_recordings(
             str(recordings),
             "--no-recordings",
             "--lightweight",
+            "--cognitive-stream-dir",
+            str(cognitive_streams),
         ],
         cwd=root,
         capture_output=True,
@@ -76,6 +79,16 @@ def test_official_run_lightweight_without_recordings(
     assert sum(report["agents"][0]["action_counts"].values()) == 72
     assert report["agents"][0]["exploration_metrics"]["states"] > 0
     assert not list(recordings.glob("*.recording.jsonl"))
+    stream_files = list(cognitive_streams.glob("*.cognitive.jsonl"))
+    assert len(stream_files) == 1
+    events = [
+        json.loads(line)
+        for line in stream_files[0].read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(events) == report["agents"][0]["actions"]
+    assert events[0]["format"] == "reflector-cognitive-event-v1"
+    assert events[0]["deployment"]["game_id"] == "bt11"
+    assert events[0]["advisor_arbitration"]
 
 
 def test_public_run_refuses_incomplete_environment_inventory(
@@ -106,3 +119,67 @@ def test_public_run_refuses_incomplete_environment_inventory(
     assert completed.returncode == 2
     assert "expected 25 unique games, found 1" in completed.stderr
     assert not output.exists()
+
+
+def test_official_population_isolates_parallel_candidate_configs(
+    tmp_path: Path,
+) -> None:
+    root = Path(__file__).parents[2]
+    fixture = root / "tests" / "fixtures" / "official_toolkit"
+    parent = root / "candidates" / "v23-goal-directed-relation-repair-400.json"
+    output = tmp_path / "population.json"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "reflector.cli",
+            "official-population-run",
+            "bt11",
+            "--parent",
+            str(parent),
+            "--environments-dir",
+            str(fixture),
+            "--output",
+            str(output),
+            "--max-workers",
+            "4",
+            "--reruns",
+            "2",
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=True,
+    )
+    report = json.loads(output.read_text())
+    assert completed.stdout.strip() == str(output)
+    assert len(report["strategies"]) == 5
+    assert len(report["outcomes"]) == 10
+    assert len(
+        {
+            item["candidate"]["candidate_id"]
+            for item in report["strategies"]
+        }
+    ) == 5
+    by_strategy = {
+        name: [
+            (
+                outcome["total_levels_completed"],
+                outcome["score"],
+                outcome["total_actions"],
+            )
+            for outcome in report["outcomes"]
+            if outcome["strategy"] == name
+        ]
+        for name in {
+            outcome["strategy"] for outcome in report["outcomes"]
+        }
+    }
+    assert all(len(runs) == 2 and runs[0] == runs[1] for runs in by_strategy.values())
+    assert report["offspring"] is not None
+    assert report["offspring"]["config"]["enable_successful_role_replay"]
+    assert [item["field"] for item in report["inherited_traits"]] == [
+        "enable_constraint_first_role_replay",
+        "enable_successful_role_replay",
+    ]

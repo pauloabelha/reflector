@@ -291,10 +291,22 @@ class ExperimentStore:
             "candidates": candidates,
             "lineage_edges": [
                 {
-                    "source": item["candidate"]["parent_id"],
+                    "source": contributor_id,
                     "target": item["candidate"]["candidate_id"],
+                    "relationship": (
+                        "backbone"
+                        if contributor_id == item["candidate"]["parent_id"]
+                        else "contributor"
+                    ),
                 }
                 for item in candidates
-                if item["candidate"]["parent_id"] is not None
+                for contributor_id in item["candidate"].get(
+                    "contributor_ids",
+                    (
+                        [item["candidate"]["parent_id"]]
+                        if item["candidate"]["parent_id"] is not None
+                        else []
+                    ),
+                )
             ],
         }

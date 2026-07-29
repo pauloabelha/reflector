@@ -43,9 +43,14 @@ def test_experiment_report_includes_pareto_and_genealogy(tmp_path) -> None:
     trace = demo_trace()
     manifest = ExperimentManifest.create("web", 4, {"demo": trace})
     parent = root_candidate()
+    contributor = type(parent).create(
+        parent.config,
+        rationale="independent contributor",
+    )
     child = type(parent).create(
         parent.config,
         parent_id=parent.candidate_id,
+        contributor_ids=(contributor.candidate_id,),
         generation=1,
         rationale="child",
     )
@@ -53,6 +58,7 @@ def test_experiment_report_includes_pareto_and_genealogy(tmp_path) -> None:
         store.save_manifest(manifest)
         for candidate, candidate_fitness in (
             (parent, Fitness(1, 1.0, 0.5, 3, 10)),
+            (contributor, Fitness(1, 1.0, 0.5, 3, 10)),
             (child, Fitness(2, 1.0, 0.5, 2, 12)),
         ):
             store.save_candidate(manifest.experiment_id, candidate)
@@ -64,10 +70,21 @@ def test_experiment_report_includes_pareto_and_genealogy(tmp_path) -> None:
             )
         listing = store.list_experiments()
         report = store.experiment_report(manifest.experiment_id)
-    assert listing[0]["candidate_count"] == 2
-    assert len(report["candidates"]) == 2
-    assert report["lineage_edges"] == [
-        {"source": parent.candidate_id, "target": child.candidate_id}
+    assert listing[0]["candidate_count"] == 3
+    assert len(report["candidates"]) == 3
+    assert sorted(
+        report["lineage_edges"], key=lambda edge: edge["relationship"]
+    ) == [
+        {
+            "source": parent.candidate_id,
+            "target": child.candidate_id,
+            "relationship": "backbone",
+        },
+        {
+            "source": contributor.candidate_id,
+            "target": child.candidate_id,
+            "relationship": "contributor",
+        },
     ]
     assert all(item["pareto"] for item in report["candidates"])
     child_report = next(
