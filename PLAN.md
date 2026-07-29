@@ -544,7 +544,8 @@ Preregistered mutation:
 - retain all v37 policies and add one exact-off advisor before undirected
   exploration;
 - probe only represented non-reset, non-coordinate action tokens, at most once
-  each, until a grounded displacement is observed;
+  each, until both a unique shape goal and a goal-reducing displacement are
+  grounded; a first displacement away from the goal does not stop probing;
 - accept a displacement only when one bounded interior component preserves its
   attribute, area, normalized shape, and bounding-box dimensions under a pure
   translation;
@@ -554,6 +555,14 @@ Preregistered mutation:
 - bind the action token to the observed mover translation, then repeat only an
   evidenced action whose predicted translation strictly reduces Manhattan
   displacement to the stationary shape without overshooting either axis;
+- require two exact disjoint-frame confirmations before carrying an evidenced
+  translation through partial occlusion; when the predicted mover and target
+  masks intersect, preserve their latent anchors for at most four further
+  non-overshooting applications of that same token, require a rendered change
+  after every non-terminal application, and require progress by exact predicted
+  overlap;
+- arbitrate after the accepted select/apply and cyclic advisors but before
+  productive-role reuse and undirected exploration;
 - reset the grounded translations and shape goal on every level transition,
   cap operative applications at 32 per level, and abstain on ambiguity.
 
@@ -572,8 +581,9 @@ Falsifier:
 
 - reject v39 if no unique exact-shape mover/target pair is grounded from
   rendered transitions, if an emitted translation fails to reduce the grounded
-  displacement as predicted, if level 1 does not advance within 20 actions, or
-  if any accepted completion regresses.
+  displacement as predicted, if a predicted-occlusion step has no rendered
+  effect or exceeds four steps without progress, if level 1 does not advance
+  within 20 actions, or if any accepted completion regresses.
 
 ## Rejected experimental branch: v28 object and temporal primitives
 
