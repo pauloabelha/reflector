@@ -24,6 +24,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
 | Process-isolated official local suite | v25 accepted | **2.9104325118 / 100** | 0 games beaten; 8/183 levels | 25/25 coverage |
+| Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
 | Kaggle public leaderboard | v25 package ready | — | no returned score | **not submitted** |
@@ -33,6 +34,9 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Four-game accepted-win gate | v23 experimental | 13.5583130957 across four games | 7 levels; all v21 wins preserved | passed; not a 25-game score |
 | Target-only `ft09` run | v25 experimental | 66.1466080321 for one game | 5/6 levels; `[4, 7, 14, 16, 94]` actions | deterministic twice |
 | Four-game process-isolated gate | v25 accepted | 18.1902031989 across four games | 8 levels; all prior wins preserved | exact twice |
+| Four-game process-isolated gate | v26d experimental | 18.2517403567 across four games | 8 levels; all prior wins preserved | exact twice |
+| Target-only `ft09` run | v26e experimental | 66.3927566633 for one game | 5/6 levels; 2 composite trials | deterministic twice; no task gain |
+| Target-only `ft09` run | v26f experimental | 66.3927566633 for one game | 5/6 levels; replay fell from 55 to 12 actions | deterministic twice; no task gain |
 
 These surfaces must not be combined. The accepted local result uses 25 known
 public-development games. Kaggle evaluates a separate hidden set of 110 games:
@@ -108,6 +112,7 @@ Raw evidence:
 | v21 | 0.8359967620 | 5 | 4 | 0 | Cross-level relation transfer | historical threaded result |
 | v25 ablation | 2.1693300953 | 7 | 4 | 0 | Current source, global constraint solver disabled | process-isolated control |
 | v25 | **2.9104325118** | **8** | **4** | **0** | Global overlapping relation constraints | **current accepted** |
+| v26d | 2.9202784571 | 8 | 4 | 0 | Successful coordinate-free role replay plus neutral construction machinery | experimental; complexity not earned |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
@@ -184,6 +189,54 @@ Raw evidence:
 - [v23 targeted evaluation summary](reports/official-targeted-evaluation-v23-summary.json)
 - [v23 candidate](candidates/v23-goal-directed-relation-repair-400.json)
 
+## Experimental v26: constructive credit and scheme composition
+
+V26 implements the requested bridge between reinforcement learning and genetic
+epistemology without calling an LLM during play:
+
+- every intervention preregisters a causal hypothesis before its outcome;
+- predictive support/refutation is kept separate from pragmatic
+  progress/stagnation;
+- credit names the exact licensing structures and any composite scheme;
+- successful action-role programs become first-class schemes that can be
+  supplied to other schemes by prefix, suffix, interleaving, or role binding;
+- sustained pragmatic stagnation, rather than mere prediction error, opens
+  bounded variation;
+- a failed composite application is falsified while its base, argument, and
+  operator remain eligible for a different binding.
+
+This capacity is operative, not merely serialized: the combined v26 offspring
+preregistered 400 hypotheses, constructed 37 parameterized schemes, and tried
+12 of them on `ft09`. The score evidence is more limited. Credit alone and
+scheme variation alone were exact ties. Successful coordinate-free role replay
+was the only population trait to pass the target inheritance gate. Bred v26d
+preserved all eight accepted level completions and increased the isolated
+25-game score from 2.9104325118 to 2.9202784571 by changing `ft09` efficiency,
+but it added no level and the new constructive machinery did not cause that
+gain. V25 therefore remains accepted: inheriting neutral complexity would
+violate the project’s own credit-assignment rule.
+
+Trace inspection then falsified two refinements:
+
+- v26e reduced repeated parameterized applications from 12 to 2, with no score
+  or level change;
+- v26f suspended a stale successful replay after pragmatic disequilibrium,
+  reducing replay from 55 to 12 actions, but the released budget became
+  undirected novelty and again changed neither score nor levels.
+
+These are useful negative results. They show that correctly retiring a scheme
+is not enough; the missing mechanism is a constructive relational binder that
+maps a modifier’s role variables into another scheme’s objects and control
+parameters, then grounds that binding into an intervention.
+
+Raw evidence:
+
+- [v26 population and targeted summary](reports/official-targeted-evaluation-v26-summary.json)
+- [v26d full-suite experimental result](reports/official-isolated-public-evaluation-v26d-constructive-replay-400.json)
+- [v26 source-matched full-suite control](reports/official-isolated-public-evaluation-v26-source-control-400.json)
+- [v26e–v26f targeted falsification summary](reports/official-targeted-evaluation-v26ef-summary.json)
+- [v26f candidate](candidates/v26f-disequilibrium-arbitration-400.json)
+
 ### V22–v23 parent results
 
 V21 failed `ft09` level 3 because it overwrote a proven relation when it saw
@@ -211,7 +264,7 @@ Candidate:
 
 ## What our scheme is learning
 
-The real-game gains currently support six bounded insights:
+The real-game evidence currently supports eight bounded insights:
 
 1. **Exploration needs memory of intervention identity.** Treating every frame
    independently scored zero; an epistemic transition graph produced the first
@@ -229,10 +282,16 @@ The real-game gains currently support six bounded insights:
    relation-implied repairs ahead of undirected novelty reduced level 3 from
    152 to 14 actions and added level 4 in 16 actions. This is within-game
    evidence only.
-6. **Construction and policy credit must remain separate.** V25's global
-   constraint structure adds an `ft09` level while the full policy regresses
-   on two previously solved games. A useful abstraction in one context is not
-   evidence that the whole descendant should be inherited.
+6. **Construction and policy credit must remain separate.** V26 constructs and
+   executes parameterized schemes, but only coordinate-free replay changed the
+   official score. Operative structure is not automatically useful structure.
+7. **Prediction and task return are different signals.** A no-effect
+   prediction can be correct while the intervention is pragmatically useless.
+   Scalarizing both would reward stagnation.
+8. **Accommodation needs a successor, not only inhibition.** V26f correctly
+   suspended a stale replay, but undirected novelty consumed the recovered
+   budget. Falsification creates room for learning; it does not itself create
+   the next relational scheme.
 
 These are narrow environment-level results. They do not yet prove general
 Piagetian equilibration, arbitrary schema induction, cross-game transfer, or

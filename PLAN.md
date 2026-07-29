@@ -76,17 +76,30 @@ Current evidence:
   and complete coverage. Its one-factor ablation scored 2.1693300953 with
   7/183. V25 is accepted.
 
+## Completed experimental branch: v26
+
+- Preregistered causal hypotheses and typed predictive/pragmatic structural
+  credit are implemented.
+- Successful procedures are first-class scheme inputs with bounded prefix,
+  suffix, interleaving, and role-binding variation.
+- Pragmatic stagnation triggers variation; composite applications receive
+  component-specific falsification.
+- The full v26d run preserved eight levels and increased score slightly, but
+  the gain came only from successful role replay. V26e and v26f improved
+  trace-level inhibition without task gain. None is promoted.
+
 ## Next actions
 
-1. Implement v26 preregistered causal hypotheses that prime exact symbolic
-   dependencies before intervention and assign typed predictive, pragmatic,
-   and structural credit afterward.
-2. Make procedures first-class typed scheme inputs and construct bounded
-   prefix, suffix, interleaving, and role-binding variations.
-3. Use pragmatic stagnation—not prediction error—to trigger scheme variation;
-   require component-wise falsification evidence.
-4. Run target and source-matched ablations, then update reports; commit and
-   push only after promotion evidence is complete.
+1. Replace exact-role sequence composition with relational role variables:
+   bind a modifier scheme to another scheme’s object, direction, ordering, and
+   control slots, then ground the binding recursively into legal actions.
+2. Let typed pragmatic credit select among alternative bindings and propagate
+   delayed progress through a bounded eligibility graph without converting
+   predictive support into reward.
+3. Evaluate diverse binder operators in an isolated population across games;
+   require a new level or material efficiency gain from the binder itself.
+4. Run source-matched target ablations and the full 25-game gate only for a
+   qualifying offspring; keep v25 accepted otherwise.
 5. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.

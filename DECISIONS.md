@@ -436,3 +436,27 @@ This is accepted as finite operative transfer of one induced relation across a
 level boundary. It is stronger than coordinate replay because the second
 layout changes and panels overlap, but it does not establish general schema
 transfer, arbitrary relation learning, or a Kaggle leaderboard result.
+
+## 2026-07-28 — Do not promote neutral constructive machinery
+
+V26 preregisters causal hypotheses before intervention, separates predictive
+support from pragmatic return, assigns typed credit to exact symbolic
+dependencies, and constructs bounded higher-order variations in which one
+successful scheme is a prefix, suffix, interleaved argument, or role-binding
+modifier of another. These structures were constructed and executed in the
+official runtime without an LLM.
+
+The population evidence does not justify attributing task performance to that
+machinery. Credit-only and variation-only offspring tied v25 on `ft09`.
+Successful coordinate-free role replay was the sole qualifying trait. The bred
+v26d descendant preserved eight levels and increased the isolated 25-game
+score from 2.9104325118 to 2.9202784571, but added no level and did not isolate
+a benefit from the new constructive structures. V25 remains accepted.
+
+Trace-driven v26e correctly reduced repeated composite applications from 12 to
+2. V26f correctly suspended a stale replay under pragmatic disequilibrium,
+reducing replay actions from 55 to 12. Both reproduced 66.3927566633 and five
+`ft09` levels twice. The released budget produced undirected novelty, not a new
+solution. Therefore inhibition and falsification are retained as experimental
+knowledge, but neither offspring is promoted. The next falsifiable mechanism
+must construct relational role-variable bindings and earn its own task credit.

@@ -1,0 +1,55 @@
+{
+  "kind": "official-process-isolated-targeted-evaluation-summary",
+  "accepted_parent": {
+    "version": "v25",
+    "candidate_id": "candidate-036a55bfb6956008"
+  },
+  "v26e": {
+    "candidate_id": "candidate-c07e54061142eb66",
+    "inference_fingerprint": "7c2dca24bb2aa3000f96e5c55095ebff7319dda1e6b1aa6953dfce724271bfcf",
+    "reports": [
+      {
+        "path": "reports/official-targeted-v26e-ft09-r1.json",
+        "sha256": "75ddb52f0e92ae30fb9efbf5fbbc0550c16202721ebc83acac1244de203b4af8"
+      },
+      {
+        "path": "reports/official-targeted-v26e-ft09-r2.json",
+        "sha256": "9516c92f4ccdbe5ecf7075f357ce1dd58ffa519c4004b827529aa51983210f2f"
+      }
+    ],
+    "exact_outcome": {
+      "score": 66.39275666330816,
+      "levels_completed": 5,
+      "parameterized_scheme_trials": 2,
+      "successful_replay_actions": 55,
+      "relation_repair_actions": 79,
+      "untried_state_actions": 264
+    },
+    "interpretation": "Component-specific falsification reduced repeated composite applications from 12 to 2 versus v26d without changing task score or levels."
+  },
+  "v26f": {
+    "candidate_id": "candidate-e64a0229ce327f54",
+    "inference_fingerprint": "915fd41e48b16048d49512510ac1133f0a62a75390b440e015a54004ccf4fcd1",
+    "reports": [
+      {
+        "path": "reports/official-targeted-v26f-ft09-r1.json",
+        "sha256": "f3998316602c73fd6facaac857d78528d335a0ea79c88a401e5338512e5cd9d4"
+      },
+      {
+        "path": "reports/official-targeted-v26f-ft09-r2.json",
+        "sha256": "b0b3fdc1831c65d635157116f62e1967436d86b2f0073c5375662afa4e62b59b"
+      }
+    ],
+    "exact_outcome": {
+      "score": 66.39275666330816,
+      "levels_completed": 5,
+      "parameterized_scheme_trials": 0,
+      "successful_replay_actions": 12,
+      "relation_repair_actions": 79,
+      "untried_state_actions": 309
+    },
+    "interpretation": "Pragmatic disequilibrium suspended stale replay as predicted, but the released budget went to undirected novelty and produced no task gain."
+  },
+  "decision": "Do not promote v26e or v26f. They improve trace-level epistemic hygiene but add neither a level nor score. Keep v25 as the accepted candidate.",
+  "claim_boundary": "Local ft09 development evidence only; no Kaggle submission and no hidden leaderboard score."
+}

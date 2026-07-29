@@ -183,6 +183,29 @@ def test_successful_level_compiles_and_replays_coordinate_free_roles() -> None:
     assert explorer.to_dict()["successful_program_length"] == 1
 
 
+def test_pragmatic_disequilibrium_suspends_composite_replay() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((0, 0), (0, 0)),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(successful_role_replay=True)
+    explorer.observe(observation, scene)
+    explorer.successful_program = (ActionRole(2),)
+
+    choice = explorer.select(
+        observation,
+        scene,
+        (1, 2),
+        pragmatic_disequilibrium=True,
+    )
+
+    assert choice.token.action_id == 1
+    assert choice.reason.endswith("untried-current-state")
+    assert explorer.successful_program == (ActionRole(2),)
+
+
 def test_successful_schemes_become_inputs_to_bounded_variations() -> None:
     observation = Observation.create(
         state="NOT_FINISHED",

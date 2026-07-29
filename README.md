@@ -40,6 +40,17 @@ full run is retained as invalidated methodological evidence. The exact package
 passes 126 tests (3 skipped), Ruff, mypy, both offline smoke paths, and export.
 No hidden Kaggle score exists.
 
+The v26 research branch now preregisters intervention hypotheses, keeps
+predictive and pragmatic credit separate, and treats successful action-role
+programs as first-class inputs to bounded prefix, suffix, interleaving, and
+role-binding variations. This machinery runs inside the offline agent and
+never calls an LLM. It is not promoted: its only full-suite score increase
+(2.9104325118 to 2.9202784571, with the same eight levels) came from
+coordinate-free replay, while causal credit and scheme variation were neutral.
+Two trace-driven accommodations reduced stale composite/replay actions as
+predicted but did not improve task outcome. See the canonical report for the
+falsifying comparisons.
+
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction
 between local and Kaggle scores. This table and that report must be updated
@@ -136,9 +147,9 @@ report unless every game has an agent result.
 The complete score history is recorded in
 [`REAL_GAMES_REPORT.md`](REAL_GAMES_REPORT.md). Reflector progressed from v8's
 zero-level result to v21's five levels across four public-development games.
-V25 reaches five `ft09` levels but fails the accepted-win non-regression gate
-in its full run. Kaggle compatibility is proven locally; full-suite
-generalization and competitive hidden performance are not.
+V25 reaches five `ft09` levels and passes the source-matched non-regression
+gate. Kaggle compatibility is proven locally; broad full-suite generalization
+and competitive hidden performance are not.
 
 Generate, replay, evaluate, and compare deterministic traces:
 

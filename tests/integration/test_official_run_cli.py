@@ -216,9 +216,10 @@ def test_official_population_isolates_parallel_candidate_configs(
         }
     }
     assert all(len(runs) == 2 and runs[0] == runs[1] for runs in by_strategy.values())
-    assert report["offspring"] is not None
-    assert report["offspring"]["config"]["enable_successful_role_replay"]
-    assert [item["field"] for item in report["inherited_traits"]] == [
-        "enable_constraint_first_role_replay",
-        "enable_successful_role_replay",
-    ]
+    inherited = report["inherited_traits"]
+    offspring = report["offspring"]
+    assert (offspring is None) == (not inherited)
+    if offspring is not None:
+        for trait in inherited:
+            assert offspring["config"][trait["field"]] == trait["value"]
+            assert trait["donor_id"] in offspring["contributor_ids"]

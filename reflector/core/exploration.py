@@ -296,7 +296,11 @@ class EpistemicExplorer:
                     scene,
                 )
 
-        replay = self._select_program_role(tokens, scene)
+        replay = self._select_program_role(
+            tokens,
+            scene,
+            pragmatic_disequilibrium=pragmatic_disequilibrium,
+        )
         if replay is not None:
             return self._issue(
                 state,
@@ -480,8 +484,14 @@ class EpistemicExplorer:
         self,
         tokens: tuple[ActionToken, ...],
         scene: Scene,
+        *,
+        pragmatic_disequilibrium: bool = False,
     ) -> ActionToken | None:
-        if not self.successful_role_replay or not self.successful_program:
+        if (
+            not self.successful_role_replay
+            or not self.successful_program
+            or pragmatic_disequilibrium
+        ):
             return None
         while self.program_cursor < len(self.successful_program):
             role = self.successful_program[self.program_cursor]
