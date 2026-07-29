@@ -64,6 +64,16 @@ def _observation(
     )
 
 
+def _ambiguous_host_frame() -> tuple[tuple[int, ...], ...]:
+    pixels = [[0 for _x in range(36)] for _y in range(26)]
+    _paint(pixels, (3, 3), 3, _MOVER_SHAPE)
+    _paint(pixels, (11, 7), 7, _MOVER_SHAPE)
+    _outline(pixels, (18, 2), (12, 12), 8)
+    _outline(pixels, (21, 5), (6, 6), 10)
+    pixels[8][24] = 9
+    return tuple(tuple(row) for row in pixels)
+
+
 def _ingest(
     explorer: EpistemicExplorer,
     tracker: SceneTracker,
@@ -148,13 +158,7 @@ def test_edge_animation_does_not_create_a_relational_phase() -> None:
 
 
 def test_ambiguous_marker_hosts_block_phase_conditioned_advisor() -> None:
-    pixels = [[0 for _x in range(36)] for _y in range(26)]
-    _paint(pixels, (3, 3), 3, _MOVER_SHAPE)
-    _paint(pixels, (11, 7), 7, _MOVER_SHAPE)
-    _outline(pixels, (18, 2), (12, 12), 8)
-    _outline(pixels, (21, 5), (6, 6), 10)
-    pixels[8][24] = 9
-    observation = _observation(tuple(tuple(row) for row in pixels))
+    observation = _observation(_ambiguous_host_frame())
     tracker = SceneTracker()
     scene, _events = tracker.perceive(observation)
     explorer = EpistemicExplorer(
@@ -168,6 +172,25 @@ def test_ambiguous_marker_hosts_block_phase_conditioned_advisor() -> None:
     assert choice.reason != "epistemic-frontier:shape-goal-translation"
     assert explorer.shape_translation_phase_blocked is True
     assert explorer.shape_translation_diagnostic == "ambiguous-marker-host"
+
+
+def test_phase_ambiguity_cannot_interrupt_evidenced_occlusion() -> None:
+    explorer = EpistemicExplorer(
+        shape_goal_translation=True,
+        relational_phase_translation=True,
+    )
+    initial = _frame(mover=(5, 12), phase=0)
+    explorer._ensure_shape_translation_phase(initial)
+    phase = explorer.shape_translation_phase
+    explorer.shape_translation_occluded_action = 3
+
+    explorer._ensure_shape_translation_phase(_ambiguous_host_frame())
+
+    assert explorer.shape_translation_phase == phase
+    assert explorer.shape_translation_phase_blocked is False
+    assert explorer.shape_translation_diagnostic == (
+        "phase-unavailable-during-predicted-occlusion"
+    )
 
 
 def test_relational_phase_translation_requires_shape_goal_translation() -> None:

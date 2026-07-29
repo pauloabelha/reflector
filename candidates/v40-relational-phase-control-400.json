@@ -1,5 +1,5 @@
 {
-  "candidate_id": "candidate-16cb640888b7e17a",
+  "candidate_id": "candidate-30c03076363fc30e",
   "config": {
     "enable_concepts": true,
     "enable_counterfactual_pressure": true,
@@ -61,5 +61,5 @@
   "generation": 18,
   "rationale": "Source-matched exact-off control for relational phase-conditioned translation.",
   "mutation_source": "v40-relational-phase-control",
-  "inference_fingerprint": "6d0552ea0fd5dca1e3a28be2522d1bdbce5c40089197170831cd0924a11fd43b"
+  "inference_fingerprint": "24e63f40eeaf345258f56a909ffc35ceb17fc7abd1dfb917c32480a687fc0b0f"
 }

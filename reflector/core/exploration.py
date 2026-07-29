@@ -747,6 +747,11 @@ class EpistemicExplorer:
             return
         phase = self._relational_phase_signature(frame)
         if phase is None:
+            if self.shape_translation_occluded_action is not None:
+                self.shape_translation_diagnostic = (
+                    "phase-unavailable-during-predicted-occlusion"
+                )
+                return
             self.shape_translation_phase_blocked = True
             self.shape_translation_diagnostic = "ambiguous-marker-host"
             return
