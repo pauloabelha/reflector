@@ -20,28 +20,30 @@ service, database, or web server.
 Last verified: 2026-07-29
 
 > **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
-> It has solved **14 of 183 levels across 6 games**. All 25 games were
+> It has solved **15 of 183 levels across 7 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v37 result |
+| Metric | Accepted v39 result |
 | --- | ---: |
 | Complete games beaten | **0 / 25** |
-| Games with at least one solved level | **6 / 25** |
-| Levels solved | **14 / 183** |
-| Official local score | **3.9659643032 / 100** |
+| Games with at least one solved level | **7 / 25** |
+| Levels solved | **15 / 183** |
+| Official local score | **4.0770754143 / 100** |
 | Games evaluated | **25 / 25** |
 | Kaggle submissions | **0** |
 
-The score is about **3.97% of the 100-point scale**, not 397%. It is a local
-public-development result, not a Kaggle leaderboard score. V37 preserves every
-v35 completion at its exact action count and adds `sb26` level 3 in 15
-actions. It grounds nested target groups in rendered enclosure objects, so two
-sibling child containers can share a visual row without being merged. It
-recursively expands each child and resumes the parent before committing. The corrected
-protocol runs every parallel game in a fresh process; the original threaded
-full run is retained as invalidated methodological evidence. The exact package
-passes 166 tests (3 skipped), Ruff, mypy, both offline smoke paths, and export.
-No hidden Kaggle score exists.
+The score is about **4.08% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. V39 preserves every
+v37 completion at its exact action count and adds `ar25` level 1 in 17 actions.
+It learns plain-action object translations from rendered transitions, binds a
+moving shape to a unique stationary differently attributed copy, and composes
+only evidenced non-overshooting moves toward that goal. Two exact confirmations
+permit bounded latent tracking through the final partial occlusion. The
+source-matched exact-off control remained at 14 levels. The corrected protocol
+runs every parallel game in a fresh process; the original threaded full run is
+retained as invalidated methodological evidence. The exact package passes 173
+tests (3 skipped), Ruff, mypy, both offline smoke paths, and export. No hidden
+Kaggle score exists.
 
 The subsequent v38 experiment is rejected and does not change these scores.
 It inferred and executed a 17-action `sb26` level-4 program based on relocating
@@ -67,11 +69,12 @@ composite-region, enclosure, normalized-shape, frame-difference, and
 discrete-flow primitives with typed provenance. It remains experimental.
 Primitive-guided intervention improved `ft09` and helped discover levels in
 `lp85` and `sp80`, but the full offspring lost `tn36` and slowed `lf52` and
-`r11l`; it was rejected. V37 inherits v31's causally earned graph-cycle policy,
+`r11l`; it was rejected. V39 inherits v31's causally earned graph-cycle policy,
 v32's independently gated attribute-binding composition, v35's bounded nested
-traversal, and only the enclosure-grounded sibling accommodation that passed
-the target, preservation, and full-suite controls. The richer ontology stays
-behind exact-off genome flags for future source-matched offspring.
+traversal, v37's enclosure-grounded sibling accommodation, and the independently
+controlled shape-goal translation that passed target, preservation, and
+full-suite gates. Other richer ontology traits stay behind exact-off genome
+flags for future source-matched offspring.
 
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction

@@ -21,14 +21,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-445450df91872736`
-- Accepted agent: Reflector v37
-- Accepted frozen inference commit: `c9ad1ac`
+- Accepted candidate: `candidate-e4c6c38c898dcc08`
+- Accepted agent: Reflector v39
+- Accepted frozen inference commit: `c173bf8`
 - Accepted public-development report:
-  `reports/official-isolated-public-v37-enclosure-sibling-400.json`
-- Accepted score: `3.9659643032130574`
+  `reports/official-isolated-public-v39-shape-goal-400.json`
+- Accepted score: `4.077075414324168`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 14 levels across 6 games
+- Accepted completions: 15 levels across 7 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -50,6 +50,7 @@ generalization.
 | Parameterized select/apply/commit | v32 inferred an ordered attribute template and matching selector/target bindings, preserved every v31 action count, and solved `sb26` L1 in 9 actions. |
 | Nested container traversal | v35 inferred an occupied target-lattice slot as a uniquely attribute-matched child link, expanded the child, resumed the parent, preserved every v32 action count, and solved `sb26` L2 in 15 actions. |
 | Enclosure-grounded sibling composition | v37 represented same-height sibling containers as separate enclosure objects, preserved every v35 action count, and solved `sb26` L3 in 15 actions. |
+| Evidenced shape-goal translation | v39 learned plain-action translations from rendered effects, matched one mover to a unique stationary shape goal, preserved every v37 action count, and solved `ar25` L1 in 17 actions; its exact-off control remained at zero there. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -519,9 +520,9 @@ Evidence:
 V38 is rejected. The negative result distinguishes structural plausibility from
 causal affordance: appearance and alignment did not establish that the marker
 was movable. The exact-off implementation and cognitive telemetry remain as
-evidence; v37 stays accepted.
+evidence; v38 was rejected without promotion.
 
-## Active experiment: v39 evidenced shape-goal translation
+## Accepted experiment: v39 evidenced shape-goal translation
 
 Parent: accepted v37 `candidate-445450df91872736`
 
@@ -585,6 +586,24 @@ Falsifier:
   effect or exceeds four steps without progress, if level 1 does not advance
   within 20 actions, or if any accepted completion regresses.
 
+Evidence:
+
+- two frozen target runs reproduced 1/8 levels with `[17, 383]`, while the
+  source-matched exact-off control remained 0/8 with `[400]`;
+- the seven-game preservation gate kept every v37 completed-level action count
+  and added only `ar25` level 1;
+- the full exact-off control reproduced v37 at 14/183 across six games and
+  `3.9659643032130574/100`;
+- the full candidate reached 15/183 across seven games and
+  `4.077075414324168/100`, with 25/25 coverage and 10,000 actions;
+- 173 tests passed (3 skipped), Ruff and mypy passed, both network-disabled
+  smoke paths passed, and the exact frozen candidate exported without
+  translation.
+
+V39 is accepted. The earned claim is limited to composing
+transition-evidenced translations toward a unique rendered shape goal and
+maintaining bounded latent identity through predicted partial occlusion.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -608,17 +627,16 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Implement `ar25` action-family causal attribution, exact-shape
-   mover/target correspondence, and monotone learned translation composition;
-   the rendered black-box control solved L1 in 15 actions.
-2. Treat `g50t` separately as landmark/phase-conditioned topology; fixed
+1. Treat `g50t` separately as landmark/phase-conditioned topology; fixed
    endpoint orders were falsified.
+2. Inspect `ar25` level 2 independently; do not assume level-1 translations or
+   goal semantics transfer unless new rendered interventions earn them.
 3. Route qualitative frame difference and flow into causal policy only through
    typed, bounded advisors; passive perception alone is not task credit.
 4. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
 5. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v37 accepted otherwise.
+   qualifying offspring; keep v39 accepted otherwise.
 6. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.

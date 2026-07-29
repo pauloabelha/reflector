@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 14 of 183 levels across 6 games. The suite ran all 25 games,
+> It has solved 15 of 183 levels across 7 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v37 result | Meaning |
+| Outcome metric | Accepted v39 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
-| Games with progress | **6 / 25** | At least one level was solved in six games. |
-| Levels solved | **14 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; one each in `lf52`, `r11l`, and `tn36`. |
-| Official local score | **3.9659643032 / 100** | About **3.97%**, not 397%. |
+| Games with progress | **7 / 25** | At least one level was solved in seven games. |
+| Levels solved | **15 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; one each in `ar25`, `lf52`, `r11l`, and `tn36`. |
+| Official local score | **4.0770754143 / 100** | About **4.08%** of the 100-point scale. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,6 +23,12 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
+| Process-isolated official local suite | v39 accepted | **4.0770754143 / 100** | 0 games beaten; 15/183 levels | 25/25 coverage |
+| Source-matched process-isolated suite | v39 exact-off / v37 policy | 3.9659643032 / 100 | 0 games beaten; 14/183 levels | exact parent reproduction |
+| Process-isolated seven-game gate | v39 accepted | 14.5609836226 / 100 | 15 levels in the seven affected games | every v37 action count preserved |
+| Process-isolated seven-game gate | v39 exact-off / v37 policy | 14.1641582258 / 100 | 14 levels in the seven affected games | source-matched control |
+| Target-only `ar25` reruns | v39 accepted | 2.7777777778 for one game | 1/8 levels; `[17, 383]` | deterministic gain twice |
+| Target-only `ar25` control | v39 exact-off / v37 policy | 0.0000000000 for one game | 0/8 levels; `[400]` | source-matched control |
 | Process-isolated official local suite | v37 accepted | **3.9659643032 / 100** | 0 games beaten; 14/183 levels | 25/25 coverage |
 | Source-matched process-isolated suite | v35 control | 3.6326309699 / 100 | 0 games beaten; 13/183 levels | exact parent reproduction |
 | Official local public suite | v35 historical accepted | 3.6326309699 / 100 | 0 games beaten; 13/183 levels | superseded by v37 |
@@ -38,7 +44,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v37 package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v39 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -130,14 +136,95 @@ Raw evidence:
 | v31 | 3.2992976365 | 11 | 5 | 0 | Grounded non-axis-aligned graph-cycle transport | historical accepted |
 | v32 | 3.4104087477 | 12 | 6 | 0 | Parameterized attribute select/apply/commit composition | historical accepted |
 | v35 | 3.6326309699 | 13 | 6 | 0 | Topology-guided recursive container traversal | historical accepted |
-| v37 | **3.9659643032** | **14** | **6** | **0** | Enclosure-grounded sibling container composition | **current accepted** |
+| v37 | 3.9659643032 | 14 | 6 | 0 | Enclosure-grounded sibling container composition | historical accepted |
+| v39 | **4.0770754143** | **15** | **7** | **0** | Evidenced shape-goal translation with bounded occlusion | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v37 result
+## Accepted v39 result
+
+V39 adds one exact-off advisor to v37. It does not assume that resemblance
+implies an affordance. It probes only plain legal actions and records a
+translation when a bounded interior component preserves its attribute, area,
+normalized shape, and bounding-box dimensions under a pure displacement. A
+goal exists only when that mover has one stationary, differently attributed
+component with the same area and normalized shape.
+
+On `ar25` level 1, rendered transitions grounded two action translations.
+The advisor then repeated only actions whose predicted displacement strictly
+reduced Manhattan distance without overshooting. Two exact confirmations
+licensed latent object tracking through partial overlap with the goal for at
+most four steps. The frozen action trace advanced the level at action 17;
+the exact-off control spent all 400 actions without advancing.
+
+Two target runs reproduced 1/8 levels and `[17, 383]`. The seven-game gate
+preserved every inherited completed-level action count and added only `ar25`
+level 1. The full candidate reached 15/183 across seven games at
+`4.077075414324168/100`; the source-matched exact-off control exactly
+reproduced v37 at 14/183 across six games and `3.9659643032130574/100`.
+No game was fully beaten.
+
+Frozen inference commit: `c173bf8`
+
+Evaluation source commit: `b5b57107e98d571ffea924149c2851ee604186ab`
+
+Candidate: `candidate-e4c6c38c898dcc08`
+
+Candidate inference fingerprint:
+`acf8d79cd8c7c532b09a0cb42830d2da85766d0235224c1516eb54e80f264742`
+
+Candidate SHA-256:
+`34b3d9522085d4ed6ff09fd03eddabd768c442bc979a502fb72f2f4e674da99b`
+
+Full report SHA-256:
+`ea00d19b0c536587e4fdbcf7e7da214abbae7d7c56469dc530f6a2711c8ac1c6`
+
+Source-control report SHA-256:
+`ea8db7fb06e15934973edd874cbd8e9c24e300bda4d23b31bfa0f4ca189be20b`
+
+Verification: 173 tests passed (3 skipped), Ruff passed, mypy passed, the
+generic and exact-candidate network-disabled smoke paths passed, and the exact
+candidate exported without translation. The overlay SHA-256 is
+`de86ec58916e3e1d6b825ce85f5c41b5ec5461d988c8c4d18533f04546eb5ebd`;
+the notebook SHA-256 is
+`234ad40cea8a6dfc0cdce947d0cf9bf0af186fbb49fb1ca94abe86d5bba0e859`.
+
+### Accepted progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ar25` | **1** | 8 | `[17]` | 2.7777777778 | No |
+| `ft09` | **5** | 6 | `[4, 7, 14, 16, 94]` | 66.1466080321 | No |
+| `lp85` | **3** | 8 | `[37, 8, 54]` | 9.7216281179 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `sb26` | **3** | 8 | `[9, 15, 15]` | 16.6666666667 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| Remaining 18 games | **0** | 130 | `[]` | 0 | No |
+| **Total** | **15** | **183** | — | **4.0770754143 overall** | **0 / 25** |
+
+Raw evidence:
+
+- [v39 accepted process-isolated 25-game scorecard](reports/official-isolated-public-v39-shape-goal-400.json)
+- [v39 full-suite exact-off control](reports/official-isolated-public-v39-shape-goal-control-400.json)
+- [v39 exact `ar25` rerun 1](reports/official-isolated-v39-ar25-r1.json)
+- [v39 exact `ar25` rerun 2](reports/official-isolated-v39-ar25-r2.json)
+- [v39 exact `ar25` control](reports/official-isolated-v39-ar25-control.json)
+- [v39 seven-game preservation gate](reports/official-isolated-v39-seven-game-preservation.json)
+- [v39 seven-game exact-off control](reports/official-isolated-v39-seven-game-control.json)
+- [v39 candidate](candidates/v39-evidenced-shape-goal-translation-400.json)
+- [v39 source-matched control candidate](candidates/v39-evidenced-shape-goal-control-400.json)
+
+The earned claim is narrow: transition-grounded object translations can be
+composed toward a uniquely matched rendered shape, and repeated exact
+predictions can support bounded object permanence through partial occlusion.
+This is evidence for one operative accommodation, not general object
+understanding or hidden-game generalization.
+
+## Historical accepted v37 result
 
 V37 inherits v35's depth-first container traversal and v32's exact
 reference/selector binding. V35 grouped targets by vertical coordinate, which
@@ -593,7 +680,7 @@ Candidate:
 
 ## What our scheme is learning
 
-The real-game evidence currently supports twelve bounded insights:
+The real-game evidence currently supports thirteen bounded insights:
 
 1. **Exploration needs memory of intervention identity.** Treating every frame
    independently scored zero; an epistemic transition graph produced the first
@@ -639,6 +726,11 @@ The real-game evidence currently supports twelve bounded insights:
    program, but the proposed relocation produced no rendered change. Before
    composing a structural operation, the agent must earn its executability
    through intervention.
+13. **Evidenced action semantics can support bounded object permanence.** V39
+   learned translations from rendered action effects, composed only monotone
+   goal-reducing instances, and used two exact predictions to carry the mover
+   through a short partial occlusion. Its exact-off control solved nothing on
+   `ar25`, while the enabled offspring added level 1 without regression.
 
 These are narrow environment-level results. They do not yet prove general
 Piagetian equilibration, arbitrary schema induction, cross-game transfer, or
@@ -686,7 +778,7 @@ The prize audit is technically ready but still records the public repository,
 participant eligibility, Kaggle rerun, and competition publication as manual
 external gates. No leaderboard score exists.
 
-The accepted v37 candidate exports from the same frozen inference source and
+The historical v37 candidate exports from the same frozen inference source and
 passes both network-disabled smoke paths. Its generated artifact hashes are:
 
 - overlay:
@@ -696,6 +788,18 @@ passes both network-disabled smoke paths. Its generated artifact hashes are:
 
 These artifacts are technically submission-ready, but they have not been
 published or scored on Kaggle.
+
+The accepted v39 candidate also exports from its frozen inference source and
+passes both network-disabled smoke paths without translation. Its generated
+artifact hashes are:
+
+- overlay:
+  `de86ec58916e3e1d6b825ce85f5c41b5ec5461d988c8c4d18533f04546eb5ebd`
+- notebook:
+  `234ad40cea8a6dfc0cdce947d0cf9bf0af186fbb49fb1ca94abe86d5bba0e859`
+
+These are the current technically submission-ready artifacts. They have not
+been published or scored on Kaggle.
 
 ## Reporting protocol
 

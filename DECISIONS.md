@@ -672,3 +672,26 @@ Two frozen runs and the current-source v37 exact-off control all reproduced
 wider gates, and v37 remains accepted. The bounded lesson is that geometric
 and attribute correspondence can propose an affordance but cannot license it;
 the operation must receive causal intervention evidence before composition.
+
+## 2026-07-29 — Promote v39 evidenced shape-goal translation
+
+V39 tested the complementary hypothesis suggested by v38's failure: derive
+action semantics from rendered transitions before composing them. On `ar25`
+level 1, the agent identified a translating interior component and its unique
+stationary, differently attributed exact-shape counterpart. It repeated only
+evidenced non-overshooting translations that reduced displacement, requiring
+two exact confirmations before bounded latent tracking through partial
+occlusion.
+
+Two frozen target runs advanced level 1 at action 17; the source-matched
+exact-off control spent all 400 actions without advancing. The seven-game gate
+preserved every v37 completed-level action count and added only `ar25` level 1.
+The full exact-off control reproduced v37 at 14/183 and
+3.9659643032/100. The full v39 offspring reached 15/183 across seven games and
+4.0770754143/100 with 25/25 coverage and 10,000 actions. No game was completed.
+
+V39 is promoted. The accepted claim is narrow: causally evidenced object
+translations can be composed toward a unique rendered shape goal, and repeated
+exact predictions can license short bounded object permanence through partial
+occlusion. This does not establish general object understanding, transfer of
+the level-1 semantics to later levels, or a Kaggle leaderboard score.
