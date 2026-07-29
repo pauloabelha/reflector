@@ -689,6 +689,25 @@ Preregistered non-interference amendment:
 - retain the original target falsifier and additionally require exact
   preservation of v39 level 1 at 17 actions.
 
+First amendment result:
+
+- source `a28e1cd` still reproduced the 317-action regression twice;
+- selection-time ambiguity was preserved correctly, but response-time phase
+  observation compared signatures while the mover was already partially
+  occluded, treated the temporary relation as untracked, and blocked before
+  the final parent action;
+- the exact-off control again reproduced `[17, 383]`.
+
+Second non-interference amendment:
+
+- while a twice-confirmed occlusion continuation is active, phase observation
+  itself must abstain before comparing marker-host signatures;
+- phase evidence may neither be created nor invalidated from a transition in
+  which the parent cannot fully observe its mover/target pair;
+- a synthetic response-time test must demonstrate that an apparent signature
+  change during predicted occlusion leaves the phase model and parent advisor
+  operative.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
