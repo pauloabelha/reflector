@@ -77,6 +77,7 @@ class MindConfig:
     enable_nested_source_traversal: bool = False
     enable_enclosure_target_traversal: bool = False
     enable_connector_relocation: bool = False
+    enable_shape_goal_translation: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -125,6 +126,7 @@ class MindConfig:
             "enable_nested_source_traversal",
             "enable_enclosure_target_traversal",
             "enable_connector_relocation",
+            "enable_shape_goal_translation",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")

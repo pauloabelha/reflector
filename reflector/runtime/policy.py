@@ -81,6 +81,9 @@ class SymbolicPolicy:
             connector_relocation=(
                 self.mind.config.enable_connector_relocation
             ),
+            shape_goal_translation=(
+                self.mind.config.enable_shape_goal_translation
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

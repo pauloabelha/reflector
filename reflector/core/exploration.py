@@ -241,6 +241,7 @@ class EpistemicExplorer:
     nested_source_traversal: bool = False
     enclosure_target_traversal: bool = False
     connector_relocation: bool = False
+    shape_goal_translation: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -305,6 +306,38 @@ class EpistemicExplorer:
     nested_source_plan_active: bool = False
     connector_relocation_plan_active: bool = False
     select_apply_diagnostic: str = "not-attempted"
+    shape_translation_probes: set[int] = field(default_factory=set)
+    shape_translation_effects: dict[int, tuple[int, int]] = field(
+        default_factory=dict
+    )
+    shape_translation_effect_evidence: Counter[int] = field(
+        default_factory=Counter
+    )
+    shape_translation_invalid_actions: set[int] = field(default_factory=set)
+    shape_goal_mover_signature: (
+        tuple[int, int, tuple[tuple[int, int], ...]] | None
+    ) = None
+    shape_goal_target_signature: (
+        tuple[int, int, tuple[tuple[int, int], ...]] | None
+    ) = None
+    shape_translation_level_trials: int = 0
+    shape_translation_application_trials: int = 0
+    shape_translation_diagnostic: str = "not-attempted"
+    shape_goal_latent_mover_origin: tuple[int, int] | None = None
+    shape_goal_latent_target_origin: tuple[int, int] | None = None
+    shape_translation_occluded_action: int | None = None
+    shape_translation_occluded_steps: int = 0
+    shape_translation_pending_prediction: (
+        tuple[
+            int,
+            tuple[int, int, tuple[tuple[int, int], ...]],
+            tuple[int, int, tuple[tuple[int, int], ...]],
+            tuple[int, int],
+            tuple[int, int],
+            tuple[int, int],
+        ]
+        | None
+    ) = None
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -326,6 +359,8 @@ class EpistemicExplorer:
             order.append("parameterized-select-apply-commit")
         if self.cyclic_sequence_alignment:
             order.append("cyclic-sequence-alignment")
+        if self.shape_goal_translation:
+            order.append("shape-goal-translation")
         if self.productive_role_reuse:
             order.append("productive-role-reuse")
         if self.parameterized_scheme_variation:
@@ -345,6 +380,8 @@ class EpistemicExplorer:
             if "reuse-productive-action-role" in selected_reason
             else "cyclic-sequence-alignment"
             if "cyclic-sequence-alignment" in selected_reason
+            else "shape-goal-translation"
+            if "shape-goal-translation" in selected_reason
             else "parameterized-select-apply-commit"
             if "parameterized-select-apply-commit" in selected_reason
             else "local-relation-repair"
@@ -420,6 +457,7 @@ class EpistemicExplorer:
             self.nested_source_plan_active = False
             self.connector_relocation_plan_active = False
             self.select_apply_diagnostic = "not-attempted"
+            self._reset_shape_translation_level()
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -441,6 +479,7 @@ class EpistemicExplorer:
             self.grounded_cyclic_transports.clear()
             self.select_apply_program = ()
             self.select_apply_cursor = 0
+            self._reset_shape_translation_level()
             self.level_interventions = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
@@ -466,16 +505,40 @@ class EpistemicExplorer:
         after = observation.frame
         self.pending_frame = ()
         role = self.pending_role
+        pending_token = self.pending[1] if self.pending is not None else None
         self.pending_role = None
         grounding = self.pending_grounding
         self.pending_grounding = None
         relational_scheme = self.pending_relational_scheme
         self.pending_relational_scheme = None
         self.role_trials[role] += 1
+        progressed = (
+            self.current_level is not None
+            and observation.levels_completed > self.current_level
+        )
+        if self.shape_goal_translation:
+            self._validate_shape_translation_prediction(
+                before,
+                after,
+                progressed=progressed,
+            )
         if len(before) != len(after) or not before or not after:
             return
         if any(len(left) != len(right) for left, right in zip(before, after)):
             return
+        if (
+            self.shape_goal_translation
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+            and not progressed
+        ):
+            self._observe_shape_goal_translation(
+                before,
+                after,
+                pending_token.action_id,
+            )
         height = len(before)
         width = len(before[0]) if before else 0
         margin = 4 if height > 8 and width > 8 else 0
@@ -541,6 +604,357 @@ class EpistemicExplorer:
         self.pending_role = None
         self.pending_grounding = None
         self.pending_relational_scheme = None
+
+    def _reset_shape_translation_level(self) -> None:
+        self.shape_translation_probes.clear()
+        self.shape_translation_effects.clear()
+        self.shape_translation_effect_evidence.clear()
+        self.shape_translation_invalid_actions.clear()
+        self.shape_goal_mover_signature = None
+        self.shape_goal_target_signature = None
+        self.shape_translation_level_trials = 0
+        self.shape_translation_application_trials = 0
+        self.shape_translation_diagnostic = "not-attempted"
+        self.shape_goal_latent_mover_origin = None
+        self.shape_goal_latent_target_origin = None
+        self.shape_translation_occluded_action = None
+        self.shape_translation_occluded_steps = 0
+        self.shape_translation_pending_prediction = None
+
+    @staticmethod
+    def _shape_signature(
+        item: _FrameObject,
+    ) -> tuple[int, int, tuple[tuple[int, int], ...]]:
+        return item.color, item.area, item.shape
+
+    @classmethod
+    def _interior_shape_objects(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[_FrameObject, ...]:
+        if not frame or not frame[0]:
+            return ()
+        height = len(frame)
+        width = len(frame[0])
+        items = tuple(
+            item
+            for item in cls._frame_objects(frame)
+            if 4 <= item.area <= 512
+            and 0 < item.bbox[0]
+            and 0 < item.bbox[1]
+            and item.bbox[2] < width - 1
+            and item.bbox[3] < height - 1
+            and item.bbox[2] - item.bbox[0] + 1 <= width // 2
+            and item.bbox[3] - item.bbox[1] + 1 <= height // 2
+        )
+        return items if len(items) <= 64 else ()
+
+    @classmethod
+    def _unique_shape_pair(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[_FrameObject, _FrameObject] | None:
+        groups: dict[
+            tuple[int, tuple[tuple[int, int], ...]],
+            list[_FrameObject],
+        ] = {}
+        for item in cls._interior_shape_objects(frame):
+            groups.setdefault((item.area, item.shape), []).append(item)
+        pairs = tuple(
+            tuple(items)
+            for items in groups.values()
+            if len(items) == 2 and len({item.color for item in items}) == 2
+        )
+        if len(pairs) != 1:
+            return None
+        return pairs[0][0], pairs[0][1]
+
+    def _validate_shape_translation_prediction(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        *,
+        progressed: bool,
+    ) -> None:
+        prediction = self.shape_translation_pending_prediction
+        self.shape_translation_pending_prediction = None
+        if prediction is None or progressed:
+            return
+        (
+            action_id,
+            mover_signature,
+            target_signature,
+            mover_centroid,
+            target_centroid,
+            effect,
+        ) = prediction
+        objects = self._interior_shape_objects(after)
+        movers = tuple(
+            item
+            for item in objects
+            if self._shape_signature(item) == mover_signature
+        )
+        targets = tuple(
+            item
+            for item in objects
+            if self._shape_signature(item) == target_signature
+        )
+        expected = (
+            mover_centroid[0] + effect[0],
+            mover_centroid[1] + effect[1],
+        )
+        if (
+            len(movers) == 1
+            and len(targets) == 1
+            and movers[0].bbox[:2] == expected
+            and targets[0].bbox[:2] == target_centroid
+        ):
+            self.shape_goal_latent_mover_origin = expected
+            self.shape_goal_latent_target_origin = target_centroid
+            self.shape_translation_occluded_action = None
+            self.shape_translation_occluded_steps = 0
+            return
+
+        mover_mask = {
+            (expected[0] + local_x, expected[1] + local_y)
+            for local_x, local_y in mover_signature[2]
+        }
+        target_mask = {
+            (target_centroid[0] + local_x, target_centroid[1] + local_y)
+            for local_x, local_y in target_signature[2]
+        }
+        prior_mover_mask = {
+            (mover_centroid[0] + local_x, mover_centroid[1] + local_y)
+            for local_x, local_y in mover_signature[2]
+        }
+        causal_support = prior_mover_mask | mover_mask | target_mask
+        local_change = any(
+            0 <= y < len(before)
+            and 0 <= y < len(after)
+            and 0 <= x < len(before[y])
+            and 0 <= x < len(after[y])
+            and before[y][x] != after[y][x]
+            for x, y in causal_support
+        )
+        predicted_occlusion = bool(mover_mask & target_mask)
+        if (
+            predicted_occlusion
+            and expected != target_centroid
+            and local_change
+            and self.shape_translation_effect_evidence[action_id] >= 2
+            and self.shape_translation_occluded_steps < 4
+            and self.shape_translation_occluded_action in {None, action_id}
+        ):
+            self.shape_goal_latent_mover_origin = expected
+            self.shape_goal_latent_target_origin = target_centroid
+            self.shape_translation_occluded_action = action_id
+            self.shape_translation_occluded_steps += 1
+            self.shape_translation_diagnostic = "predicted-occlusion"
+            return
+
+        self.shape_translation_effects.pop(action_id, None)
+        self.shape_translation_invalid_actions.add(action_id)
+        self.shape_translation_occluded_action = None
+        self.shape_translation_diagnostic = "translation-prediction-falsified"
+
+    def _observe_shape_goal_translation(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+    ) -> None:
+        """Ground one action displacement and one stationary exact-shape goal."""
+
+        before_objects = self._interior_shape_objects(before)
+        after_objects = self._interior_shape_objects(after)
+        after_by_signature: dict[
+            tuple[int, int, tuple[tuple[int, int], ...]],
+            list[_FrameObject],
+        ] = {}
+        for item in after_objects:
+            after_by_signature.setdefault(self._shape_signature(item), []).append(
+                item
+            )
+
+        moved: list[tuple[_FrameObject, tuple[int, int]]] = []
+        stationary: list[_FrameObject] = []
+        for item in before_objects:
+            matches = after_by_signature.get(self._shape_signature(item), [])
+            if len(matches) != 1:
+                continue
+            successor = matches[0]
+            displacement = (
+                successor.centroid[0] - item.centroid[0],
+                successor.centroid[1] - item.centroid[1],
+            )
+            if displacement == (0, 0):
+                stationary.append(item)
+            else:
+                moved.append((item, displacement))
+
+        grounded = tuple(
+            (mover, target, displacement)
+            for mover, displacement in moved
+            for target in stationary
+            if mover.color != target.color
+            and mover.area == target.area
+            and mover.shape == target.shape
+        )
+        if len(grounded) != 1:
+            return
+        mover, target, displacement = grounded[0]
+        mover_signature = self._shape_signature(mover)
+        target_signature = self._shape_signature(target)
+        if self.shape_goal_mover_signature not in {None, mover_signature}:
+            self.shape_translation_diagnostic = "inconsistent-mover"
+            return
+        if self.shape_goal_target_signature not in {None, target_signature}:
+            self.shape_translation_diagnostic = "inconsistent-target"
+            return
+        previous = self.shape_translation_effects.get(action_id)
+        if previous is not None and previous != displacement:
+            self.shape_translation_effects.pop(action_id, None)
+            self.shape_translation_invalid_actions.add(action_id)
+            self.shape_translation_diagnostic = "inconsistent-translation"
+            return
+        if action_id in self.shape_translation_invalid_actions:
+            return
+        self.shape_goal_mover_signature = mover_signature
+        self.shape_goal_target_signature = target_signature
+        self.shape_translation_effects[action_id] = displacement
+        self.shape_translation_effect_evidence[action_id] += 1
+        self.shape_goal_latent_mover_origin = (
+            mover.bbox[0] + displacement[0],
+            mover.bbox[1] + displacement[1],
+        )
+        self.shape_goal_latent_target_origin = target.bbox[:2]
+        self.shape_translation_occluded_action = None
+        self.shape_translation_occluded_steps = 0
+        self.shape_translation_diagnostic = "translation-grounded"
+
+    def _select_shape_goal_translation(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Probe, then compose only translations that approach an exact shape."""
+
+        if (
+            not self.shape_goal_translation
+        ):
+            return None
+        if self.shape_translation_application_trials >= 32:
+            self.shape_translation_diagnostic = "application-cap-reached"
+            return None
+        plain_tokens = tuple(
+            token
+            for token in tokens
+            if not token.data
+            and token.action_id not in {self.reset_action, self.complex_action}
+        )
+        if not plain_tokens:
+            return None
+
+        if (
+            self.shape_goal_mover_signature is not None
+            and self.shape_goal_target_signature is not None
+        ):
+            objects = self._interior_shape_objects(observation.frame)
+            movers = tuple(
+                item
+                for item in objects
+                if self._shape_signature(item)
+                == self.shape_goal_mover_signature
+            )
+            targets = tuple(
+                item
+                for item in objects
+                if self._shape_signature(item)
+                == self.shape_goal_target_signature
+            )
+            if len(movers) == 1 and len(targets) == 1:
+                mover_origin = movers[0].bbox[:2]
+                target_origin = targets[0].bbox[:2]
+                self.shape_goal_latent_mover_origin = mover_origin
+                self.shape_goal_latent_target_origin = target_origin
+            elif (
+                self.shape_translation_occluded_action is not None
+                and self.shape_goal_latent_mover_origin is not None
+                and self.shape_goal_latent_target_origin is not None
+            ):
+                mover_origin = self.shape_goal_latent_mover_origin
+                target_origin = self.shape_goal_latent_target_origin
+            else:
+                self.shape_translation_diagnostic = "grounding-not-visible"
+                return None
+            delta = (
+                target_origin[0] - mover_origin[0],
+                target_origin[1] - mover_origin[1],
+            )
+            distance = abs(delta[0]) + abs(delta[1])
+            represented = set(plain_tokens)
+            productive = []
+            for action_id, effect in self.shape_translation_effects.items():
+                token = ActionToken(action_id)
+                if (
+                    token not in represented
+                    or action_id in self.shape_translation_invalid_actions
+                    or (
+                        self.shape_translation_occluded_action is not None
+                        and action_id != self.shape_translation_occluded_action
+                    )
+                ):
+                    continue
+                remainder = (
+                    delta[0] - effect[0],
+                    delta[1] - effect[1],
+                )
+                if any(
+                    effect_axis != 0
+                    and (
+                        delta_axis == 0
+                        or (effect_axis > 0) != (delta_axis > 0)
+                        or abs(effect_axis) > abs(delta_axis)
+                    )
+                    for delta_axis, effect_axis in zip(delta, effect)
+                ):
+                    continue
+                next_distance = abs(remainder[0]) + abs(remainder[1])
+                if next_distance < distance:
+                    productive.append((next_distance, action_id, token))
+            if productive:
+                token = min(productive)[2]
+                effect = self.shape_translation_effects[token.action_id]
+                self.shape_translation_pending_prediction = (
+                    token.action_id,
+                    self.shape_goal_mover_signature,
+                    self.shape_goal_target_signature,
+                    mover_origin,
+                    target_origin,
+                    effect,
+                )
+                self.shape_translation_level_trials += 1
+                self.shape_translation_application_trials += 1
+                self.shape_translation_diagnostic = "applying-translation"
+                return token
+        elif self._unique_shape_pair(observation.frame) is None:
+            self.shape_translation_diagnostic = "no-unique-shape-pair"
+            return None
+
+        unprobed = tuple(
+            token
+            for token in plain_tokens
+            if token.action_id not in self.shape_translation_probes
+            and token.action_id not in self.shape_translation_invalid_actions
+        )
+        if not unprobed:
+            self.shape_translation_diagnostic = "plain-actions-exhausted"
+            return None
+        probe = min(unprobed)
+        self.shape_translation_probes.add(probe.action_id)
+        self.shape_translation_level_trials += 1
+        self.shape_translation_diagnostic = "probing-action"
+        return probe
 
     def select(
         self,
@@ -658,6 +1072,27 @@ class EpistemicExplorer:
                 state,
                 cyclic,
                 "epistemic-frontier:cyclic-sequence-alignment",
+                scene,
+            )
+
+        shape_translation = self._select_shape_goal_translation(
+            observation,
+            tokens,
+        )
+        if shape_translation is not None:
+            self.last_scheme_components = (
+                "scheme:evidenced-shape-goal-translation",
+                "relation:exact-normalized-shape",
+                (
+                    "operator:probe-action"
+                    if self.shape_translation_diagnostic == "probing-action"
+                    else "operator:apply-evidenced-translation"
+                ),
+            )
+            return self._issue(
+                state,
+                shape_translation,
+                "epistemic-frontier:shape-goal-translation",
                 scene,
             )
 
@@ -3544,6 +3979,28 @@ class EpistemicExplorer:
             "select_apply_cursor": self.select_apply_cursor,
             "select_apply_level_trials": self.select_apply_level_trials,
             "select_apply_diagnostic": self.select_apply_diagnostic,
+            "shape_translation_effects": len(self.shape_translation_effects),
+            "shape_translation_effect_evidence": sum(
+                self.shape_translation_effect_evidence.values()
+            ),
+            "shape_translation_probes": len(self.shape_translation_probes),
+            "shape_translation_invalid_actions": len(
+                self.shape_translation_invalid_actions
+            ),
+            "shape_goal_grounded": int(
+                self.shape_goal_mover_signature is not None
+                and self.shape_goal_target_signature is not None
+            ),
+            "shape_translation_level_trials": (
+                self.shape_translation_level_trials
+            ),
+            "shape_translation_application_trials": (
+                self.shape_translation_application_trials
+            ),
+            "shape_translation_occluded_steps": (
+                self.shape_translation_occluded_steps
+            ),
+            "shape_translation_diagnostic": self.shape_translation_diagnostic,
             "level_interventions": self.level_interventions,
             "learned_local_relations": len(self.learned_local_relation),
             "successful_schemes": len(self.successful_schemes),
