@@ -21,14 +21,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-e4c6c38c898dcc08`
-- Accepted agent: Reflector v39
-- Accepted frozen inference commit: `c173bf8`
+- Accepted candidate: `candidate-76f2aac768d8cdb0`
+- Accepted agent: Reflector v40
+- Accepted frozen inference commit: `5bb1ac6`
 - Accepted public-development report:
-  `reports/official-isolated-public-v39-shape-goal-400.json`
-- Accepted score: `4.077075414324168`
+  `reports/official-isolated-public-v40-relational-phase-candidate-400.json`
+- Accepted score: `4.29929763654639`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 15 levels across 7 games
+- Accepted completions: 16 levels across 7 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -51,6 +51,7 @@ generalization.
 | Nested container traversal | v35 inferred an occupied target-lattice slot as a uniquely attribute-matched child link, expanded the child, resumed the parent, preserved every v32 action count, and solved `sb26` L2 in 15 actions. |
 | Enclosure-grounded sibling composition | v37 represented same-height sibling containers as separate enclosure objects, preserved every v35 action count, and solved `sb26` L3 in 15 actions. |
 | Evidenced shape-goal translation | v39 learned plain-action translations from rendered effects, matched one mover to a unique stationary shape goal, preserved every v37 action count, and solved `ar25` L1 in 17 actions; its exact-off control remained at zero there. |
+| Relational-phase-conditioned translation | v40 reassigned rare markers between persistent hosts, quarantined phase-A action semantics, re-probed in phase B, preserved every v39 action count, and solved `ar25` L2 in 17 actions. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -604,7 +605,7 @@ V39 is accepted. The earned claim is limited to composing
 transition-evidenced translations toward a unique rendered shape goal and
 maintaining bounded latent identity through predicted partial occlusion.
 
-## Active experiment: v40 relational-phase-conditioned translation
+## Accepted experiment: v40 relational-phase-conditioned translation
 
 Parent: accepted v39 `candidate-e4c6c38c898dcc08`
 
@@ -708,6 +709,26 @@ Second non-interference amendment:
   change during predicted occlusion leaves the phase model and parent advisor
   operative.
 
+Accepted evidence:
+
+- final source `5bb1ac6` reproduced `[17, 17, 366]` twice on `ar25`;
+- the source-matched exact-off control reproduced v39 at `[17, 383]`;
+- telemetry grounded exactly two phase models and one marker-host transition,
+  then learned the formerly inert phase-B reducer without applying a stale
+  phase-A vector;
+- the seven-game gate preserved every inherited completed-level action count,
+  scoring `15.354634416237108/100` versus the exact-off control's
+  `14.560983622586315/100`;
+- the process-isolated 25-game candidate reached 16/183 across seven games and
+  `4.29929763654639/100`; the exact-off control reproduced v39 at 15/183 and
+  `4.077075414324168/100`;
+- 178 tests passed (3 skipped), Ruff and mypy passed, both network-disabled
+  smoke paths passed, and the exact candidate exported without translation.
+
+V40 is accepted. The earned claim is limited to conditioning learned action
+semantics on one explicitly rendered marker-host relation while conserving
+the old phase model and abstaining during bounded latent occlusion.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -731,16 +752,21 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Implement and test the preregistered v40 relational-phase-conditioned
-   translation offspring.
-2. Treat `g50t` separately as landmark/phase-conditioned topology; fixed
-   endpoint orders were falsified.
+1. Preregister the `g50t` committed-trajectory causal-state offspring: exclude
+   independently monotone countdown components, learn maximal translation
+   macros and a rendered commit relation, and carry the committed macro/replay
+   cursor as latent state for bounded planning. A development black-box search
+   solved level 1 twice in 17 actions; the deployed policy has not yet earned
+   that result.
+2. Treat `m0r0` separately as equivariant multi-object composition; require
+   held-out prediction of both congruent objects and obstacle-explained
+   one-sided blocking before planning.
 3. Route qualitative frame difference and flow into causal policy only through
    typed, bounded advisors; passive perception alone is not task credit.
 4. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
 5. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v39 accepted otherwise.
+   qualifying offspring; keep v40 accepted otherwise.
 6. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.

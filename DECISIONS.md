@@ -695,3 +695,31 @@ translations can be composed toward a unique rendered shape goal, and repeated
 exact predictions can license short bounded object permanence through partial
 occlusion. This does not establish general object understanding, transfer of
 the level-1 semantics to later levels, or a Kaggle leaderboard score.
+
+## 2026-07-29 — Promote v40 relational-phase-conditioned translation
+
+V39 failed `ar25` level 2 after correctly solving one displacement axis. A
+plain intervention visibly reassigned 29 rare marker pixels from a divider
+host to a stationary stair host while preserving the grounded mover and goal.
+After that relation changed, a previously inert action acquired the productive
+translation and the old action semantics became false. Two rendered black-box
+controls solved the level with the same 11-action effect-role sequence.
+
+V40 keys probes, effects, evidence, and invalid actions by a bounded
+marker-host phase signature. A grounded phase transition quarantines the old
+model and allows new probes. Two initial implementations were rejected at the
+target gate: sources `b71ad73` and `a28e1cd` both delayed inherited level 1
+from 17 to 317 actions because phase inference interfered with v39's partial
+occlusion continuation. Their exact-off controls reproduced v39. The final
+source makes phase inference abstain throughout evidenced occlusion.
+
+Two final frozen target runs reproduced `[17, 17, 366]`; the exact-off control
+remained `[17, 383]`. The seven-game gate preserved every inherited
+completed-level action count. The full exact-off control reproduced v39 at
+15/183 and 4.0770754143/100, while v40 reached 16/183 across seven games and
+4.2992976365/100 with 25/25 coverage and 10,000 actions. No game was completed.
+
+V40 is promoted. The accepted claim is limited to conserving and
+contextualizing action semantics with one explicitly rendered relational
+phase. It is not evidence of arbitrary latent-state inference, cross-game
+phase transfer, or a Kaggle leaderboard score.
