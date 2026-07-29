@@ -593,3 +593,27 @@ hypothesis: a colored occupied slot can link a parent container to a
 color-matched child container, requiring depth-first expansion and resumption.
 Any descendant must infer this solely from rendered pixels and remain free of
 game identity, fixed coordinates, palette constants, or source imports.
+
+## 2026-07-29 — Promote topology-guided nested target traversal
+
+V33 established that `sb26` level 2 retained seven exact neutral targets but
+falsified row-major binding. V34 then falsified four bounded flat spatial
+orders. V35 accommodated the representation: it treats a non-neutral occupied
+slot on a shared target lattice as a child link only when that appearance
+matches exactly one other rendered container. It requires one root, an
+acyclic graph, no repeated child, exact cardinality, at most four rows, and at
+most twelve targets. Execution expands the child depth-first and resumes its
+parent.
+
+Two frozen target runs reproduced `[9, 15, 376]`. The source-matched six-game
+v32 control reproduced all 12 inherited levels; v35 preserved every action
+count and added `sb26` level 2. The full v32 control reproduced 12/183 and
+3.4104087477/100, while v35 reached 13/183 and 3.6326309699/100 with 25/25
+coverage. No game was completed.
+
+V35 is promoted. The accepted claim is limited to recursive expansion and
+resumption for one unambiguous rendered container-link topology. Public source
+inspection informed the generic development hypothesis, so held-out transfer
+remains unproven. The deployed policy still uses only rendered frames and
+contains no game ID, fixed coordinates, palette constants, source imports,
+LLM, or network dependency.

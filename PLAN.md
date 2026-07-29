@@ -21,14 +21,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-e9c00d0968c2832a`
-- Accepted agent: Reflector v32
-- Accepted frozen inference commit: `bdcede0`
+- Accepted candidate: `candidate-7c659587fffbceb8`
+- Accepted agent: Reflector v35
+- Accepted frozen inference commit: `dfccd49`
 - Accepted public-development report:
-  `reports/official-isolated-public-v32-parameterized-select-apply-commit-400.json`
-- Accepted score: `3.4104087476575016`
+  `reports/official-public-v35-nested-target-400.json`
+- Accepted score: `3.632630969879724`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 12 levels across 6 games
+- Accepted completions: 13 levels across 6 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -48,6 +48,7 @@ generalization.
 | Marker-relative cyclic transport composition | v30 learned a goal relation only from level progress, preserved every v29 action count, and solved `lp85` L2 in eight composed transport actions; its exact-off full control reproduced v29. |
 | Grounded graph-cycle transport | v31 bound controllers only after exact conserved cycle shifts, planned over shared junctions, preserved every v30 action count, and solved `lp85` L3 in 54 actions. |
 | Parameterized select/apply/commit | v32 inferred an ordered attribute template and matching selector/target bindings, preserved every v31 action count, and solved `sb26` L1 in 9 actions. |
+| Nested container traversal | v35 inferred an occupied target-lattice slot as a uniquely attribute-matched child link, expanded the child, resumed the parent, preserved every v32 action count, and solved `sb26` L2 in 15 actions. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -266,7 +267,7 @@ Result:
 - therefore the missing relation is not a choice among ordinary row/column
   traversals. V34 is rejected without a preservation or full gate.
 
-## Active experiment: v35 topology-guided nested target traversal
+## Accepted experiment: v35 topology-guided nested target traversal
 
 Parent: accepted v32 `candidate-e9c00d0968c2832a`
 
@@ -308,6 +309,27 @@ Falsifier:
 - reject v35 if the rendered graph is not inferred, the predicted 15-action
   program does not advance level 2, or any accepted completion regresses.
 
+Evidence:
+
+- two frozen `sb26` target runs reproduced 2/8 levels and
+  `[9, 15, 376]`;
+- the source-matched six-game v32 control reproduced 12 inherited levels and
+  14.2100364486/100;
+- v35 preserved every inherited action count and added only `sb26` level 2,
+  reaching 13 levels and 15.1359623745/100 in that gate;
+- the full current-source v32 control reproduced 12/183 and
+  `3.4104087476575016/100`;
+- the full v35 candidate reached 13/183 and `3.632630969879724/100` with
+  complete 25/25 coverage and 10,000 actions;
+- 163 tests passed (3 skipped), Ruff and mypy passed, both network-disabled
+  smoke paths passed, the prize audit is technically ready, and the exact
+  candidate exported without translation.
+
+V35 is accepted. The earned claim is narrow: a rendered occupied slot can
+parameterize recursive expansion of one uniquely matched child container and
+resume its parent. This does not establish general recursion, cross-game
+transfer, a completed game, or a Kaggle leaderboard score.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -331,8 +353,9 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Inspect `sb26` level 2 for a relation that genuinely extends the v32
-   attribute-binding scheme rather than replaying level 1.
+1. Record and inspect `sb26` level 3 under v35. Determine whether its failure
+   is another bounded topology accommodation or requires a different scheme;
+   preregister before changing inference.
 2. Implement `ar25` action-family causal attribution, exact-shape
    mover/target correspondence, and monotone learned translation composition;
    the rendered black-box control solved L1 in 15 actions.
@@ -343,7 +366,7 @@ genome flags, but none of its active policy traits are inherited by v29.
 5. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
 6. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v32 accepted otherwise.
+   qualifying offspring; keep v35 accepted otherwise.
 7. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.
