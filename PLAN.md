@@ -521,6 +521,60 @@ causal affordance: appearance and alignment did not establish that the marker
 was movable. The exact-off implementation and cognitive telemetry remain as
 evidence; v37 stays accepted.
 
+## Active experiment: v39 evidenced shape-goal translation
+
+Parent: accepted v37 `candidate-445450df91872736`
+
+Observed disequilibrium:
+
+- accepted v37 completes 0/8 `ar25` levels and spends all 400 actions;
+- its audit trace spends 371 actions on coordinate-varying clicks, overwhelmingly
+  without rendered change, and never constructs a successful scheme;
+- a rendered black-box probe shows two interior objects translating after plain
+  actions while a third interior object remains stationary;
+- exactly one moving object and the stationary object have identical area and
+  normalized shape despite different attributes;
+- the verified development-only sequence of five repetitions of one horizontal
+  action followed by ten repetitions of one vertical action aligns that mover
+  with the stationary shape and advances level 1 in 15 actions, versus the
+  32-action human baseline.
+
+Preregistered mutation:
+
+- retain all v37 policies and add one exact-off advisor before undirected
+  exploration;
+- probe only represented non-reset, non-coordinate action tokens, at most once
+  each, until a grounded displacement is observed;
+- accept a displacement only when one bounded interior component preserves its
+  attribute, area, normalized shape, and bounding-box dimensions under a pure
+  translation;
+- identify a goal only when that mover has exactly one differently attributed
+  interior component with identical area and normalized shape that remains
+  stationary across the same transition;
+- bind the action token to the observed mover translation, then repeat only an
+  evidenced action whose predicted translation strictly reduces Manhattan
+  displacement to the stationary shape without overshooting either axis;
+- reset the grounded translations and shape goal on every level transition,
+  cap operative applications at 32 per level, and abstain on ambiguity.
+
+Predicted `ar25` level-1 behavior:
+
+- one probe discovers a translation away from the target;
+- a second probe discovers the inverse vertical translation and is repeated
+  until vertical alignment;
+- a third probe discovers the productive horizontal translation and is repeated
+  until exact overlap;
+- advance level 1 in at most 20 actions, with 17 expected under sorted action
+  probing, without a fixed action ID, coordinate, color, game ID, or source
+  import.
+
+Falsifier:
+
+- reject v39 if no unique exact-shape mover/target pair is grounded from
+  rendered transitions, if an emitted translation fails to reduce the grounded
+  displacement as predicted, if level 1 does not advance within 20 actions, or
+  if any accepted completion regresses.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
