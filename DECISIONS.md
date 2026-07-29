@@ -540,3 +540,24 @@ V31 is promoted. The accepted claim is narrow: a goal relation learned on
 axis-aligned tracks can control dynamically evidenced non-axis-aligned cyclic
 permutations with shared slots. This is not arbitrary graph induction,
 cross-game transfer, or a Kaggle leaderboard result.
+
+## 2026-07-29 — Promote parameterized select/apply/commit composition
+
+V31 exhausted all 400 actions on `sb26` without progress. The rendered scene
+contained three structurally corresponding rows: an ordered template of
+distinct attributes, an unordered selector palette with the same attribute
+set, and neutral target slots. V32 constructs a content-free bijection between
+these rows and executes bounded `select(attribute) -> apply(slot)` pairs before
+testing a non-click commit control.
+
+Two independent target runs solved `sb26` level 1 in nine actions. The
+current-source exact-off target control remained at zero after 400 actions.
+The six-game preservation gate retained all eleven v31 completions at exact
+action counts and added `sb26`. The full exact-off control reproduced v31 at
+11/183 and 3.2992976365/100; the full v32 run reached 12/183 across six games
+and 3.4104087477/100. No game was fully beaten.
+
+V32 is promoted. The accepted claim is finite: a strong visual row isomorphism
+can parameterize selector actions with reference attributes and target slots.
+It is not evidence of arbitrary instruction following, a solved `sb26`, broad
+cross-game transfer, or a Kaggle leaderboard score.

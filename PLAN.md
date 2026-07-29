@@ -21,14 +21,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-98a22d6f908c6eb7`
-- Accepted agent: Reflector v31
-- Accepted frozen inference commit: `cde92a9`
+- Accepted candidate: `candidate-e9c00d0968c2832a`
+- Accepted agent: Reflector v32
+- Accepted frozen inference commit: `bdcede0`
 - Accepted public-development report:
-  `reports/official-isolated-public-v31-grounded-graph-cycle-transport-400.json`
-- Accepted score: `3.2992976365463904`
+  `reports/official-isolated-public-v32-parameterized-select-apply-commit-400.json`
+- Accepted score: `3.4104087476575016`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 11 levels across 5 games
+- Accepted completions: 12 levels across 6 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -47,6 +47,7 @@ generalization.
 | Mature-stall causal role reuse | v29 preserved all eight v25 levels at exact action counts and added `lp85` L1 in 37 actions; the source-matched control remained at zero on `lp85`. |
 | Marker-relative cyclic transport composition | v30 learned a goal relation only from level progress, preserved every v29 action count, and solved `lp85` L2 in eight composed transport actions; its exact-off full control reproduced v29. |
 | Grounded graph-cycle transport | v31 bound controllers only after exact conserved cycle shifts, planned over shared junctions, preserved every v30 action count, and solved `lp85` L3 in 54 actions. |
+| Parameterized select/apply/commit | v32 inferred an ordered attribute template and matching selector/target bindings, preserved every v31 action count, and solved `sb26` L1 in 9 actions. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -166,6 +167,36 @@ Evidence:
 
 V31 is accepted.
 
+## Accepted experiment: v32 parameterized select/apply/commit
+
+Candidate: `candidate-e9c00d0968c2832a`
+
+File: `candidates/v32-parameterized-select-apply-commit-400.json`
+
+Mechanism:
+
+- detect an ordered reference row with distinct attributes;
+- require an unordered selector row with the exact same attribute set;
+- bind each reference attribute to its selector and corresponding neutral slot;
+- execute the bounded select/apply pairs, then test the first unused non-click
+  control as a commit hypothesis.
+
+Evidence:
+
+- two independent `sb26` target runs solved level 1 in nine actions;
+- the current-source exact-off target control remained at 0/8 after 400
+  actions;
+- the six-game gate preserved all eleven v31 completions at exact action
+  counts and added `sb26`;
+- the full current-source exact-off control reproduced v31 at
+  `3.2992976365463904/100` and 11/183;
+- the full v32 candidate reached 12/183 across six games and
+  `3.4104087476575016/100` with 25/25 coverage;
+- 158 tests passed (3 skipped), Ruff and mypy passed, both network-disabled
+  smoke paths passed, and the exact genome exported without translation.
+
+V32 is accepted.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -189,9 +220,8 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Implement the preregistered `sb26` parameterized
-   `select(attribute) -> apply(slot) -> commit` composition behind an exact-off
-   flag; the rendered black-box control solved L1 in nine actions.
+1. Inspect `sb26` level 2 for a relation that genuinely extends the v32
+   attribute-binding scheme rather than replaying level 1.
 2. Implement `ar25` action-family causal attribution, exact-shape
    mover/target correspondence, and monotone learned translation composition;
    the rendered black-box control solved L1 in 15 actions.
@@ -202,7 +232,7 @@ genome flags, but none of its active policy traits are inherited by v29.
 5. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
 6. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v31 accepted otherwise.
+   qualifying offspring; keep v32 accepted otherwise.
 7. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.

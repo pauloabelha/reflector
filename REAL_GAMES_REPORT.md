@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 11 of 183 levels across 5 games. The suite ran all 25 games,
+> It has solved 12 of 183 levels across 6 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v31 result | Meaning |
+| Outcome metric | Accepted v32 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
-| Games with progress | **5 / 25** | At least one level was solved in five games. |
-| Levels solved | **11 / 183** | Five in `ft09`; three in `lp85`; one each in `lf52`, `r11l`, and `tn36`. |
-| Official local score | **3.2992976365 / 100** | About **3.30%**, not 330%. |
+| Games with progress | **6 / 25** | At least one level was solved in six games. |
+| Levels solved | **12 / 183** | Five in `ft09`; three in `lp85`; one each in `lf52`, `r11l`, `sb26`, and `tn36`. |
+| Official local score | **3.4104087477 / 100** | About **3.41%**, not 341%. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,14 +23,14 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v31 accepted | **3.2992976365 / 100** | 0 games beaten; 11/183 levels | 25/25 coverage |
-| Source-matched process-isolated suite | v31 control / v30 genome | 3.1894439557 / 100 | 0 games beaten; 10/183 levels | exact parent reproduction |
-| Process-isolated official local suite | v30 historical accepted | 3.1894439557 / 100 | 0 games beaten; 10/183 levels | superseded by v31 |
+| Process-isolated official local suite | v32 accepted | **3.4104087477 / 100** | 0 games beaten; 12/183 levels | 25/25 coverage |
+| Source-matched process-isolated suite | v32 control / v31 genome | 3.2992976365 / 100 | 0 games beaten; 11/183 levels | exact parent reproduction |
+| Process-isolated official local suite | v31 historical accepted | 3.2992976365 / 100 | 0 games beaten; 11/183 levels | superseded by v32 |
 | Process-isolated official local suite | v28 object/flow offspring | 2.8820272500 / 100 | 0 games beaten; 9/183 levels | rejected: lost `tn36`, slowed two wins |
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v31 package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v32 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -119,14 +119,82 @@ Raw evidence:
 | v28 | 2.8820272500 | 9 | 5 | 0 | Visual/temporal object primitives plus bounded role reuse | rejected: one accepted level regressed |
 | v29 | 2.9338884001 | 9 | 5 | 0 | Mature-stall bounded causal role reuse | historical accepted |
 | v30 | 3.1894439557 | 10 | 5 | 0 | Learned marker-relative goals plus composed cyclic transports | historical accepted |
-| v31 | **3.2992976365** | **11** | **5** | **0** | Grounded non-axis-aligned graph-cycle transport | **current accepted** |
+| v31 | 3.2992976365 | 11 | 5 | 0 | Grounded non-axis-aligned graph-cycle transport | historical accepted |
+| v32 | **3.4104087477** | **12** | **6** | **0** | Parameterized attribute select/apply/commit composition | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v31 result
+## Accepted v32 result
+
+V32 adds one exact-off mechanism to v31. It searches a rendered frame for
+three structurally corresponding rows: an ordered reference row whose objects
+carry distinct attributes, an unordered selector row with the exact same
+attribute set, and an intervening row of identical neutral targets. When this
+strong visual isomorphism exists, the agent binds each reference attribute to
+its matching selector and corresponding target slot.
+
+On `sb26` level 1, the inferred program was four
+`select(attribute) -> apply(slot)` pairs followed by the first unused
+non-click control as a commit hypothesis. It advanced in nine actions. The
+advisor then stayed silent on level 2 because the same structure was absent;
+the remaining 391 actions produced no further progress. Two independent
+target runs reproduced `[9, 391]`.
+
+The current-source exact-off target control exhausted 400 actions at 0/8. The
+six-game gate preserved all eleven v31 completions at their exact action
+counts and added `sb26`. The full exact-off control reproduced v31 at 11/183
+and `3.2992976365463904/100`; v32 reached 12/183 across six games and
+`3.4104087476575016/100`. No game was fully beaten.
+
+Frozen inference commit: `bdcede098f7e565e5e1adab64ac3bf48bc4dc81a`
+
+Candidate: `candidate-e9c00d0968c2832a`
+
+Candidate inference fingerprint:
+`68977761ee8fdaa2b280f078ed7fcde321680cf0fbc3c526a7347175639c4469`
+
+Candidate SHA-256:
+`ec6317dd0a7a2652bb5ecef7bd78236ec07d9017036db2ed8f4b8fb34e41a389`
+
+Full report SHA-256:
+`c31163447b98d4628ea0d57eef371d2d8ade0712578ffcc524820d255af70005`
+
+Source-control report SHA-256:
+`1cb2d5e671082c6aabe5a8dc02545151d6c945195ce26c99e64314eb28fa074e`
+
+Verification: 158 tests passed (3 skipped), Ruff passed, mypy passed, the
+generic and exact-candidate network-disabled smoke paths passed, and the exact
+candidate exported without translation. The overlay SHA-256 is
+`ad330f1dfc7686210a16696d1de584e5b6d7bc27470ca0624e1d49ed89f35181`;
+the notebook SHA-256 is
+`9428745f9dce0bf5cc44217a21f0c2b4e183289d6459d7aff914cf3ed3b5c904`.
+
+### Accepted progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ft09` | **5** | 6 | `[4, 7, 14, 16, 94]` | 66.1466080321 | No |
+| `lp85` | **3** | 8 | `[37, 8, 54]` | 9.7216281179 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `sb26` | **1** | 8 | `[9]` | 2.7777777778 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| Remaining 19 games | **0** | 138 | `[]` | 0 | No |
+| **Total** | **12** | **183** | — | **3.4104087477 overall** | **0 / 25** |
+
+Raw evidence:
+
+- [v32 accepted 25-game scorecard](reports/official-isolated-public-v32-parameterized-select-apply-commit-400.json)
+- [v32 source-matched v31 control](reports/official-isolated-public-v32-source-control-400.json)
+- [v32 exact `sb26` rerun](reports/official-isolated-v32-sb26-r2.json)
+- [v32 exact-off `sb26` control](reports/official-isolated-v32-sb26-source-control.json)
+- [v32 six-game preservation gate](reports/official-isolated-v32-six-game-gate.json)
+- [v32 candidate](candidates/v32-parameterized-select-apply-commit-400.json)
+
+## Historical accepted v31 result
 
 V31 adds one exact-off mechanism to v30. When the rectangular transport
 language does not explain a marked scene, it enumerates a bounded set of

@@ -20,27 +20,28 @@ service, database, or web server.
 Last verified: 2026-07-29
 
 > **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
-> It has solved **11 of 183 levels across 5 games**. All 25 games were
+> It has solved **12 of 183 levels across 6 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v31 result |
+| Metric | Accepted v32 result |
 | --- | ---: |
 | Complete games beaten | **0 / 25** |
-| Games with at least one solved level | **5 / 25** |
-| Levels solved | **11 / 183** |
-| Official local score | **3.2992976365 / 100** |
+| Games with at least one solved level | **6 / 25** |
+| Levels solved | **12 / 183** |
+| Official local score | **3.4104087477 / 100** |
 | Games evaluated | **25 / 25** |
 | Kaggle submissions | **0** |
 
-The score is about **3.30% of the 100-point scale**, not 330%. It is a local
-public-development result, not a Kaggle leaderboard score. V31 preserves every
-v30 completion at its exact action count and adds `lp85` level 3 in 54 actions.
-It extends the earned marker-relative goal by inducing non-axis-aligned cycles
-only after a controller produces an exact conserved token rotation, then plans
-over overlapping grounded transports with bounded search. The corrected
+The score is about **3.41% of the 100-point scale**, not 341%. It is a local
+public-development result, not a Kaggle leaderboard score. V32 preserves every
+v31 completion at its exact action count and adds `sb26` level 1 in nine
+actions. It detects an ordered row of reference attributes, an unordered row
+of selectors carrying the same attributes, and a corresponding row of neutral
+targets; it then binds and executes `select(attribute) -> apply(target)` pairs
+before testing a commit action. The corrected
 protocol runs every parallel game in a fresh process; the original threaded
 full run is retained as invalidated methodological evidence. The exact package
-passes 155 tests (3 skipped), Ruff, mypy, both offline smoke paths, and export.
+passes 158 tests (3 skipped), Ruff, mypy, both offline smoke paths, and export.
 No hidden Kaggle score exists.
 
 The v26 research branch now preregisters intervention hypotheses, keeps
@@ -59,9 +60,9 @@ composite-region, enclosure, normalized-shape, frame-difference, and
 discrete-flow primitives with typed provenance. It remains experimental.
 Primitive-guided intervention improved `ft09` and helped discover levels in
 `lp85` and `sp80`, but the full offspring lost `tn36` and slowed `lf52` and
-`r11l`; it was rejected. V31 inherits v30's causally earned marker-relative
-transport policy and adds only independently gated graph-cycle induction. The
-richer ontology stays behind exact-off genome flags for future source-matched
+`r11l`; it was rejected. V32 inherits v31's causally earned graph-cycle policy
+and adds only independently gated attribute-binding composition. The richer
+ontology stays behind exact-off genome flags for future source-matched
 offspring.
 
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
