@@ -768,6 +768,8 @@ class EpistemicExplorer:
 
         if not self.relational_phase_translation or self.shape_translation_phase_blocked:
             return False
+        if self.shape_translation_occluded_action is not None:
+            return False
         before_phase = self._relational_phase_signature(before)
         after_phase = self._relational_phase_signature(after)
         if (

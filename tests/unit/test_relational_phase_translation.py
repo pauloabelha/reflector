@@ -191,6 +191,15 @@ def test_phase_ambiguity_cannot_interrupt_evidenced_occlusion() -> None:
     assert explorer.shape_translation_diagnostic == (
         "phase-unavailable-during-predicted-occlusion"
     )
+    before = _frame(mover=(5, 12), phase=0)
+    after = _frame(mover=(5, 12), phase=1)
+
+    changed = explorer._observe_shape_translation_phase(before, after, 5)
+
+    assert changed is False
+    assert explorer.shape_translation_phase == phase
+    assert explorer.shape_translation_phase_transition_count == 0
+    assert explorer.shape_translation_phase_blocked is False
 
 
 def test_relational_phase_translation_requires_shape_goal_translation() -> None:
