@@ -670,6 +670,25 @@ Falsifier:
   does not yield a stable reducer, if level 2 fails to advance within 20
   actions twice, or if any accepted completion regresses.
 
+First frozen implementation result:
+
+- source `b71ad73` and candidate `candidate-2eccd5e2dd9ae9c5` regressed
+  `ar25` level 1 from 17 to 317 actions in two exact runs;
+- its phase signature became structurally ambiguous during the parent's
+  already-evidenced partial occlusion and permanently blocked the shape advisor
+  one action before the normal win;
+- the source-matched exact-off control reproduced v39 exactly at
+  `[17, 383]`, so the regression is attributable to the new phase layer.
+
+Preregistered non-interference amendment:
+
+- when the parent has an active, twice-confirmed bounded occlusion prediction,
+  a temporarily unavailable or ambiguous phase signature must preserve the
+  current phase model and cannot block, change, or validate that prediction;
+- only a fully visible, unambiguous marker-host reassignment may change phase;
+- retain the original target falsifier and additionally require exact
+  preservation of v39 level 1 at 17 actions.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
