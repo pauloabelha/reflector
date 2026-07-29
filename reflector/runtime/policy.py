@@ -75,6 +75,9 @@ class SymbolicPolicy:
             nested_source_traversal=(
                 self.mind.config.enable_nested_source_traversal
             ),
+            enclosure_target_traversal=(
+                self.mind.config.enable_enclosure_target_traversal
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

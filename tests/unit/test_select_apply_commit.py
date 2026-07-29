@@ -175,6 +175,53 @@ def _nested_source_mapping_frame(
     return tuple(tuple(row) for row in pixels)
 
 
+def _sibling_container_mapping_frame() -> tuple[tuple[int, ...], ...]:
+    reference = (3, 5, 7, 9, 11, 13, 15)
+    selectors = (15, 5, 11, 3, 13, 9, 7)
+    pixels = [[0 for _x in range(56)] for _y in range(31)]
+    for index, color in enumerate(reference):
+        _paint(
+            pixels,
+            left=2 + index * 7,
+            top=1,
+            color=color,
+            size=3,
+            outline=True,
+        )
+    for color, left, right, top in (
+        (8, 13, 44, 6),
+        (14, 13, 26, 14),
+        (9, 31, 44, 14),
+    ):
+        for x in range(left, right + 1):
+            pixels[top][x] = color
+            pixels[top + 6][x] = color
+        for y in range(top, top + 7):
+            pixels[y][left] = color
+            pixels[y][right] = color
+    for left, top in (
+        (16, 8),
+        (28, 8),
+        (40, 8),
+        (16, 16),
+        (22, 16),
+        (34, 16),
+        (40, 16),
+    ):
+        _paint(pixels, left=left, top=top, color=2, size=2)
+    _paint(pixels, left=22, top=8, color=14, size=2)
+    _paint(pixels, left=34, top=8, color=9, size=2)
+    for index, color in enumerate(selectors):
+        _paint(
+            pixels,
+            left=2 + index * 7,
+            top=27,
+            color=color,
+            size=2,
+        )
+    return tuple(tuple(row) for row in pixels)
+
+
 def test_parameterized_mapping_binds_attributes_then_applies_and_commits() -> None:
     observation = _observation(_mapping_frame())
     scene, _events = SceneTracker().perceive(observation)
@@ -388,6 +435,39 @@ def test_nested_source_traversal_requires_exact_reference_order() -> None:
 
     assert explorer.select_apply_program == ()
     assert not explorer.nested_source_plan_active
+
+
+def test_enclosure_topology_separates_same_height_sibling_containers() -> None:
+    observation = _observation(_sibling_container_mapping_frame())
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token for _step in range(15)
+    )
+    target_clicks = tuple(
+        dict(token.data)
+        for token in choices
+        if token.action_id == 6 and dict(token.data).get("y") in {8, 16}
+    )
+
+    assert target_clicks == (
+        {"x": 16, "y": 8},
+        {"x": 16, "y": 16},
+        {"x": 22, "y": 16},
+        {"x": 28, "y": 8},
+        {"x": 34, "y": 16},
+        {"x": 40, "y": 16},
+        {"x": 40, "y": 8},
+    )
+    assert choices[-1] == ActionToken(5)
+    assert explorer.nested_target_plan_active
 
 
 def test_multiline_accommodation_is_silent_without_exact_cardinality() -> None:

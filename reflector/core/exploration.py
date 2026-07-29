@@ -239,6 +239,7 @@ class EpistemicExplorer:
     spatial_order_variation: bool = False
     nested_target_traversal: bool = False
     nested_source_traversal: bool = False
+    enclosure_target_traversal: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -894,10 +895,18 @@ class EpistemicExplorer:
                     ) > 1
                     nested_plan = False
                     if self.nested_target_traversal and is_multiline:
-                        nested_order = self._nested_target_order(
-                            observation.frame,
-                            targets,
-                        )
+                        nested_order = None
+                        if self.enclosure_target_traversal:
+                            nested_order = self._nested_enclosure_order(
+                                observation.frame,
+                                targets,
+                                objects,
+                            )
+                        if nested_order is None:
+                            nested_order = self._nested_target_order(
+                                observation.frame,
+                                targets,
+                            )
                         if nested_order is None:
                             continue
                         target_orders = (nested_order,)
@@ -1072,6 +1081,167 @@ class EpistemicExplorer:
             else "select-apply-selected"
         )
         return winner[1]
+
+    @staticmethod
+    def _nested_enclosure_order(
+        frame: tuple[tuple[int, ...], ...],
+        targets: tuple[_FrameObject, ...],
+        objects: tuple[_FrameObject, ...],
+    ) -> tuple[_FrameObject, ...] | None:
+        """Traverse sibling containers grounded by exact rendered enclosures."""
+
+        if not frame or not frame[0] or not 3 <= len(targets) <= 12:
+            return None
+        columns = tuple(sorted({item.centroid[0] for item in targets}))
+        if not 3 <= len(columns) <= 8:
+            return None
+        pitches = {
+            right - left for left, right in zip(columns, columns[1:])
+        }
+        if len(pitches) != 1:
+            return None
+        pitch = pitches.pop()
+        if pitch <= 0:
+            return None
+
+        def is_rectangle(item: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = item.bbox
+            width = max_x - min_x + 1
+            height = max_y - min_y + 1
+            if width < 3 or height < 3:
+                return False
+            perimeter = {
+                (x, y)
+                for y in range(height)
+                for x in range(width)
+                if x in {0, width - 1} or y in {0, height - 1}
+            }
+            return item.area == len(perimeter) and set(item.shape) == perimeter
+
+        def encloses(item: _FrameObject, target: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = item.bbox
+            x, y = target.centroid
+            return min_x < x < max_x and min_y < y < max_y
+
+        containers = tuple(
+            item
+            for item in objects
+            if is_rectangle(item)
+            and sum(encloses(item, target) for target in targets) >= 2
+        )
+        if not 2 <= len(containers) <= 4:
+            return None
+
+        assigned: dict[_FrameObject, list[_FrameObject]] = {
+            container: [] for container in containers
+        }
+        for target in targets:
+            enclosing = tuple(
+                container for container in containers if encloses(container, target)
+            )
+            if not enclosing:
+                return None
+            smallest_area = min(container.area for container in enclosing)
+            smallest = tuple(
+                container
+                for container in enclosing
+                if container.area == smallest_area
+            )
+            if len(smallest) != 1:
+                return None
+            assigned[smallest[0]].append(target)
+        if any(len(items) < 2 for items in assigned.values()):
+            return None
+
+        counts = Counter(cell for row in frame for cell in row)
+        background = max(counts, key=lambda color: (counts[color], -color))
+        target_color = targets[0].color
+        height = len(frame)
+        width = len(frame[0])
+        entries: dict[_FrameObject, dict[int, _FrameObject | None]] = {}
+        links: dict[tuple[_FrameObject, int], _FrameObject] = {}
+        in_degree = Counter[_FrameObject]()
+
+        for container, items in assigned.items():
+            by_x = {item.centroid[0]: item for item in items}
+            if len(by_x) != len(items):
+                return None
+            left = min(by_x)
+            right = max(by_x)
+            if (right - left) % pitch:
+                return None
+            slots = tuple(range(left, right + 1, pitch))
+            row_entries: dict[int, _FrameObject | None] = {}
+            target_y_values = {item.centroid[1] for item in items}
+            if len(target_y_values) != 1:
+                return None
+            target_y = target_y_values.pop()
+            for x in slots:
+                slot_target = by_x.get(x)
+                row_entries[x] = slot_target
+                if slot_target is not None:
+                    continue
+                radius = max(1, pitch // 2)
+                sampled = {
+                    frame[sample_y][sample_x]
+                    for sample_y in range(
+                        max(0, target_y - radius),
+                        min(height, target_y + radius + 1),
+                    )
+                    for sample_x in range(
+                        max(0, x - radius),
+                        min(width, x + radius + 1),
+                    )
+                    if frame[sample_y][sample_x]
+                    not in {background, target_color, container.color}
+                }
+                if len(sampled) != 1:
+                    return None
+                connector_color = sampled.pop()
+                children = tuple(
+                    candidate
+                    for candidate in containers
+                    if candidate != container
+                    and candidate.color == connector_color
+                )
+                if len(children) != 1:
+                    return None
+                child = children[0]
+                links[(container, x)] = child
+                in_degree[child] += 1
+                if in_degree[child] > 1:
+                    return None
+            entries[container] = row_entries
+
+        roots = tuple(
+            container for container in containers if in_degree[container] == 0
+        )
+        if len(roots) != 1:
+            return None
+        ordered: list[_FrameObject] = []
+        visiting: set[_FrameObject] = set()
+        visited: set[_FrameObject] = set()
+
+        def expand(container: _FrameObject) -> bool:
+            if container in visiting or container in visited:
+                return False
+            visiting.add(container)
+            for x, target in sorted(entries[container].items()):
+                if target is not None:
+                    ordered.append(target)
+                    continue
+                child = links.get((container, x))
+                if child is None or not expand(child):
+                    return False
+            visiting.remove(container)
+            visited.add(container)
+            return True
+
+        if not expand(roots[0]):
+            return None
+        if visited != set(containers) or set(ordered) != set(targets):
+            return None
+        return tuple(ordered)
 
     @staticmethod
     def _nested_target_order(
