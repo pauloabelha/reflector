@@ -84,6 +84,9 @@ class SymbolicPolicy:
             shape_goal_translation=(
                 self.mind.config.enable_shape_goal_translation
             ),
+            relational_phase_translation=(
+                self.mind.config.enable_relational_phase_translation
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

@@ -11,6 +11,15 @@ from typing import Any
 from .symbolic import ObjectState, Observation, Scene
 
 StateKey = tuple[int, str, str]
+PhaseSignature = tuple[
+    tuple[
+        int,
+        int,
+        tuple[tuple[int, int], ...],
+        tuple[tuple[int, int, int], ...],
+    ],
+    ...,
+]
 
 
 @dataclass(frozen=True, order=True, slots=True)
@@ -242,6 +251,7 @@ class EpistemicExplorer:
     enclosure_target_traversal: bool = False
     connector_relocation: bool = False
     shape_goal_translation: bool = False
+    relational_phase_translation: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -338,6 +348,22 @@ class EpistemicExplorer:
         ]
         | None
     ) = None
+    shape_translation_phase: PhaseSignature | None = None
+    shape_translation_phase_models: dict[
+        PhaseSignature,
+        tuple[
+            set[int],
+            dict[int, tuple[int, int]],
+            Counter[int],
+            set[int],
+        ],
+    ] = field(default_factory=dict)
+    shape_translation_phase_transitions: dict[
+        tuple[PhaseSignature, int],
+        PhaseSignature,
+    ] = field(default_factory=dict)
+    shape_translation_phase_transition_count: int = 0
+    shape_translation_phase_blocked: bool = False
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -516,7 +542,20 @@ class EpistemicExplorer:
             self.current_level is not None
             and observation.levels_completed > self.current_level
         )
-        if self.shape_goal_translation:
+        phase_changed = (
+            self.shape_goal_translation
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+            and not progressed
+            and self._observe_shape_translation_phase(
+                before,
+                after,
+                pending_token.action_id,
+            )
+        )
+        if self.shape_goal_translation and not phase_changed:
             self._validate_shape_translation_prediction(
                 before,
                 after,
@@ -533,6 +572,7 @@ class EpistemicExplorer:
             and pending_token.action_id
             not in {self.reset_action, self.complex_action}
             and not progressed
+            and not phase_changed
         ):
             self._observe_shape_goal_translation(
                 before,
@@ -620,6 +660,169 @@ class EpistemicExplorer:
         self.shape_translation_occluded_action = None
         self.shape_translation_occluded_steps = 0
         self.shape_translation_pending_prediction = None
+        self.shape_translation_phase = None
+        self.shape_translation_phase_models.clear()
+        self.shape_translation_phase_transitions.clear()
+        self.shape_translation_phase_transition_count = 0
+        self.shape_translation_phase_blocked = False
+
+    @classmethod
+    def _relational_phase_signature(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> PhaseSignature | None:
+        """Describe rare markers by their normalized relation to major hosts."""
+
+        objects = cls._frame_objects(frame)
+        major = tuple(item for item in objects if 16 <= item.area <= 512)
+        markers = tuple(item for item in objects if item.area <= 2)
+        hosted: dict[
+            tuple[int, int, tuple[tuple[int, int], ...]],
+            list[tuple[int, int, int]],
+        ] = {}
+        for marker in markers:
+            hosts = tuple(
+                host
+                for host in major
+                if host.bbox[0] < marker.centroid[0] < host.bbox[2]
+                and host.bbox[1] < marker.centroid[1] < host.bbox[3]
+            )
+            if len(hosts) > 1:
+                return None
+            if not hosts:
+                continue
+            host = hosts[0]
+            host_key = (host.color, host.area, host.shape)
+            hosted.setdefault(host_key, []).append(
+                (
+                    marker.color,
+                    marker.centroid[0] - host.bbox[0],
+                    marker.centroid[1] - host.bbox[1],
+                )
+            )
+        return tuple(
+            sorted(
+                (
+                    color,
+                    area,
+                    shape,
+                    tuple(sorted(marker_relations)),
+                )
+                for (color, area, shape), marker_relations in hosted.items()
+            )
+        )
+
+    def _store_shape_translation_phase(self) -> None:
+        if self.shape_translation_phase is None:
+            return
+        self.shape_translation_phase_models[self.shape_translation_phase] = (
+            self.shape_translation_probes,
+            self.shape_translation_effects,
+            self.shape_translation_effect_evidence,
+            self.shape_translation_invalid_actions,
+        )
+
+    def _load_shape_translation_phase(
+        self,
+        phase: PhaseSignature,
+    ) -> None:
+        self._store_shape_translation_phase()
+        model = self.shape_translation_phase_models.get(phase)
+        if model is None:
+            model = (set(), {}, Counter(), set())
+            self.shape_translation_phase_models[phase] = model
+        (
+            self.shape_translation_probes,
+            self.shape_translation_effects,
+            self.shape_translation_effect_evidence,
+            self.shape_translation_invalid_actions,
+        ) = model
+        self.shape_translation_phase = phase
+
+    def _ensure_shape_translation_phase(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> None:
+        if not self.relational_phase_translation or self.shape_translation_phase_blocked:
+            return
+        phase = self._relational_phase_signature(frame)
+        if phase is None:
+            self.shape_translation_phase_blocked = True
+            self.shape_translation_diagnostic = "ambiguous-marker-host"
+            return
+        if self.shape_translation_phase is None:
+            self._load_shape_translation_phase(phase)
+
+    def _observe_shape_translation_phase(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+    ) -> bool:
+        """Quarantine action semantics after an evidenced marker-host change."""
+
+        if not self.relational_phase_translation or self.shape_translation_phase_blocked:
+            return False
+        before_phase = self._relational_phase_signature(before)
+        after_phase = self._relational_phase_signature(after)
+        if (
+            before_phase is None
+            or after_phase is None
+            or not before_phase
+            or not after_phase
+            or before_phase == after_phase
+        ):
+            return False
+        if self.shape_translation_phase is None:
+            self._load_shape_translation_phase(before_phase)
+        if self.shape_translation_phase != before_phase:
+            self.shape_translation_phase_blocked = True
+            self.shape_translation_diagnostic = "untracked-phase-change"
+            return False
+
+        before_pair = self._unique_shape_pair(before)
+        after_pair = self._unique_shape_pair(after)
+        if before_pair is None or after_pair is None:
+            return False
+        before_by_signature = {
+            self._shape_signature(item): item for item in before_pair
+        }
+        after_by_signature = {
+            self._shape_signature(item): item for item in after_pair
+        }
+        if set(before_by_signature) != set(after_by_signature):
+            return False
+        if any(
+            before_by_signature[signature].bbox
+            != after_by_signature[signature].bbox
+            for signature in before_by_signature
+        ):
+            return False
+        transition = (before_phase, action_id)
+        previous = self.shape_translation_phase_transitions.get(transition)
+        if previous not in {None, after_phase}:
+            self.shape_translation_phase_blocked = True
+            self.shape_translation_diagnostic = "inconsistent-phase-transition"
+            return False
+        if (
+            after_phase not in self.shape_translation_phase_models
+            and len(self.shape_translation_phase_models) >= 3
+        ):
+            self.shape_translation_phase_blocked = True
+            self.shape_translation_diagnostic = "phase-cap-reached"
+            return False
+        if self.shape_translation_phase_transition_count >= 4:
+            self.shape_translation_phase_blocked = True
+            self.shape_translation_diagnostic = "phase-transition-cap-reached"
+            return False
+        self.shape_translation_phase_transitions[transition] = after_phase
+        self.shape_translation_phase_transition_count += 1
+        self._load_shape_translation_phase(after_phase)
+        self.shape_translation_pending_prediction = None
+        self.shape_translation_occluded_action = None
+        self.shape_translation_occluded_steps = 0
+        self.shape_translation_diagnostic = "relational-phase-transition"
+        return True
 
     @staticmethod
     def _shape_signature(
@@ -842,6 +1045,9 @@ class EpistemicExplorer:
         if (
             not self.shape_goal_translation
         ):
+            return None
+        self._ensure_shape_translation_phase(observation.frame)
+        if self.shape_translation_phase_blocked:
             return None
         if self.shape_translation_application_trials >= 32:
             self.shape_translation_diagnostic = "application-cap-reached"
@@ -3999,6 +4205,15 @@ class EpistemicExplorer:
             ),
             "shape_translation_occluded_steps": (
                 self.shape_translation_occluded_steps
+            ),
+            "shape_translation_phases": len(
+                self.shape_translation_phase_models
+            ),
+            "shape_translation_phase_transitions": (
+                self.shape_translation_phase_transition_count
+            ),
+            "shape_translation_phase_blocked": int(
+                self.shape_translation_phase_blocked
             ),
             "shape_translation_diagnostic": self.shape_translation_diagnostic,
             "level_interventions": self.level_interventions,
