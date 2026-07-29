@@ -729,6 +729,102 @@ V40 is accepted. The earned claim is limited to conditioning learned action
 semantics on one explicitly rendered marker-host relation while conserving
 the old phase model and abstaining during bounded latent occlusion.
 
+## Active experiment: v41 committed-trajectory causal state
+
+Parent: accepted v40 `candidate-76f2aac768d8cdb0`
+
+Observed disequilibrium:
+
+- v40 and its exact-off v39 parent both solve 0/7 `g50t` levels, spend all 400
+  actions, and reset three times;
+- the raw rendered stream contains 184 distinct full frames, but excluding a
+  monotone boundary countdown leaves only 18 observations and 14 stable board
+  configurations, so the global frame digest greatly overstates causal state;
+- a movable near-filled enclosure hosts a small marker, while a larger
+  stationary enclosure with a compatible hosted-marker relation supplies a
+  rendered receptacle;
+- one translation can be repeated to a blocked endpoint, after which a
+  non-translation action visibly returns the mover to its origin and changes a
+  persistent phase glyph;
+- later interventions move a fresh congruent mover while an old congruent
+  object independently replays the previously enacted path, demonstrating
+  that the visible stable board alone is not Markov;
+- a rendered black-box development search advanced level 1 twice in 17 actions
+  with one concrete route. That route is feasibility evidence only and must
+  not appear in the deployed policy.
+
+Preregistered mutation:
+
+- retain v40 unchanged behind an exact-off
+  `enable_committed_trajectory_planning` flag;
+- ground a mover from normalized occupancy, area, enclosure topology, and
+  hosted-marker relations, and ground a unique compatible stationary
+  receptacle without using color values or absolute positions;
+- learn plain-action translation roles and inverse roles from rendered
+  interventions, requiring consistent mover displacement while the
+  receptacle remains stable;
+- construct at most four endpoint macros from evidenced translations, with
+  trajectories capped at 16 roles, and recognize an endpoint only when a
+  previously productive translation becomes blocked;
+- recognize a provisional commit only after at least two enacted trajectory
+  steps, a blocked endpoint, a non-translation return of the mover to its
+  origin, and a persistent rendered phase-relation change;
+- carry the committed macro and replay cursor in an advisor-private causal
+  state instead of aliasing solely by the current frame;
+- validate autonomous replay by observing an old congruent mover follow at
+  least two saved trajectory steps while the fresh mover follows independently
+  selected actions; reject ambiguous identity or replay divergence;
+- learn a bounded action-independent nuisance model only for a
+  boundary-connected one-cell strip after at least four transitions spanning
+  three actions, and exclude only that evidenced nuisance from the private
+  stable state;
+- plan over learned translations, the committed macro, and replay cursor with
+  at most 64 causal edges, depth 16, and 20 executed planned actions;
+- arbitrate after accepted select/apply and cyclic advisors, but before v39
+  shape-goal translation and generic productive-role reuse; once grounded, the
+  advisor retains priority until completion or explicit falsification.
+
+Forbidden embedded information:
+
+- no `g50t` identifier, fixed coordinate, concrete color, fixed action ID,
+  discovered route, route length, source import, or fresh-environment replay;
+- endpoint choice must follow a structural goal/blocker relation and learned
+  effects rather than the development route;
+- only environment-reported level advancement counts as success.
+
+Predicted `g50t` level-1 behavior:
+
+- identify the mover/receptacle relation and probe plain actions online;
+- learn two translation axes and their inverses;
+- construct and commit a target-reducing endpoint macro;
+- retain that macro as latent causal state while validating independent replay;
+- move the fresh object along the complementary target-reducing trajectory;
+- advance level 1 within 30 actions twice, with roughly 24 expected from
+  online probing, without any embedded concrete solution.
+
+Synthetic invariance gates:
+
+- recolor, translate, reflect, and consistently permute action IDs while
+  preserving the same abstract macro and reflected plan;
+- alias an evidenced monotone boundary clock to one private causal state while
+  separating an interior mover displacement;
+- accept a trajectory-grounded commit and reject origin resets without
+  trajectory history, marker-only changes, and failed returns;
+- validate independent ghost replay and reject objects that both follow the
+  current action;
+- solve original and mirrored two-arm blocker/receptacle fixtures solely from
+  online transitions;
+- abstain on ambiguous receptacles, inconsistent effects, excess endpoints, or
+  replay divergence, and enforce every memory/search cap.
+
+Falsifier:
+
+- reject v41 if it cannot reconstruct the causal program from a fresh rendered
+  stream, if the boundary countdown drives its private causal state, if commit
+  or replay evidence is accepted without the preregistered dependencies, if
+  any invariance gate fails, if `g50t` level 1 does not advance within 30
+  actions twice, or if any accepted v40 completion regresses.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
