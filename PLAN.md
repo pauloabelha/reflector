@@ -197,7 +197,7 @@ Evidence:
 
 V32 is accepted.
 
-## Active experiment: v33 multiline target accommodation
+## Rejected experiment: v33 multiline target accommodation
 
 Parent: v32 `candidate-e9c00d0968c2832a`
 
@@ -226,6 +226,36 @@ Falsifier:
 - the mutation is rejected if it does not reproduce `sb26` level 1 and advance
   level 2 in the predicted 15 additional actions, or if any accepted
   completion regresses.
+
+Result:
+
+- v33 reproduced `sb26` level 1 in nine actions;
+- it executed the preregistered 15-action row-major program on level 2;
+- level 2 did not advance, and the final result remained `[9, 391]`;
+- therefore multi-row cardinality was real, but ordinary reading order was the
+  wrong binding relation. V33 is rejected without a preservation or full gate.
+
+## Active experiment: v34 bounded spatial-order variation
+
+Parent: accepted v32 `candidate-e9c00d0968c2832a`
+
+Hypothesis:
+
+- when an earned attribute-binding scheme finds an exact multi-row target
+  layout but lacks evidence for target order, treat order as a symbolic
+  parameter rather than committing permanently to row-major order;
+- construct at most four coordinate-free order hypotheses: row-major,
+  row-boustrophedon, column-major, and column-boustrophedon;
+- test each complete binding program, use the remaining non-click control as a
+  clear hypothesis between failed programs, and stop automatically on level
+  progress.
+
+Falsifier:
+
+- the advisor remains silent without v32's exact attribute bijection and
+  v33's exact multi-row neutral-target cardinality;
+- the variation family is rejected if none of its four bounded programs
+  advances `sb26` level 2, or if it regresses an accepted completion.
 
 ## Rejected experimental branch: v28 object and temporal primitives
 

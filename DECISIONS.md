@@ -561,3 +561,16 @@ V32 is promoted. The accepted claim is finite: a strong visual row isomorphism
 can parameterize selector actions with reference attributes and target slots.
 It is not evidence of arbitrary instruction following, a solved `sb26`, broad
 cross-game transfer, or a Kaggle leaderboard score.
+
+## 2026-07-29 — Reject v33 row-major multiline target binding
+
+`sb26` level 2 preserved v32's exact reference/selector attribute bijection,
+but split seven neutral targets across rows of three and four. V33
+preregistered the smallest accommodation: merge exact neutral target types and
+bind them in ordinary visual reading order.
+
+The frozen candidate reproduced level 1 in nine actions and executed all
+fourteen select/apply actions plus commit on level 2. The level did not
+advance; the final result remained one level and `[9, 391]`. The experiment
+therefore isolates target ordering—not target detection or attribute
+bijection—as the remaining disequilibrium. V33 is rejected before wider gates.
