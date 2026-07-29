@@ -330,6 +330,49 @@ parameterize recursive expansion of one uniquely matched child container and
 resume its parent. This does not establish general recursion, cross-game
 transfer, a completed game, or a Kaggle leaderboard score.
 
+## Active experiment: v36 bidirectional nested scheme composition
+
+Parent: accepted v35 `candidate-7c659587fffbceb8`
+
+Observed disequilibrium:
+
+- v35 reaches `sb26` level 3 in `[9, 15]` and then spends 376 actions without
+  progress;
+- the ordered reference still contains seven distinct attributes;
+- the nested containers now contain seven distinct payload objects with the
+  exact reference attribute set;
+- their already earned depth-first container traversal yields the exact
+  reference order;
+- a single lower row contains seven identical neutral outputs, reversing the
+  source and target roles learned on level 2.
+
+Preregistered mutation:
+
+- retain v35's bounded container graph and depth-first expansion unchanged;
+- add an exact-off inverse composition only when the nested payload attributes
+  form an exact bijection with the ordered reference;
+- require one lower neutral row with exact cardinality and uniform object
+  shape, area, and appearance;
+- require the nested traversal's payload-attribute sequence to equal the
+  ordered reference sequence exactly;
+- execute `select(nested payload) -> apply(neutral output)` while traversing
+  the nested source and the output row left-to-right, then commit;
+- cap the same graph at four rows and twelve payloads and abstain on every
+  ambiguity.
+
+Predicted `sb26` level-3 result:
+
+- select and apply seven nested payloads in depth-first order;
+- commit after fourteen complex actions;
+- advance in exactly 15 actions, changing the trace prefix from
+  `[9, 15, 376]` to `[9, 15, 15, ...]`.
+
+Falsifier:
+
+- reject v36 if it does not infer the exact rendered source traversal, if its
+  predicted 15-action program fails to advance level 3, or if the current-
+  source v35 control or any accepted completion regresses.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -353,9 +396,7 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Record and inspect `sb26` level 3 under v35. Determine whether its failure
-   is another bounded topology accommodation or requires a different scheme;
-   preregister before changing inference.
+1. Test the preregistered v36 inverse nested composition on `sb26` level 3.
 2. Implement `ar25` action-family causal attribution, exact-shape
    mover/target correspondence, and monotone learned translation composition;
    the rendered black-box control solved L1 in 15 actions.
