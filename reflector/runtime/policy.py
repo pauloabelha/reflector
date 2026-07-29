@@ -59,6 +59,7 @@ class SymbolicPolicy:
             cyclic_sequence_alignment=(
                 self.mind.config.enable_cyclic_sequence_alignment
             ),
+            graph_cycle_transport=(self.mind.config.enable_graph_cycle_transport),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

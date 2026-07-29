@@ -230,3 +230,104 @@ def test_cyclic_advisor_releases_control_at_its_level_trial_bound() -> None:
         is None
     )
     assert ActionToken(6) not in tokens
+
+
+def test_graph_cycle_transport_is_grounded_only_by_an_exact_frame_shift() -> None:
+    left_cycle = (
+        (21, 19),
+        (24, 19),
+        (27, 19),
+        (30, 22),
+        (33, 25),
+        (33, 28),
+        (33, 31),
+        (30, 34),
+        (27, 37),
+        (24, 37),
+        (21, 37),
+        (18, 34),
+        (15, 31),
+        (15, 28),
+        (15, 25),
+        (18, 22),
+    )
+    right_cycle = (
+        (33, 19),
+        (36, 19),
+        (39, 19),
+        (42, 22),
+        (45, 25),
+        (45, 28),
+        (45, 31),
+        (42, 34),
+        (39, 37),
+        (36, 37),
+        (33, 37),
+        (30, 34),
+        (27, 31),
+        (27, 28),
+        (27, 25),
+        (30, 22),
+    )
+    positions = tuple(sorted(set(left_cycle) | set(right_cycle)))
+    values = {point: index + 20 for index, point in enumerate(positions)}
+    before = _frame(
+        ((positions, tuple(values[point] for point in positions)),),
+        (
+            ((15, 28), 90),
+            ((45, 28), 91),
+        ),
+        width=64,
+        height=64,
+    )
+    shifted = dict(values)
+    rotated = EpistemicExplorer._rotate_values(
+        tuple(values[point] for point in left_cycle),
+        1,
+    )
+    shifted.update(zip(left_cycle, rotated))
+    after = _frame(
+        ((positions, tuple(shifted[point] for point in positions)),),
+        (
+            ((15, 28), 90),
+            ((45, 28), 91),
+        ),
+        width=64,
+        height=64,
+    )
+    explorer = EpistemicExplorer(
+        cyclic_sequence_alignment=True,
+        graph_cycle_transport=True,
+    )
+
+    assert explorer._cyclic_tracks(before) == ()
+    graph_tracks = explorer._cyclic_tracks(
+        before,
+        include_graph_cycles=True,
+    )
+    explorer._observe_cyclic_transition(
+        before,
+        after,
+        (25, 41),
+        progressed=False,
+    )
+
+    assert any(len(track.points) == 16 for track in graph_tracks)
+    assert len(explorer.grounded_cyclic_transports) == 1
+    (grounded_points, controller), direction = next(
+        iter(explorer.grounded_cyclic_transports.items())
+    )
+    assert set(grounded_points) == set(left_cycle)
+    assert controller == (25, 41)
+    assert direction in {-1, 1}
+
+
+def test_graph_cycle_transport_requires_an_earned_alignment_goal() -> None:
+    try:
+        MindConfig(enable_graph_cycle_transport=True)
+    except ValueError as error:
+        assert str(error) == (
+            "graph cycle transport requires cyclic sequence alignment"
+        )
+    else:
+        raise AssertionError("graph cycle transport must require alignment")

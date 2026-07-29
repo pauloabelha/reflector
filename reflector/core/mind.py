@@ -69,6 +69,7 @@ class MindConfig:
     enable_visual_primitive_actions: bool = False
     enable_temporal_primitives: bool = False
     enable_cyclic_sequence_alignment: bool = False
+    enable_graph_cycle_transport: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -109,6 +110,7 @@ class MindConfig:
             "enable_visual_primitive_actions",
             "enable_temporal_primitives",
             "enable_cyclic_sequence_alignment",
+            "enable_graph_cycle_transport",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -116,6 +118,11 @@ class MindConfig:
             raise ValueError(
                 "visual primitive actions require visual primitive perception"
             )
+        if (
+            self.enable_graph_cycle_transport
+            and not self.enable_cyclic_sequence_alignment
+        ):
+            raise ValueError("graph cycle transport requires cyclic sequence alignment")
         if type(self.planner_max_depth) is not int:
             raise ValueError("planner_max_depth must be an integer")
         if type(self.planner_max_expansions) is not int:

@@ -233,6 +233,7 @@ class EpistemicExplorer:
     relational_scheme_binding: bool = False
     visual_primitives: bool = False
     cyclic_sequence_alignment: bool = False
+    graph_cycle_transport: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -286,6 +287,9 @@ class EpistemicExplorer:
     cyclic_alignment_level_trials: int = 0
     cyclic_transport_evidence: Counter[tuple[str, int]] = field(default_factory=Counter)
     cyclic_last_plan_length: int = 0
+    grounded_cyclic_transports: dict[
+        tuple[tuple[tuple[int, int], ...], tuple[int, int]], int
+    ] = field(default_factory=dict)
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -388,6 +392,7 @@ class EpistemicExplorer:
             self.relational_level_trials = 0
             self.productive_reuse_level_trials = 0
             self.cyclic_alignment_level_trials = 0
+            self.grounded_cyclic_transports.clear()
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -406,6 +411,7 @@ class EpistemicExplorer:
             self.relational_level_trials = 0
             self.productive_reuse_level_trials = 0
             self.cyclic_alignment_level_trials = 0
+            self.grounded_cyclic_transports.clear()
             self.level_interventions = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
@@ -792,8 +798,32 @@ class EpistemicExplorer:
         if action_point is None:
             return
         anchors = self._marked_anchors(before)
-        tracks = self._cyclic_tracks(before)
+        tracks = self._cyclic_tracks(
+            before,
+            include_graph_cycles=self.graph_cycle_transport,
+        )
         if not anchors or not tracks:
+            return
+        for track in tracks:
+            before_values = tuple(before[y][x] for x, y in track.points)
+            after_values = (
+                tuple(after[y][x] for x, y in track.points)
+                if self._frame_contains(after, track.points)
+                else ()
+            )
+            direction = self._unit_rotation(before_values, after_values)
+            if direction is None or progressed:
+                continue
+            if self.graph_cycle_transport:
+                self.grounded_cyclic_transports[(track.points, action_point)] = (
+                    direction
+                )
+            if action_point[0] < min(point[0] for point in track.points):
+                self.cyclic_transport_evidence[("left", direction)] += 1
+            elif action_point[0] > max(point[0] for point in track.points):
+                self.cyclic_transport_evidence[("right", direction)] += 1
+
+        if not progressed:
             return
         candidates = [
             track
@@ -810,18 +840,6 @@ class EpistemicExplorer:
                 if action_point[0] < min(point[0] for point in track.points)
                 else "right"
             )
-            before_values = tuple(before[y][x] for x, y in track.points)
-            after_values = (
-                tuple(after[y][x] for x, y in track.points)
-                if self._frame_contains(after, track.points)
-                else ()
-            )
-            direction = self._unit_rotation(before_values, after_values)
-            if direction is not None and not progressed:
-                self.cyclic_transport_evidence[(side, direction)] += 1
-                continue
-            if not progressed:
-                continue
             learned_direction = self._preferred_cyclic_direction(side)
             if learned_direction is None:
                 continue
@@ -870,7 +888,10 @@ class EpistemicExplorer:
         ):
             return None
         anchors = self._marked_anchors(observation.frame)
-        tracks = self._cyclic_tracks(observation.frame)
+        tracks = self._cyclic_tracks(
+            observation.frame,
+            include_graph_cycles=self.graph_cycle_transport,
+        )
         if not anchors or not tracks:
             return None
         represented = {
@@ -887,16 +908,30 @@ class EpistemicExplorer:
             ]
         ] = []
         for track in tracks:
-            for controller, direction in (
-                (
-                    track.left_controller,
-                    self.cyclic_alignment_scheme.shift_direction,
-                ),
-                (
-                    track.right_controller,
-                    -self.cyclic_alignment_scheme.shift_direction,
-                ),
-            ):
+            controller_directions: tuple[tuple[tuple[int, int] | None, int], ...]
+            evidenced = tuple(
+                (controller, direction)
+                for (points, controller), direction in (
+                    self.grounded_cyclic_transports.items()
+                )
+                if points == track.points
+            )
+            if evidenced:
+                controller_directions = evidenced
+            elif self._axis_aligned_track(track.points):
+                controller_directions = (
+                    (
+                        track.left_controller,
+                        self.cyclic_alignment_scheme.shift_direction,
+                    ),
+                    (
+                        track.right_controller,
+                        -self.cyclic_alignment_scheme.shift_direction,
+                    ),
+                )
+            else:
+                controller_directions = ()
+            for controller, direction in controller_directions:
                 if controller is None:
                     continue
                 token = represented.get(controller)
@@ -948,6 +983,48 @@ class EpistemicExplorer:
                 distance += min(candidates, default=len(points))
             return mismatches, distance
 
+        if len(ordered_actions) <= 2:
+            beam: list[tuple[tuple[int, ...], tuple[int, ...]]] = [(initial, ())]
+            seen = {initial}
+            remaining_trials = (
+                self.max_cyclic_alignment_trials_per_level
+                - self.cyclic_alignment_level_trials
+            )
+            for _depth in range(1, remaining_trials + 1):
+                successors: list[tuple[tuple[int, ...], tuple[int, ...]]] = []
+                for values, plan in beam:
+                    for action_index, (
+                        _controller,
+                        track_points,
+                        direction,
+                        _token,
+                    ) in enumerate(ordered_actions):
+                        updated = list(values)
+                        indexes = tuple(point_indexes[point] for point in track_points)
+                        rotated = self._rotate_values(
+                            tuple(values[index] for index in indexes),
+                            direction,
+                        )
+                        for index, value in zip(indexes, rotated):
+                            updated[index] = value
+                        successor = tuple(updated)
+                        if successor in seen:
+                            continue
+                        successor_plan = (*plan, action_index)
+                        if all(
+                            successor[index] == color for index, color in goals.items()
+                        ):
+                            self.cyclic_last_plan_length = len(successor_plan)
+                            return ordered_actions[successor_plan[0]][3]
+                        seen.add(successor)
+                        successors.append((successor, successor_plan))
+                successors.sort(key=lambda item: (estimate(item[0]), item[1]))
+                beam = successors[:64]
+                if not beam:
+                    break
+            self.cyclic_last_plan_length = 0
+            return None
+
         initial_estimate = estimate(initial)
         queue: list[tuple[int, int, int, tuple[int, ...], tuple[int, ...]]] = [
             (
@@ -997,6 +1074,15 @@ class EpistemicExplorer:
                 )
         self.cyclic_last_plan_length = 0
         return None
+
+    @staticmethod
+    def _axis_aligned_track(
+        points: tuple[tuple[int, int], ...],
+    ) -> bool:
+        return all(
+            left[0] == right[0] or left[1] == right[1]
+            for left, right in zip(points, (*points[1:], points[0]))
+        )
 
     def _preferred_cyclic_direction(self, side: str) -> int | None:
         votes = {
@@ -1173,6 +1259,8 @@ class EpistemicExplorer:
     def _cyclic_tracks(
         cls,
         frame: tuple[tuple[int, ...], ...],
+        *,
+        include_graph_cycles: bool = False,
     ) -> tuple[_CyclicTrack, ...]:
         anchors = cls._marked_anchors(frame)
         if not anchors:
@@ -1226,30 +1314,45 @@ class EpistemicExplorer:
                             anchor.point in path for anchor in anchors
                         ):
                             rectangles.append(path)
-        if not rectangles:
+        raw_tracks: list[tuple[tuple[int, int], ...]] = []
+        if rectangles:
+            principal = max(
+                rectangles,
+                key=lambda path: (
+                    (max(point[0] for point in path) - min(point[0] for point in path))
+                    * (
+                        max(point[1] for point in path)
+                        - min(point[1] for point in path)
+                    ),
+                    len(path),
+                    path,
+                ),
+            )
+            raw_tracks.append(principal)
+            for anchor in anchors:
+                row = sorted(
+                    point for point in positions if point[1] == anchor.point[1]
+                )
+                containing_index = row.index(anchor.point)
+                start = containing_index
+                end = containing_index
+                while start > 0 and row[start][0] - row[start - 1][0] == pitch:
+                    start -= 1
+                while end + 1 < len(row) and row[end + 1][0] - row[end][0] == pitch:
+                    end += 1
+                contiguous = tuple(row[start : end + 1])
+                if len(contiguous) >= 5 and not set(contiguous).issubset(principal):
+                    raw_tracks.append(contiguous)
+        if include_graph_cycles:
+            raw_tracks.extend(
+                cls._graph_cycles(
+                    positions,
+                    tuple(anchor.point for anchor in anchors),
+                    pitch,
+                )
+            )
+        if not raw_tracks:
             return ()
-        principal = max(
-            rectangles,
-            key=lambda path: (
-                (max(point[0] for point in path) - min(point[0] for point in path))
-                * (max(point[1] for point in path) - min(point[1] for point in path)),
-                len(path),
-                path,
-            ),
-        )
-        raw_tracks = [principal]
-        for anchor in anchors:
-            row = sorted(point for point in positions if point[1] == anchor.point[1])
-            containing_index = row.index(anchor.point)
-            start = containing_index
-            end = containing_index
-            while start > 0 and row[start][0] - row[start - 1][0] == pitch:
-                start -= 1
-            while end + 1 < len(row) and row[end + 1][0] - row[end][0] == pitch:
-                end += 1
-            contiguous = tuple(row[start : end + 1])
-            if len(contiguous) >= 5 and not set(contiguous).issubset(principal):
-                raw_tracks.append(contiguous)
         tracks = []
         for points in dict.fromkeys(raw_tracks):
             left_controller, right_controller = cls._paired_controllers(
@@ -1263,6 +1366,73 @@ class EpistemicExplorer:
                 )
             )
         return tuple(tracks)
+
+    @staticmethod
+    def _graph_cycles(
+        positions: set[tuple[int, int]],
+        anchors: tuple[tuple[int, int], ...],
+        pitch: int,
+        *,
+        max_cycles: int = 64,
+        max_cycle_length: int = 32,
+        max_expansions: int = 8192,
+    ) -> tuple[tuple[tuple[int, int], ...], ...]:
+        """Enumerate a bounded chordless cycle basis around marked anchors."""
+
+        adjacency = {
+            point: tuple(
+                sorted(
+                    neighbor
+                    for neighbor in positions
+                    if neighbor != point
+                    and max(
+                        abs(neighbor[0] - point[0]),
+                        abs(neighbor[1] - point[1]),
+                    )
+                    == pitch
+                    and abs(neighbor[0] - point[0]) in {0, pitch}
+                    and abs(neighbor[1] - point[1]) in {0, pitch}
+                )
+            )
+            for point in positions
+        }
+        cycles: set[tuple[tuple[int, int], ...]] = set()
+        expansions = 0
+
+        def canonical(
+            cycle: tuple[tuple[int, int], ...],
+        ) -> tuple[tuple[int, int], ...]:
+            variants: list[tuple[tuple[int, int], ...]] = []
+            for sequence in (cycle, tuple(reversed(cycle))):
+                variants.extend(
+                    (*sequence[index:], *sequence[:index])
+                    for index in range(len(sequence))
+                )
+            return min(variants)
+
+        for anchor in anchors:
+            if anchor not in adjacency:
+                continue
+            stack: list[tuple[tuple[int, int], tuple[tuple[int, int], ...]]] = [
+                (anchor, (anchor,))
+            ]
+            while stack and len(cycles) < max_cycles and expansions < max_expansions:
+                current, path = stack.pop()
+                expansions += 1
+                for neighbor in adjacency[current]:
+                    if neighbor == anchor and len(path) >= 4:
+                        members = set(path)
+                        if all(
+                            sum(adjacent in members for adjacent in adjacency[member])
+                            == 2
+                            for member in path
+                        ):
+                            cycles.add(canonical(path))
+                        continue
+                    if neighbor in path or len(path) >= max_cycle_length:
+                        continue
+                    stack.append((neighbor, (*path, neighbor)))
+        return tuple(sorted(cycles, key=lambda item: (len(item), item)))
 
     @staticmethod
     def _rectangular_perimeter(
@@ -2373,6 +2543,7 @@ class EpistemicExplorer:
             "cyclic_transport_evidence": sum(self.cyclic_transport_evidence.values()),
             "cyclic_alignment_level_trials": (self.cyclic_alignment_level_trials),
             "cyclic_last_plan_length": self.cyclic_last_plan_length,
+            "grounded_cyclic_transports": len(self.grounded_cyclic_transports),
             "level_interventions": self.level_interventions,
             "learned_local_relations": len(self.learned_local_relation),
             "successful_schemes": len(self.successful_schemes),
