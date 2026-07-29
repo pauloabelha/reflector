@@ -72,6 +72,7 @@ class MindConfig:
     enable_graph_cycle_transport: bool = False
     enable_parameterized_select_apply_commit: bool = False
     enable_multiline_target_binding: bool = False
+    enable_spatial_order_variation: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -115,6 +116,7 @@ class MindConfig:
             "enable_graph_cycle_transport",
             "enable_parameterized_select_apply_commit",
             "enable_multiline_target_binding",
+            "enable_spatial_order_variation",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -133,6 +135,13 @@ class MindConfig:
         ):
             raise ValueError(
                 "multiline target binding requires parameterized select/apply/commit"
+            )
+        if (
+            self.enable_spatial_order_variation
+            and not self.enable_multiline_target_binding
+        ):
+            raise ValueError(
+                "spatial order variation requires multiline target binding"
             )
         if type(self.planner_max_depth) is not int:
             raise ValueError("planner_max_depth must be an integer")

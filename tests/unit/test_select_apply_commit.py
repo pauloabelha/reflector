@@ -163,6 +163,55 @@ def test_multiline_targets_accommodate_the_same_attribute_binding() -> None:
     assert choices == tuple(expected)
 
 
+def test_multiline_order_is_a_bounded_symbolic_variation() -> None:
+    observation = _observation(_multiline_mapping_frame())
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        spatial_order_variation=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token for _step in range(63)
+    )
+    target_clicks = tuple(
+        dict(token.data)
+        for token in choices
+        if token.action_id == 6 and dict(token.data).get("y") in {7, 12}
+    )
+
+    assert len(explorer._spatial_target_orderings(
+        explorer._multiline_target_layouts(
+            explorer._frame_objects(observation.frame),
+            size=7,
+            above=2,
+            below=20,
+        )[0]
+    )) == 4
+    assert tuple(token.action_id for token in choices).count(5) == 4
+    assert tuple(token.action_id for token in choices).count(7) == 3
+    assert target_clicks[:7] == (
+        {"x": 16, "y": 7},
+        {"x": 22, "y": 7},
+        {"x": 28, "y": 7},
+        {"x": 16, "y": 12},
+        {"x": 22, "y": 12},
+        {"x": 28, "y": 12},
+        {"x": 34, "y": 12},
+    )
+    assert target_clicks[7:14] == (
+        {"x": 16, "y": 7},
+        {"x": 22, "y": 7},
+        {"x": 28, "y": 7},
+        {"x": 34, "y": 12},
+        {"x": 28, "y": 12},
+        {"x": 22, "y": 12},
+        {"x": 16, "y": 12},
+    )
+
+
 def test_multiline_accommodation_is_silent_without_exact_cardinality() -> None:
     frame = [list(row) for row in _multiline_mapping_frame()]
     frame[12][34] = 0

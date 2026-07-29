@@ -66,6 +66,9 @@ class SymbolicPolicy:
             multiline_target_binding=(
                 self.mind.config.enable_multiline_target_binding
             ),
+            spatial_order_variation=(
+                self.mind.config.enable_spatial_order_variation
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

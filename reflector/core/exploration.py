@@ -236,6 +236,7 @@ class EpistemicExplorer:
     graph_cycle_transport: bool = False
     parameterized_select_apply_commit: bool = False
     multiline_target_binding: bool = False
+    spatial_order_variation: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -860,35 +861,59 @@ class EpistemicExplorer:
                         < selectors[0].centroid[1]
                     ):
                         continue
-                    actions: list[ActionToken] = []
-                    for source, target in zip(reference, targets):
-                        selector = selector_by_color[source.color]
-                        actions.extend(
-                            (
-                                ActionToken(
-                                    self.complex_action,
-                                    (
-                                        ("x", selector.centroid[0]),
-                                        ("y", selector.centroid[1]),
-                                    ),
-                                ),
-                                ActionToken(
-                                    self.complex_action,
-                                    (
-                                        ("x", target.centroid[0]),
-                                        ("y", target.centroid[1]),
-                                    ),
-                                ),
-                            )
-                        )
                     commit_actions = sorted(
                         action
                         for action in observation.available_actions
                         if action not in {self.reset_action, self.complex_action}
                     )
-                    if not commit_actions or any(token not in represented for token in actions):
+                    if not commit_actions:
                         continue
-                    actions.append(ActionToken(commit_actions[0]))
+                    target_orders: tuple[tuple[_FrameObject, ...], ...] = (targets,)
+                    if self.spatial_order_variation and len(
+                        {item.centroid[1] for item in targets}
+                    ) > 1:
+                        target_orders = self._spatial_target_orderings(targets)
+                    programs = []
+                    for target_order in target_orders:
+                        actions: list[ActionToken] = []
+                        for source, target in zip(reference, target_order):
+                            selector = selector_by_color[source.color]
+                            actions.extend(
+                                (
+                                    ActionToken(
+                                        self.complex_action,
+                                        (
+                                            ("x", selector.centroid[0]),
+                                            ("y", selector.centroid[1]),
+                                        ),
+                                    ),
+                                    ActionToken(
+                                        self.complex_action,
+                                        (
+                                            ("x", target.centroid[0]),
+                                            ("y", target.centroid[1]),
+                                        ),
+                                    ),
+                                )
+                            )
+                        if any(token not in represented for token in actions):
+                            continue
+                        actions.append(ActionToken(commit_actions[0]))
+                        programs.append(tuple(actions))
+                    if not programs:
+                        continue
+                    combined: list[ActionToken] = []
+                    clear_action = (
+                        ActionToken(commit_actions[1])
+                        if len(commit_actions) > 1
+                        else None
+                    )
+                    for index, program in enumerate(programs):
+                        if index:
+                            if clear_action is None or clear_action not in represented:
+                                break
+                            combined.append(clear_action)
+                        combined.extend(program)
                     vertical_span = selectors[0].centroid[1] - reference[0].centroid[1]
                     midpoint_error = abs(
                         2 * target_y
@@ -903,12 +928,47 @@ class EpistemicExplorer:
                                 vertical_span,
                                 reference_colors,
                             ),
-                            tuple(actions),
+                            tuple(combined),
                         )
                     )
         if not candidates:
             return ()
         return min(candidates, key=lambda item: item[0])[1]
+
+    @staticmethod
+    def _spatial_target_orderings(
+        targets: tuple[_FrameObject, ...],
+    ) -> tuple[tuple[_FrameObject, ...], ...]:
+        """Construct bounded coordinate-free row/column traversal variations."""
+
+        rows: dict[int, list[_FrameObject]] = {}
+        columns: dict[int, list[_FrameObject]] = {}
+        for item in targets:
+            rows.setdefault(item.centroid[1], []).append(item)
+            columns.setdefault(item.centroid[0], []).append(item)
+        row_groups = tuple(
+            tuple(sorted(rows[key], key=lambda item: item.centroid[0]))
+            for key in sorted(rows)
+        )
+        column_groups = tuple(
+            tuple(sorted(columns[key], key=lambda item: item.centroid[1]))
+            for key in sorted(columns)
+        )
+        variants = (
+            tuple(item for group in row_groups for item in group),
+            tuple(
+                item
+                for index, group in enumerate(row_groups)
+                for item in (group if index % 2 == 0 else tuple(reversed(group)))
+            ),
+            tuple(item for group in column_groups for item in group),
+            tuple(
+                item
+                for index, group in enumerate(column_groups)
+                for item in (group if index % 2 == 0 else tuple(reversed(group)))
+            ),
+        )
+        return tuple(dict.fromkeys(variants))
 
     @staticmethod
     def _multiline_target_layouts(
