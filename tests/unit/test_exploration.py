@@ -233,6 +233,18 @@ def test_successful_schemes_become_inputs_to_bounded_variations() -> None:
     )
     assert explorer.to_dict()["parameterized_scheme_trials"] == 1
 
+    explorer.observe(observation, scene)
+    second = explorer.select(
+        observation,
+        scene,
+        (1, 2, 3),
+        pragmatic_disequilibrium=True,
+        structure_scores={
+            explorer.last_scheme_components[0]: -1
+        },
+    )
+    assert second.token != choice.token
+
 
 def test_multicolor_affordance_precedes_fragmented_color_objects() -> None:
     observation = Observation.create(

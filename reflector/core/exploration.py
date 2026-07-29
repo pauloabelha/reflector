@@ -330,6 +330,7 @@ class EpistemicExplorer:
                 )
 
         variation = self._select_scheme_variation(
+            state,
             tokens,
             scene,
             pragmatic_disequilibrium=pragmatic_disequilibrium,
@@ -586,6 +587,7 @@ class EpistemicExplorer:
 
     def _select_scheme_variation(
         self,
+        state: StateKey,
         tokens: tuple[ActionToken, ...],
         scene: Scene,
         *,
@@ -608,6 +610,8 @@ class EpistemicExplorer:
             ),
         )
         for scheme in schemes:
+            if structure_scores.get(f"scheme:{scheme.scheme_id}", 0) < 0:
+                continue
             cursor = self.variation_cursors.get(scheme.scheme_id, 0)
             while cursor < len(scheme.roles):
                 role = scheme.roles[cursor]
@@ -617,6 +621,7 @@ class EpistemicExplorer:
                     token
                     for token, represented_role in represented
                     if represented_role == role
+                    and self.attempts[(state, token)] == 0
                 ]
                 if matches:
                     self.variation_trials[scheme.scheme_id] += 1

@@ -350,7 +350,8 @@ class StructuralCreditLedger:
             support=1 if previous is None else previous.support + 1,
         )
         self._assign_typed_credit(
-            (*licensing, *scheme_components),
+            licensing,
+            scheme_components,
             confirmed=confirmed,
             contradicted=(*contradicted, *contradicted_absent),
             observed=observed,
@@ -371,7 +372,8 @@ class StructuralCreditLedger:
 
     def _assign_typed_credit(
         self,
-        structures: tuple[str, ...],
+        licensing_structures: tuple[str, ...],
+        scheme_components: tuple[str, ...],
         *,
         confirmed: tuple[str, ...],
         contradicted: tuple[str, ...],
@@ -384,7 +386,14 @@ class StructuralCreditLedger:
         self.consecutive_without_progress = (
             0 if progress else self.consecutive_without_progress + 1
         )
-        for structure_id in sorted(set(structures)):
+        predictive_structures = set(licensing_structures) | set(
+            scheme_components
+        )
+        direct_pragmatic = set(licensing_structures) | {
+            item for item in scheme_components if item.startswith("scheme:")
+        }
+        indirect_components = predictive_structures - direct_pragmatic
+        for structure_id in sorted(predictive_structures):
             channels = self.typed_credit.setdefault(structure_id, {})
             if confirmed:
                 channels["predictive_support"] = (
@@ -395,7 +404,11 @@ class StructuralCreditLedger:
                     channels.get("predictive_refutation", 0)
                     + len(contradicted)
                 )
-            if progress:
+            if structure_id in indirect_components:
+                channels["pragmatic_eligibility"] = (
+                    channels.get("pragmatic_eligibility", 0) + 1
+                )
+            elif progress:
                 channels["pragmatic_progress"] = (
                     channels.get("pragmatic_progress", 0) + 1
                 )
