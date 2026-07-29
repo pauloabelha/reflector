@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from reflector.cli import demo_trace
+from reflector.evolution.isolated_official import run_process_isolated_games
 from reflector.evolution.official_population import (
     inference_fingerprint,
     operative_strategy_population,
@@ -303,3 +304,75 @@ def test_official_population_runs_in_parallel_and_breeds_only_gated_traits(
     assert not result.offspring.config.enable_hierarchical_action_fairness
     assert len(result.offspring.contributor_ids) == 3
     assert result.offspring.inference_fingerprint == fingerprint
+
+
+def test_official_games_run_in_parallel_process_commands_and_merge_evidence(
+    tmp_path,
+) -> None:
+    active = 0
+    maximum_active = 0
+    lock = threading.Lock()
+    commands: list[list[str]] = []
+
+    def fake_run(command, **_kwargs):
+        nonlocal active, maximum_active
+        game = command[command.index("official-run") + 1]
+        commands.append(command)
+        with lock:
+            active += 1
+            maximum_active = max(maximum_active, active)
+        time.sleep(0.01)
+        with lock:
+            active -= 1
+        levels = 1 if game == "alpha" else 2
+        score = 10.0 if game == "alpha" else 30.0
+        report = {
+            "scorecard": {
+                "environments": [
+                    {
+                        "id": f"{game}-version",
+                        "levels_completed": levels,
+                        "actions": 40,
+                        "score": score,
+                        "completed": False,
+                        "level_count": 4,
+                        "runs": [{"level_actions": [4] * levels}],
+                    }
+                ]
+            },
+            "agents": [{"game_id": game, "mind_config": MindConfig().to_dict()}],
+            "source_commit": "c" * 40,
+        }
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(report),
+            stderr="",
+        )
+
+    report = run_process_isolated_games(
+        games=("beta", "alpha"),
+        environments_dir=tmp_path,
+        recordings_dir=tmp_path / "recordings",
+        project_root=Path(__file__).resolve().parents[2],
+        max_workers=2,
+        command_runner=fake_run,
+    )
+
+    assert maximum_active == 2
+    assert all(
+        command[command.index("official-run") + 1]
+        in {"alpha", "beta"}
+        for command in commands
+    )
+    assert len(commands) == 2
+    assert report["kind"] == "process-isolated-official-evaluation"
+    assert report["execution"]["isolation"] == "one fresh Python process per game"
+    assert report["scorecard"]["score"] == 20.0
+    assert report["scorecard"]["total_levels_completed"] == 3
+    assert report["scorecard"]["total_actions"] == 80
+    assert report["scorecard"]["total_levels"] == 8
+    assert [agent["game_id"] for agent in report["agents"]] == [
+        "alpha",
+        "beta",
+    ]

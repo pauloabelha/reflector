@@ -91,6 +91,45 @@ def test_official_run_lightweight_without_recordings(
     assert events[0]["advisor_arbitration"]
 
 
+def test_official_isolated_run_uses_child_process_and_merges_evidence(
+    tmp_path: Path,
+) -> None:
+    root = Path(__file__).parents[2]
+    fixture = root / "tests" / "fixtures" / "official_toolkit"
+    cognitive_streams = tmp_path / "cognitive-streams"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "reflector.cli",
+            "official-isolated-run",
+            "bt11",
+            "--environments-dir",
+            str(fixture),
+            "--recordings-dir",
+            str(tmp_path / "recordings"),
+            "--no-recordings",
+            "--lightweight",
+            "--cognitive-stream-dir",
+            str(cognitive_streams),
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=40,
+        check=True,
+    )
+    report = json.loads(completed.stdout)
+    assert report["kind"] == "process-isolated-official-evaluation"
+    assert report["execution"]["parallel"]
+    assert report["execution"]["max_workers"] == 1
+    assert report["scorecard"]["score"] == 100.0
+    assert report["scorecard"]["total_levels_completed"] == 5
+    assert report["scorecard"]["total_actions"] == 72
+    assert [agent["game_id"] for agent in report["agents"]] == ["bt11"]
+    assert len(list(cognitive_streams.glob("*.cognitive.jsonl"))) == 1
+
+
 def test_public_run_refuses_incomplete_environment_inventory(
     tmp_path: Path,
 ) -> None:

@@ -22,6 +22,7 @@ from .evolution.evolver import (
     run_experiment,
 )
 from .evolution.experiments import ExperimentStore
+from .evolution.isolated_official import run_process_isolated_games
 from .evolution.mutations import (
     DeterministicMutationProvider,
     MutationProposal,
@@ -209,6 +210,29 @@ def main() -> None:
         help="flush inspectable symbolic events to one JSONL file per game",
     )
 
+    isolated_run = commands.add_parser("official-isolated-run")
+    isolated_run.add_argument("games", nargs="+")
+    isolated_run.add_argument("--environments-dir", type=Path, required=True)
+    isolated_run.add_argument("--recordings-dir", type=Path, required=True)
+    isolated_run.add_argument("--output", type=Path)
+    isolated_run.add_argument("--config", type=Path)
+    isolated_run.add_argument("--max-workers", type=int, default=4)
+    isolated_run.add_argument("--timeout", type=float, default=1800.0)
+    isolated_run.add_argument("--no-recordings", action="store_true")
+    isolated_run.add_argument("--lightweight", action="store_true")
+    isolated_run.add_argument("--cognitive-stream-dir", type=Path)
+
+    isolated_public = commands.add_parser("official-isolated-public-run")
+    isolated_public.add_argument("--environments-dir", type=Path, required=True)
+    isolated_public.add_argument("--recordings-dir", type=Path, required=True)
+    isolated_public.add_argument("--output", type=Path, required=True)
+    isolated_public.add_argument("--config", type=Path)
+    isolated_public.add_argument("--max-workers", type=int, default=4)
+    isolated_public.add_argument("--timeout", type=float, default=1800.0)
+    isolated_public.add_argument("--no-recordings", action="store_true")
+    isolated_public.add_argument("--lightweight", action="store_true")
+    isolated_public.add_argument("--cognitive-stream-dir", type=Path)
+
     official_population = commands.add_parser("official-population-run")
     official_population.add_argument("games", nargs="+")
     official_population.add_argument(
@@ -377,6 +401,63 @@ def main() -> None:
             print(args.output)
         else:
             print(rendered)
+    elif args.command in {
+        "official-isolated-run",
+        "official-isolated-public-run",
+    }:
+        inventory = None
+        games = getattr(args, "games", None)
+        if args.command == "official-isolated-public-run":
+            project_root = Path(__file__).resolve().parent.parent
+            try:
+                inventory = inventory_official_environments(
+                    args.environments_dir,
+                    expected_games=expected_public_game_count(project_root),
+                )
+            except ValueError as error:
+                parser.error(str(error))
+            games = inventory.games
+        if not games:
+            parser.error("isolated official run has no games")
+        try:
+            isolated_payload = run_process_isolated_games(
+                games=games,
+                environments_dir=args.environments_dir,
+                recordings_dir=args.recordings_dir,
+                project_root=Path(__file__).resolve().parent.parent,
+                config=args.config,
+                max_workers=args.max_workers,
+                timeout=args.timeout,
+                no_recordings=args.no_recordings,
+                lightweight=args.lightweight,
+                cognitive_stream_dir=args.cognitive_stream_dir,
+            )
+        except (RuntimeError, ValueError) as error:
+            parser.error(str(error))
+        if inventory is not None:
+            isolated_payload["environment_inventory"] = inventory.to_dict()
+            isolated_payload["coverage"] = {
+                "expected_games": inventory.expected_games,
+                "discovered_games": len(inventory.games),
+                "reported_agents": len(isolated_payload["agents"]),
+                "complete": len(isolated_payload["agents"])
+                == inventory.expected_games,
+            }
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(
+                json.dumps(isolated_payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            print(args.output)
+        elif args.output is not None:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(
+                json.dumps(isolated_payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            print(args.output)
+        else:
+            print(json.dumps(isolated_payload, indent=2))
     elif args.command == "official-population-run":
         raw_parent = json.loads(args.parent.read_text(encoding="utf-8"))
         if not isinstance(raw_parent, dict) or "candidate_id" not in raw_parent:

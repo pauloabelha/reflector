@@ -266,7 +266,7 @@ def _run_one(
 ) -> OfficialRunOutcome:
     candidate_dir = recordings_root / strategy.candidate.candidate_id
     candidate_dir.mkdir(parents=True, exist_ok=True)
-    config_path = candidate_dir / "candidate.json"
+    config_path = candidate_dir / f"candidate-rerun-{rerun}.json"
     config_path.write_text(
         json.dumps(strategy.candidate.to_dict(), sort_keys=True),
         encoding="utf-8",
@@ -275,7 +275,7 @@ def _run_one(
         sys.executable,
         "-m",
         "reflector.cli",
-        "official-run",
+        "official-isolated-run",
         *games,
         "--environments-dir",
         str(environments_dir),
