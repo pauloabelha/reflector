@@ -453,6 +453,56 @@ bounded recursive expansion and parent resumption. This is not evidence of
 general object hierarchy, cross-game transfer, a completed game, or a Kaggle
 leaderboard score.
 
+## Active experiment: v38 connector relocation as topology construction
+
+Parent: accepted v37 `candidate-445450df91872736`
+
+Observed disequilibrium:
+
+- v37 reaches `sb26` level 4 in `[9, 15, 15]` and then spends 361 actions
+  without progress;
+- the stable decision frame has one five-target parent enclosure and one
+  two-target child enclosure but no parent connector, so v37 correctly finds
+  two roots;
+- the child contains one filled object whose attribute matches its enclosing
+  border and whose horizontal lattice coordinate uniquely aligns with a
+  neutral parent slot;
+- moving a filled object into a neutral slot is already an evidenced action
+  schema; relocating this marker would make the parent slot a child link and
+  its vacated child position a neutral payload slot, conserving seven values.
+
+Preregistered mutation:
+
+- retain all v37 topology rules and fallbacks;
+- detect exactly one filled marker strictly inside a child enclosure whose
+  attribute matches that enclosure;
+- require its x-coordinate to align with exactly one neutral target in a
+  different enclosure on the shared pitch lattice;
+- require that relocating the marker yields one rooted, acyclic two-enclosure
+  graph with exact reference/selector/target cardinality;
+- prepend `select(marker) -> apply(aligned parent slot)`;
+- treat the vacated marker position as a child target, expand the child at the
+  new parent link, resume the parent, fill the seven values using the exact
+  reference/selector bijection, then commit;
+- permit exactly one relocation between exactly two enclosures and at most
+  twelve values;
+  abstain on every ambiguity.
+
+Predicted `sb26` level-4 traversal:
+
+- emit the first parent target;
+- expand the relocated marker's old position and the two existing child
+  targets;
+- resume the final three parent targets;
+- use two relocation actions, fourteen select/apply actions, and commit,
+  changing the trace prefix to `[9, 15, 15, 17, ...]`.
+
+Falsifier:
+
+- reject v38 if the unique aligned relocation is not inferred, if the
+  predicted 17-action program fails to advance level 4, or if any accepted
+  completion regresses.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -476,8 +526,7 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Record and inspect the stable `sb26` level-4 decision frame under v37;
-   distinguish transition imagery before preregistering another mutation.
+1. Test the preregistered v38 topology-construction program on `sb26` level 4.
 2. Implement `ar25` action-family causal attribution, exact-shape
    mover/target correspondence, and monotone learned translation composition;
    the rendered black-box control solved L1 in 15 actions.
