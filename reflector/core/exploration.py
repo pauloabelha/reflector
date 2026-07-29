@@ -40,6 +40,94 @@ class ActionRole:
 
 
 @dataclass(frozen=True, slots=True)
+class StarterSchema:
+    """A content-free sensorimotor form available before experience."""
+
+    schema_id: str
+    operator: str
+    slots: tuple[str, ...]
+    complexity_cost: int
+
+    def component(self) -> str:
+        return f"scheme:starter:{self.schema_id}"
+
+
+STARTER_SCHEMA_SET = (
+    StarterSchema(
+        "probe-action-family",
+        "intervene",
+        ("action-family",),
+        1,
+    ),
+    StarterSchema(
+        "intervene-on-object",
+        "intervene",
+        ("action", "object"),
+        2,
+    ),
+    StarterSchema(
+        "repair-relation",
+        "intervene",
+        ("action", "source", "relation", "target"),
+        3,
+    ),
+    StarterSchema(
+        "bind-manner-to-action",
+        "compose",
+        ("base-scheme", "modifier-scheme", "role-relation"),
+        4,
+    ),
+    StarterSchema(
+        "bounded-novelty",
+        "intervene",
+        ("action", "untried-state"),
+        2,
+    ),
+)
+
+
+@dataclass(frozen=True, slots=True)
+class GroundedRole:
+    """An action role temporarily grounded in one perceived object."""
+
+    role: ActionRole
+    centroid: tuple[int, int] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class RoleRelation:
+    """Content-free relation supplied by one scheme to another."""
+
+    color: str = "any"
+    area: str = "any"
+    shape: str = "any"
+    horizontal: str = "any"
+    vertical: str = "any"
+
+
+@dataclass(frozen=True, slots=True)
+class RelationalScheme:
+    """A base action scheme parameterized by another scheme's manner."""
+
+    scheme_id: str
+    base_id: str
+    modifier_id: str
+    operator: str
+    action_slots: tuple[int, ...]
+    constraints: tuple[RoleRelation, ...]
+    evidence: tuple[str, ...]
+
+    def components(self) -> tuple[str, ...]:
+        return (
+            f"scheme:{self.scheme_id}",
+            f"base:{self.base_id}",
+            f"modifier:{self.modifier_id}",
+            f"operator:{self.operator}",
+            "scheme:starter:bind-manner-to-action",
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ParameterizedScheme:
     """One learned scheme supplied as a typed modifier to another."""
 
@@ -83,6 +171,8 @@ class EpistemicExplorer:
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
     parameterized_scheme_variation: bool = False
+    starter_schemas: bool = False
+    relational_scheme_binding: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -97,12 +187,15 @@ class EpistemicExplorer:
     pending: tuple[StateKey, ActionToken] | None = None
     current_level: int | None = None
     episode_roles: list[ActionRole] = field(default_factory=list)
+    episode_groundings: list[GroundedRole] = field(default_factory=list)
+    productive_groundings: list[GroundedRole] = field(default_factory=list)
     successful_program: tuple[ActionRole, ...] = ()
     program_cursor: int = 0
     level_failures: int = 0
     selection_frame: tuple[tuple[int, ...], ...] = ()
     pending_frame: tuple[tuple[int, ...], ...] = ()
     pending_role: ActionRole | None = None
+    pending_grounding: GroundedRole | None = None
     role_trials: Counter[ActionRole] = field(default_factory=Counter)
     role_responses: Counter[ActionRole] = field(default_factory=Counter)
     learned_local_relation: dict[int, bool] = field(default_factory=dict)
@@ -114,6 +207,16 @@ class EpistemicExplorer:
     )
     variation_cursors: dict[str, int] = field(default_factory=dict)
     variation_trials: Counter[str] = field(default_factory=Counter)
+    successful_relational_schemes: dict[
+        str, tuple[GroundedRole, ...]
+    ] = field(default_factory=dict)
+    relational_schemes: dict[str, RelationalScheme] = field(
+        default_factory=dict
+    )
+    relational_cursors: dict[str, int] = field(default_factory=dict)
+    relational_last: dict[str, GroundedRole] = field(default_factory=dict)
+    relational_trials: Counter[str] = field(default_factory=Counter)
+    last_relational_binding: dict[str, Any] = field(default_factory=dict)
     last_scheme_components: tuple[str, ...] = ()
 
     def arbitration_snapshot(self, selected_reason: str) -> tuple[dict[str, str], ...]:
@@ -124,6 +227,8 @@ class EpistemicExplorer:
             order.append("constraint-first-relation-repair")
         if self.successful_role_replay:
             order.append("successful-role-replay")
+        if self.relational_scheme_binding:
+            order.append("relational-scheme-binding")
         if self.productive_role_reuse:
             order.append("productive-role-reuse")
         if self.local_relation_solver and not self.constraint_first_role_replay:
@@ -139,6 +244,8 @@ class EpistemicExplorer:
             if "constraint-first-repair-local-relation" in selected_reason
             else "successful-role-replay"
             if "replay-successful-action-role" in selected_reason
+            else "relational-scheme-binding"
+            if "relational-scheme-binding" in selected_reason
             else "productive-role-reuse"
             if "reuse-productive-action-role" in selected_reason
             else "local-relation-repair"
@@ -186,6 +293,7 @@ class EpistemicExplorer:
             if (
                 self.successful_role_replay
                 or self.parameterized_scheme_variation
+                or self.relational_scheme_binding
             ) and self.episode_roles:
                 self.successful_program = tuple(self.episode_roles)
                 self.program_cursor = 0
@@ -193,15 +301,34 @@ class EpistemicExplorer:
                     self._learn_parameterized_variations(
                         self.successful_program
                     )
+                if self.relational_scheme_binding:
+                    self._learn_relational_variations(
+                        tuple(
+                            self.productive_groundings
+                            or self.episode_groundings
+                        )
+                    )
             self.episode_roles.clear()
+            self.episode_groundings.clear()
+            self.productive_groundings.clear()
+            self.relational_cursors = {
+                scheme_id: 0 for scheme_id in self.relational_schemes
+            }
+            self.relational_last.clear()
             self.current_level = observation.levels_completed
             self.level_failures = 0
         elif observation.state == "GAME_OVER":
             self.episode_roles.clear()
+            self.episode_groundings.clear()
+            self.productive_groundings.clear()
             self.program_cursor = 0
             self.variation_cursors = {
                 scheme_id: 0 for scheme_id in self.parameterized_schemes
             }
+            self.relational_cursors = {
+                scheme_id: 0 for scheme_id in self.relational_schemes
+            }
+            self.relational_last.clear()
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
@@ -219,12 +346,15 @@ class EpistemicExplorer:
 
     def _record_response(self, observation: Observation) -> None:
         if self.pending_role is None or not self.pending_frame:
+            self.pending_grounding = None
             return
         before = self.pending_frame
         after = observation.frame
         self.pending_frame = ()
         role = self.pending_role
         self.pending_role = None
+        grounding = self.pending_grounding
+        self.pending_grounding = None
         self.role_trials[role] += 1
         if len(before) != len(after) or not before or not after:
             return
@@ -240,6 +370,8 @@ class EpistemicExplorer:
         )
         if changed >= 4:
             self.role_responses[role] += 1
+            if grounding is not None:
+                self.productive_groundings.append(grounding)
 
     def _reorganize_click_ontology(self) -> None:
         """Invalidate graph evidence whose action tokens changed meaning."""
@@ -258,6 +390,7 @@ class EpistemicExplorer:
         self.pending = None
         self.pending_frame = ()
         self.pending_role = None
+        self.pending_grounding = None
 
     def select(
         self,
@@ -279,6 +412,7 @@ class EpistemicExplorer:
         self.tokens_by_state[state] = tokens
         self.selection_frame = observation.frame
         self.last_scheme_components = ()
+        self.last_relational_binding = {}
 
         local_repair = None
         if self.constraint_first_role_replay:
@@ -306,6 +440,25 @@ class EpistemicExplorer:
                 state,
                 replay,
                 "epistemic-frontier:replay-successful-action-role",
+                scene,
+            )
+
+        relational = self._select_relational_binding(
+            state,
+            tokens,
+            scene,
+            pragmatic_disequilibrium=pragmatic_disequilibrium,
+            structure_scores=structure_scores or {},
+        )
+        if relational is not None:
+            token, relational_scheme = relational
+            self.last_scheme_components = relational_scheme.components()
+            return self._issue(
+                state,
+                token,
+                "epistemic-frontier:relational-scheme-binding:"
+                f"{relational_scheme.operator}:"
+                f"{relational_scheme.scheme_id}",
                 scene,
             )
 
@@ -341,13 +494,13 @@ class EpistemicExplorer:
             structure_scores=structure_scores or {},
         )
         if variation is not None:
-            token, scheme = variation
-            self.last_scheme_components = scheme.components()
+            token, parameterized_scheme = variation
+            self.last_scheme_components = parameterized_scheme.components()
             return self._issue(
                 state,
                 token,
                 "epistemic-frontier:parameterized-scheme-variation:"
-                f"{scheme.scheme_id}",
+                f"{parameterized_scheme.scheme_id}",
                 scene,
             )
 
@@ -444,12 +597,38 @@ class EpistemicExplorer:
         self.global_attempts[token] += 1
         self.family_attempts[(state, token.action_id)] += 1
         self.global_family_attempts[token.action_id] += 1
-        if self.successful_role_replay or self.parameterized_scheme_variation:
-            self.episode_roles.append(self._role(token, scene))
+        grounding = self._grounding(token, scene)
+        if (
+            self.successful_role_replay
+            or self.parameterized_scheme_variation
+            or self.relational_scheme_binding
+        ):
+            self.episode_roles.append(grounding.role)
+            self.episode_groundings.append(grounding)
+        if self.starter_schemas and not self.last_scheme_components:
+            self.last_scheme_components = (
+                self._starter_component(reason, grounding),
+            )
         self.pending_frame = self.selection_frame
-        self.pending_role = self._role(token, scene)
+        self.pending_role = grounding.role
+        self.pending_grounding = grounding
         self.pending = (state, token)
         return ExplorationChoice(token, reason)
+
+    @staticmethod
+    def _starter_component(
+        reason: str,
+        grounding: GroundedRole,
+    ) -> str:
+        if "repair-local-relation" in reason:
+            schema_id = "repair-relation"
+        elif "hierarchical-action-family" in reason:
+            schema_id = "probe-action-family"
+        elif grounding.centroid is not None:
+            schema_id = "intervene-on-object"
+        else:
+            schema_id = "bounded-novelty"
+        return f"scheme:starter:{schema_id}"
 
     def _select_productive_role(
         self,
@@ -595,6 +774,259 @@ class EpistemicExplorer:
                 key: self.variation_cursors.get(key, 0) for key in retained
             }
 
+    @staticmethod
+    def _ordinal_relation(left: int, right: int) -> str:
+        return "same" if left == right else "larger" if right > left else "smaller"
+
+    @classmethod
+    def _role_relation(
+        cls,
+        before: GroundedRole,
+        after: GroundedRole,
+    ) -> RoleRelation:
+        left = before.role
+        right = after.role
+        color = (
+            "any"
+            if left.color is None or right.color is None
+            else "same"
+            if left.color == right.color
+            else "different"
+        )
+        area = (
+            "any"
+            if left.area is None or right.area is None
+            else cls._ordinal_relation(left.area, right.area)
+        )
+        shape = (
+            "any"
+            if not left.shape or not right.shape
+            else "same"
+            if left.shape == right.shape
+            else "different"
+        )
+        if before.centroid is None or after.centroid is None:
+            horizontal = vertical = "any"
+        else:
+            horizontal = (
+                "aligned"
+                if before.centroid[0] == after.centroid[0]
+                else "right"
+                if after.centroid[0] > before.centroid[0]
+                else "left"
+            )
+            vertical = (
+                "aligned"
+                if before.centroid[1] == after.centroid[1]
+                else "below"
+                if after.centroid[1] > before.centroid[1]
+                else "above"
+            )
+        return RoleRelation(color, area, shape, horizontal, vertical)
+
+    @staticmethod
+    def _project_relation(
+        relation: RoleRelation,
+        operator: str,
+    ) -> RoleRelation:
+        if operator == "feature-manner":
+            return RoleRelation(
+                color=relation.color,
+                area=relation.area,
+                shape=relation.shape,
+            )
+        if operator == "spatial-manner":
+            return RoleRelation(
+                horizontal=relation.horizontal,
+                vertical=relation.vertical,
+            )
+        return relation
+
+    @classmethod
+    def _relational_program_id(
+        cls,
+        program: tuple[GroundedRole, ...],
+    ) -> str:
+        actions = ",".join(str(item.role.action_id) for item in program)
+        relations = "|".join(
+            repr(cls._role_relation(left, right))
+            for left, right in zip(program, program[1:])
+        )
+        return hashlib.sha256(
+            f"relational-program|{actions}|{relations}".encode()
+        ).hexdigest()[:12]
+
+    def _learn_relational_variations(
+        self,
+        program: tuple[GroundedRole, ...],
+    ) -> None:
+        """Use one productive scheme's relations as another's manner."""
+
+        bounded = tuple(program[:32])
+        if not bounded:
+            return
+        argument_id = self._relational_program_id(bounded)
+        previous = tuple(self.successful_relational_schemes.items())
+        self.successful_relational_schemes[argument_id] = bounded
+        for previous_id, previous_program in previous:
+            if previous_id == argument_id:
+                continue
+            for base_id, base, modifier_id, modifier in (
+                (previous_id, previous_program, argument_id, bounded),
+                (argument_id, bounded, previous_id, previous_program),
+            ):
+                raw_constraints = tuple(
+                    self._role_relation(left, right)
+                    for left, right in zip(modifier, modifier[1:])
+                )
+                if not raw_constraints:
+                    continue
+                action_slots = tuple(
+                    item.role.action_id for item in base[:32]
+                )
+                if not action_slots:
+                    continue
+                for operator in (
+                    "feature-manner",
+                    "spatial-manner",
+                    "full-manner",
+                ):
+                    constraints = tuple(
+                        self._project_relation(item, operator)
+                        for item in raw_constraints[:32]
+                    )
+                    scheme_id = hashlib.sha256(
+                        repr(
+                            (
+                                "relational-binding",
+                                base_id,
+                                modifier_id,
+                                operator,
+                                action_slots,
+                                constraints,
+                            )
+                        ).encode()
+                    ).hexdigest()[:12]
+                    self.relational_schemes[scheme_id] = RelationalScheme(
+                        scheme_id=scheme_id,
+                        base_id=base_id,
+                        modifier_id=modifier_id,
+                        operator=operator,
+                        action_slots=action_slots,
+                        constraints=constraints,
+                        evidence=(base_id, modifier_id),
+                    )
+                    self.relational_cursors.setdefault(scheme_id, 0)
+        if len(self.relational_schemes) > 64:
+            retained = dict(sorted(self.relational_schemes.items())[-64:])
+            self.relational_schemes = retained
+            self.relational_cursors = {
+                key: self.relational_cursors.get(key, 0)
+                for key in retained
+            }
+            self.relational_last = {
+                key: value
+                for key, value in self.relational_last.items()
+                if key in retained
+            }
+
+    @classmethod
+    def _satisfies_relation(
+        cls,
+        before: GroundedRole,
+        after: GroundedRole,
+        relation: RoleRelation,
+    ) -> bool:
+        observed = cls._role_relation(before, after)
+        return all(
+            expected == "any" or actual == expected
+            for expected, actual in (
+                (relation.color, observed.color),
+                (relation.area, observed.area),
+                (relation.shape, observed.shape),
+                (relation.horizontal, observed.horizontal),
+                (relation.vertical, observed.vertical),
+            )
+        )
+
+    def _select_relational_binding(
+        self,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+        *,
+        pragmatic_disequilibrium: bool,
+        structure_scores: dict[str, int],
+    ) -> tuple[ActionToken, RelationalScheme] | None:
+        if (
+            not self.relational_scheme_binding
+            or not pragmatic_disequilibrium
+            or not self.relational_schemes
+        ):
+            return None
+        represented = tuple(
+            (token, self._grounding(token, scene)) for token in tokens
+        )
+        schemes = sorted(
+            self.relational_schemes.values(),
+            key=lambda scheme: (
+                -structure_scores.get(f"scheme:{scheme.scheme_id}", 0),
+                self.relational_trials[scheme.scheme_id],
+                scheme.scheme_id,
+            ),
+        )
+        for scheme in schemes:
+            if structure_scores.get(f"scheme:{scheme.scheme_id}", 0) < 0:
+                continue
+            cursor = self.relational_cursors.get(scheme.scheme_id, 0)
+            action_id = scheme.action_slots[cursor % len(scheme.action_slots)]
+            constraint = scheme.constraints[cursor % len(scheme.constraints)]
+            previous = self.relational_last.get(scheme.scheme_id)
+            matches = [
+                (token, grounding)
+                for token, grounding in represented
+                if token.action_id == action_id
+                and self.attempts[(state, token)] == 0
+                and (
+                    previous is None
+                    or self._satisfies_relation(
+                        previous,
+                        grounding,
+                        constraint,
+                    )
+                )
+            ]
+            if not matches:
+                continue
+            token, grounding = min(
+                matches,
+                key=lambda item: (
+                    self.global_attempts[item[0]],
+                    item[0],
+                ),
+            )
+            self.relational_cursors[scheme.scheme_id] = cursor + 1
+            self.relational_last[scheme.scheme_id] = grounding
+            self.relational_trials[scheme.scheme_id] += 1
+            self.last_relational_binding = {
+                "scheme_id": scheme.scheme_id,
+                "base_id": scheme.base_id,
+                "modifier_id": scheme.modifier_id,
+                "operator": scheme.operator,
+                "slot_index": cursor % len(scheme.action_slots),
+                "action_id": action_id,
+                "constraint": {
+                    "color": constraint.color,
+                    "area": constraint.area,
+                    "shape": constraint.shape,
+                    "horizontal": constraint.horizontal,
+                    "vertical": constraint.vertical,
+                },
+                "had_previous_grounding": previous is not None,
+            }
+            return token, scheme
+        return None
+
     def _select_scheme_variation(
         self,
         state: StateKey,
@@ -638,14 +1070,18 @@ class EpistemicExplorer:
                     return min(matches), scheme
         return None
 
-    def _role(self, token: ActionToken, scene: Scene) -> ActionRole:
+    def _grounding(
+        self,
+        token: ActionToken,
+        scene: Scene,
+    ) -> GroundedRole:
         if token.action_id != self.complex_action:
-            return ActionRole(token.action_id)
+            return GroundedRole(ActionRole(token.action_id))
         data = dict(token.data)
         x = data.get("x")
         y = data.get("y")
         if x is None or y is None:
-            return ActionRole(token.action_id)
+            return GroundedRole(ActionRole(token.action_id))
         point = (x, y)
         for item in scene.objects:
             min_x, min_y, _max_x, _max_y = item.bbox
@@ -653,13 +1089,19 @@ class EpistemicExplorer:
                 (min_x + local_x, min_y + local_y) for local_x, local_y in item.shape
             }
             if point in absolute_shape:
-                return ActionRole(
-                    token.action_id,
-                    color=item.color,
-                    area=item.area,
-                    shape=item.shape,
+                return GroundedRole(
+                    ActionRole(
+                        token.action_id,
+                        color=item.color,
+                        area=item.area,
+                        shape=item.shape,
+                    ),
+                    centroid=item.centroid,
                 )
-        return ActionRole(token.action_id)
+        return GroundedRole(ActionRole(token.action_id))
+
+    def _role(self, token: ActionToken, scene: Scene) -> ActionRole:
+        return self._grounding(token, scene).role
 
     def _novelty_rank(
         self,
@@ -1144,6 +1586,22 @@ class EpistemicExplorer:
             "successful_schemes": len(self.successful_schemes),
             "parameterized_schemes": len(self.parameterized_schemes),
             "parameterized_scheme_trials": sum(self.variation_trials.values()),
+            "starter_schemas": (
+                len(STARTER_SCHEMA_SET) if self.starter_schemas else 0
+            ),
+            "starter_schema_ids": (
+                [item.schema_id for item in STARTER_SCHEMA_SET]
+                if self.starter_schemas
+                else []
+            ),
+            "successful_relational_schemes": len(
+                self.successful_relational_schemes
+            ),
+            "relational_schemes": len(self.relational_schemes),
+            "relational_scheme_trials": sum(
+                self.relational_trials.values()
+            ),
+            "last_relational_binding": dict(self.last_relational_binding),
             "frontier_states": sum(
                 self._has_frontier(state) for state in self.tokens_by_state
             ),

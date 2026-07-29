@@ -196,6 +196,24 @@ def operative_strategy_population(
             "Reject if bounded scheme variation fails to improve progress "
             "without regressing a control completion.",
         ),
+        (
+            "starter-schema-endowment",
+            "enable_starter_schemas",
+            True,
+            "Expose a minimal game-agnostic sensorimotor schema inventory on "
+            "the operative credit path.",
+            "Reject if the endowment changes task behavior without reproducible "
+            "benefit or if any schema encodes public-game content.",
+        ),
+        (
+            "relational-scheme-binding",
+            "enable_relational_scheme_binding",
+            True,
+            "Use one productive scheme's same/different and spatial relations "
+            "as manner constraints over another scheme's action slots.",
+            "Reject if grounded bindings fail to improve progress without "
+            "regressing a control completion.",
+        ),
     )
     control = Candidate.create(
         parent.config,

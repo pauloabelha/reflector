@@ -1,4 +1,12 @@
-from reflector.exploration import ActionRole, ActionToken, EpistemicExplorer
+from reflector.exploration import (
+    STARTER_SCHEMA_SET,
+    ActionRole,
+    ActionToken,
+    EpistemicExplorer,
+    GroundedRole,
+    RelationalScheme,
+    RoleRelation,
+)
 from reflector.perception import SceneTracker
 from reflector.symbolic import Observation
 
@@ -204,6 +212,141 @@ def test_pragmatic_disequilibrium_suspends_composite_replay() -> None:
     assert choice.token.action_id == 1
     assert choice.reason.endswith("untried-current-state")
     assert explorer.successful_program == (ActionRole(2),)
+
+
+def test_starter_schemas_are_content_free_and_enter_operative_credit() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=((0, 0, 0), (0, 9, 0), (0, 0, 0)),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(starter_schemas=True)
+    explorer.observe(observation, scene)
+
+    choice = explorer.select(observation, scene, (6,))
+
+    assert choice.token.data == (("x", 1), ("y", 1))
+    assert explorer.last_scheme_components == (
+        "scheme:starter:intervene-on-object",
+    )
+    assert explorer.to_dict()["starter_schemas"] == len(STARTER_SCHEMA_SET)
+    serialized = repr(STARTER_SCHEMA_SET)
+    assert "game_id" not in serialized
+    assert "coordinate" not in serialized
+    assert all(item.complexity_cost > 0 for item in STARTER_SCHEMA_SET)
+
+
+def test_relational_modifier_grounds_on_recolored_translated_objects() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (0, 0, 0, 0, 0),
+            (0, 7, 0, 8, 0),
+            (0, 0, 0, 0, 0),
+        ),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(
+        starter_schemas=True,
+        relational_scheme_binding=True,
+    )
+    explorer.observe(observation, scene)
+    scheme = RelationalScheme(
+        scheme_id="translated",
+        base_id="carry",
+        modifier_id="manner",
+        operator="full-manner",
+        action_slots=(6, 6),
+        constraints=(
+            RoleRelation(
+                color="different",
+                area="same",
+                shape="same",
+                horizontal="right",
+                vertical="aligned",
+            ),
+        ),
+        evidence=("carry", "manner"),
+    )
+    explorer.relational_schemes[scheme.scheme_id] = scheme
+
+    first = explorer.select(
+        observation,
+        scene,
+        (6,),
+        pragmatic_disequilibrium=True,
+    )
+    explorer.observe(observation, scene)
+    second = explorer.select(
+        observation,
+        scene,
+        (6,),
+        pragmatic_disequilibrium=True,
+    )
+
+    assert first.token.data == (("x", 1), ("y", 1))
+    assert second.token.data == (("x", 3), ("y", 1))
+    assert "relational-scheme-binding" in second.reason
+    assert "scheme:starter:bind-manner-to-action" in (
+        explorer.last_scheme_components
+    )
+    assert repr(scheme).count("7") == 0
+    assert repr(scheme).count("8") == 0
+
+
+def test_relational_program_identity_ignores_color_permutation_and_translation() -> None:
+    source = (
+        GroundedRole(
+            ActionRole(6, color=2, area=1, shape=((0, 0),)),
+            (1, 1),
+        ),
+        GroundedRole(
+            ActionRole(6, color=3, area=1, shape=((0, 0),)),
+            (3, 1),
+        ),
+    )
+    transformed = (
+        GroundedRole(
+            ActionRole(6, color=8, area=1, shape=((0, 0),)),
+            (11, 21),
+        ),
+        GroundedRole(
+            ActionRole(6, color=7, area=1, shape=((0, 0),)),
+            (13, 21),
+        ),
+    )
+
+    assert EpistemicExplorer._relational_program_id(
+        source
+    ) == EpistemicExplorer._relational_program_id(transformed)
+
+
+def test_relational_binding_is_inactive_before_pragmatic_disequilibrium() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((0, 0),),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(relational_scheme_binding=True)
+    explorer.observe(observation, scene)
+    explorer.relational_schemes["bound"] = RelationalScheme(
+        scheme_id="bound",
+        base_id="base",
+        modifier_id="modifier",
+        operator="full-manner",
+        action_slots=(2,),
+        constraints=(RoleRelation(),),
+        evidence=("base", "modifier"),
+    )
+
+    choice = explorer.select(observation, scene, (1, 2))
+
+    assert choice.token.action_id == 1
+    assert choice.reason.endswith("untried-current-state")
+    assert explorer.to_dict()["relational_scheme_trials"] == 0
 
 
 def test_successful_schemes_become_inputs_to_bounded_variations() -> None:

@@ -51,6 +51,10 @@ class SymbolicPolicy:
             parameterized_scheme_variation=(
                 self.mind.config.enable_parameterized_scheme_variation
             ),
+            starter_schemas=self.mind.config.enable_starter_schemas,
+            relational_scheme_binding=(
+                self.mind.config.enable_relational_scheme_binding
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

@@ -252,6 +252,10 @@ def test_preregistered_hypothesis_credits_prediction_and_utility_separately() ->
     assert first.confirmed == ("no_observed_change(scene)",)
     assert not first.is_disequilibrium
     assert first.scheme_components == ("base:carry", "scheme:composed")
+    assert "predictive_support" not in ledger.typed_credit["scheme:composed"]
+    assert ledger.typed_credit["base:carry"] == {
+        "pragmatic_eligibility": 1
+    }
     assert ledger.typed_credit["schema-stable"] == {
         "pragmatic_stagnation": 1,
         "predictive_support": 1,
@@ -299,3 +303,22 @@ def test_preregistered_hypothesis_credits_prediction_and_utility_separately() ->
     assert not ledger.pragmatic_disequilibrium
     assert ledger.consecutive_without_progress == 0
     assert ledger.typed_credit["scheme:composed"]["pragmatic_progress"] == 1
+
+
+def test_preregistered_hypothesis_requires_exact_action_arguments() -> None:
+    ledger = StructuralCreditLedger()
+    context = (Atom("mode", ("stable",)),)
+    ledger.prime(
+        before_index=0,
+        action_id=6,
+        action_data=(("x", 1), ("y", 2)),
+        context=context,
+        prediction=None,
+        scheme_components=("scheme:bound",),
+    )
+
+    assert ledger.consume_primed(
+        6,
+        (("x", 2), ("y", 1)),
+    ) is None
+    assert ledger.pending_hypothesis is None

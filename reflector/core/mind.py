@@ -63,6 +63,8 @@ class MindConfig:
     enable_global_relation_constraint_solver: bool = False
     enable_preregistered_structural_credit: bool = False
     enable_parameterized_scheme_variation: bool = False
+    enable_starter_schemas: bool = False
+    enable_relational_scheme_binding: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -97,6 +99,8 @@ class MindConfig:
             "enable_global_relation_constraint_solver",
             "enable_preregistered_structural_credit",
             "enable_parameterized_scheme_variation",
+            "enable_starter_schemas",
+            "enable_relational_scheme_binding",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -212,7 +216,10 @@ class SymbolicMind:
             # schema.  This prevents hindsight from masquerading as
             # prediction and gives contradiction a structural target.
             primed = (
-                self.reinforcement.consume_primed(transition.action_id)
+                self.reinforcement.consume_primed(
+                    transition.action_id,
+                    transition.action_data,
+                )
                 if self.config.enable_preregistered_structural_credit
                 else None
             )
@@ -347,6 +354,7 @@ class SymbolicMind:
         return self.reinforcement.prime(
             before_index=self._last_scene.index,
             action_id=decision.action_id,
+            action_data=decision.data,
             context=context,
             prediction=prediction,
             scheme_components=scheme_components,

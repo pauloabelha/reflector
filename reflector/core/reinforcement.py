@@ -73,6 +73,7 @@ class PrimedCausalHypothesis:
     hypothesis_id: str
     before_index: int
     action_id: int
+    action_data: tuple[tuple[str, int], ...]
     context: tuple[str, ...]
     predicted: tuple[str, ...]
     predicted_absent: tuple[str, ...]
@@ -155,6 +156,7 @@ class StructuralCreditLedger:
         *,
         before_index: int,
         action_id: int,
+        action_data: tuple[tuple[str, int], ...] = (),
         context: tuple[Atom, ...],
         prediction: SchemaPrediction | None,
         scheme_components: tuple[str, ...] = (),
@@ -174,6 +176,7 @@ class StructuralCreditLedger:
                     (
                         str(before_index),
                         str(action_id),
+                        repr(tuple(sorted(action_data))),
                         *context_terms,
                         "predict",
                         *predicted,
@@ -191,6 +194,7 @@ class StructuralCreditLedger:
             hypothesis_id=hypothesis_id,
             before_index=before_index,
             action_id=action_id,
+            action_data=tuple(sorted(action_data)),
             context=context_terms,
             predicted=predicted,
             predicted_absent=absent,
@@ -206,10 +210,15 @@ class StructuralCreditLedger:
     def consume_primed(
         self,
         action_id: int,
+        action_data: tuple[tuple[str, int], ...] = (),
     ) -> PrimedCausalHypothesis | None:
         hypothesis = self.pending_hypothesis
         self.pending_hypothesis = None
-        if hypothesis is None or hypothesis.action_id != action_id:
+        if (
+            hypothesis is None
+            or hypothesis.action_id != action_id
+            or hypothesis.action_data != tuple(sorted(action_data))
+        ):
             return None
         return hypothesis
 
@@ -386,20 +395,19 @@ class StructuralCreditLedger:
         self.consecutive_without_progress = (
             0 if progress else self.consecutive_without_progress + 1
         )
-        predictive_structures = set(licensing_structures) | set(
-            scheme_components
-        )
+        predictive_structures = set(licensing_structures)
+        credited_structures = predictive_structures | set(scheme_components)
         direct_pragmatic = set(licensing_structures) | {
             item for item in scheme_components if item.startswith("scheme:")
         }
-        indirect_components = predictive_structures - direct_pragmatic
-        for structure_id in sorted(predictive_structures):
+        indirect_components = credited_structures - direct_pragmatic
+        for structure_id in sorted(credited_structures):
             channels = self.typed_credit.setdefault(structure_id, {})
-            if confirmed:
+            if structure_id in predictive_structures and confirmed:
                 channels["predictive_support"] = (
                     channels.get("predictive_support", 0) + len(confirmed)
                 )
-            if contradicted:
+            if structure_id in predictive_structures and contradicted:
                 channels["predictive_refutation"] = (
                     channels.get("predictive_refutation", 0)
                     + len(contradicted)
