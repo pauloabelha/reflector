@@ -617,3 +617,18 @@ inspection informed the generic development hypothesis, so held-out transfer
 remains unproven. The deployed policy still uses only rendered frames and
 contains no game ID, fixed coordinates, palette constants, source imports,
 LLM, or network dependency.
+
+## 2026-07-29 — Reject v36 inverse nested composition
+
+The first recorded frame after `sb26` level 2 visually retained filled nested
+payloads and exposed a flat neutral row. V36 preregistered the inverse of the
+earned scheme: traverse heterogeneous nested sources and apply them to flat
+outputs when their sequence exactly matches the reference.
+
+The frozen run reproduced v35 at two levels and `[9, 15, 376]`. New compact
+telemetry reported `no-structural-candidate`; the program never executed.
+Inspection of the stable decision frame showed that the motivating image was a
+transient post-win phase, while the actual next puzzle again contained neutral
+nested targets and shuffled selectors. V36 is rejected before wider gates.
+The code remains exact-off as negative evidence, and subsequent hypotheses
+must distinguish stable decision frames from transition imagery.

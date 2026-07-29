@@ -330,7 +330,7 @@ parameterize recursive expansion of one uniquely matched child container and
 resume its parent. This does not establish general recursion, cross-game
 transfer, a completed game, or a Kaggle leaderboard score.
 
-## Active experiment: v36 bidirectional nested scheme composition
+## Rejected experiment: v36 bidirectional nested scheme composition
 
 Parent: accepted v35 `candidate-7c659587fffbceb8`
 
@@ -373,6 +373,62 @@ Falsifier:
   predicted 15-action program fails to advance level 3, or if the current-
   source v35 control or any accepted completion regresses.
 
+Result:
+
+- the apparent heterogeneous nested-source frame was a transient post-win
+  frame rather than the stable next puzzle;
+- compact inference telemetry reported `no-structural-candidate` on the stable
+  level-3 frame, so the inverse program never executed;
+- the frozen run reproduced v35 at 2/8 levels, 8.3333333333/100, and
+  `[9, 15, 376]`;
+- v36 is rejected without wider gates. The negative result demonstrates why
+  frame phase must be distinguished before assigning structural meaning.
+
+## Active experiment: v37 enclosure-grounded sibling composition
+
+Parent: accepted v35 `candidate-7c659587fffbceb8`
+
+Observed disequilibrium:
+
+- the stable `sb26` level-3 frame preserves the ordered reference, shuffled
+  selector bijection, seven neutral targets, and nested connector semantics;
+- the root contains three neutral targets and two occupied connector slots;
+- each connector matches a separate child enclosure, and the two sibling
+  enclosures share the same vertical coordinate;
+- v35 groups targets by y-coordinate, merges both siblings into one false
+  container, observes incompatible left/right border attributes, and abstains.
+
+Preregistered mutation:
+
+- retain v35's row-grounded topology as an exact fallback;
+- additionally detect only exact rectangular outline components that strictly
+  enclose two or more neutral targets;
+- assign every target to exactly one smallest enclosing rectangle;
+- infer a shared horizontal slot pitch from the complete neutral-target set;
+- within each enclosure, span only from its leftmost to rightmost target and
+  interpret missing lattice positions as child links only when the bounded
+  slot neighborhood has one attribute matching exactly one other enclosure;
+- require two to four enclosures, one root, an acyclic graph, no repeated
+  child, exact target coverage, and at most twelve targets;
+- traverse each enclosure left-to-right, recursively expand each child at its
+  connector, and resume the parent.
+
+Predicted `sb26` level-3 traversal:
+
+- emit the first root target;
+- expand the first two-target child;
+- emit the middle root target;
+- expand the second two-target child;
+- emit the final root target;
+- execute seven select/apply pairs plus commit, changing the trace prefix to
+  `[9, 15, 15, ...]`.
+
+Falsifier:
+
+- reject v37 if exact enclosures or unique links cannot be inferred, if the
+  predicted 15-action program fails to advance level 3, or if any accepted
+  completion regresses.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -396,7 +452,8 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Test the preregistered v36 inverse nested composition on `sb26` level 3.
+1. Test the preregistered v37 enclosure-grounded sibling composition on
+   `sb26` level 3.
 2. Implement `ar25` action-family causal attribution, exact-shape
    mover/target correspondence, and monotone learned translation composition;
    the rendered black-box control solved L1 in 15 actions.
