@@ -300,6 +300,7 @@ def test_disequilibrium_reuses_a_causally_responsive_action_role() -> None:
     first = explorer.select(before, before_scene, (1, 2))
     assert first.token.action_id == 1
     explorer.observe(after, after_scene)
+    explorer.level_interventions = explorer.min_productive_reuse_interventions
 
     reused = explorer.select(
         after,

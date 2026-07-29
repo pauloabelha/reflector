@@ -586,6 +586,7 @@ def test_productive_role_reuse_activates_only_after_repeated_failure() -> None:
 
     before = explorer.select(observation, scene, (6,))
     explorer.level_failures = 2
+    explorer.level_interventions = explorer.min_productive_reuse_interventions
     after = explorer.select(observation, scene, (6,))
 
     assert before.token.data == (("x", 1), ("y", 1))

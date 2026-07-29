@@ -174,6 +174,7 @@ class EpistemicExplorer:
     max_relational_trials_per_level: int = 8
     max_relational_application_steps: int = 4
     max_productive_reuse_trials_per_level: int = 8
+    min_productive_reuse_interventions: int = 32
     hierarchical_action_fairness: bool = False
     successful_role_replay: bool = False
     multicolor_click_objects: bool = False
@@ -212,6 +213,7 @@ class EpistemicExplorer:
     role_trials: Counter[ActionRole] = field(default_factory=Counter)
     role_responses: Counter[ActionRole] = field(default_factory=Counter)
     productive_reuse_level_trials: int = 0
+    level_interventions: int = 0
     learned_local_relation: dict[int, bool] = field(default_factory=dict)
     successful_schemes: dict[str, tuple[ActionRole, ...]] = field(
         default_factory=dict
@@ -345,6 +347,7 @@ class EpistemicExplorer:
             self.relational_last.clear()
             self.relational_level_trials = 0
             self.productive_reuse_level_trials = 0
+            self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
         elif observation.state == "GAME_OVER":
@@ -361,6 +364,7 @@ class EpistemicExplorer:
             self.relational_last.clear()
             self.relational_level_trials = 0
             self.productive_reuse_level_trials = 0
+            self.level_interventions = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
@@ -658,6 +662,7 @@ class EpistemicExplorer:
         reason: str,
         scene: Scene,
     ) -> ExplorationChoice:
+        self.level_interventions += 1
         self.attempts[(state, token)] += 1
         self.global_attempts[token] += 1
         self.family_attempts[(state, token.action_id)] += 1
@@ -715,6 +720,10 @@ class EpistemicExplorer:
             self.level_failures < 2
             and not self.pragmatic_disequilibrium_active
         ):
+            return None
+        if self.level_interventions < self.min_productive_reuse_interventions:
+            return None
+        if self.learned_local_relation:
             return None
         if (
             self.productive_reuse_level_trials
@@ -1766,6 +1775,7 @@ class EpistemicExplorer:
             "productive_reuse_level_trials": (
                 self.productive_reuse_level_trials
             ),
+            "level_interventions": self.level_interventions,
             "learned_local_relations": len(self.learned_local_relation),
             "successful_schemes": len(self.successful_schemes),
             "parameterized_schemes": len(self.parameterized_schemes),
