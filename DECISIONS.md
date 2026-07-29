@@ -632,3 +632,24 @@ transient post-win phase, while the actual next puzzle again contained neutral
 nested targets and shuffled selectors. V36 is rejected before wider gates.
 The code remains exact-off as negative evidence, and subsequent hypotheses
 must distinguish stable decision frames from transition imagery.
+
+## 2026-07-29 — Promote enclosure-grounded sibling composition
+
+The stable `sb26` level-3 frame contained one root and two sibling child
+containers at the same vertical coordinate. V35 grouped targets by y-position,
+merged the siblings into a false container, encountered different boundary
+attributes, and abstained. V37 instead recognizes only exact rectangular
+outline objects, assigns each neutral target to one smallest enclosure, and
+uses uniquely attribute-matched missing slots as child links. Its graph remains
+bounded, rooted, acyclic, and exact-cardinality.
+
+Two frozen target runs reproduced `[9, 15, 15, 361]`; the current-source v35
+control remained `[9, 15, 376]`. The six-game gate preserved every v35 action
+count and added only `sb26` level 3. The process-isolated full control
+reproduced v35 at 13/183 and 3.6326309699/100, while v37 reached 14/183 and
+3.9659643032/100 with 25/25 coverage. No game was completed.
+
+V37 is promoted. The accepted claim is limited to distinguishing and composing
+same-height sibling procedures from exact rendered enclosures. It is not
+evidence of arbitrary scene graphs, broad transfer, or a Kaggle leaderboard
+score.

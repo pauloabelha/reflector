@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ACCEPTED_REPORT = (
     ROOT
     / "reports"
-    / "official-public-v35-nested-target-400.json"
+    / "official-isolated-public-v37-enclosure-sibling-400.json"
 )
 
 

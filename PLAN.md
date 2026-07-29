@@ -21,14 +21,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-7c659587fffbceb8`
-- Accepted agent: Reflector v35
-- Accepted frozen inference commit: `dfccd49`
+- Accepted candidate: `candidate-445450df91872736`
+- Accepted agent: Reflector v37
+- Accepted frozen inference commit: `c9ad1ac`
 - Accepted public-development report:
-  `reports/official-public-v35-nested-target-400.json`
-- Accepted score: `3.632630969879724`
+  `reports/official-isolated-public-v37-enclosure-sibling-400.json`
+- Accepted score: `3.9659643032130574`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 13 levels across 6 games
+- Accepted completions: 14 levels across 6 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -49,6 +49,7 @@ generalization.
 | Grounded graph-cycle transport | v31 bound controllers only after exact conserved cycle shifts, planned over shared junctions, preserved every v30 action count, and solved `lp85` L3 in 54 actions. |
 | Parameterized select/apply/commit | v32 inferred an ordered attribute template and matching selector/target bindings, preserved every v31 action count, and solved `sb26` L1 in 9 actions. |
 | Nested container traversal | v35 inferred an occupied target-lattice slot as a uniquely attribute-matched child link, expanded the child, resumed the parent, preserved every v32 action count, and solved `sb26` L2 in 15 actions. |
+| Enclosure-grounded sibling composition | v37 represented same-height sibling containers as separate enclosure objects, preserved every v35 action count, and solved `sb26` L3 in 15 actions. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -384,7 +385,7 @@ Result:
 - v36 is rejected without wider gates. The negative result demonstrates why
   frame phase must be distinguished before assigning structural meaning.
 
-## Active experiment: v37 enclosure-grounded sibling composition
+## Accepted experiment: v37 enclosure-grounded sibling composition
 
 Parent: accepted v35 `candidate-7c659587fffbceb8`
 
@@ -429,6 +430,29 @@ Falsifier:
   predicted 15-action program fails to advance level 3, or if any accepted
   completion regresses.
 
+Evidence:
+
+- two frozen `sb26` target runs reproduced 3/8 levels and
+  `[9, 15, 15, 361]`;
+- the current-source v35 target control reproduced 2/8 and `[9, 15, 376]`;
+- the source-matched six-game v35 control reproduced 13 inherited levels and
+  15.1359623745/100;
+- v37 preserved every inherited action count and added only `sb26` level 3,
+  reaching 14 levels and 16.5248512634/100 in that gate;
+- the process-isolated 25-game v35 control reproduced 13/183 and
+  `3.632630969879724/100`;
+- the process-isolated v37 candidate reached 14/183 and
+  `3.9659643032130574/100` with 25/25 coverage and 10,000 actions;
+- 166 tests passed (3 skipped), Ruff and mypy passed, both network-disabled
+  smoke paths passed, the prize audit is technically ready, and the exact
+  candidate exported without translation.
+
+V37 is accepted. The earned claim is narrow: exact rendered enclosures can
+ground distinct sibling procedures at the same visual height, allowing their
+bounded recursive expansion and parent resumption. This is not evidence of
+general object hierarchy, cross-game transfer, a completed game, or a Kaggle
+leaderboard score.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -452,8 +476,8 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Test the preregistered v37 enclosure-grounded sibling composition on
-   `sb26` level 3.
+1. Record and inspect the stable `sb26` level-4 decision frame under v37;
+   distinguish transition imagery before preregistering another mutation.
 2. Implement `ar25` action-family causal attribution, exact-shape
    mover/target correspondence, and monotone learned translation composition;
    the rendered black-box control solved L1 in 15 actions.
@@ -464,7 +488,7 @@ genome flags, but none of its active policy traits are inherited by v29.
 5. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
 6. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v35 accepted otherwise.
+   qualifying offspring; keep v37 accepted otherwise.
 7. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.

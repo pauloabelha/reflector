@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 13 of 183 levels across 6 games. The suite ran all 25 games,
+> It has solved 14 of 183 levels across 6 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v35 result | Meaning |
+| Outcome metric | Accepted v37 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
 | Games with progress | **6 / 25** | At least one level was solved in six games. |
-| Levels solved | **13 / 183** | Five in `ft09`; three in `lp85`; two in `sb26`; one each in `lf52`, `r11l`, and `tn36`. |
-| Official local score | **3.6326309699 / 100** | About **3.63%**, not 363%. |
+| Levels solved | **14 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; one each in `lf52`, `r11l`, and `tn36`. |
+| Official local score | **3.9659643032 / 100** | About **3.97%**, not 397%. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,8 +23,9 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Official local public suite | v35 accepted | **3.6326309699 / 100** | 0 games beaten; 13/183 levels | 25/25 coverage |
-| Source-matched official local suite | v32 control | 3.4104087477 / 100 | 0 games beaten; 12/183 levels | exact parent reproduction |
+| Process-isolated official local suite | v37 accepted | **3.9659643032 / 100** | 0 games beaten; 14/183 levels | 25/25 coverage |
+| Source-matched process-isolated suite | v35 control | 3.6326309699 / 100 | 0 games beaten; 13/183 levels | exact parent reproduction |
+| Official local public suite | v35 historical accepted | 3.6326309699 / 100 | 0 games beaten; 13/183 levels | superseded by v37 |
 | Process-isolated six-game gate | v35 accepted | 15.1359623745 / 100 | 13 levels in the six affected games | all v32 action counts preserved |
 | Process-isolated six-game gate | v32 control | 14.2100364486 / 100 | 12 levels in the six affected games | source-matched control |
 | Target-only `sb26` reruns | v35 accepted | 8.3333333333 for one game | 2/8 levels; `[9, 15, 376]` | deterministic structure twice |
@@ -35,7 +36,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v35 package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v37 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -126,59 +127,59 @@ Raw evidence:
 | v30 | 3.1894439557 | 10 | 5 | 0 | Learned marker-relative goals plus composed cyclic transports | historical accepted |
 | v31 | 3.2992976365 | 11 | 5 | 0 | Grounded non-axis-aligned graph-cycle transport | historical accepted |
 | v32 | 3.4104087477 | 12 | 6 | 0 | Parameterized attribute select/apply/commit composition | historical accepted |
-| v35 | **3.6326309699** | **13** | **6** | **0** | Topology-guided recursive container traversal | **current accepted** |
+| v35 | 3.6326309699 | 13 | 6 | 0 | Topology-guided recursive container traversal | historical accepted |
+| v37 | **3.9659643032** | **14** | **6** | **0** | Enclosure-grounded sibling container composition | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v35 result
+## Accepted v37 result
 
-V35 inherits v32's exact reference/selector attribute bijection. It
-accommodates a multi-row target layout only when the neutral targets form a
-shared lattice, each target row has a rendered enclosing attribute, and a
-non-neutral occupied lattice slot uniquely matches another row's container
-attribute. It requires one root, an acyclic graph, no repeated child, exact
-target cardinality, at most four rows, and at most twelve targets. It then
-expands the linked child row depth-first and resumes its parent.
+V37 inherits v35's depth-first container traversal and v32's exact
+reference/selector binding. V35 grouped targets by vertical coordinate, which
+worked for one child on level 2 but conflated two sibling children sharing a
+row on level 3. V37 grounds container identity in exact rendered rectangular
+enclosures instead. Each neutral target must belong to one smallest enclosure;
+missing slots become child links only through a unique appearance match.
 
-This mechanism was reached through two preserved failures. V33 correctly
-merged the seven level-2 targets but its row-major binding failed. V34 tried
-four bounded row/column orders and all failed. V35 changed the representation
-from a flat order to a nested executable scheme. On `sb26` level 2 it emitted
-two parent targets, expanded four child targets, resumed the final parent
-target, and committed. Two frozen runs reproduced `[9, 15, 376]`.
+The graph remains bounded to four containers and twelve targets and requires
+one root, exact target coverage, unique child ownership, and acyclicity. On
+`sb26` level 3 it emitted one root target, expanded the first two-target child,
+resumed the middle root target, expanded the second child, resumed the final
+root target, and committed. Two frozen runs reproduced `[9, 15, 15, 361]`.
+The row-grounded v35 resolver remains an exact fallback for level 2.
 
-The source-matched six-game control reproduced v32 at 12 completed levels and
-14.2100364486/100. V35 preserved every inherited completion at the same action
-count and added only `sb26` level 2, reaching 13 levels and
-15.1359623745/100. The full 25-game control reproduced v32 at
-`3.4104087476575016/100`; v35 reached 13/183 and
-`3.632630969879724/100`. No game was fully beaten.
+The source-matched six-game v35 control reproduced 13 completed levels and
+15.1359623745/100. V37 preserved every inherited completion at the same action
+count and added only `sb26` level 3, reaching 14 levels and
+16.5248512634/100. The process-isolated full control reproduced v35 at
+`3.632630969879724/100`; v37 reached 14/183 and
+`3.9659643032130574/100`. No game was fully beaten.
 
-Frozen inference commit: `dfccd492d7dd8bead0a8bbec19228e3d997b2875`
+Frozen inference commit: `c9ad1ac164d639f1bf8993d551360709ff5d2b0d`
 
-Candidate: `candidate-7c659587fffbceb8`
+Candidate: `candidate-445450df91872736`
 
 Candidate inference fingerprint:
-`d287c4d3239025ce89a6834ab2ec6fd20c4e48fd6713029a04bb736950e7bb2c`
+`b698e42e378d172d6d9690c2eeb52ae48b1344996fe6cd1e76e3c35647f470f9`
 
 Candidate SHA-256:
-`4c1e845f440532b9cbf6b409abd0900217a266d474034f2b1c24a2048351da31`
+`ac0df61fe628482e37eb763f3aef2c4836313f7a267d530012e5fcb220e614f2`
 
 Full report SHA-256:
-`9f25414cad9bda7e50d9dffd8a51bb02aa6fc8843bd71ad17d19d81b27ab29e6`
+`63aff02e1d4cd15296b43862e046762e7f7873b6244ad8cd0dc201422a8f586b`
 
 Source-control report SHA-256:
-`3cac5f50733f4498fd70d8fbe3da7375f46289b56ea9d1c190a5059b85da3337`
+`aafbbda10296e431e76d4a8e28ba773f8b224a6269f08594366e6e144442f16d`
 
-Verification: 163 tests passed (3 skipped), Ruff passed, mypy passed, the
+Verification: 166 tests passed (3 skipped), Ruff passed, mypy passed, the
 generic and exact-candidate network-disabled smoke paths passed, and the exact
 candidate exported without translation. The overlay SHA-256 is
-`c466957342eb722fade306ef9e14332d9f3698c0ce1714cff1fcbf022900c95d`;
+`2083889d12ae5072d34ea8d25de3d12b1090782273de12a5f1815fc53b9bf336`;
 the notebook SHA-256 is
-`c8f5d098437fdab7976680fd1ff6931406119eb9618acd117f4af9bc6678e144`.
+`dcc114e7f5f2b29efdb8b945503945b17a58b3d7119c41714c4388082ce05b92`.
 
 ### Accepted progress by game
 
@@ -188,20 +189,21 @@ the notebook SHA-256 is
 | `lp85` | **3** | 8 | `[37, 8, 54]` | 9.7216281179 | No |
 | `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
 | `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
-| `sb26` | **2** | 8 | `[9, 15]` | 8.3333333333 | No |
+| `sb26` | **3** | 8 | `[9, 15, 15]` | 16.6666666667 | No |
 | `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
 | Remaining 19 games | **0** | 138 | `[]` | 0 | No |
-| **Total** | **13** | **183** | — | **3.6326309699 overall** | **0 / 25** |
+| **Total** | **14** | **183** | — | **3.9659643032 overall** | **0 / 25** |
 
 Raw evidence:
 
-- [v35 accepted 25-game scorecard](reports/official-public-v35-nested-target-400.json)
-- [v35 source-matched v32 control](reports/official-public-v35-v32-control-400.json)
-- [v35 exact `sb26` rerun 1](reports/official-isolated-v35-sb26-nested-target-r1.json)
-- [v35 exact `sb26` rerun 2](reports/official-isolated-v35-sb26-nested-target-r2.json)
-- [v35 six-game preservation gate](reports/official-isolated-v35-six-game-preservation.json)
-- [v35 six-game v32 control](reports/official-isolated-v35-six-game-v32-control.json)
-- [v35 candidate](candidates/v35-nested-target-traversal-400.json)
+- [v37 accepted process-isolated 25-game scorecard](reports/official-isolated-public-v37-enclosure-sibling-400.json)
+- [v37 source-matched v35 control](reports/official-isolated-public-v37-v35-control-400.json)
+- [v37 exact `sb26` rerun 1](reports/official-isolated-v37-sb26-r1.json)
+- [v37 exact `sb26` rerun 2](reports/official-isolated-v37-sb26-r2.json)
+- [v37 exact `sb26` v35 control](reports/official-isolated-v37-sb26-v35-control.json)
+- [v37 six-game preservation gate](reports/official-isolated-v37-six-game-preservation.json)
+- [v37 six-game v35 control](reports/official-isolated-v37-six-game-v35-control.json)
+- [v37 candidate](candidates/v37-enclosure-sibling-composition-400.json)
 
 ## Historical accepted v31 result
 
@@ -616,7 +618,7 @@ without translation. Its generated artifact hashes are:
 
 These hashes prove package identity and compatibility, not promotion or score.
 
-The accepted v35 candidate also exports and passes both network-disabled smoke
+The historical v35 candidate also exports and passes both network-disabled smoke
 paths without translation. Its generated artifact hashes are:
 
 - overlay:
@@ -627,6 +629,17 @@ paths without translation. Its generated artifact hashes are:
 The prize audit is technically ready but still records the public repository,
 participant eligibility, Kaggle rerun, and competition publication as manual
 external gates. No leaderboard score exists.
+
+The accepted v37 candidate exports from the same frozen inference source and
+passes both network-disabled smoke paths. Its generated artifact hashes are:
+
+- overlay:
+  `2083889d12ae5072d34ea8d25de3d12b1090782273de12a5f1815fc53b9bf336`
+- notebook:
+  `dcc114e7f5f2b29efdb8b945503945b17a58b3d7119c41714c4388082ce05b92`
+
+These artifacts are technically submission-ready, but they have not been
+published or scored on Kaggle.
 
 ## Reporting protocol
 
