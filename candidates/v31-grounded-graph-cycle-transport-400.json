@@ -1,5 +1,5 @@
 {
-  "candidate_id": "candidate-f6e293d1e96afe78",
+  "candidate_id": "candidate-98a22d6f908c6eb7",
   "config": {
     "enable_concepts": true,
     "enable_counterfactual_pressure": true,
@@ -47,5 +47,5 @@
   "generation": 10,
   "rationale": "Infer non-axis-aligned cyclic transports only from exact conserved frame shifts, retain their grounded controller permutations, and compose overlapping cycles toward learned marker-relative goals.",
   "mutation_source": "v31-lp85-graph-cycle-breeding",
-  "inference_fingerprint": "855d8830f1065d27cb49d95f7f4ba661dca273dc1f231b22814f094f49265bc1"
+  "inference_fingerprint": "4b9a3640759805debe7bbfec4f664ea4ae5df60d5f3905cba6ab8f4f93a601bf"
 }

@@ -1379,6 +1379,8 @@ class EpistemicExplorer:
     ) -> tuple[tuple[tuple[int, int], ...], ...]:
         """Enumerate a bounded chordless cycle basis around marked anchors."""
 
+        if not 4 <= len(positions) <= 64 or pitch < 2:
+            return ()
         adjacency = {
             point: tuple(
                 sorted(
@@ -1396,6 +1398,8 @@ class EpistemicExplorer:
             )
             for point in positions
         }
+        if any(len(neighbors) > 4 for neighbors in adjacency.values()):
+            return ()
         cycles: set[tuple[tuple[int, int], ...]] = set()
         expansions = 0
 
@@ -1430,6 +1434,8 @@ class EpistemicExplorer:
                             cycles.add(canonical(path))
                         continue
                     if neighbor in path or len(path) >= max_cycle_length:
+                        continue
+                    if len(stack) + expansions >= max_expansions:
                         continue
                     stack.append((neighbor, (*path, neighbor)))
         return tuple(sorted(cycles, key=lambda item: (len(item), item)))
