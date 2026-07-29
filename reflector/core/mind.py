@@ -68,6 +68,7 @@ class MindConfig:
     enable_visual_primitives: bool = False
     enable_visual_primitive_actions: bool = False
     enable_temporal_primitives: bool = False
+    enable_cyclic_sequence_alignment: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -107,13 +108,11 @@ class MindConfig:
             "enable_visual_primitives",
             "enable_visual_primitive_actions",
             "enable_temporal_primitives",
+            "enable_cyclic_sequence_alignment",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
-        if (
-            self.enable_visual_primitive_actions
-            and not self.enable_visual_primitives
-        ):
+        if self.enable_visual_primitive_actions and not self.enable_visual_primitives:
             raise ValueError(
                 "visual primitive actions require visual primitive perception"
             )

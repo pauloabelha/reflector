@@ -55,8 +55,9 @@ class SymbolicPolicy:
             relational_scheme_binding=(
                 self.mind.config.enable_relational_scheme_binding
             ),
-            visual_primitives=(
-                self.mind.config.enable_visual_primitive_actions
+            visual_primitives=(self.mind.config.enable_visual_primitive_actions),
+            cyclic_sequence_alignment=(
+                self.mind.config.enable_cyclic_sequence_alignment
             ),
         )
         self._previous_decision: Decision | None = None
@@ -117,9 +118,7 @@ class SymbolicPolicy:
                 pragmatic_disequilibrium=(
                     self.mind.reinforcement.pragmatic_disequilibrium
                 ),
-                structure_scores=(
-                    self.mind.reinforcement.pragmatic_structure_scores()
-                ),
+                structure_scores=(self.mind.reinforcement.pragmatic_structure_scores()),
             )
             action_id = exploration.token.action_id
             reason = exploration.reason
@@ -201,9 +200,7 @@ class SymbolicPolicy:
         assessments = []
         if update is not None:
             for assessment_id in update.new_assessments:
-                assessment = self.mind.reinforcement.assessments.get(
-                    assessment_id
-                )
+                assessment = self.mind.reinforcement.assessments.get(assessment_id)
                 if assessment is None:
                     continue
                 assessments.append(
@@ -216,20 +213,14 @@ class SymbolicPolicy:
                         "confirmed": list(assessment.confirmed),
                         "contradicted": list(assessment.contradicted),
                         "confirmed_absent": list(assessment.confirmed_absent),
-                        "contradicted_absent": list(
-                            assessment.contradicted_absent
-                        ),
+                        "contradicted_absent": list(assessment.contradicted_absent),
                         "unpredicted": list(assessment.unpredicted),
                         "pragmatic": list(assessment.pragmatic),
                         "epistemic": list(assessment.epistemic),
                         "response": assessment.response,
                         "support": assessment.support,
-                        "licensing_structures": list(
-                            assessment.licensing_structures
-                        ),
-                        "scheme_components": list(
-                            assessment.scheme_components
-                        ),
+                        "licensing_structures": list(assessment.licensing_structures),
+                        "scheme_components": list(assessment.scheme_components),
                         "context_count": len(assessment.context),
                         "context_sample": [
                             term
@@ -266,9 +257,7 @@ class SymbolicPolicy:
                 "primitive_counts": primitive_counts,
             },
             "decision": decision.to_dict(),
-            "advisor_arbitration": self.explorer.arbitration_snapshot(
-                decision.reason
-            ),
+            "advisor_arbitration": self.explorer.arbitration_snapshot(decision.reason),
             "transition": (
                 update.transition.to_dict()
                 if update is not None and update.transition is not None
@@ -290,16 +279,12 @@ class SymbolicPolicy:
             },
             "operative_state": {
                 "schema_count": len(self.mind.schemas.schemas),
-                "active_concept_count": len(
-                    self.mind.concepts.active_concepts()
-                ),
+                "active_concept_count": len(self.mind.concepts.active_concepts()),
                 "schema_family_count": len(abstractions.schema_families),
                 "concept_type_count": len(abstractions.concept_types),
                 "language_operator_count": len(abstractions.language_operators),
                 "procedure_count": len(abstractions.procedures),
-                "accommodation_count": len(
-                    self.mind.reinforcement.accommodations
-                ),
+                "accommodation_count": len(self.mind.reinforcement.accommodations),
                 "primed_hypothesis_count": len(
                     self.mind.reinforcement.hypothesis_history
                 ),

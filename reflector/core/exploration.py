@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import heapq
 from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
@@ -104,6 +105,48 @@ class GroundedRole:
 
 
 @dataclass(frozen=True, slots=True)
+class CyclicAlignmentScheme:
+    """An evidenced, appearance-relative goal over cyclic transports."""
+
+    scheme_id: str
+    target_relation: str
+    controller_side: str
+    shift_direction: int
+    evidence: tuple[str, ...]
+
+    def components(self) -> tuple[str, ...]:
+        return (
+            f"scheme:{self.scheme_id}",
+            "relation:anchor-token-matches-markers",
+            "operator:cyclic-shift",
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class _FrameObject:
+    color: int
+    area: int
+    bbox: tuple[int, int, int, int]
+    centroid: tuple[int, int]
+    shape: tuple[tuple[int, int], ...]
+
+
+@dataclass(frozen=True, slots=True)
+class _MarkedAnchor:
+    point: tuple[int, int]
+    marker_color: int
+    token_area: int
+    token_shape: tuple[tuple[int, int], ...]
+
+
+@dataclass(frozen=True, slots=True)
+class _CyclicTrack:
+    points: tuple[tuple[int, int], ...]
+    left_controller: tuple[int, int] | None = None
+    right_controller: tuple[int, int] | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class RoleRelation:
     """Content-free relation supplied by one scheme to another."""
 
@@ -175,6 +218,8 @@ class EpistemicExplorer:
     max_relational_application_steps: int = 4
     max_productive_reuse_trials_per_level: int = 8
     min_productive_reuse_interventions: int = 32
+    max_cyclic_alignment_trials_per_level: int = 24
+    max_cyclic_plan_expansions: int = 8192
     hierarchical_action_fairness: bool = False
     successful_role_replay: bool = False
     multicolor_click_objects: bool = False
@@ -187,6 +232,7 @@ class EpistemicExplorer:
     starter_schemas: bool = False
     relational_scheme_binding: bool = False
     visual_primitives: bool = False
+    cyclic_sequence_alignment: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -215,35 +261,31 @@ class EpistemicExplorer:
     productive_reuse_level_trials: int = 0
     level_interventions: int = 0
     learned_local_relation: dict[int, bool] = field(default_factory=dict)
-    successful_schemes: dict[str, tuple[ActionRole, ...]] = field(
-        default_factory=dict
-    )
-    parameterized_schemes: dict[str, ParameterizedScheme] = field(
-        default_factory=dict
-    )
+    successful_schemes: dict[str, tuple[ActionRole, ...]] = field(default_factory=dict)
+    parameterized_schemes: dict[str, ParameterizedScheme] = field(default_factory=dict)
     variation_cursors: dict[str, int] = field(default_factory=dict)
     variation_trials: Counter[str] = field(default_factory=Counter)
-    successful_relational_schemes: dict[
-        str, tuple[GroundedRole, ...]
-    ] = field(default_factory=dict)
-    relational_schemes: dict[str, RelationalScheme] = field(
+    successful_relational_schemes: dict[str, tuple[GroundedRole, ...]] = field(
         default_factory=dict
     )
+    relational_schemes: dict[str, RelationalScheme] = field(default_factory=dict)
     relational_cursors: dict[str, int] = field(default_factory=dict)
     relational_last: dict[str, GroundedRole] = field(default_factory=dict)
     relational_trials: Counter[str] = field(default_factory=Counter)
     relational_responses: Counter[str] = field(default_factory=Counter)
     relational_progress: Counter[str] = field(default_factory=Counter)
     relational_stagnations: Counter[str] = field(default_factory=Counter)
-    relational_application_steps: Counter[str] = field(
-        default_factory=Counter
-    )
+    relational_application_steps: Counter[str] = field(default_factory=Counter)
     relational_level_trials: int = 0
     pending_relational_scheme: str | None = None
     last_relational_binding: dict[str, Any] = field(default_factory=dict)
     last_scheme_components: tuple[str, ...] = ()
     primitive_accommodation_active: bool = False
     pragmatic_disequilibrium_active: bool = False
+    cyclic_alignment_scheme: CyclicAlignmentScheme | None = None
+    cyclic_alignment_level_trials: int = 0
+    cyclic_transport_evidence: Counter[tuple[str, int]] = field(default_factory=Counter)
+    cyclic_last_plan_length: int = 0
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -261,6 +303,8 @@ class EpistemicExplorer:
             order.append("local-relation-repair")
         if self.relational_scheme_binding:
             order.append("relational-scheme-binding")
+        if self.cyclic_sequence_alignment:
+            order.append("cyclic-sequence-alignment")
         if self.productive_role_reuse:
             order.append("productive-role-reuse")
         if self.parameterized_scheme_variation:
@@ -278,6 +322,8 @@ class EpistemicExplorer:
             if "relational-scheme-binding" in selected_reason
             else "productive-role-reuse"
             if "reuse-productive-action-role" in selected_reason
+            else "cyclic-sequence-alignment"
+            if "cyclic-sequence-alignment" in selected_reason
             else "local-relation-repair"
             if "repair-local-relation" in selected_reason
             else "parameterized-scheme-variation"
@@ -294,8 +340,7 @@ class EpistemicExplorer:
         )
         if selected is None or selected not in order:
             return tuple(
-                {"advisor": advisor, "status": "not_evaluated"}
-                for advisor in order
+                {"advisor": advisor, "status": "not_evaluated"} for advisor in order
             )
         selected_index = order.index(selected)
         return tuple(
@@ -328,15 +373,10 @@ class EpistemicExplorer:
                 self.successful_program = tuple(self.episode_roles)
                 self.program_cursor = 0
                 if self.parameterized_scheme_variation:
-                    self._learn_parameterized_variations(
-                        self.successful_program
-                    )
+                    self._learn_parameterized_variations(self.successful_program)
                 if self.relational_scheme_binding:
                     self._learn_relational_variations(
-                        tuple(
-                            self.productive_groundings
-                            or self.episode_groundings
-                        )
+                        tuple(self.productive_groundings or self.episode_groundings)
                     )
             self.episode_roles.clear()
             self.episode_groundings.clear()
@@ -347,6 +387,7 @@ class EpistemicExplorer:
             self.relational_last.clear()
             self.relational_level_trials = 0
             self.productive_reuse_level_trials = 0
+            self.cyclic_alignment_level_trials = 0
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -364,6 +405,7 @@ class EpistemicExplorer:
             self.relational_last.clear()
             self.relational_level_trials = 0
             self.productive_reuse_level_trials = 0
+            self.cyclic_alignment_level_trials = 0
             self.level_interventions = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
@@ -408,6 +450,16 @@ class EpistemicExplorer:
             for x in range(margin, width - margin)
         )
         changed_frame = changed >= 4
+        if self.cyclic_sequence_alignment and grounding is not None:
+            self._observe_cyclic_transition(
+                before,
+                after,
+                grounding.centroid,
+                progressed=(
+                    self.current_level is not None
+                    and observation.levels_completed > self.current_level
+                ),
+            )
         if changed_frame:
             self.role_responses[role] += 1
             if grounding is not None:
@@ -524,6 +576,23 @@ class EpistemicExplorer:
                     "epistemic-frontier:repair-local-relation",
                     scene,
                 )
+
+        cyclic = self._select_cyclic_alignment(
+            observation,
+            scene,
+            state,
+            tokens,
+        )
+        if cyclic is not None:
+            self.cyclic_alignment_level_trials += 1
+            if self.cyclic_alignment_scheme is not None:
+                self.last_scheme_components = self.cyclic_alignment_scheme.components()
+            return self._issue(
+                state,
+                cyclic,
+                "epistemic-frontier:cyclic-sequence-alignment",
+                scene,
+            )
 
         productive = self._select_productive_role(tokens, scene, state)
         if productive is not None:
@@ -710,6 +779,552 @@ class EpistemicExplorer:
             )
         return tuple(sorted(components))
 
+    def _observe_cyclic_transition(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_point: tuple[int, int] | None,
+        *,
+        progressed: bool,
+    ) -> None:
+        """Construct transport evidence, then a goal relation on progress."""
+
+        if action_point is None:
+            return
+        anchors = self._marked_anchors(before)
+        tracks = self._cyclic_tracks(before)
+        if not anchors or not tracks:
+            return
+        candidates = [
+            track
+            for track in tracks
+            if action_point[0] < min(point[0] for point in track.points)
+            or action_point[0] > max(point[0] for point in track.points)
+        ]
+        if not candidates:
+            return
+        candidates.sort(key=lambda item: (-len(item.points), item.points))
+        for track in candidates:
+            side = (
+                "left"
+                if action_point[0] < min(point[0] for point in track.points)
+                else "right"
+            )
+            before_values = tuple(before[y][x] for x, y in track.points)
+            after_values = (
+                tuple(after[y][x] for x, y in track.points)
+                if self._frame_contains(after, track.points)
+                else ()
+            )
+            direction = self._unit_rotation(before_values, after_values)
+            if direction is not None and not progressed:
+                self.cyclic_transport_evidence[(side, direction)] += 1
+                continue
+            if not progressed:
+                continue
+            learned_direction = self._preferred_cyclic_direction(side)
+            if learned_direction is None:
+                continue
+            predicted = self._rotate_frame_track(
+                before,
+                track.points,
+                learned_direction,
+            )
+            if not self._anchors_satisfied(predicted, anchors):
+                continue
+            left_direction = learned_direction if side == "left" else -learned_direction
+            digest = hashlib.sha256(
+                repr(
+                    (
+                        "anchor-token-matches-markers",
+                        "cyclic-shift",
+                        left_direction,
+                    )
+                ).encode()
+            ).hexdigest()[:12]
+            self.cyclic_alignment_scheme = CyclicAlignmentScheme(
+                scheme_id=f"cyclic-alignment-{digest}",
+                target_relation="anchor-token-matches-markers",
+                controller_side="left",
+                shift_direction=left_direction,
+                evidence=(
+                    "level-progress",
+                    "predicted-cyclic-transport",
+                    "marker-relative-match",
+                ),
+            )
+            return
+
+    def _select_cyclic_alignment(
+        self,
+        observation: Observation,
+        scene: Scene,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        if (
+            not self.cyclic_sequence_alignment
+            or self.cyclic_alignment_scheme is None
+            or self.cyclic_alignment_level_trials
+            >= self.max_cyclic_alignment_trials_per_level
+        ):
+            return None
+        anchors = self._marked_anchors(observation.frame)
+        tracks = self._cyclic_tracks(observation.frame)
+        if not anchors or not tracks:
+            return None
+        represented = {
+            (dict(token.data).get("x"), dict(token.data).get("y")): token
+            for token in tokens
+            if token.action_id == self.complex_action
+        }
+        actions: list[
+            tuple[
+                tuple[int, int],
+                tuple[tuple[int, int], ...],
+                int,
+                ActionToken,
+            ]
+        ] = []
+        for track in tracks:
+            for controller, direction in (
+                (
+                    track.left_controller,
+                    self.cyclic_alignment_scheme.shift_direction,
+                ),
+                (
+                    track.right_controller,
+                    -self.cyclic_alignment_scheme.shift_direction,
+                ),
+            ):
+                if controller is None:
+                    continue
+                token = represented.get(controller)
+                if token is None:
+                    continue
+                actions.append((controller, track.points, direction, token))
+        if not actions:
+            return None
+
+        points = tuple(sorted({point for track in tracks for point in track.points}))
+        point_indexes = {point: index for index, point in enumerate(points)}
+        initial = tuple(observation.frame[y][x] for x, y in points)
+        goals = {
+            point_indexes[anchor.point]: anchor.marker_color
+            for anchor in anchors
+            if anchor.point in point_indexes
+        }
+        if not goals or all(initial[index] == color for index, color in goals.items()):
+            self.cyclic_last_plan_length = 0
+            return None
+
+        ordered_actions = tuple(
+            sorted(actions, key=lambda item: (item[0], item[2], item[1]))
+        )
+
+        def estimate(values: tuple[int, ...]) -> tuple[int, int]:
+            mismatches = 0
+            distance = 0
+            for index, color in goals.items():
+                if values[index] == color:
+                    continue
+                mismatches += 1
+                candidates = []
+                for _controller, track_points, _direction, _token in ordered_actions:
+                    indexes = tuple(point_indexes[point] for point in track_points)
+                    if index not in indexes:
+                        continue
+                    anchor_index = indexes.index(index)
+                    for marker_index, track_index in enumerate(indexes):
+                        if values[track_index] != color:
+                            continue
+                        length = len(indexes)
+                        candidates.append(
+                            min(
+                                (marker_index - anchor_index) % length,
+                                (anchor_index - marker_index) % length,
+                            )
+                        )
+                distance += min(candidates, default=len(points))
+            return mismatches, distance
+
+        initial_estimate = estimate(initial)
+        queue: list[tuple[int, int, int, tuple[int, ...], tuple[int, ...]]] = [
+            (
+                initial_estimate[0],
+                initial_estimate[1],
+                0,
+                initial,
+                (),
+            )
+        ]
+        best_depth = {initial: 0}
+        expansions = 0
+        while queue and expansions < self.max_cyclic_plan_expansions:
+            _mismatches, _distance, _depth, values, plan = heapq.heappop(queue)
+            expansions += 1
+            for action_index, (
+                _controller,
+                track_points,
+                direction,
+                _token,
+            ) in enumerate(ordered_actions):
+                updated = list(values)
+                indexes = tuple(point_indexes[point] for point in track_points)
+                track_values = tuple(values[index] for index in indexes)
+                rotated = self._rotate_values(track_values, direction)
+                for index, value in zip(indexes, rotated):
+                    updated[index] = value
+                successor = tuple(updated)
+                successor_plan = (*plan, action_index)
+                successor_depth = len(successor_plan)
+                if best_depth.get(successor, successor_depth + 1) <= successor_depth:
+                    continue
+                if all(successor[index] == color for index, color in goals.items()):
+                    self.cyclic_last_plan_length = len(successor_plan)
+                    return ordered_actions[successor_plan[0]][3]
+                best_depth[successor] = successor_depth
+                successor_estimate = estimate(successor)
+                heapq.heappush(
+                    queue,
+                    (
+                        successor_estimate[0],
+                        successor_estimate[1],
+                        successor_depth,
+                        successor,
+                        successor_plan,
+                    ),
+                )
+        self.cyclic_last_plan_length = 0
+        return None
+
+    def _preferred_cyclic_direction(self, side: str) -> int | None:
+        votes = {
+            direction: self.cyclic_transport_evidence[(side, direction)]
+            for direction in (-1, 1)
+        }
+        direction, support = max(
+            votes.items(),
+            key=lambda item: (item[1], -item[0]),
+        )
+        return direction if support > 0 else None
+
+    @staticmethod
+    def _unit_rotation(
+        before: tuple[int, ...],
+        after: tuple[int, ...],
+    ) -> int | None:
+        if len(before) < 4 or len(before) != len(after):
+            return None
+        for direction in (1, -1):
+            if EpistemicExplorer._rotate_values(before, direction) == after:
+                return direction
+        return None
+
+    @staticmethod
+    def _rotate_values(values: tuple[int, ...], direction: int) -> tuple[int, ...]:
+        if not values:
+            return ()
+        amount = direction % len(values)
+        return values[amount:] + values[:amount]
+
+    @staticmethod
+    def _rotate_frame_track(
+        frame: tuple[tuple[int, ...], ...],
+        points: tuple[tuple[int, int], ...],
+        direction: int,
+    ) -> tuple[tuple[int, ...], ...]:
+        output = [list(row) for row in frame]
+        values = tuple(frame[y][x] for x, y in points)
+        for (x, y), value in zip(
+            points,
+            EpistemicExplorer._rotate_values(values, direction),
+        ):
+            output[y][x] = value
+        return tuple(tuple(row) for row in output)
+
+    @staticmethod
+    def _frame_contains(
+        frame: tuple[tuple[int, ...], ...],
+        points: tuple[tuple[int, int], ...],
+    ) -> bool:
+        return bool(frame) and all(
+            0 <= y < len(frame) and 0 <= x < len(frame[y]) for x, y in points
+        )
+
+    @staticmethod
+    def _anchors_satisfied(
+        frame: tuple[tuple[int, ...], ...],
+        anchors: tuple[_MarkedAnchor, ...],
+    ) -> bool:
+        return bool(anchors) and all(
+            frame[anchor.point[1]][anchor.point[0]] == anchor.marker_color
+            for anchor in anchors
+        )
+
+    @staticmethod
+    def _frame_objects(
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[_FrameObject, ...]:
+        if not frame or not frame[0]:
+            return ()
+        height = len(frame)
+        width = len(frame[0])
+        counts = Counter(cell for row in frame for cell in row)
+        background = max(counts, key=lambda color: (counts[color], -color))
+        seen: set[tuple[int, int]] = set()
+        output: list[_FrameObject] = []
+        for y in range(height):
+            for x in range(width):
+                color = frame[y][x]
+                if color == background or (x, y) in seen:
+                    continue
+                queue = deque([(x, y)])
+                seen.add((x, y))
+                points: list[tuple[int, int]] = []
+                while queue:
+                    point_x, point_y = queue.popleft()
+                    points.append((point_x, point_y))
+                    for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                        neighbor = (point_x + dx, point_y + dy)
+                        if (
+                            0 <= neighbor[0] < width
+                            and 0 <= neighbor[1] < height
+                            and neighbor not in seen
+                            and frame[neighbor[1]][neighbor[0]] == color
+                        ):
+                            seen.add(neighbor)
+                            queue.append(neighbor)
+                min_x = min(point[0] for point in points)
+                min_y = min(point[1] for point in points)
+                max_x = max(point[0] for point in points)
+                max_y = max(point[1] for point in points)
+                shape = tuple(
+                    sorted(
+                        (point_x - min_x, point_y - min_y)
+                        for point_x, point_y in points
+                    )
+                )
+                output.append(
+                    _FrameObject(
+                        color=color,
+                        area=len(points),
+                        bbox=(min_x, min_y, max_x, max_y),
+                        centroid=(
+                            sum(point[0] for point in points) // len(points),
+                            sum(point[1] for point in points) // len(points),
+                        ),
+                        shape=shape,
+                    )
+                )
+        return tuple(output)
+
+    @classmethod
+    def _marked_anchors(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[_MarkedAnchor, ...]:
+        objects = cls._frame_objects(frame)
+        groups: dict[
+            tuple[int, int, tuple[tuple[int, int], ...]],
+            list[_FrameObject],
+        ] = {}
+        for item in objects:
+            groups.setdefault((item.color, item.area, item.shape), []).append(item)
+        anchors: list[_MarkedAnchor] = []
+        for token in objects:
+            min_x, min_y, max_x, max_y = token.bbox
+            width = max_x - min_x + 1
+            height = max_y - min_y + 1
+            if width != height or token.area != width * height:
+                continue
+            for (_color, marker_area, _shape), markers in groups.items():
+                if marker_area >= token.area:
+                    continue
+                top_left = any(
+                    item.bbox[2] == min_x - 1 and item.bbox[3] == min_y - 1
+                    for item in markers
+                )
+                top_right = any(
+                    item.bbox[0] == max_x + 1 and item.bbox[3] == min_y - 1
+                    for item in markers
+                )
+                bottom_left = any(
+                    item.bbox[2] == min_x - 1 and item.bbox[1] == max_y + 1
+                    for item in markers
+                )
+                bottom_right = any(
+                    item.bbox[0] == max_x + 1 and item.bbox[1] == max_y + 1
+                    for item in markers
+                )
+                if top_left and top_right and bottom_left and bottom_right:
+                    anchors.append(
+                        _MarkedAnchor(
+                            point=token.centroid,
+                            marker_color=markers[0].color,
+                            token_area=token.area,
+                            token_shape=token.shape,
+                        )
+                    )
+                    break
+        return tuple(sorted(set(anchors), key=lambda item: item.point))
+
+    @classmethod
+    def _cyclic_tracks(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[_CyclicTrack, ...]:
+        anchors = cls._marked_anchors(frame)
+        if not anchors:
+            return ()
+        objects = cls._frame_objects(frame)
+        token_area = anchors[0].token_area
+        token_shape = anchors[0].token_shape
+        tokens = tuple(
+            item
+            for item in objects
+            if item.area == token_area and item.shape == token_shape
+        )
+        positions = {item.centroid for item in tokens}
+        if len(positions) < 4:
+            return ()
+        deltas: Counter[int] = Counter()
+        by_y: dict[int, list[int]] = {}
+        by_x: dict[int, list[int]] = {}
+        for x, y in positions:
+            by_y.setdefault(y, []).append(x)
+            by_x.setdefault(x, []).append(y)
+        for values in (*by_y.values(), *by_x.values()):
+            ordered = sorted(values)
+            deltas.update(
+                right - left
+                for left, right in zip(ordered, ordered[1:])
+                if right > left
+            )
+        if not deltas:
+            return ()
+        pitch = max(deltas.items(), key=lambda item: (item[1], -item[0]))[0]
+        x_values = sorted({point[0] for point in positions})
+        y_values = sorted({point[1] for point in positions})
+        rectangles: list[tuple[tuple[int, int], ...]] = []
+        for left_index, left in enumerate(x_values):
+            for right in x_values[left_index + 2 :]:
+                if (right - left) % pitch:
+                    continue
+                for top_index, top in enumerate(y_values):
+                    for bottom in y_values[top_index + 2 :]:
+                        if (bottom - top) % pitch:
+                            continue
+                        path = cls._rectangular_perimeter(
+                            left,
+                            top,
+                            right,
+                            bottom,
+                            pitch,
+                        )
+                        if all(point in positions for point in path) and all(
+                            anchor.point in path for anchor in anchors
+                        ):
+                            rectangles.append(path)
+        if not rectangles:
+            return ()
+        principal = max(
+            rectangles,
+            key=lambda path: (
+                (max(point[0] for point in path) - min(point[0] for point in path))
+                * (max(point[1] for point in path) - min(point[1] for point in path)),
+                len(path),
+                path,
+            ),
+        )
+        raw_tracks = [principal]
+        for anchor in anchors:
+            row = sorted(point for point in positions if point[1] == anchor.point[1])
+            containing_index = row.index(anchor.point)
+            start = containing_index
+            end = containing_index
+            while start > 0 and row[start][0] - row[start - 1][0] == pitch:
+                start -= 1
+            while end + 1 < len(row) and row[end + 1][0] - row[end][0] == pitch:
+                end += 1
+            contiguous = tuple(row[start : end + 1])
+            if len(contiguous) >= 5 and not set(contiguous).issubset(principal):
+                raw_tracks.append(contiguous)
+        tracks = []
+        for points in dict.fromkeys(raw_tracks):
+            left_controller, right_controller = cls._paired_controllers(
+                objects, points, pitch
+            )
+            tracks.append(
+                _CyclicTrack(
+                    points=points,
+                    left_controller=left_controller,
+                    right_controller=right_controller,
+                )
+            )
+        return tuple(tracks)
+
+    @staticmethod
+    def _rectangular_perimeter(
+        left: int,
+        top: int,
+        right: int,
+        bottom: int,
+        pitch: int,
+    ) -> tuple[tuple[int, int], ...]:
+        return (
+            *((x, top) for x in range(left, right + 1, pitch)),
+            *((right, y) for y in range(top + pitch, bottom + 1, pitch)),
+            *((x, bottom) for x in range(right - pitch, left - 1, -pitch)),
+            *((left, y) for y in range(bottom - pitch, top, -pitch)),
+        )
+
+    @staticmethod
+    def _paired_controllers(
+        objects: tuple[_FrameObject, ...],
+        points: tuple[tuple[int, int], ...],
+        pitch: int,
+    ) -> tuple[tuple[int, int] | None, tuple[int, int] | None]:
+        min_x = min(point[0] for point in points)
+        max_x = max(point[0] for point in points)
+        axis_y = points[0][1]
+        left = [
+            item
+            for item in objects
+            if item.centroid[0] < min_x and abs(item.centroid[1] - axis_y) <= pitch
+        ]
+        right = [
+            item
+            for item in objects
+            if item.centroid[0] > max_x and abs(item.centroid[1] - axis_y) <= pitch
+        ]
+        pairs = [
+            (left_item, right_item)
+            for left_item in left
+            for right_item in right
+            if left_item.area == right_item.area
+            and (
+                left_item.bbox[2] - left_item.bbox[0],
+                left_item.bbox[3] - left_item.bbox[1],
+            )
+            == (
+                right_item.bbox[2] - right_item.bbox[0],
+                right_item.bbox[3] - right_item.bbox[1],
+            )
+        ]
+        if not pairs:
+            return None, None
+        left_item, right_item = min(
+            pairs,
+            key=lambda pair: (
+                min_x - pair[0].centroid[0] + pair[1].centroid[0] - max_x,
+                abs(pair[0].centroid[1] - axis_y) + abs(pair[1].centroid[1] - axis_y),
+                pair[0].centroid,
+                pair[1].centroid,
+            ),
+        )
+        return left_item.centroid, right_item.centroid
+
     def _select_productive_role(
         self,
         tokens: tuple[ActionToken, ...],
@@ -717,8 +1332,7 @@ class EpistemicExplorer:
         state: StateKey,
     ) -> ActionToken | None:
         if not self.productive_role_reuse or (
-            self.level_failures < 2
-            and not self.pragmatic_disequilibrium_active
+            self.level_failures < 2 and not self.pragmatic_disequilibrium_active
         ):
             return None
         if self.level_interventions < self.min_productive_reuse_interventions:
@@ -800,9 +1414,7 @@ class EpistemicExplorer:
         roles: tuple[ActionRole, ...],
         *parts: str,
     ) -> str:
-        raw = "|".join(
-            (prefix, *parts, *(cls._role_key(role) for role in roles))
-        )
+        raw = "|".join((prefix, *parts, *(cls._role_key(role) for role in roles)))
         return hashlib.sha256(raw.encode()).hexdigest()[:12]
 
     def _learn_parameterized_variations(
@@ -819,14 +1431,10 @@ class EpistemicExplorer:
         for base_id, base in previous:
             if base_id == argument_id:
                 continue
-            interleaved = tuple(
-                role
-                for pair in zip(base, program)
-                for role in pair
-            )
-            shared_actions = {
-                role.action_id for role in base
-            } & {role.action_id for role in program}
+            interleaved = tuple(role for pair in zip(base, program) for role in pair)
+            shared_actions = {role.action_id for role in base} & {
+                role.action_id for role in program
+            }
             rebound = tuple(
                 next(
                     (
@@ -867,9 +1475,7 @@ class EpistemicExplorer:
                 )
                 self.variation_cursors.setdefault(scheme_id, 0)
         if len(self.parameterized_schemes) > 64:
-            retained = dict(
-                sorted(self.parameterized_schemes.items())[-64:]
-            )
+            retained = dict(sorted(self.parameterized_schemes.items())[-64:])
             self.parameterized_schemes = retained
             self.variation_cursors = {
                 key: self.variation_cursors.get(key, 0) for key in retained
@@ -982,9 +1588,7 @@ class EpistemicExplorer:
                 )
                 if not raw_constraints:
                     continue
-                action_slots = tuple(
-                    item.role.action_id for item in base[:32]
-                )
+                action_slots = tuple(item.role.action_id for item in base[:32])
                 if not action_slots:
                     continue
                 for operator in (
@@ -1022,8 +1626,7 @@ class EpistemicExplorer:
             retained = dict(sorted(self.relational_schemes.items())[-64:])
             self.relational_schemes = retained
             self.relational_cursors = {
-                key: self.relational_cursors.get(key, 0)
-                for key in retained
+                key: self.relational_cursors.get(key, 0) for key in retained
             }
             self.relational_last = {
                 key: value
@@ -1063,13 +1666,10 @@ class EpistemicExplorer:
             not self.relational_scheme_binding
             or not pragmatic_disequilibrium
             or not self.relational_schemes
-            or self.relational_level_trials
-            >= self.max_relational_trials_per_level
+            or self.relational_level_trials >= self.max_relational_trials_per_level
         ):
             return None
-        represented = tuple(
-            (token, self._grounding(token, scene)) for token in tokens
-        )
+        represented = tuple((token, self._grounding(token, scene)) for token in tokens)
         schemes = sorted(
             self.relational_schemes.values(),
             key=lambda scheme: (
@@ -1179,8 +1779,7 @@ class EpistemicExplorer:
                 matches = [
                     token
                     for token, represented_role in represented
-                    if represented_role == role
-                    and self.attempts[(state, token)] == 0
+                    if represented_role == role and self.attempts[(state, token)] == 0
                 ]
                 if matches:
                     self.variation_trials[scheme.scheme_id] += 1
@@ -1345,8 +1944,7 @@ class EpistemicExplorer:
                 (
                     item
                     for item in scene.primitives
-                    if item.kind
-                    in {"multicolor_region", "enclosed_region"}
+                    if item.kind in {"multicolor_region", "enclosed_region"}
                 ),
                 key=lambda item: (
                     item.complexity_cost,
@@ -1446,8 +2044,7 @@ class EpistemicExplorer:
             if 16 <= item.area <= 100
             and item.bbox[2] - item.bbox[0] == item.bbox[3] - item.bbox[1]
             and item.area
-            == (item.bbox[2] - item.bbox[0] + 1)
-            * (item.bbox[3] - item.bbox[1] + 1)
+            == (item.bbox[2] - item.bbox[0] + 1) * (item.bbox[3] - item.bbox[1] + 1)
         )
         if len(blocks) < 8:
             return ()
@@ -1570,8 +2167,7 @@ class EpistemicExplorer:
             if 16 <= item.area <= 100
             and item.bbox[2] - item.bbox[0] == item.bbox[3] - item.bbox[1]
             and item.area
-            == (item.bbox[2] - item.bbox[0] + 1)
-            * (item.bbox[3] - item.bbox[1] + 1)
+            == (item.bbox[2] - item.bbox[0] + 1) * (item.bbox[3] - item.bbox[1] + 1)
         )
         if len(blocks) < 8:
             return ()
@@ -1644,9 +2240,7 @@ class EpistemicExplorer:
                 center_color = clue[4]
                 for clue_index, (dx, dy) in zip(clue_indexes, directions):
                     expected_same = relation.get(clue[clue_index])
-                    neighbor = origins.get(
-                        (origin_x + dx * step, origin_y + dy * step)
-                    )
+                    neighbor = origins.get((origin_x + dx * step, origin_y + dy * step))
                     if expected_same is None or neighbor is None:
                         continue
                     centroid = neighbor.centroid
@@ -1772,29 +2366,27 @@ class EpistemicExplorer:
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()
             ),
-            "productive_reuse_level_trials": (
-                self.productive_reuse_level_trials
+            "productive_reuse_level_trials": (self.productive_reuse_level_trials),
+            "learned_cyclic_alignments": (
+                1 if self.cyclic_alignment_scheme is not None else 0
             ),
+            "cyclic_transport_evidence": sum(self.cyclic_transport_evidence.values()),
+            "cyclic_alignment_level_trials": (self.cyclic_alignment_level_trials),
+            "cyclic_last_plan_length": self.cyclic_last_plan_length,
             "level_interventions": self.level_interventions,
             "learned_local_relations": len(self.learned_local_relation),
             "successful_schemes": len(self.successful_schemes),
             "parameterized_schemes": len(self.parameterized_schemes),
             "parameterized_scheme_trials": sum(self.variation_trials.values()),
-            "starter_schemas": (
-                len(STARTER_SCHEMA_SET) if self.starter_schemas else 0
-            ),
+            "starter_schemas": (len(STARTER_SCHEMA_SET) if self.starter_schemas else 0),
             "starter_schema_ids": (
                 [item.schema_id for item in STARTER_SCHEMA_SET]
                 if self.starter_schemas
                 else []
             ),
-            "successful_relational_schemes": len(
-                self.successful_relational_schemes
-            ),
+            "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),
-            "relational_scheme_trials": sum(
-                self.relational_trials.values()
-            ),
+            "relational_scheme_trials": sum(self.relational_trials.values()),
             "responsive_relational_schemes": sum(
                 value > 0 for value in self.relational_responses.values()
             ),
@@ -1802,11 +2394,8 @@ class EpistemicExplorer:
                 value > 0 for value in self.relational_progress.values()
             ),
             "falsified_relational_schemes": sum(
-                self.relational_progress[scheme_id] * 4
-                - stagnations
-                < 0
-                for scheme_id, stagnations
-                in self.relational_stagnations.items()
+                self.relational_progress[scheme_id] * 4 - stagnations < 0
+                for scheme_id, stagnations in self.relational_stagnations.items()
             ),
             "relational_level_trials": self.relational_level_trials,
             "last_relational_binding": dict(self.last_relational_binding),
