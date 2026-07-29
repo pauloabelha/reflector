@@ -235,7 +235,7 @@ Result:
 - therefore multi-row cardinality was real, but ordinary reading order was the
   wrong binding relation. V33 is rejected without a preservation or full gate.
 
-## Active experiment: v34 bounded spatial-order variation
+## Rejected experiment: v34 bounded spatial-order variation
 
 Parent: accepted v32 `candidate-e9c00d0968c2832a`
 
@@ -256,6 +256,57 @@ Falsifier:
   v33's exact multi-row neutral-target cardinality;
 - the variation family is rejected if none of its four bounded programs
   advances `sb26` level 2, or if it regresses an accepted completion.
+
+Result:
+
+- the frozen candidate reproduced level 1 in nine actions;
+- it executed all four preregistered traversal programs, separated by the
+  bounded clear hypothesis, but level 2 did not advance;
+- the isolated result remained one level and `[9, 391]`;
+- therefore the missing relation is not a choice among ordinary row/column
+  traversals. V34 is rejected without a preservation or full gate.
+
+## Active experiment: v35 topology-guided nested target traversal
+
+Parent: accepted v32 `candidate-e9c00d0968c2832a`
+
+Observed disequilibrium:
+
+- the multi-row targets occupy a common column lattice;
+- one otherwise expected parent slot contains a non-neutral connector instead
+  of a target;
+- that connector's appearance matches the enclosing border of another target
+  row, making the second row a plausible child scheme rather than a sibling;
+- a flat row or column traversal cannot express “resume the parent after
+  applying the child.”
+
+Preregistered mutation:
+
+- preserve v32's exact reference/selector attribute bijection and v33's exact
+  target cardinality;
+- infer two to four target rows on a shared coordinate lattice;
+- infer each row's container attribute only from nearby rendered pixels;
+- interpret a non-neutral missing lattice slot as a child link only when its
+  attribute matches exactly one other row container;
+- require exactly one root, an acyclic graph, no repeated child, no unresolved
+  slot, and exact emitted-target cardinality;
+- traverse each row left-to-right, recursively expand a linked child at its
+  connector slot, then resume the parent;
+- cap the construction at four rows and twelve targets and otherwise abstain.
+
+Predicted `sb26` level-2 traversal:
+
+- emit the first two parent targets;
+- expand all four targets in the linked child row;
+- resume and emit the final parent target;
+- execute seven select/apply pairs plus commit, so a success should change the
+  per-level action trace from `[9, 391]` to a prefix of `[9, 15, ...]`.
+
+Falsifier:
+
+- the advisor is silent unless every structural invariant above is satisfied;
+- reject v35 if the rendered graph is not inferred, the predicted 15-action
+  program does not advance level 2, or any accepted completion regresses.
 
 ## Rejected experimental branch: v28 object and temporal primitives
 

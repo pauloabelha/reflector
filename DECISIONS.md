@@ -574,3 +574,22 @@ fourteen select/apply actions plus commit on level 2. The level did not
 advance; the final result remained one level and `[9, 391]`. The experiment
 therefore isolates target ordering—not target detection or attribute
 bijection—as the remaining disequilibrium. V33 is rejected before wider gates.
+
+## 2026-07-29 — Reject v34 bounded spatial-order variation
+
+V34 treated the unresolved multi-row binding order as a bounded symbolic
+parameter. It tested row-major, alternating-row, column-major, and
+alternating-column traversals, using the remaining non-click control as a
+clear hypothesis between complete programs.
+
+The frozen run reproduced `sb26` level 1 in nine actions and executed all four
+programs, but level 2 still did not advance. The isolated score remained
+2.7777777778/100 with one of eight levels and `[9, 391]`. The evidence rejects
+ordinary two-dimensional ordering variation; it does not reject structured
+composition of the target rows.
+
+Inspection of the public development environment then informed a new, generic
+hypothesis: a colored occupied slot can link a parent container to a
+color-matched child container, requiring depth-first expansion and resumption.
+Any descendant must infer this solely from rendered pixels and remain free of
+game identity, fixed coordinates, palette constants, or source imports.
