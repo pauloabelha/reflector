@@ -229,12 +229,40 @@ def test_starter_schemas_are_content_free_and_enter_operative_credit() -> None:
     assert choice.token.data == (("x", 1), ("y", 1))
     assert explorer.last_scheme_components == (
         "scheme:starter:intervene-on-object",
+        "scheme:starter:probe-action-family",
     )
     assert explorer.to_dict()["starter_schemas"] == len(STARTER_SCHEMA_SET)
     serialized = repr(STARTER_SCHEMA_SET)
     assert "game_id" not in serialized
     assert "coordinate" not in serialized
     assert all(item.complexity_cost > 0 for item in STARTER_SCHEMA_SET)
+
+
+def test_starter_action_schema_probes_each_legal_family() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2, 6),
+        frame=(
+            (1, 0, 2, 0, 3),
+            (0, 4, 0, 5, 0),
+        ),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(starter_schemas=True)
+    explorer.observe(observation, scene)
+
+    choices = []
+    for _ in range(6):
+        choices.append(
+            explorer.select(
+                observation,
+                scene,
+                (1, 2, 6),
+            ).token.action_id
+        )
+        explorer.observe(observation, scene)
+
+    assert choices == [1, 2, 6, 1, 2, 6]
 
 
 def test_relational_modifier_grounds_on_recolored_translated_objects() -> None:

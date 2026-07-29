@@ -229,6 +229,10 @@ class EpistemicExplorer:
     last_relational_binding: dict[str, Any] = field(default_factory=dict)
     last_scheme_components: tuple[str, ...] = ()
 
+    @property
+    def uses_action_family_schema(self) -> bool:
+        return self.hierarchical_action_fairness or self.starter_schemas
+
     def arbitration_snapshot(self, selected_reason: str) -> tuple[dict[str, str], ...]:
         """Explain deterministic advisor priority without inventing prose."""
 
@@ -245,7 +249,7 @@ class EpistemicExplorer:
             order.append("local-relation-repair")
         if self.parameterized_scheme_variation:
             order.append("parameterized-scheme-variation")
-        if self.hierarchical_action_fairness:
+        if self.uses_action_family_schema:
             order.append("hierarchical-action-fairness")
         order.extend(("untried-state-intervention", "known-frontier-navigation"))
         order.append("least-repeated-fallback")
@@ -544,7 +548,7 @@ class EpistemicExplorer:
                 scene,
             )
 
-        if self.hierarchical_action_fairness:
+        if self.uses_action_family_schema:
             _index, balanced = min(
                 enumerate(tokens),
                 key=lambda item: (
@@ -594,7 +598,7 @@ class EpistemicExplorer:
             key=lambda token: (
                 (
                     self.family_attempts[(state, token.action_id)]
-                    if self.hierarchical_action_fairness
+                    if self.uses_action_family_schema
                     else 0
                 ),
                 self.attempts[(state, token)],
@@ -646,8 +650,9 @@ class EpistemicExplorer:
             self.episode_roles.append(grounding.role)
             self.episode_groundings.append(grounding)
         if self.starter_schemas and not self.last_scheme_components:
-            self.last_scheme_components = (
-                self._starter_component(reason, grounding),
+            self.last_scheme_components = self._starter_components(
+                reason,
+                grounding,
             )
         self.pending_frame = self.selection_frame
         self.pending_role = grounding.role
@@ -656,10 +661,10 @@ class EpistemicExplorer:
         return ExplorationChoice(token, reason)
 
     @staticmethod
-    def _starter_component(
+    def _starter_components(
         reason: str,
         grounding: GroundedRole,
-    ) -> str:
+    ) -> tuple[str, ...]:
         if "repair-local-relation" in reason:
             schema_id = "repair-relation"
         elif "hierarchical-action-family" in reason:
@@ -668,7 +673,10 @@ class EpistemicExplorer:
             schema_id = "intervene-on-object"
         else:
             schema_id = "bounded-novelty"
-        return f"scheme:starter:{schema_id}"
+        components = {f"scheme:starter:{schema_id}"}
+        if grounding.centroid is not None:
+            components.add("scheme:starter:intervene-on-object")
+        return tuple(sorted(components))
 
     def _select_productive_role(
         self,
@@ -1165,7 +1173,7 @@ class EpistemicExplorer:
         token: ActionToken,
         stable_index: int,
     ) -> tuple[int, ...]:
-        if self.hierarchical_action_fairness:
+        if self.uses_action_family_schema:
             return (
                 self.global_family_attempts[token.action_id],
                 self.family_attempts[(state, token.action_id)],
