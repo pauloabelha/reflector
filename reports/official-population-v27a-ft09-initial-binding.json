@@ -1,0 +1,1019 @@
+{
+  "kind": "local-official-population-experiment",
+  "claim_boundary": "Parallel local development evidence; not a full-suite accepted score and not a Kaggle leaderboard score.",
+  "max_workers": 4,
+  "reruns": 2,
+  "cognitive_stream_dir": "/tmp/reflector-v27-population-stream-3",
+  "strategies": [
+    {
+      "name": "relation-repair-control",
+      "field": null,
+      "value": null,
+      "rationale": "Retain the parent's evidenced relation-repair arbitration.",
+      "falsifier": "The control is falsified as a baseline if deterministic reruns differ.",
+      "candidate": {
+        "candidate_id": "candidate-9ae22bcd1c5dbe9b",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": false,
+          "enable_successful_role_replay": false,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": false,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": false,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": false,
+          "enable_parameterized_scheme_variation": false,
+          "enable_starter_schemas": false,
+          "enable_relational_scheme_binding": false,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Frozen control for the parallel symbolic strategy round.",
+        "mutation_source": "collective-control-v1",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    },
+    {
+      "name": "action-family-fairness",
+      "field": "enable_hierarchical_action_fairness",
+      "value": true,
+      "rationale": "Balance trials across legal action families before repeating them.",
+      "falsifier": "Reject if it regresses any control completion or fails to improve levels or equal-budget official score.",
+      "candidate": {
+        "candidate_id": "candidate-0e995eff513aedef",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": true,
+          "enable_successful_role_replay": false,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": false,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": false,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": false,
+          "enable_parameterized_scheme_variation": false,
+          "enable_starter_schemas": false,
+          "enable_relational_scheme_binding": false,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Balance trials across legal action families before repeating them.",
+        "mutation_source": "symbolic-strategy:action-family-fairness",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    },
+    {
+      "name": "successful-structural-replay",
+      "field": "enable_successful_role_replay",
+      "value": true,
+      "rationale": "Replay a completed level's coordinate-free action-role program.",
+      "falsifier": "Reject if replay fails to improve a later level or regresses any control completion.",
+      "candidate": {
+        "candidate_id": "candidate-3071617934b0de7f",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": false,
+          "enable_successful_role_replay": true,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": false,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": false,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": false,
+          "enable_parameterized_scheme_variation": false,
+          "enable_starter_schemas": false,
+          "enable_relational_scheme_binding": false,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Replay a completed level's coordinate-free action-role program.",
+        "mutation_source": "symbolic-strategy:successful-structural-replay",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    },
+    {
+      "name": "productive-role-reuse",
+      "field": "enable_productive_role_reuse",
+      "value": true,
+      "rationale": "Prefer object-role interventions with observed productive effects.",
+      "falsifier": "Reject if role reuse fails to improve levels or equal-budget score without a control regression.",
+      "candidate": {
+        "candidate_id": "candidate-1e0d0981169390b5",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": false,
+          "enable_successful_role_replay": false,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": true,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": false,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": false,
+          "enable_parameterized_scheme_variation": false,
+          "enable_starter_schemas": false,
+          "enable_relational_scheme_binding": false,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Prefer object-role interventions with observed productive effects.",
+        "mutation_source": "symbolic-strategy:productive-role-reuse",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    },
+    {
+      "name": "constraint-first-structural-replay",
+      "field": "enable_constraint_first_role_replay",
+      "value": true,
+      "rationale": "Repair active evidenced relations before replaying a completed level's coordinate-free action-role program.",
+      "falsifier": "Reject if constraint-first replay fails to improve levels or equal-budget score without a control regression.",
+      "candidate": {
+        "candidate_id": "candidate-88f3bbe7cd7d553e",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": false,
+          "enable_successful_role_replay": false,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": false,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": true,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": false,
+          "enable_parameterized_scheme_variation": false,
+          "enable_starter_schemas": false,
+          "enable_relational_scheme_binding": false,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Repair active evidenced relations before replaying a completed level's coordinate-free action-role program.",
+        "mutation_source": "symbolic-strategy:constraint-first-structural-replay",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    },
+    {
+      "name": "preregistered-structural-credit",
+      "field": "enable_preregistered_structural_credit",
+      "value": true,
+      "rationale": "Prime the exact symbolic dependencies of a causal forecast before intervention and keep predictive and pragmatic credit typed.",
+      "falsifier": "Reject if preregistration changes control behavior without a reproducible gain or cannot name the credited structure.",
+      "candidate": {
+        "candidate_id": "candidate-1bd1a29eb674ab20",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": false,
+          "enable_successful_role_replay": false,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": false,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": false,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": true,
+          "enable_parameterized_scheme_variation": false,
+          "enable_starter_schemas": false,
+          "enable_relational_scheme_binding": false,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Prime the exact symbolic dependencies of a causal forecast before intervention and keep predictive and pragmatic credit typed.",
+        "mutation_source": "symbolic-strategy:preregistered-structural-credit",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    },
+    {
+      "name": "parameterized-scheme-variation",
+      "field": "enable_parameterized_scheme_variation",
+      "value": true,
+      "rationale": "Use one successful coordinate-free scheme as a typed prefix, suffix, interleaving, or role-binding argument to another.",
+      "falsifier": "Reject if bounded scheme variation fails to improve progress without regressing a control completion.",
+      "candidate": {
+        "candidate_id": "candidate-1e214a2a3ed19d67",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": false,
+          "enable_successful_role_replay": false,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": false,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": false,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": false,
+          "enable_parameterized_scheme_variation": true,
+          "enable_starter_schemas": false,
+          "enable_relational_scheme_binding": false,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Use one successful coordinate-free scheme as a typed prefix, suffix, interleaving, or role-binding argument to another.",
+        "mutation_source": "symbolic-strategy:parameterized-scheme-variation",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    },
+    {
+      "name": "starter-schema-endowment",
+      "field": "enable_starter_schemas",
+      "value": true,
+      "rationale": "Expose a minimal game-agnostic sensorimotor schema inventory on the operative credit path.",
+      "falsifier": "Reject if the endowment changes task behavior without reproducible benefit or if any schema encodes public-game content.",
+      "candidate": {
+        "candidate_id": "candidate-7d6c46a628270a60",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": false,
+          "enable_successful_role_replay": false,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": false,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": false,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": false,
+          "enable_parameterized_scheme_variation": false,
+          "enable_starter_schemas": true,
+          "enable_relational_scheme_binding": false,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Expose a minimal game-agnostic sensorimotor schema inventory on the operative credit path.",
+        "mutation_source": "symbolic-strategy:starter-schema-endowment",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    },
+    {
+      "name": "relational-scheme-binding",
+      "field": "enable_relational_scheme_binding",
+      "value": true,
+      "rationale": "Use one productive scheme's same/different and spatial relations as manner constraints over another scheme's action slots.",
+      "falsifier": "Reject if grounded bindings fail to improve progress without regressing a control completion.",
+      "candidate": {
+        "candidate_id": "candidate-a2a45e2717942f62",
+        "config": {
+          "enable_concepts": true,
+          "enable_counterfactual_pressure": true,
+          "enable_schema_complexity_pressure": true,
+          "enable_experiments": true,
+          "enable_planning": true,
+          "enable_reflecting_abstraction": true,
+          "enable_accommodation": true,
+          "enable_transformations": true,
+          "enable_modal_reasoning": true,
+          "enable_comparison_transfer": true,
+          "enable_comparison_composition": true,
+          "enable_language_meta_reflection": true,
+          "enable_concept_retirement": true,
+          "enable_epistemic_state_graph": true,
+          "enable_hierarchical_action_fairness": false,
+          "enable_successful_role_replay": false,
+          "enable_multicolor_click_objects": false,
+          "enable_click_object_accommodation": true,
+          "enable_productive_role_reuse": false,
+          "enable_local_relation_solver": true,
+          "enable_constraint_first_role_replay": false,
+          "enable_global_relation_constraint_solver": true,
+          "enable_preregistered_structural_credit": false,
+          "enable_parameterized_scheme_variation": false,
+          "enable_starter_schemas": false,
+          "enable_relational_scheme_binding": true,
+          "action_budget": 400,
+          "planner_max_depth": 3,
+          "planner_max_expansions": 64,
+          "information_weight": 1.0,
+          "experiment_weight": 0.25,
+          "plan_weight": 10.0,
+          "hierarchy_complexity_pressure": 1.0
+        },
+        "parent_id": "candidate-036a55bfb6956008",
+        "contributor_ids": [
+          "candidate-036a55bfb6956008"
+        ],
+        "generation": 8,
+        "rationale": "Use one productive scheme's same/different and spatial relations as manner constraints over another scheme's action slots.",
+        "mutation_source": "symbolic-strategy:relational-scheme-binding",
+        "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+      }
+    }
+  ],
+  "outcomes": [
+    {
+      "strategy": "action-family-fairness",
+      "candidate_id": "candidate-0e995eff513aedef",
+      "rerun": 1,
+      "report_sha256": "f90bff6a8358698049ff2d21c9e681ab3914a40718047a2f312c861d3938daa9",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "action-family-fairness",
+      "candidate_id": "candidate-0e995eff513aedef",
+      "rerun": 2,
+      "report_sha256": "80c237738d6a3081fed701635a84231c10b32b83c171e1c9fbb46c05c2f4806c",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "constraint-first-structural-replay",
+      "candidate_id": "candidate-88f3bbe7cd7d553e",
+      "rerun": 1,
+      "report_sha256": "a383e93d19477fce982b8c12b5a5fe315c225e94f540ad39fd662b8095435c6e",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "constraint-first-structural-replay",
+      "candidate_id": "candidate-88f3bbe7cd7d553e",
+      "rerun": 2,
+      "report_sha256": "dd35dabdf84a484d77290d0b3b90606135cb86d5f68ca7d5265a97bcd830004e",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "parameterized-scheme-variation",
+      "candidate_id": "candidate-1e214a2a3ed19d67",
+      "rerun": 1,
+      "report_sha256": "6a108e49a145cd06271e5c2df6521c4a9c5e378dc5c5a2ec2ad38a7d394c6425",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "parameterized-scheme-variation",
+      "candidate_id": "candidate-1e214a2a3ed19d67",
+      "rerun": 2,
+      "report_sha256": "c75b187642c75268cb781215447e41b25507a178824ec6aafad861034e6f656f",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "preregistered-structural-credit",
+      "candidate_id": "candidate-1bd1a29eb674ab20",
+      "rerun": 1,
+      "report_sha256": "f17858e49f98f41b22d93552bdd84e2a82fec8f6351b2999400e12bf96659ad7",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "preregistered-structural-credit",
+      "candidate_id": "candidate-1bd1a29eb674ab20",
+      "rerun": 2,
+      "report_sha256": "4c9da4f21cab35e7568143337e027884234916f51b7694483b434b9472080db9",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "productive-role-reuse",
+      "candidate_id": "candidate-1e0d0981169390b5",
+      "rerun": 1,
+      "report_sha256": "b7bd347fa899b4fc5de0b42dca40ca04642751fa17ed289be7ba5c226cb678b8",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "productive-role-reuse",
+      "candidate_id": "candidate-1e0d0981169390b5",
+      "rerun": 2,
+      "report_sha256": "c41a83dfb5eeaf1a0d80fe30ba19861670427d920fcae36f864f84ccda60c8cd",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "relation-repair-control",
+      "candidate_id": "candidate-9ae22bcd1c5dbe9b",
+      "rerun": 1,
+      "report_sha256": "44a28ad7d57df25b8c17dcb737b33d3e8b0aef8f16f6d965045770cb6207f8e9",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "relation-repair-control",
+      "candidate_id": "candidate-9ae22bcd1c5dbe9b",
+      "rerun": 2,
+      "report_sha256": "a15732c0b751e625f0a766ee9201321247326feb7ddaced869d0a83c696cb39c",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "relational-scheme-binding",
+      "candidate_id": "candidate-a2a45e2717942f62",
+      "rerun": 1,
+      "report_sha256": "8faf7bba16c4d04e437204ad3df1a265f8116b0a7e869e84382aa7132195e533",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 39.338624338624335,
+      "total_levels_completed": 4,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 4,
+          "actions": 400,
+          "score": 39.338624338624335,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            20,
+            48,
+            321,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "relational-scheme-binding",
+      "candidate_id": "candidate-a2a45e2717942f62",
+      "rerun": 2,
+      "report_sha256": "88db731607524bc57ca1edeac4baccc1016dcf19be91b12a90c95922fa26a42e",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 39.338624338624335,
+      "total_levels_completed": 4,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 4,
+          "actions": 400,
+          "score": 39.338624338624335,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            20,
+            48,
+            321,
+            0
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "starter-schema-endowment",
+      "candidate_id": "candidate-7d6c46a628270a60",
+      "rerun": 1,
+      "report_sha256": "be210028949d28433e97d44b50e6e7676368ca51542c27285b5627be5968d0a5",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "starter-schema-endowment",
+      "candidate_id": "candidate-7d6c46a628270a60",
+      "rerun": 2,
+      "report_sha256": "a55454604c363209a2552af8a4ebaabf899d9da85b93ec502096071167127acc",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.14660803207657,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.14660803207657,
+          "completed": false,
+          "level_actions": [
+            4,
+            7,
+            14,
+            16,
+            94,
+            265
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "successful-structural-replay",
+      "candidate_id": "candidate-3071617934b0de7f",
+      "rerun": 1,
+      "report_sha256": "de6ee16fa8b2bfc6f5b7571161dbc3e94ebb46c076792fbd46954f94f782355b",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.39275666330816,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.39275666330816,
+          "completed": false,
+          "level_actions": [
+            4,
+            9,
+            14,
+            16,
+            93,
+            264
+          ]
+        }
+      }
+    },
+    {
+      "strategy": "successful-structural-replay",
+      "candidate_id": "candidate-3071617934b0de7f",
+      "rerun": 2,
+      "report_sha256": "3b944fcebc7cc45d0eb863ac981222183550033126cef61e27947d936bfbf54c",
+      "source_commit": "26b7b0c3fce2f864751f65775c80ce1ed95d4201",
+      "score": 66.39275666330816,
+      "total_levels_completed": 5,
+      "total_actions": 400,
+      "games": {
+        "ft09": {
+          "levels_completed": 5,
+          "actions": 400,
+          "score": 66.39275666330816,
+          "completed": false,
+          "level_actions": [
+            4,
+            9,
+            14,
+            16,
+            93,
+            264
+          ]
+        }
+      }
+    }
+  ],
+  "inherited_traits": [
+    {
+      "field": "enable_successful_role_replay",
+      "value": true,
+      "donor_id": "candidate-3071617934b0de7f",
+      "control_id": "candidate-9ae22bcd1c5dbe9b",
+      "evidence_scope": [
+        "ft09"
+      ],
+      "evidence_sha256": "1db471bfd79c40ee0673bd1bb4e8a8ac5036c5bf9f94695bab4c4f7cf7b3f495",
+      "score_delta": 0.24614863123159125,
+      "levels_delta": 0,
+      "deterministic_reruns": 2
+    }
+  ],
+  "offspring": {
+    "candidate_id": "candidate-0f7c89ed0148699d",
+    "config": {
+      "enable_concepts": true,
+      "enable_counterfactual_pressure": true,
+      "enable_schema_complexity_pressure": true,
+      "enable_experiments": true,
+      "enable_planning": true,
+      "enable_reflecting_abstraction": true,
+      "enable_accommodation": true,
+      "enable_transformations": true,
+      "enable_modal_reasoning": true,
+      "enable_comparison_transfer": true,
+      "enable_comparison_composition": true,
+      "enable_language_meta_reflection": true,
+      "enable_concept_retirement": true,
+      "enable_epistemic_state_graph": true,
+      "enable_hierarchical_action_fairness": false,
+      "enable_successful_role_replay": true,
+      "enable_multicolor_click_objects": false,
+      "enable_click_object_accommodation": true,
+      "enable_productive_role_reuse": false,
+      "enable_local_relation_solver": true,
+      "enable_constraint_first_role_replay": false,
+      "enable_global_relation_constraint_solver": true,
+      "enable_preregistered_structural_credit": false,
+      "enable_parameterized_scheme_variation": false,
+      "enable_starter_schemas": false,
+      "enable_relational_scheme_binding": false,
+      "action_budget": 400,
+      "planner_max_depth": 3,
+      "planner_max_expansions": 64,
+      "information_weight": 1.0,
+      "experiment_weight": 0.25,
+      "plan_weight": 10.0,
+      "hierarchy_complexity_pressure": 1.0
+    },
+    "parent_id": "candidate-9ae22bcd1c5dbe9b",
+    "contributor_ids": [
+      "candidate-3071617934b0de7f",
+      "candidate-9ae22bcd1c5dbe9b"
+    ],
+    "generation": 9,
+    "rationale": "Combine only deterministic, positive, non-regressive operative strategy traits from the completed official round.",
+    "mutation_source": "deterministic-symbolic-breeding-v1",
+    "inference_fingerprint": "3e088415d574db91db7b695f2dc2b3e1c4711afe29e9ce857a1d38ce36b0c0a9"
+  },
+  "offspring_status": "created from deterministic positive non-regressive traits"
+}

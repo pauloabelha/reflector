@@ -216,6 +216,9 @@ class EpistemicExplorer:
     relational_cursors: dict[str, int] = field(default_factory=dict)
     relational_last: dict[str, GroundedRole] = field(default_factory=dict)
     relational_trials: Counter[str] = field(default_factory=Counter)
+    relational_responses: Counter[str] = field(default_factory=Counter)
+    relational_stagnations: Counter[str] = field(default_factory=Counter)
+    pending_relational_scheme: str | None = None
     last_relational_binding: dict[str, Any] = field(default_factory=dict)
     last_scheme_components: tuple[str, ...] = ()
 
@@ -347,6 +350,7 @@ class EpistemicExplorer:
     def _record_response(self, observation: Observation) -> None:
         if self.pending_role is None or not self.pending_frame:
             self.pending_grounding = None
+            self.pending_relational_scheme = None
             return
         before = self.pending_frame
         after = observation.frame
@@ -355,6 +359,8 @@ class EpistemicExplorer:
         self.pending_role = None
         grounding = self.pending_grounding
         self.pending_grounding = None
+        relational_scheme = self.pending_relational_scheme
+        self.pending_relational_scheme = None
         self.role_trials[role] += 1
         if len(before) != len(after) or not before or not after:
             return
@@ -372,6 +378,10 @@ class EpistemicExplorer:
             self.role_responses[role] += 1
             if grounding is not None:
                 self.productive_groundings.append(grounding)
+            if relational_scheme is not None:
+                self.relational_responses[relational_scheme] += 1
+        elif relational_scheme is not None:
+            self.relational_stagnations[relational_scheme] += 1
 
     def _reorganize_click_ontology(self) -> None:
         """Invalidate graph evidence whose action tokens changed meaning."""
@@ -391,6 +401,7 @@ class EpistemicExplorer:
         self.pending_frame = ()
         self.pending_role = None
         self.pending_grounding = None
+        self.pending_relational_scheme = None
 
     def select(
         self,
@@ -443,25 +454,6 @@ class EpistemicExplorer:
                 scene,
             )
 
-        relational = self._select_relational_binding(
-            state,
-            tokens,
-            scene,
-            pragmatic_disequilibrium=pragmatic_disequilibrium,
-            structure_scores=structure_scores or {},
-        )
-        if relational is not None:
-            token, relational_scheme = relational
-            self.last_scheme_components = relational_scheme.components()
-            return self._issue(
-                state,
-                token,
-                "epistemic-frontier:relational-scheme-binding:"
-                f"{relational_scheme.operator}:"
-                f"{relational_scheme.scheme_id}",
-                scene,
-            )
-
         productive = self._select_productive_role(tokens, scene, state)
         if productive is not None:
             return self._issue(
@@ -485,6 +477,26 @@ class EpistemicExplorer:
                     "epistemic-frontier:repair-local-relation",
                     scene,
                 )
+
+        relational = self._select_relational_binding(
+            state,
+            tokens,
+            scene,
+            pragmatic_disequilibrium=pragmatic_disequilibrium,
+            structure_scores=structure_scores or {},
+        )
+        if relational is not None:
+            token, relational_scheme = relational
+            self.last_scheme_components = relational_scheme.components()
+            self.pending_relational_scheme = relational_scheme.scheme_id
+            return self._issue(
+                state,
+                token,
+                "epistemic-frontier:relational-scheme-binding:"
+                f"{relational_scheme.operator}:"
+                f"{relational_scheme.scheme_id}",
+                scene,
+            )
 
         variation = self._select_scheme_variation(
             state,
@@ -970,13 +982,25 @@ class EpistemicExplorer:
         schemes = sorted(
             self.relational_schemes.values(),
             key=lambda scheme: (
-                -structure_scores.get(f"scheme:{scheme.scheme_id}", 0),
+                -(
+                    structure_scores.get(
+                        f"scheme:{scheme.scheme_id}",
+                        0,
+                    )
+                    + self.relational_responses[scheme.scheme_id] * 4
+                    - self.relational_stagnations[scheme.scheme_id]
+                ),
                 self.relational_trials[scheme.scheme_id],
                 scheme.scheme_id,
             ),
         )
         for scheme in schemes:
-            if structure_scores.get(f"scheme:{scheme.scheme_id}", 0) < 0:
+            pragmatic_score = (
+                structure_scores.get(f"scheme:{scheme.scheme_id}", 0)
+                + self.relational_responses[scheme.scheme_id] * 4
+                - self.relational_stagnations[scheme.scheme_id]
+            )
+            if pragmatic_score < 0:
                 continue
             cursor = self.relational_cursors.get(scheme.scheme_id, 0)
             action_id = scheme.action_slots[cursor % len(scheme.action_slots)]
@@ -1600,6 +1624,16 @@ class EpistemicExplorer:
             "relational_schemes": len(self.relational_schemes),
             "relational_scheme_trials": sum(
                 self.relational_trials.values()
+            ),
+            "responsive_relational_schemes": sum(
+                value > 0 for value in self.relational_responses.values()
+            ),
+            "falsified_relational_schemes": sum(
+                self.relational_responses[scheme_id] * 4
+                - stagnations
+                < 0
+                for scheme_id, stagnations
+                in self.relational_stagnations.items()
             ),
             "last_relational_binding": dict(self.last_relational_binding),
             "frontier_states": sum(

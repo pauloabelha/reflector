@@ -278,10 +278,20 @@ def test_relational_modifier_grounds_on_recolored_translated_objects() -> None:
         (6,),
         pragmatic_disequilibrium=True,
     )
-    explorer.observe(observation, scene)
+    responsive = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (9, 9, 9, 9, 0),
+            (0, 7, 0, 8, 0),
+            (0, 0, 0, 0, 0),
+        ),
+    )
+    responsive_scene = _scene(responsive)
+    explorer.observe(responsive, responsive_scene)
     second = explorer.select(
-        observation,
-        scene,
+        responsive,
+        responsive_scene,
         (6,),
         pragmatic_disequilibrium=True,
     )
@@ -294,6 +304,49 @@ def test_relational_modifier_grounds_on_recolored_translated_objects() -> None:
     )
     assert repr(scheme).count("7") == 0
     assert repr(scheme).count("8") == 0
+
+
+def test_no_effect_falsifies_only_the_grounded_relational_scheme() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((0, 0),),
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(relational_scheme_binding=True)
+    explorer.observe(observation, scene)
+    scheme = RelationalScheme(
+        scheme_id="falsified",
+        base_id="base",
+        modifier_id="modifier",
+        operator="full-manner",
+        action_slots=(2,),
+        constraints=(RoleRelation(),),
+        evidence=("base", "modifier"),
+    )
+    explorer.relational_schemes[scheme.scheme_id] = scheme
+
+    first = explorer.select(
+        observation,
+        scene,
+        (1, 2),
+        pragmatic_disequilibrium=True,
+    )
+    explorer.observe(observation, scene)
+    second = explorer.select(
+        observation,
+        scene,
+        (1, 2),
+        pragmatic_disequilibrium=True,
+    )
+
+    assert first.token.action_id == 2
+    assert "relational-scheme-binding" in first.reason
+    assert second.token.action_id == 1
+    assert "relational-scheme-binding" not in second.reason
+    assert explorer.to_dict()["falsified_relational_schemes"] == 1
+    assert scheme.base_id == "base"
+    assert scheme.modifier_id == "modifier"
 
 
 def test_relational_program_identity_ignores_color_permutation_and_translation() -> None:
