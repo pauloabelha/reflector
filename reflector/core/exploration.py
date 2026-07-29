@@ -238,6 +238,7 @@ class EpistemicExplorer:
     pending_relational_scheme: str | None = None
     last_relational_binding: dict[str, Any] = field(default_factory=dict)
     last_scheme_components: tuple[str, ...] = ()
+    primitive_accommodation_active: bool = False
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -459,6 +460,8 @@ class EpistemicExplorer:
         state = self._state_key(observation, scene)
         if self.current_state != state:
             self.observe(observation, scene)
+        if self.visual_primitives and pragmatic_disequilibrium:
+            self.primitive_accommodation_active = True
         tokens = self._tokens(observation, scene, legal_actions)
         if not tokens:
             raise ValueError("epistemic explorer has no represented legal action")
@@ -1310,7 +1313,9 @@ class EpistemicExplorer:
             self.click_object_accommodation and self.level_failures > 0
         ):
             candidates.extend(self._multicolor_candidates(observation))
-        if self.visual_primitives and self.level_failures > 0:
+        if self.visual_primitives and (
+            self.level_failures > 0 or self.primitive_accommodation_active
+        ):
             primitives = sorted(
                 (
                     item

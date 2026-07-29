@@ -129,6 +129,37 @@ def test_primitive_click_keeps_composite_provenance_and_scheme_credit() -> None:
     )
 
 
+def test_pragmatic_disequilibrium_activates_primitive_accommodation() -> None:
+    observation = _observation(
+        (
+            (0, 0, 0, 0, 0),
+            (0, 2, 2, 2, 0),
+            (0, 2, 0, 2, 0),
+            (0, 2, 2, 2, 0),
+            (0, 0, 0, 0, 0),
+        )
+    )
+    scene, _events = SceneTracker(enable_visual_primitives=True).perceive(
+        observation
+    )
+    explorer = EpistemicExplorer(visual_primitives=True)
+    plain = explorer._tokens(observation, scene, (6,))
+
+    explorer.observe(observation, scene)
+    explorer.select(
+        observation,
+        scene,
+        (6,),
+        pragmatic_disequilibrium=True,
+    )
+    accommodated = explorer._tokens(observation, scene, (6,))
+
+    assert explorer.primitive_accommodation_active
+    assert accommodated != plain
+    assert explorer.pending_grounding is not None
+    assert explorer.pending_grounding.primitive_id is not None
+
+
 def test_passive_object_concepts_do_not_change_click_token_order() -> None:
     observation = _observation(
         (
