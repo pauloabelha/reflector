@@ -1,0 +1,2135 @@
+{
+  "format": "reflector-action-translation-audit-v1",
+  "games": 25,
+  "games_with_authority": 13,
+  "games_with_inverse_pairs": 7,
+  "recordings_root": "/tmp/reflector-v74-clean-isolated-recordings",
+  "results": {
+    "ar25": {
+      "authoritative_law_count": 4,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 10,
+          "episode": 1,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 9
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 1,
+          "proposal_sequence": 13,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 7,
+          "episode": 2,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 3,
+          "episode": 3,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 2
+        }
+      ],
+      "diagnostics": {
+        "ambiguous-dominant-translation": 5,
+        "contextual-noop-preserves-hypothesis": 4,
+        "no-unambiguous-nonzero-translation": 10,
+        "proposed-translation-law": 8,
+        "prospectively-confirmed-translation-law": 18
+      },
+      "episodes": 3,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 45,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/ar25/ar25.reflectoragent.12ce1640-1b33-4c5a-8505-4a49c8cd620a.recording.jsonl",
+      "recording_sha256": "9f3d5cb12cd533121ce8c24a631d0f53d78c91c4f23e376729ce3b29c87259b6",
+      "transitions": 399
+    },
+    "bp35": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {
+        "fail-closed:component-cap-exceeded": 250
+      },
+      "episodes": 13,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 250,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/bp35/bp35.reflectoragent.a1c101ba-4f6d-44ed-adf0-c0ca5bc95d00.recording.jsonl",
+      "recording_sha256": "6d6e68217f64e1d811db886bea1f9222122e1980d042a1cd4f3f8ec827ccbfcd",
+      "transitions": 399
+    },
+    "cd82": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {
+        "abstain:quarantined-action": 2,
+        "conflicting-nonzero-translation": 3,
+        "contextual-noop-preserves-hypothesis": 1,
+        "no-unambiguous-nonzero-translation": 47,
+        "proposed-translation-law": 7
+      },
+      "episodes": 7,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 60,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/cd82/cd82.reflectoragent.8b2cdfac-032f-4495-9a86-97c2450c7e0b.recording.jsonl",
+      "recording_sha256": "880dd296e83263e4faa291e13c867708780db4edf0c03e15e0de054fe80c1fcc",
+      "transitions": 98
+    },
+    "cn04": {
+      "authoritative_law_count": 17,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 13,
+          "episode": 5,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 12
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 13,
+          "episode": 5,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 12
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 13,
+          "episode": 5,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 12
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 13,
+          "episode": 5,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 12
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 2,
+          "episode": 7,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 3,
+          "episode": 7,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 7,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 4,
+          "episode": 7,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 14,
+          "episode": 9,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 13
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 14,
+          "episode": 9,
+          "proposal_sequence": 11,
+          "prospective_confirmations": 13
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 9,
+          "proposal_sequence": 40,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 9,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 15,
+          "episode": 9,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 14
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 3,
+          "episode": 11,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 11,
+          "proposal_sequence": 11,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 3,
+          "episode": 11,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 3,
+          "episode": 11,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 2
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 49,
+        "conflicting-nonzero-translation": 5,
+        "contextual-noop-preserves-hypothesis": 4,
+        "no-unambiguous-nonzero-translation": 50,
+        "proposed-translation-law": 24,
+        "prospectively-confirmed-translation-law": 114
+      },
+      "episodes": 11,
+      "inverse_displacement_pair_count": 8,
+      "plain_transitions": 246,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/cn04/cn04.reflectoragent.74a9910a-5974-4671-9a32-6951187840b5.recording.jsonl",
+      "recording_sha256": "3f3e01a4585758878cd9b11220a99f0ad287197b83c8f92e4507afe355ebf678",
+      "transitions": 399
+    },
+    "dc22": {
+      "authoritative_law_count": 4,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -2,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 1,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            2
+          ],
+          "distinct_source_states": 27,
+          "episode": 5,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 26
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -2,
+            0
+          ],
+          "distinct_source_states": 26,
+          "episode": 5,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 25
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            2
+          ],
+          "distinct_source_states": 4,
+          "episode": 7,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 3
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 57,
+        "conflicting-nonzero-translation": 7,
+        "contextual-noop-preserves-hypothesis": 14,
+        "no-unambiguous-nonzero-translation": 4,
+        "proposed-translation-law": 17,
+        "prospectively-confirmed-translation-law": 55
+      },
+      "episodes": 7,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 154,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/dc22/dc22.reflectoragent.4b9126d1-8b31-4156-b114-1042a8871a4c.recording.jsonl",
+      "recording_sha256": "1e4688428853125cc6fdafc57503bbc7c999d9d410871c08d4d083d67960a975",
+      "transitions": 399
+    },
+    "ft09": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {},
+      "episodes": 7,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 0,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/ft09/ft09.reflectoragent.3ae25a37-f8c6-4c75-a829-b94575ee6672.recording.jsonl",
+      "recording_sha256": "c3238b2e03812cc9bca37c3f7087ff161dd2b99353543a09af925a6cc7dfc44d",
+      "transitions": 161
+    },
+    "g50t": {
+      "authoritative_law_count": 8,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            6,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 1,
+          "proposal_sequence": 3,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -6
+          ],
+          "distinct_source_states": 7,
+          "episode": 2,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            -6,
+            0
+          ],
+          "distinct_source_states": 8,
+          "episode": 2,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 7
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -6,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 4,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -6
+          ],
+          "distinct_source_states": 3,
+          "episode": 4,
+          "proposal_sequence": 16,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -6
+          ],
+          "distinct_source_states": 4,
+          "episode": 6,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -6
+          ],
+          "distinct_source_states": 3,
+          "episode": 6,
+          "proposal_sequence": 16,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            -6,
+            0
+          ],
+          "distinct_source_states": 5,
+          "episode": 6,
+          "proposal_sequence": 3,
+          "prospective_confirmations": 4
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 281,
+        "ambiguous-dominant-translation": 2,
+        "conflicting-nonzero-translation": 17,
+        "contextual-noop-preserves-hypothesis": 43,
+        "no-unambiguous-nonzero-translation": 1,
+        "proposed-translation-law": 21,
+        "prospectively-confirmed-translation-law": 31
+      },
+      "episodes": 6,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 396,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/g50t/g50t.reflectoragent.7b134dd4-b395-4bbe-98a2-46709d205a6e.recording.jsonl",
+      "recording_sha256": "2b85fadbf0deb8179bdd8699d95bef2f6aef837b20766c25f9f68d6a889f037e",
+      "transitions": 399
+    },
+    "ka59": {
+      "authoritative_law_count": 9,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 1,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 3,
+          "episode": 5,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 2,
+          "episode": 5,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 25,
+          "episode": 5,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 24
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 3,
+          "episode": 5,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 2,
+          "episode": 7,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 4,
+          "episode": 7,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 7,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 3,
+          "episode": 7,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 2
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 145,
+        "conflicting-nonzero-translation": 8,
+        "contextual-noop-preserves-hypothesis": 5,
+        "no-unambiguous-nonzero-translation": 2,
+        "proposed-translation-law": 15,
+        "prospectively-confirmed-translation-law": 37
+      },
+      "episodes": 7,
+      "inverse_displacement_pair_count": 4,
+      "plain_transitions": 212,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/ka59/ka59.reflectoragent.659c29d6-2335-4aa2-b801-2fc269e6e078.recording.jsonl",
+      "recording_sha256": "d3eeb90d3f02d4783ff73b38b38f8ced833bf7cd49820bdc3adaffcc1cf3e952",
+      "transitions": 399
+    },
+    "lf52": {
+      "authoritative_law_count": 2,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -6,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 2,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            -6,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 2,
+          "proposal_sequence": 3,
+          "prospective_confirmations": 1
+        }
+      ],
+      "diagnostics": {
+        "no-unambiguous-nonzero-translation": 11,
+        "proposed-translation-law": 2,
+        "prospectively-confirmed-translation-law": 2
+      },
+      "episodes": 2,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 15,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/lf52/lf52.reflectoragent.d088b33a-b52a-450b-ba8c-ba40af1e79da.recording.jsonl",
+      "recording_sha256": "f79a3fa50f2a4cebf11eb5ed8915e7e650a4f349a22f5ab34dccbc8a24371f60",
+      "transitions": 399
+    },
+    "lp85": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {},
+      "episodes": 7,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 0,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/lp85/lp85.reflectoragent.0f19b289-c8c6-4ea0-920f-a767976a597f.recording.jsonl",
+      "recording_sha256": "00f1221007925160c99b730ce0be49a114ed60263839e245d9f243c9c056bbfa",
+      "transitions": 399
+    },
+    "ls20": {
+      "authoritative_law_count": 13,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            5
+          ],
+          "distinct_source_states": 8,
+          "episode": 1,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 7
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -5,
+            0
+          ],
+          "distinct_source_states": 8,
+          "episode": 1,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 7
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            5,
+            0
+          ],
+          "distinct_source_states": 29,
+          "episode": 1,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 28
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -5
+          ],
+          "distinct_source_states": 8,
+          "episode": 1,
+          "proposal_sequence": 3,
+          "prospective_confirmations": 7
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            5
+          ],
+          "distinct_source_states": 21,
+          "episode": 3,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 20
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -5,
+            0
+          ],
+          "distinct_source_states": 31,
+          "episode": 3,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 30
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            5,
+            0
+          ],
+          "distinct_source_states": 32,
+          "episode": 3,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 31
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -5
+          ],
+          "distinct_source_states": 32,
+          "episode": 3,
+          "proposal_sequence": 3,
+          "prospective_confirmations": 31
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -5
+          ],
+          "distinct_source_states": 5,
+          "episode": 5,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -5,
+            0
+          ],
+          "distinct_source_states": 31,
+          "episode": 5,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 30
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            5,
+            0
+          ],
+          "distinct_source_states": 31,
+          "episode": 5,
+          "proposal_sequence": 11,
+          "prospective_confirmations": 30
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            5
+          ],
+          "distinct_source_states": 5,
+          "episode": 5,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -5
+          ],
+          "distinct_source_states": 5,
+          "episode": 7,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 4
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 128,
+        "authoritative-translation-law-retained": 2,
+        "conflicting-nonzero-translation": 6,
+        "contextual-noop-preserves-hypothesis": 9,
+        "no-unambiguous-nonzero-translation": 2,
+        "proposed-translation-law": 16,
+        "prospectively-confirmed-translation-law": 233
+      },
+      "episodes": 7,
+      "inverse_displacement_pair_count": 6,
+      "plain_transitions": 396,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/ls20/ls20.reflectoragent.6d00fbc3-8c3d-4b5b-bd0f-47538d4a58dd.recording.jsonl",
+      "recording_sha256": "8c317166e6ad2405769720bef56a237df637a2afab2ee06c2d908b4eb9a73c37",
+      "transitions": 399
+    },
+    "m0r0": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {
+        "abstain:quarantined-action": 6,
+        "conflicting-nonzero-translation": 1,
+        "contextual-noop-preserves-hypothesis": 1,
+        "fail-closed:component-cap-exceeded": 212,
+        "no-unambiguous-nonzero-translation": 9,
+        "proposed-translation-law": 1
+      },
+      "episodes": 6,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 230,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/m0r0/m0r0.reflectoragent.edf170f6-178d-4574-9034-e271b2a4a216.recording.jsonl",
+      "recording_sha256": "ed039720747b55f61faa8208c62250fe2f49074550137e25d7b290e9c0be6847",
+      "transitions": 399
+    },
+    "r11l": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {},
+      "episodes": 16,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 0,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/r11l/r11l.reflectoragent.c340f6be-f0cf-4a9d-ab32-e4b49ba629ac.recording.jsonl",
+      "recording_sha256": "0d86895a09754c6276fadec3ef66586b810886632fdf5d43aaa203420302202f",
+      "transitions": 399
+    },
+    "re86": {
+      "authoritative_law_count": 16,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 7,
+          "episode": 1,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 6,
+          "episode": 1,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 5
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 20,
+          "episode": 1,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 19
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 6,
+          "episode": 1,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 5
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 20,
+          "episode": 3,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 19
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 20,
+          "episode": 3,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 19
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 20,
+          "episode": 3,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 19
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 19,
+          "episode": 3,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 18
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 6,
+          "episode": 5,
+          "proposal_sequence": 6,
+          "prospective_confirmations": 5
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 5,
+          "episode": 5,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 20,
+          "episode": 5,
+          "proposal_sequence": 7,
+          "prospective_confirmations": 19
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 19,
+          "episode": 5,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 18
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            3
+          ],
+          "distinct_source_states": 20,
+          "episode": 7,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 19
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            3,
+            0
+          ],
+          "distinct_source_states": 8,
+          "episode": 7,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 7
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -3,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 7,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -3
+          ],
+          "distinct_source_states": 19,
+          "episode": 7,
+          "proposal_sequence": 11,
+          "prospective_confirmations": 18
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 156,
+        "ambiguous-dominant-translation": 1,
+        "conflicting-nonzero-translation": 11,
+        "no-unambiguous-nonzero-translation": 1,
+        "proposed-translation-law": 21,
+        "prospectively-confirmed-translation-law": 206
+      },
+      "episodes": 7,
+      "inverse_displacement_pair_count": 8,
+      "plain_transitions": 396,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/re86/re86.reflectoragent.fdc8b64d-dcb3-426e-82b9-4d91950de9ec.recording.jsonl",
+      "recording_sha256": "a06f9e29a574e0ae78decdda0563ce5a451d331f92069ff3867f445210768aa4",
+      "transitions": 399
+    },
+    "s5i5": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {},
+      "episodes": 15,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 0,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/s5i5/s5i5.reflectoragent.a07b2884-8672-4e4e-b95e-f02cad9721e4.recording.jsonl",
+      "recording_sha256": "1273494dd94720926421e767cca9608942300806a30cf0c3258d86e1fe9a163c",
+      "transitions": 399
+    },
+    "sb26": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {
+        "no-unambiguous-nonzero-translation": 7
+      },
+      "episodes": 9,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 7,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/sb26/sb26.reflectoragent.09fc4950-ddd8-429b-8719-555253fb85cc.recording.jsonl",
+      "recording_sha256": "b9c6bdc26068a81b5e7fb301e50dd9a72dc94f9cc05a920ae7aecb69ae4a06e0",
+      "transitions": 123
+    },
+    "sc25": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {
+        "ambiguous-dominant-translation": 2,
+        "no-unambiguous-nonzero-translation": 18
+      },
+      "episodes": 3,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 20,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/sc25/sc25.reflectoragent.43c887c4-96bf-44dc-8d4d-33d2a4a6f315.recording.jsonl",
+      "recording_sha256": "643cba38786e99141847f7772c51b5ba43b3c2a5d863004a4551b6fd52f62ed0",
+      "transitions": 399
+    },
+    "sk48": {
+      "authoritative_law_count": 1,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            6
+          ],
+          "distinct_source_states": 2,
+          "episode": 1,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 1
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 4,
+        "conflicting-nonzero-translation": 1,
+        "contextual-noop-preserves-hypothesis": 2,
+        "no-unambiguous-nonzero-translation": 11,
+        "proposed-translation-law": 3,
+        "prospectively-confirmed-translation-law": 1
+      },
+      "episodes": 1,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 22,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/sk48/sk48.reflectoragent.266c1c71-b3a1-46fc-ba94-ed6d9a3089ac.recording.jsonl",
+      "recording_sha256": "80f20518ebede033ec43f8cb5293f02b434d2e6c2830c9ad42a778fe7ac80aca",
+      "transitions": 399
+    },
+    "sp80": {
+      "authoritative_law_count": 36,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 5,
+          "episode": 5,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 6,
+          "episode": 5,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 5
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 5,
+          "episode": 5,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -4
+          ],
+          "distinct_source_states": 4,
+          "episode": 5,
+          "proposal_sequence": 11,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 7,
+          "proposal_sequence": 5,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 7,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 5,
+          "episode": 9,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 5,
+          "episode": 9,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 9,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -4
+          ],
+          "distinct_source_states": 4,
+          "episode": 9,
+          "proposal_sequence": 11,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -4
+          ],
+          "distinct_source_states": 5,
+          "episode": 11,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 4,
+          "episode": 11,
+          "proposal_sequence": 11,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 11,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 4,
+          "episode": 11,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 4,
+          "episode": 13,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 4,
+          "episode": 13,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 13,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -4
+          ],
+          "distinct_source_states": 3,
+          "episode": 13,
+          "proposal_sequence": 12,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 14,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 14,
+          "proposal_sequence": 5,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 2,
+          "episode": 16,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 16,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 5,
+          "episode": 16,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 18,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 2,
+          "episode": 18,
+          "proposal_sequence": 16,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 5,
+          "episode": 18,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -4
+          ],
+          "distinct_source_states": 4,
+          "episode": 18,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 2,
+          "episode": 20,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 3,
+          "episode": 20,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 2
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -4
+          ],
+          "distinct_source_states": 2,
+          "episode": 20,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 4,
+          "episode": 22,
+          "proposal_sequence": 6,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 4,
+          "episode": 22,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            4,
+            0
+          ],
+          "distinct_source_states": 5,
+          "episode": 22,
+          "proposal_sequence": 10,
+          "prospective_confirmations": 4
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -4
+          ],
+          "distinct_source_states": 4,
+          "episode": 22,
+          "proposal_sequence": 16,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -4,
+            0
+          ],
+          "distinct_source_states": 4,
+          "episode": 24,
+          "proposal_sequence": 4,
+          "prospective_confirmations": 3
+        },
+        {
+          "action": {
+            "action_id": 5,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 2,
+          "episode": 24,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 1
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 23,
+        "conflicting-nonzero-translation": 20,
+        "contextual-noop-preserves-hypothesis": 23,
+        "no-unambiguous-nonzero-translation": 35,
+        "proposed-translation-law": 61,
+        "prospectively-confirmed-translation-law": 108
+      },
+      "episodes": 26,
+      "inverse_displacement_pair_count": 13,
+      "plain_transitions": 270,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/sp80/sp80.reflectoragent.a5be252b-4771-43c4-b6d3-d4a3f502340b.recording.jsonl",
+      "recording_sha256": "4f603544ba5603f779081866694d4877a4fb592335f86ae970fd24e43203824a",
+      "transitions": 399
+    },
+    "su15": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {
+        "abstain:quarantined-action": 66,
+        "ambiguous-dominant-translation": 4,
+        "conflicting-nonzero-translation": 3,
+        "contextual-noop-preserves-hypothesis": 83,
+        "no-unambiguous-nonzero-translation": 15,
+        "proposed-translation-law": 4
+      },
+      "episodes": 9,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 175,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/su15/su15.reflectoragent.b0b0b346-6638-4f7b-a7b4-c6f2a4d2de34.recording.jsonl",
+      "recording_sha256": "a860667eae53cd3ca8e859043a79e37d560f88dc00fa7bc4924d485b215336f2",
+      "transitions": 399
+    },
+    "tn36": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {},
+      "episodes": 12,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 0,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/tn36/tn36.reflectoragent.d5f27be5-cefc-4d4d-8aa7-10ac7477f04c.recording.jsonl",
+      "recording_sha256": "9499cca9242e6e84cfbd701fc1f85db8732fa87e35914ca0500b34c43bd5992f",
+      "transitions": 399
+    },
+    "tr87": {
+      "authoritative_law_count": 8,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            28,
+            0
+          ],
+          "distinct_source_states": 32,
+          "episode": 1,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 31
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -28,
+            0
+          ],
+          "distinct_source_states": 32,
+          "episode": 1,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 31
+        },
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            28,
+            0
+          ],
+          "distinct_source_states": 32,
+          "episode": 3,
+          "proposal_sequence": 1,
+          "prospective_confirmations": 31
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -28,
+            0
+          ],
+          "distinct_source_states": 32,
+          "episode": 3,
+          "proposal_sequence": 2,
+          "prospective_confirmations": 31
+        },
+        {
+          "action": {
+            "action_id": 1,
+            "payload": []
+          },
+          "displacement": [
+            28,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 5,
+          "proposal_sequence": 8,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -28,
+            0
+          ],
+          "distinct_source_states": 7,
+          "episode": 5,
+          "proposal_sequence": 9,
+          "prospective_confirmations": 6
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            -7,
+            0
+          ],
+          "distinct_source_states": 25,
+          "episode": 5,
+          "proposal_sequence": 30,
+          "prospective_confirmations": 24
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            -7,
+            0
+          ],
+          "distinct_source_states": 4,
+          "episode": 7,
+          "proposal_sequence": 0,
+          "prospective_confirmations": 3
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 27,
+        "conflicting-nonzero-translation": 2,
+        "contextual-noop-preserves-hypothesis": 24,
+        "no-unambiguous-nonzero-translation": 171,
+        "proposed-translation-law": 9,
+        "prospectively-confirmed-translation-law": 163
+      },
+      "episodes": 7,
+      "inverse_displacement_pair_count": 3,
+      "plain_transitions": 396,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/tr87/tr87.reflectoragent.c264564d-a644-43f4-9466-38d9d5acef93.recording.jsonl",
+      "recording_sha256": "ab40d21b07100832beeeff344112e24209c1a5ca6bd121d6cdb5afff2f7a9b52",
+      "transitions": 399
+    },
+    "tu93": {
+      "authoritative_law_count": 4,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            6
+          ],
+          "distinct_source_states": 2,
+          "episode": 7,
+          "proposal_sequence": 27,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -6
+          ],
+          "distinct_source_states": 2,
+          "episode": 7,
+          "proposal_sequence": 31,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 3,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            6
+          ],
+          "distinct_source_states": 2,
+          "episode": 13,
+          "proposal_sequence": 29,
+          "prospective_confirmations": 1
+        },
+        {
+          "action": {
+            "action_id": 4,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            -6
+          ],
+          "distinct_source_states": 2,
+          "episode": 13,
+          "proposal_sequence": 33,
+          "prospective_confirmations": 1
+        }
+      ],
+      "diagnostics": {
+        "abstain:quarantined-action": 16,
+        "ambiguous-dominant-translation": 121,
+        "conflicting-nonzero-translation": 4,
+        "contextual-noop-preserves-hypothesis": 92,
+        "no-unambiguous-nonzero-translation": 136,
+        "proposed-translation-law": 19,
+        "prospectively-confirmed-translation-law": 4
+      },
+      "episodes": 15,
+      "inverse_displacement_pair_count": 2,
+      "plain_transitions": 392,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/tu93/tu93.reflectoragent.f46fa367-4471-4a2a-9289-7a3f109b9000.recording.jsonl",
+      "recording_sha256": "c2257d9ced168dc68fdf6f40609c50abedc33d5020ac1f7d3d6b821563b00890",
+      "transitions": 399
+    },
+    "vc33": {
+      "authoritative_law_count": 0,
+      "authoritative_laws": [],
+      "diagnostics": {},
+      "episodes": 16,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 0,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/vc33/vc33.reflectoragent.716be463-213e-4f72-9b87-7bb98b61853e.recording.jsonl",
+      "recording_sha256": "e08a3ff6bcf86f8fa3d990947981b1e22a46caa61ec241064e84ce0a4674b15a",
+      "transitions": 399
+    },
+    "wa30": {
+      "authoritative_law_count": 1,
+      "authoritative_laws": [
+        {
+          "action": {
+            "action_id": 2,
+            "payload": []
+          },
+          "displacement": [
+            0,
+            4
+          ],
+          "distinct_source_states": 4,
+          "episode": 1,
+          "proposal_sequence": 35,
+          "prospective_confirmations": 3
+        }
+      ],
+      "diagnostics": {
+        "ambiguous-dominant-translation": 131,
+        "contextual-noop-preserves-hypothesis": 61,
+        "no-unambiguous-nonzero-translation": 201,
+        "proposed-translation-law": 2,
+        "prospectively-confirmed-translation-law": 3
+      },
+      "episodes": 3,
+      "inverse_displacement_pair_count": 0,
+      "plain_transitions": 398,
+      "recording": "/tmp/reflector-v74-clean-isolated-recordings/wa30/wa30.reflectoragent.dda30815-cc84-48a4-81d8-4342b02849bb.recording.jsonl",
+      "recording_sha256": "f74a8d688f20ec05705259edbaf3c1f3ac0273a98de7aabcf970328717be146f",
+      "transitions": 399
+    }
+  }
+}

@@ -21,19 +21,21 @@ generalization.
 
 ## Authoritative current state
 
-- Branch: `main`
+- Branch: `codex/v74-fresh`
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last known participant-remote commit: `27f5ac5`
-- Accepted candidate: `candidate-2336bc12a0bc28de`
-- Accepted agent: Reflector v69
+- Accepted candidate: `candidate-cb34c9a1195fafa1`
+- Accepted agent: Reflector v74
 - Accepted frozen source/candidate commit:
-  `2f3020804baf7578ff691ace2fa556783eb3735a`
+  `5422fb823d464e9f837f7b523d06e41a930effd5`
+- Accepted inference fingerprint:
+  `dd77d4f57b4820659cc8f63a6d988511cb975833cdf8be1a24182214792ff33f`
 - Accepted public-development report:
-  `reports/official-isolated-v69-public-400.json`
-- Accepted score: `10.255448098096416`
-- Accepted coverage: 25/25 games, 9,486 actions
-- Accepted completions: 30/183 levels across 12 games; 2/25 games complete
+  `reports/official-isolated-v74-clean-baseline-400.json`
+- Accepted score: `14.450686193334509`
+- Accepted coverage: 25/25 games, 9,185 actions
+- Accepted completions: 35/183 levels across 12 games; 3/25 games complete
 - Kaggle submission: `55113224`, v65b notebook version 1, pending hidden rerun
 - Kaggle public score: pending; not yet returned
 - Kaggle private score: unavailable
@@ -67,6 +69,7 @@ generalization.
 | Confirmed segmented permutations plus exact transport | v67 proposed a unique equal-pitch permutation from one rendered transition, preregistered its full-domain successor before a subsequent same-form action, promoted only after an exact match, and searched a bounded projected marker state; it preserved every non-`lp85` outcome and solved `lp85` L4 at action 71 twice. The confirmer need not yet be a spatially distinct controller. |
 | Contiguous path cycles plus topology-grounded controllers | v68 inferred nested one-step rotations over a conserved uniform simple rectilinear slot path and distinguished identical controller sprites by endpoint/straight/corner context; it preserved every non-`lp85` score, level count, action total, reset count, and reported distribution while solving `lp85` L5 at action 50 twice. Level 6 exceeds the fixed slot bound and remains explicitly unrepresented. |
 | Grounded primary colored-stencil composition | v69 uniquely grounded a congruent reference/construction pair, visible palette roles, and an outlined eight-pose template; learned controller roles only from rendered translations; and searched bounded exact programs of palette selection, pose navigation, and half-plane overwrites. It preserved every non-`cd82` accepted trajectory and solved `cd82` L1–L2 at `[12,6]` twice. |
+| Secondary stencil and factored orbit composition | v74 independently grounded smaller overwrite components and factored cyclic direction from radial rank. It completed `cd82` 6/6 and reached `lp85` 6/8 while preserving all other v69 outcomes exactly. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -2902,71 +2905,61 @@ causally isolated gain on a known public game, not hidden-transfer evidence.
 
 ## Immediate continuation toward 20/100
 
-The public-code survey in
-`references/PUBLIC_ARC3_STRATEGY_LANDSCAPE.md` localizes the remaining frontier
-as symbolic hypothesis proposal rather than symbolic execution. The next
-offspring should therefore add one compact typed operator family at a time,
-with exact replay and ambiguity abstention:
+The clean restart independently reproduced v74 in one fresh process per game:
+`14.450686193334509/100`, 35/183 levels, three complete games, 25/25
+coverage, and 9,185 actions. The raw report is
+`reports/official-isolated-v74-clean-baseline-400.json`.
 
-The next major cross-game branch is specified in
-`references/M8_CAUSAL_OBJECT_WORLD_MODEL.md`: compile a bounded typed causal
-model over persistent object roles, nuisance layers, controllers, modes,
-dynamic blockers, and progress-validated relational goals; choose probes by
-worst-case model elimination; and plan in belief state. `tu93` is the watched
-development game, but M8 promotion requires a gain on at least one
-structurally distinct transfer game.
+The first new branch is **v75 action-conditioned translation algebra**.
+Cross-game trace clustering found that exact-frame novelty dominates every
+zero-progress game even though plain actions repeatedly cause stable relative
+translations. The bounded compiler in
+`reflector/core/action_translation_algebra.py`:
 
-1. Freeze v69 as the preservation anchor. No target-only offspring changes the
-   accepted score until its exact source/config identity, deterministic target
-   repeat, twelve-game preservation gate, 25-game run, quality checks, exact
-   export, and network-disabled smoke paths all pass.
-2. Complete the secondary colored-stencil gate. The safety-hardened offspring
-   projects one uniquely grounded smaller exterior component into a normalized
-   construction-edge mask, requires independent recolored overwrite evidence,
-   uses only confirmed C4 transfers, and reverse-synthesizes exact
-   last-write-wins programs. One post-hardening target run completed `cd82`
-   6/6 in 99 actions with per-level authority revalidation and zero conflicts,
-   causal-validation failures, or candidate ambiguities. It remains
-   **unpromoted** pending a frozen exact repeat and v69 preservation/full-suite
-   gates.
-3. Complete the factored-orbit safety gate. The offspring factors a uniquely
-   rendered polar product domain into cyclic-direction × radial-rank modules,
-   learns prospectively confirmed local translations, then separately grounds
-   one global anchor/outlet interface before bounded product-state planning.
-   The target-only pre-safety vector
-   `[37,8,54,71,50,21,159,0]` reached `lp85` 6/8, but is **unpromoted**.
-   Exactly-one controller/interface grounding, visibly discriminated interface
-   evidence, and a deterministic capped exact-cover proof must survive a fresh
-   post-fix repeat before preservation and full-25 evaluation.
-4. Keep relational topology standalone until its integration proof obligations
-   pass. The
-   proposed generic operator tracks one multicolor composite footprint with a
-   hosted pose marker, derives a rendered configuration-space graph from
-   repeated support/connector roles, learns a finite action-to-displacement
-   belief, and emits one prospectively validated BFS edge at a time. A public
-   wrapper replay uniquely grounded a 9-cell actor, 31 nodes, and 32 edges,
-   learned the controller permutation, and completed `tu93` L1 in 19 issued
-   actions: 18 successful moves and one wall noop, without quarantine. This is
-   standalone diagnostic evidence—not an integrated runtime result. L2
-   contains another moving footprint that can enter the route and cause
-   `GAME_OVER`; the static planner must detect that blocker and abstain before
-   unsafe L2 plan execution. Required gates are independent safety review,
-   exact-off integration, repeated L1 progress, safe L2 dynamic-blocker
-   abstention, held-out `ls20`/`ka59`/`dc22` checks, then
-   preservation/full-25 evaluation.
-5. After the standalone K-line retrieval substrate, add the frozen
-   `MindConfig` snapshot and grounded cue compiler exact-off, then measure
-   held-out recall before allowing retrieval to reorder generators. Retain the
-   exact transition graph as a bounded fallback/trace generator and rank probes
-   only by explicit expected hypothesis elimination.
-6. Monitor v65b Kaggle submission `55113224` to a terminal result, archive its
-   returned status and score, and complete the participant-owned public
-   repository/notebook gates. Any later submission must use the exact promoted
-   candidate identity.
+- proposes a relative action law from one rendered transition but grants no
+  authority from that row;
+- preregisters the displacement on a later structurally distinct source;
+- retains only action identity plus relative displacement, never game, color,
+  coordinate, route, or frame identity;
+- preserves contextual no-ops as collision evidence and quarantines a
+  contradictory nonzero effect;
+- omits oversized substrate components rather than raising the task-object
+  bound, while retaining hard frame, object, action, and provenance caps.
+
+The chronological v74 audit gives prospective authority on 13/25 games and
+same-episode inverse pairs on 7/25. `ls20` and `re86` repeatedly form complete
+four-direction algebras; `tu93` forms a safe inverse pair; `dc22` remains
+partial. This is representation evidence, not task progress. The immutable
+audit is `reports/v75-action-translation-audit-v1.json`; its complete input
+recordings and cognitive streams are compressed beside it.
+
+The exact-off runtime integration is now complete behind
+`enable_action_translation_algebra`. Generation-35 trace-only offspring
+`candidate-7774a464a9ee9f95` ran `dc22`, `ls20`, `re86`, and `tu93` in fresh
+processes. Every 400-action vector exactly matched v74 while the live
+cognitive streams gained prospective authority on all four games. This
+validates runtime observability and behavioral isolation only; it is not a
+score gain.
+
+Next:
+
+1. Keep v74 frozen as the preservation anchor. Before promotion, reproduce
+   every accepted vector across the full suite.
+2. Let a law affect control only after same-episode prospective authority.
+   Construct a bounded relative-position quotient and choose probes by
+   elimination or unvisited abstract transitions; do not assume a goal.
+3. Run transformed synthetic controls, then isolated `ls20`, `re86`, `tu93`,
+   and `dc22` diagnostics. Reject the branch if it cannot beat uniform
+   exploration or safely abstain on at least three games.
+4. A task promotion still requires deterministic gains on two structurally
+   different games, exact preservation, the full 25-game suite, export, and
+   both offline smoke paths.
+5. Monitor v65b Kaggle submission `55113224` to a terminal result. Never
+   attribute its eventual score to v74 or v75.
 
 Each task mutation remains subject to the full target-repeat, preservation,
 25-game, quality, and exact-export gates below. The `/goal` remains active:
-`10.255448098096416 < 20`.
+`14.450686193334509 < 20`.
 
 ## Promotion gates
 

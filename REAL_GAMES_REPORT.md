@@ -5,41 +5,36 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 ## Result at a glance
 
-> **Reflector has fully beaten 2 of 25 public-development games.**
-> It has solved 30 of 183 levels across 12 games. The suite ran all 25 games,
+> **Reflector has fully beaten 3 of 25 public-development games.**
+> It has solved 35 of 183 levels across 12 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v69 result | Meaning |
+| Outcome metric | Accepted v74 result | Meaning |
 | --- | ---: | --- |
-| Complete games beaten | **2 / 25** | `sb26` and `ft09` were solved through their final levels. |
+| Complete games beaten | **3 / 25** | `sb26`, `ft09`, and `cd82` were solved through their final levels. |
 | Games with progress | **12 / 25** | At least one level was solved in twelve games. |
-| Levels solved | **30 / 183** | Eight in `sb26`; six in `ft09`; five in `lp85`; two each in `ar25` and `cd82`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **10.2554480981 / 100** | About **10.26%** of the 100-point scale on the known public-development games. |
+| Levels solved | **35 / 183** | Eight in `sb26`; six each in `ft09`, `cd82`, and `lp85`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **14.4506861933 / 100** | About **14.45%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
-| Actions used | **9,486** | The budget was 400 actions per game; completed `sb26` and `ft09` stopped after 124 and 162 actions. |
+| Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
 | Kaggle submissions | **1 pending** | Submission `55113224` remains `PENDING`; no hidden score has returned yet. |
 
-## Game × level completion matrix
-
-![Reflector v69 public game by level completion matrix](reports/v69-game-level-matrix.svg)
-
-[Open the full-resolution PNG](reports/v69-game-level-matrix.png) or
-[open the scalable SVG](reports/v69-game-level-matrix.svg).
-Green cells are completed levels; black cells are known but incomplete
-levels; gray cells are outside that game's level count. The matrix is
-generated directly from the accepted v69 scorecard by
-[`scripts/generate_level_matrix.py`](scripts/generate_level_matrix.py).
-SHA-256 values are
-`237602d06366a41083e4d5e5f30f3b9207610d71b6ab4def809e7f55a56d4520`
-for the SVG and
-`2e6df19b3b91803a1e4c70e3a89595dcb408cb969627cb35bf8fa67d43cce2a7`
-for the PNG.
+The clean process-isolated baseline is
+[`reports/official-isolated-v74-clean-baseline-400.json`](reports/official-isolated-v74-clean-baseline-400.json),
+SHA-256
+`889a03f1d46dd3ca1f062ecfe7d9482b124b142a614d04188da3cf17b48a2eeb`.
+It identifies frozen source commit
+`5422fb823d464e9f837f7b523d06e41a930effd5`, candidate
+`candidate-cb34c9a1195fafa1`, and inference fingerprint
+`dd77d4f57b4820659cc8f63a6d988511cb975833cdf8be1a24182214792ff33f`.
 
 ## Evaluation surfaces
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v69 accepted | **10.2554480981 / 100** | 2 games beaten; 30/183 levels across 12 games; 9,486 actions | 25/25 coverage |
+| Clean process-isolated official local suite | v74 accepted | **14.4506861933 / 100** | 3 games beaten; 35/183 levels across 12 games; 9,185 actions | exact clean restart; 25/25 coverage |
+| Read-only v75 representation audit | action-conditioned translation algebra, inactive | — | prospective authority on 13/25 games; same-episode inverse pairs on 7/25 | architecture evidence only; no task score |
+| Process-isolated official local suite | v69 historical | **10.2554480981 / 100** | 2 games beaten; 30/183 levels across 12 games; 9,486 actions | superseded by v74 |
 | Process-isolated twelve-game gate | v69 accepted | 21.3655168710 / 100 | 30 levels; every non-`cd82` accepted trajectory preserved, while `cd82` added levels 1–2 at `[12,6,382,0,0,0]` | passed |
 | Target-only `cd82` reruns | v69 accepted | 14.2857142857 for one game | 2/6 levels; exact `[12,6,382,0,0,0]` twice after source freeze | deterministic gain twice |
 | Target-only live offspring | secondary edge-stencil, safety-hardened and not promoted | 100.0000000000 for `cd82` | 6/6 levels in 99 actions; per-level authority revalidation; 0 conflicts and 0 causal-validation failures | target passed once; second repeat and preservation pending |
@@ -266,7 +261,60 @@ Official competition links:
 - [Kaggle public leaderboard](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard)
 - [ARC Prize competition requirements](https://arcprize.org/competitions/2026/arc-agi-3)
 
-## Accepted v69 result
+## V75 action-translation representation and live trace audit
+
+V75 is not a task-performance candidate. Its opt-in, Kaggle-exportable kernel
+discovers episode-local action-conditioned translations from rendered
+interventions without yet influencing action choice. One transition may
+propose a law; a later structurally
+distinct source must confirm the preregistered displacement before authority.
+Contextual no-ops preserve a collision hypothesis, contradictory nonzero
+effects quarantine the action, ambiguity abstains, and every bound fails
+closed.
+
+The chronological audit over the clean v74 recordings found:
+
+- at least one prospectively authoritative law on **13/25 games**;
+- inverse action generators within the same episode on **7/25 games**;
+- repeated complete four-direction algebras on `ls20` and `re86`;
+- an inverse pair on `tu93`;
+- only a partial algebra on `dc22`;
+- no runtime control, score, or transfer claim.
+
+The audit is
+[`reports/v75-action-translation-audit-v1.json`](reports/v75-action-translation-audit-v1.json),
+SHA-256
+`f0e1295edf7071ef0ec00fde9dd3e2ac585e234e35b877db24144ce73b8b96c6`.
+Its compressed input recordings have SHA-256
+`0e052162bb96f8595414c31949d778eec828a48e7c78d7547ae859b44ccc3459`;
+the corresponding cognitive streams have SHA-256
+`8a6cb7cfc28283775f08d7d97767ef3b5980c39e24ca971369af97dd5a6d1854`.
+
+Generation-35 trace-only offspring `candidate-7774a464a9ee9f95` then ran
+process-isolated on `dc22`, `ls20`, `re86`, and `tu93`. All four 400-action
+vectors were byte-for-byte identical to v74. Live cognition nevertheless
+formed authority in every target; the terminal current-episode states formed
+4, 1, 4, and 2 laws respectively, with inverse pairs on `dc22`, `re86`, and
+`tu93`. The raw report is
+[`reports/official-isolated-v75-action-translation-live-targets-400.json`](reports/official-isolated-v75-action-translation-live-targets-400.json),
+SHA-256
+`445526fef9c2d38ef5503c14d7091cc6adba3f5d103682bea71afa3882dd6119`.
+Its recordings and cognition archives have SHA-256
+`a722126f5f005c8c973431901c6563c1a5d772b7a879f6250c074ac8cddff800`
+and
+`98fbcba56a50a7f08a277ac0aff0e4bf4e975544651226ec1906520c65d2b300`.
+The candidate SHA-256 is
+`56449d3224ae92271a79703661240983a2d3cb327a7317a6af1e523205e558ac`.
+The full suite passed with 409 tests and 3 skips; Ruff and mypy passed; exact
+candidate export and both network-disabled smoke paths passed. Synthetic
+controls cover absolute translation, recoloring, and rotational equivariance.
+
+The next falsifiable step is a bounded relative-position quotient. It must
+beat uniform probing or safely abstain on at least three games before it may
+affect control. Task promotion still requires deterministic progress on two
+structurally different games and exact preservation of v74.
+
+## Historical accepted v69 result
 
 Candidate: `candidate-2336bc12a0bc28de`
 Frozen inference/candidate commit:

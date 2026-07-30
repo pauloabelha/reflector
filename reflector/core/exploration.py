@@ -9,6 +9,10 @@ from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
 
+from .action_translation_algebra import (
+    ActionIdentity,
+    ActionTranslationAlgebra,
+)
 from .colored_stencil import PrimaryStencilPlanner
 from .connector_synthesis import (
     Connector,
@@ -395,6 +399,7 @@ class EpistemicExplorer:
     deep_failure_productive_reuse: bool = False
     compact_component_frontier: bool = False
     compact_component_nuisance_filter: bool = False
+    action_translation_algebra: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -436,6 +441,20 @@ class EpistemicExplorer:
         default_factory=PrimaryStencilPlanner,
         repr=False,
     )
+    translation_algebra: ActionTranslationAlgebra = field(
+        default_factory=ActionTranslationAlgebra,
+        repr=False,
+    )
+    translation_sequence: int = 0
+    translation_total_observations: int = 0
+    translation_total_predictions: int = 0
+    translation_total_confirmations: int = 0
+    translation_total_conflicts: int = 0
+    translation_total_contextual_noops: int = 0
+    translation_total_authority_events: int = 0
+    translation_last_diagnostic: str = "exact-off"
+    translation_last_predicted_displacement: tuple[int, int] | None = None
+    translation_last_observed_displacement: tuple[int, int] | None = None
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -1043,6 +1062,7 @@ class EpistemicExplorer:
             self._reset_compact_component_frontier_retry(
                 retain_previous=False
             )
+            self._reset_action_translation_algebra()
         elif observation.state == "GAME_OVER":
             self.episode_roles.clear()
             self.episode_groundings.clear()
@@ -1075,6 +1095,7 @@ class EpistemicExplorer:
             self._reset_compact_component_frontier_retry(
                 retain_previous=True
             )
+            self._reset_action_translation_algebra()
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
         if state not in self.state_status:
@@ -1121,6 +1142,47 @@ class EpistemicExplorer:
                 before,
                 after,
                 pending_token.action_id,
+            )
+        if (
+            self.action_translation_algebra
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+            and not progressed
+        ):
+            before_predictions = self.translation_algebra.predictions
+            before_confirmations = self.translation_algebra.confirmations
+            before_conflicts = self.translation_algebra.conflicts
+            before_noops = self.translation_algebra.contextual_noops
+            update = self.translation_algebra.observe(
+                sequence=self.translation_sequence,
+                action=ActionIdentity(pending_token.action_id),
+                before=before,
+                after=after,
+            )
+            self.translation_sequence += 1
+            self.translation_total_observations += 1
+            self.translation_total_predictions += (
+                self.translation_algebra.predictions - before_predictions
+            )
+            self.translation_total_confirmations += (
+                self.translation_algebra.confirmations - before_confirmations
+            )
+            self.translation_total_conflicts += (
+                self.translation_algebra.conflicts - before_conflicts
+            )
+            self.translation_total_contextual_noops += (
+                self.translation_algebra.contextual_noops - before_noops
+            )
+            if update.diagnostic == "prospectively-confirmed-translation-law":
+                self.translation_total_authority_events += 1
+            self.translation_last_diagnostic = update.diagnostic
+            self.translation_last_predicted_displacement = (
+                update.predicted_displacement
+            )
+            self.translation_last_observed_displacement = (
+                update.observed_displacement
             )
         if self.paired_object_contact_planning and self.paired_pending is not None:
             self._observe_paired_object_contact(
@@ -1410,6 +1472,15 @@ class EpistemicExplorer:
         self.boundary_nuisance_motion.clear()
         self.boundary_nuisance_growth.clear()
         self.boundary_nuisance_sides.clear()
+
+    def _reset_action_translation_algebra(self) -> None:
+        self.translation_algebra.reset_episode()
+        self.translation_sequence = 0
+        self.translation_last_diagnostic = (
+            "not-attempted" if self.action_translation_algebra else "exact-off"
+        )
+        self.translation_last_predicted_displacement = None
+        self.translation_last_observed_displacement = None
 
     def _reset_repeated_form_events(self) -> None:
         self.repeated_form_effect_history.clear()
@@ -11421,6 +11492,43 @@ class EpistemicExplorer:
             ),
             "compact_component_frontier_diagnostic": (
                 self.compact_component_frontier_diagnostic
+            ),
+            "action_translation_algebra_enabled": int(
+                self.action_translation_algebra
+            ),
+            "action_translation_observations": (
+                self.translation_total_observations
+            ),
+            "action_translation_predictions": (
+                self.translation_total_predictions
+            ),
+            "action_translation_confirmations": (
+                self.translation_total_confirmations
+            ),
+            "action_translation_conflicts": self.translation_total_conflicts,
+            "action_translation_contextual_noops": (
+                self.translation_total_contextual_noops
+            ),
+            "action_translation_authority_events": (
+                self.translation_total_authority_events
+            ),
+            "action_translation_current_laws": len(
+                self.translation_algebra.authoritative_laws()
+            ),
+            "action_translation_inverse_pairs": len(
+                self.translation_algebra.inverse_pairs()
+            ),
+            "action_translation_last_diagnostic": (
+                self.translation_last_diagnostic
+            ),
+            "action_translation_last_predicted_displacement": (
+                self.translation_last_predicted_displacement
+            ),
+            "action_translation_last_observed_displacement": (
+                self.translation_last_observed_displacement
+            ),
+            "action_translation_cap_failure": (
+                self.translation_algebra.cap_failure
             ),
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),

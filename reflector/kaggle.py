@@ -34,6 +34,7 @@ OVERLAY_FILES = (
     "reflector/core/lattice_csp.py",
     "reflector/core/permutation_transport.py",
     "reflector/core/colored_stencil.py",
+    "reflector/core/action_translation_algebra.py",
     "reflector/core/exploration.py",
     "reflector/core/graph.py",
     "reflector/core/mind.py",

@@ -71,6 +71,9 @@ class SymbolicPolicy:
             compact_component_nuisance_filter=(
                 self.mind.config.enable_compact_component_nuisance_filter
             ),
+            action_translation_algebra=(
+                self.mind.config.enable_action_translation_algebra
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),

@@ -112,6 +112,7 @@ class MindConfig:
     enable_deep_failure_productive_reuse: bool = False
     enable_compact_component_frontier: bool = False
     enable_compact_component_nuisance_filter: bool = False
+    enable_action_translation_algebra: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -189,6 +190,7 @@ class MindConfig:
             "enable_deep_failure_productive_reuse",
             "enable_compact_component_frontier",
             "enable_compact_component_nuisance_filter",
+            "enable_action_translation_algebra",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")

@@ -11,24 +11,54 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v68, frozen source/candidate commit
-  `59daf6171026b986c1e26aaa5fa1f56e2ef03269`.
-- Accepted candidate: `candidate-35de85c4fe395c3a`.
-- Local known-public-development score: **9.684019526667843 / 100**.
-- Progress: **28 / 183 levels across the 25 public-development games**.
-- Fully completed games: **2 / 25**.
-- Total actions: **9,486**.
+- Accepted agent: v74, frozen source/candidate commit
+  `5422fb823d464e9f837f7b523d06e41a930effd5`.
+- Accepted candidate: `candidate-cb34c9a1195fafa1`.
+- Local known-public-development score: **14.450686193334509 / 100**.
+- Progress: **35 / 183 levels across the 25 public-development games**.
+- Fully completed games: **3 / 25**.
+- Total actions: **9,185**.
 - Kaggle submissions: **1 pending** (`55113224`, frozen v65b).
 - Kaggle public score: **pending; not yet returned**.
 - Kaggle private score: **unavailable**.
-- V68 is accepted. It preserves every non-`lp85` v67 outcome exactly and
-  completes `lp85` level 5 in 50 actions.
+- V74 is accepted. Relative to v69, it changes only `cd82` and `lp85`,
+  completing `cd82` 6/6 and reaching `lp85` 6/8.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem
 is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
+
+## 2026-07-30 — clean restart and v75 translation algebra
+
+A pinned fresh-process rerun from the v74 source commit exactly reproduced the
+accepted 14.450686193334509 score and every per-game vector. A preliminary
+non-isolated run through a shared editable environment did not reproduce v74;
+that report was rejected because its source provenance resolved to a different
+checkout. The practical lesson is that every subprocess must be pinned to the
+frozen worktree, not merely passed the right candidate JSON.
+
+Cross-game failure clustering then found the same missing abstraction across
+multiple zero-progress games: stable relative translations recur while the
+base graph treats nearly every rendered frame as a new state. The new bounded
+compiler retains action identity plus relative displacement, requires a later
+structurally distinct prospective confirmation, preserves contextual no-ops,
+quarantines contradictory nonzero effects, and omits oversized substrate from
+the task-object vocabulary.
+
+On the clean v74 recordings, the inactive compiler forms prospective authority
+on 13/25 games and same-episode inverse pairs on 7/25. `ls20` and `re86`
+repeatedly yield complete four-direction algebras; `tu93` yields an inverse
+pair; `dc22` yields only a partial algebra.
+
+The compiler is now integrated behind one exact-off flag and emitted live
+telemetry in a generation-35 trace-only offspring. Fresh isolated runs on
+`dc22`, `ls20`, `re86`, and `tu93` exactly reproduced all four v74 action
+vectors while gaining prospective authority on each game. This is real
+representation and isolation evidence, not task progress. The next step must
+construct a bounded relative-position quotient, then show better-than-uniform
+probing or safe abstention before claiming useful control.
 
 ## 2026-07-30 — v68 accepted path-cycle result
 

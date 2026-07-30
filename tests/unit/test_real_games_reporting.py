@@ -7,9 +7,14 @@ ROOT = Path(__file__).resolve().parents[2]
 ACCEPTED_REPORT = (
     ROOT
     / "reports"
+    / "official-isolated-v74-clean-baseline-400.json"
+)
+V69_ACCEPTED_REPORT = (
+    ROOT
+    / "reports"
     / "official-isolated-v69-public-400.json"
 )
-ACCEPTED_CANDIDATE = (
+V69_ACCEPTED_CANDIDATE = (
     ROOT
     / "candidates"
     / "v69-colored-stencil-primary-400.json"
@@ -61,16 +66,18 @@ def test_human_reports_match_accepted_scorecard() -> None:
 
 def test_canonical_report_binds_the_frozen_v69_evidence() -> None:
     canonical = (ROOT / "REAL_GAMES_REPORT.md").read_text(encoding="utf-8")
-    scorecard = json.loads(ACCEPTED_REPORT.read_text(encoding="utf-8"))
-    candidate = json.loads(ACCEPTED_CANDIDATE.read_text(encoding="utf-8"))
+    scorecard = json.loads(V69_ACCEPTED_REPORT.read_text(encoding="utf-8"))
+    candidate = json.loads(
+        V69_ACCEPTED_CANDIDATE.read_text(encoding="utf-8")
+    )
 
     assert scorecard["source_commit"] in canonical
     assert candidate["candidate_id"] in canonical
     assert candidate["inference_fingerprint"] in canonical
     assert candidate["parent_id"] == "candidate-35de85c4fe395c3a"
     for artifact in (
-        ACCEPTED_CANDIDATE,
-        ACCEPTED_REPORT,
+        V69_ACCEPTED_CANDIDATE,
+        V69_ACCEPTED_REPORT,
         *TARGET_REPORTS,
         PRESERVATION_REPORT,
     ):

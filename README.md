@@ -19,32 +19,30 @@ service, database, or web server.
 
 Last verified: 2026-07-30
 
-> **Plain-language result:** Reflector has fully beaten **2 of 25 games**.
-> It has solved **30 of 183 levels across 12 games**. All 25 games were
+> **Plain-language result:** Reflector has fully beaten **3 of 25 games**.
+> It has solved **35 of 183 levels across 12 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v69 result |
+| Metric | Accepted v74 result |
 | --- | ---: |
-| Complete games beaten | **2 / 25** |
+| Complete games beaten | **3 / 25** |
 | Games with at least one solved level | **12 / 25** |
-| Levels solved | **30 / 183** |
-| Official local score | **10.255448098096416 / 100** |
+| Levels solved | **35 / 183** |
+| Official local score | **14.450686193334509 / 100** |
 | Games evaluated | **25 / 25** |
-| Total actions | **9,486** |
-| Frozen source/candidate commit | `2f3020804baf7578ff691ace2fa556783eb3735a` |
-| Candidate | `candidate-2336bc12a0bc28de` |
+| Total actions | **9,185** |
+| Frozen source/candidate commit | `5422fb823d464e9f837f7b523d06e41a930effd5` |
+| Candidate | `candidate-cb34c9a1195fafa1` |
 | Kaggle submissions | **1 pending** (`55113224`) |
 | Kaggle public score | **pending; not yet returned** |
 | Kaggle private score | **unavailable** |
 
-The score is about **10.26% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. V69 preserves v68
-on all 24 unaffected games and solves `cd82` levels 1–2 by uniquely grounding
-a reference/construction pair, visible palette roles, and an outlined pose
-template, then searching exact primary last-write-wins stencil programs. Both
-frozen target runs reproduce `[12, 6, 382, 0, 0, 0]`; every other
-public-development trajectory remains exact. The permanent result is in
-[the v69 public-development report](reports/official-isolated-v69-public-400.json).
+The score is about **14.45% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. Relative to v69,
+v74 completes all six `cd82` levels and reaches six of eight `lp85` levels
+while preserving the other public-development trajectories. The clean
+process-isolated result is in
+[the v74 public-development report](reports/official-isolated-v74-clean-baseline-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -58,12 +56,12 @@ Kaggle leaderboard series.
 **Kaggle submission:** frozen v65b—not v69—was submitted for hidden-transfer
 calibration as submission `55113224` from the private, internet-disabled
 notebook `pauloabelha/reflector-arc-agi-3-v65b` version 1. The hidden rerun is
-still `PENDING`, so neither leaderboard regime has returned a score. V69 has
+still `PENDING`, so neither leaderboard regime has returned a score. V74 has
 not been submitted. Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
-do not report the local 10.26 score as a Kaggle public or private score.
+do not report the local 14.45 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object
