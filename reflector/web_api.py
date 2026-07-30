@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import time
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -146,6 +148,7 @@ class WebState:
     trace: EpisodeTrace
     database: Path | None
     static_directory: Path
+    workspace: Path | None = None
 
     def experiments(self) -> list[dict[str, Any]]:
         if self.database is None or not self.database.exists():
@@ -158,6 +161,258 @@ class WebState:
             raise KeyError(experiment_id)
         with ExperimentStore(self.database) as store:
             return store.experiment_report(experiment_id)
+
+    def live_snapshot(self) -> dict[str, Any]:
+        return live_snapshot(self.workspace or self.static_directory.parent.parent)
+
+
+def _tail_jsonl(path: Path, count: int = 40) -> list[dict[str, Any]]:
+    """Read a bounded JSONL tail without loading a multi-megabyte stream."""
+
+    with path.open("rb") as stream:
+        stream.seek(0, 2)
+        remaining = stream.tell()
+        chunks: list[bytes] = []
+        lines = 0
+        while remaining and lines <= count:
+            size = min(65_536, remaining)
+            remaining -= size
+            stream.seek(remaining)
+            chunk = stream.read(size)
+            chunks.append(chunk)
+            lines += chunk.count(b"\n")
+    output: list[dict[str, Any]] = []
+    for line in b"".join(reversed(chunks)).splitlines()[-count:]:
+        try:
+            value = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict):
+            output.append(value)
+    return output
+
+
+def _scorecards(workspace: Path) -> list[tuple[Path, dict[str, Any]]]:
+    reports = workspace / "reports"
+    output: list[tuple[Path, dict[str, Any]]] = []
+    if not reports.is_dir():
+        return output
+    for path in reports.rglob("*.json"):
+        try:
+            if path.stat().st_size > 30_000_000:
+                continue
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if (
+            isinstance(value, dict)
+            and isinstance(value.get("scorecard"), dict)
+            and isinstance(value["scorecard"].get("environments"), list)
+        ):
+            output.append((path, value))
+    return output
+
+
+def _game_name(value: str) -> str:
+    return value.split("-", 1)[0]
+
+
+def _report_summary(path: Path, report: dict[str, Any], workspace: Path) -> dict[str, Any]:
+    scorecard = report["scorecard"]
+    environments = scorecard["environments"]
+    return {
+        "path": str(path.relative_to(workspace)),
+        "name": path.parent.name if path.name == "official-report.json" else path.stem,
+        "score": scorecard.get("score", 0),
+        "levels_completed": scorecard.get("total_levels_completed", 0),
+        "levels_total": scorecard.get("total_levels", 0),
+        "games_completed": scorecard.get("total_environments_completed", 0),
+        "games_total": scorecard.get("total_environments", len(environments)),
+        "actions": scorecard.get("total_actions", 0),
+        "modified": path.stat().st_mtime,
+        "source_commit": report.get("source_commit"),
+    }
+
+
+def live_snapshot(workspace: Path) -> dict[str, Any]:
+    """Summarize active streams and all local official score evidence."""
+
+    workspace = workspace.resolve()
+    now = time.time()
+    scorecards = _scorecards(workspace)
+    summaries = sorted(
+        (_report_summary(path, report, workspace) for path, report in scorecards),
+        key=lambda item: item["modified"],
+        reverse=True,
+    )
+    full = [item for item in summaries if item["games_total"] >= 25]
+    best_full = max(
+        full,
+        key=lambda item: (
+            item["score"],
+            item["levels_completed"],
+            -item["actions"],
+        ),
+        default=None,
+    )
+
+    games: dict[str, dict[str, Any]] = {}
+    for path, report in scorecards:
+        report_name = path.parent.name if path.name == "official-report.json" else path.stem
+        for environment in report["scorecard"]["environments"]:
+            game = _game_name(str(environment.get("id", "")))
+            if not game:
+                continue
+            levels_completed = int(environment.get("levels_completed", 0))
+            game_score = float(environment.get("score", 0))
+            actions = int(environment.get("actions", 0))
+            item = {
+                "game": game,
+                "levels_completed": levels_completed,
+                "levels_total": int(environment.get("level_count", 0)),
+                "score": game_score,
+                "actions": actions,
+                "completed": bool(environment.get("completed", False)),
+                "report": report_name,
+                "level_actions": (
+                    environment.get("runs", [{}])[0].get("level_actions", [])
+                    if environment.get("runs")
+                    else []
+                ),
+            }
+            incumbent = games.get(game)
+            item_rank = (levels_completed, game_score, -actions)
+            incumbent_rank = (
+                (
+                    int(incumbent["levels_completed"]),
+                    float(incumbent["score"]),
+                    -int(incumbent["actions"]),
+                )
+                if incumbent is not None
+                else None
+            )
+            if incumbent_rank is None or item_rank > incumbent_rank:
+                games[game] = item
+
+    streams = sorted(
+        (workspace / "reports").glob("**/cognitive/*.jsonl"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    ) if (workspace / "reports").is_dir() else []
+    current: dict[str, Any] | None = None
+    logs: list[dict[str, Any]] = []
+    if streams:
+        stream = streams[0]
+        events = _tail_jsonl(stream)
+        if events:
+            event = events[-1]
+            observation = event.get("observation", {})
+            deployment = event.get("deployment", {})
+            operative = event.get("operative_state", {})
+            exploration = operative.get("exploration", {})
+            diagnostics = {
+                key: value
+                for key, value in exploration.items()
+                if (
+                    key.endswith("_diagnostic")
+                    or key.endswith("_confirmations")
+                    or key.endswith("_conflicts")
+                    or key.endswith("_predictions")
+                    or key in {
+                        "planner_expansions",
+                        "states",
+                        "frontier_states",
+                        "inherited_scheme_count",
+                        "inherited_scheme_selections",
+                    }
+                )
+                and value not in (0, None, "", "not-attempted", "exact-off")
+            }
+            current = {
+                "active": now - stream.stat().st_mtime < 8,
+                "game": deployment.get("game_id", stream.stem),
+                "candidate_id": deployment.get("candidate_id"),
+                "agent_version": deployment.get("agent_version"),
+                "inference_fingerprint": deployment.get("inference_fingerprint"),
+                "level": observation.get("levels_completed", 0),
+                "state": observation.get("state"),
+                "action": event.get("decision"),
+                "sequence": event.get("sequence"),
+                "objects": observation.get("object_count"),
+                "stream": str(stream.relative_to(workspace)),
+                "modified": stream.stat().st_mtime,
+                "diagnostics": diagnostics,
+            }
+            for item in events:
+                transition = item.get("transition") or {}
+                logs.append(
+                    {
+                        "sequence": item.get("sequence"),
+                        "level": item.get("observation", {}).get("levels_completed"),
+                        "state": item.get("observation", {}).get("state"),
+                        "action_id": item.get("decision", {}).get("action_id"),
+                        "reason": item.get("decision", {}).get("reason"),
+                        "result": transition.get("result", []),
+                        "new": {
+                            key: len(item.get("construction_delta", {}).get(key, []))
+                            for key in ("concepts", "hypotheses", "abstractions")
+                        },
+                    }
+                )
+
+    candidates = sorted(
+        (workspace / "candidates").glob("*.json"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    ) if (workspace / "candidates").is_dir() else []
+    offspring = None
+    if candidates:
+        try:
+            value = json.loads(candidates[0].read_text(encoding="utf-8"))
+            offspring = {
+                key: value.get(key)
+                for key in (
+                    "candidate_id",
+                    "parent_id",
+                    "generation",
+                    "rationale",
+                    "mutation_source",
+                    "inference_fingerprint",
+                )
+            }
+            offspring["path"] = str(candidates[0].relative_to(workspace))
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    artifacts = sorted(
+        (
+            path
+            for path in (workspace / "reports").glob("**/*")
+            if path.is_file() and path.suffix.lower() in {".md", ".json", ".png", ".svg"}
+        ),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )[:16] if (workspace / "reports").is_dir() else []
+    return {
+        "generated_at": datetime.now(UTC).isoformat(),
+        "workspace": str(workspace),
+        "status": "running" if current and current["active"] else "idle",
+        "current": current,
+        "offspring": offspring,
+        "best_full": best_full,
+        "latest_run": summaries[0] if summaries else None,
+        "runs": summaries[:12],
+        "games": [games[key] for key in sorted(games)],
+        "logs": logs,
+        "artifacts": [
+            {
+                "path": str(path.relative_to(workspace)),
+                "kind": path.suffix.lower().lstrip("."),
+                "modified": path.stat().st_mtime,
+            }
+            for path in artifacts
+        ],
+    }
 
 
 class ReflectorHTTPServer(ThreadingHTTPServer):
@@ -172,6 +427,10 @@ class ReflectorRequestHandler(BaseHTTPRequestHandler):
         try:
             if path == "/api/health":
                 self._json({"status": "ok", "service": "reflector"})
+            elif path == "/api/live":
+                self._json(self.server.state.live_snapshot())
+            elif path == "/api/live/events":
+                self._live_events()
             elif path == "/api/replay":
                 self._json(analyze_trace(self.server.state.trace))
             elif path == "/api/experiments":
@@ -213,6 +472,24 @@ class ReflectorRequestHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format: str, *args: object) -> None:
         del format, args
+
+    def _live_events(self) -> None:
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Connection", "keep-alive")
+        self.end_headers()
+        try:
+            while True:
+                payload = json.dumps(
+                    self.server.state.live_snapshot(),
+                    separators=(",", ":"),
+                )
+                self.wfile.write(f"event: snapshot\ndata: {payload}\n\n".encode())
+                self.wfile.flush()
+                time.sleep(1)
+        except (BrokenPipeError, ConnectionResetError):
+            return
 
     def _request_json(self) -> dict[str, Any]:
         length = int(self.headers.get("Content-Length", "0"))
@@ -271,9 +548,10 @@ def create_server(
     static_directory: Path,
     host: str = "127.0.0.1",
     port: int = 8765,
+    workspace: Path | None = None,
 ) -> ReflectorHTTPServer:
     server = ReflectorHTTPServer((host, port), ReflectorRequestHandler)
-    server.state = WebState(trace, database, static_directory)
+    server.state = WebState(trace, database, static_directory, workspace)
     return server
 
 
@@ -284,6 +562,7 @@ def serve(
     static_directory: Path,
     host: str = "127.0.0.1",
     port: int = 8765,
+    workspace: Path | None = None,
 ) -> None:
     server = create_server(
         trace=trace,
@@ -291,6 +570,7 @@ def serve(
         static_directory=static_directory,
         host=host,
         port=port,
+        workspace=workspace,
     )
     print(f"Reflector replay console: http://{host}:{server.server_port}")
     try:

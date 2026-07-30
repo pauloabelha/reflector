@@ -9,3 +9,5 @@ rmSync(output, { recursive: true, force: true });
 mkdirSync(output, { recursive: true });
 cpSync(join(root, "index.html"), join(output, "index.html"));
 cpSync(join(root, "src", "styles.css"), join(output, "styles.css"));
+cpSync(join(root, "monitor.html"), join(output, "monitor.html"));
+cpSync(join(root, "src", "monitor.css"), join(output, "monitor.css"));

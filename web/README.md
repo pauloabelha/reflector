@@ -4,6 +4,23 @@ This is a strict TypeScript, browser-native frontend for the local Reflector
 analysis API. It has no runtime framework, CDN, font, telemetry, or remote
 service dependency.
 
+## Live mission control
+
+Build once, then launch the read-only workspace monitor:
+
+```bash
+cd web && npm run build && cd ..
+.venv/bin/reflector dashboard
+```
+
+Open `http://127.0.0.1:8765/monitor.html`. The page receives one snapshot per
+second over a server-sent event stream. It auto-discovers cognitive JSONL
+streams, candidate lineage, official scorecards, per-game bests, the
+Games × Levels matrix, and recent report artifacts under the workspace.
+
+Use `--workspace`, `--host`, or `--port` to override their local defaults.
+The monitor is read-only and does not import or alter game implementations.
+
 Build it once:
 
 ```bash

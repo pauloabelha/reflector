@@ -267,6 +267,19 @@ def main() -> None:
         type=Path,
         default=Path(__file__).resolve().parent.parent / "web" / "dist",
     )
+    dashboard = commands.add_parser("dashboard")
+    dashboard.add_argument(
+        "--workspace",
+        type=Path,
+        default=Path(__file__).resolve().parent.parent,
+    )
+    dashboard.add_argument("--host", default="127.0.0.1")
+    dashboard.add_argument("--port", type=int, default=8765)
+    dashboard.add_argument(
+        "--static",
+        type=Path,
+        default=Path(__file__).resolve().parent.parent / "web" / "dist",
+    )
 
     args = parser.parse_args()
     if args.command == "trace-demo":
@@ -627,13 +640,22 @@ def main() -> None:
             print(args.output)
         else:
             print(json.dumps(official_payload, indent=2))
-    else:
+    elif args.command == "web":
         serve(
             trace=load_trace(args.trace),
             database=args.db,
             static_directory=args.static,
             host=args.host,
             port=args.port,
+        )
+    else:
+        serve(
+            trace=demo_trace(),
+            database=None,
+            static_directory=args.static,
+            host=args.host,
+            port=args.port,
+            workspace=args.workspace,
         )
 
 

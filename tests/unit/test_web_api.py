@@ -8,7 +8,12 @@ from reflector.cli import demo_trace
 from reflector.evolver import root_candidate
 from reflector.experiments import ExperimentManifest, ExperimentStore
 from reflector.population import Fitness
-from reflector.web_api import analyze_trace, branch_replay, create_server
+from reflector.web_api import (
+    analyze_trace,
+    branch_replay,
+    create_server,
+    live_snapshot,
+)
 
 
 def test_analysis_reconstructs_symbolic_state_and_explanations() -> None:
@@ -137,3 +142,54 @@ def test_local_http_api_and_static_shell(tmp_path) -> None:
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_live_snapshot_discovers_best_games_and_latest_candidate(tmp_path) -> None:
+    reports = tmp_path / "reports"
+    candidates = tmp_path / "candidates"
+    reports.mkdir()
+    candidates.mkdir()
+    (reports / "official.json").write_text(
+        json.dumps(
+            {
+                "scorecard": {
+                    "score": 12.5,
+                    "total_levels_completed": 2,
+                    "total_levels": 4,
+                    "total_environments_completed": 0,
+                    "total_environments": 25,
+                    "total_actions": 40,
+                    "environments": [
+                        {
+                            "id": "demo-hash",
+                            "levels_completed": 2,
+                            "level_count": 4,
+                            "score": 50.0,
+                            "actions": 40,
+                            "completed": False,
+                            "runs": [{"level_actions": [10, 30, 0, 0]}],
+                        }
+                    ],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (candidates / "offspring.json").write_text(
+        json.dumps(
+            {
+                "candidate_id": "candidate-new",
+                "parent_id": "candidate-old",
+                "generation": 3,
+                "rationale": "test",
+                "mutation_source": "unit",
+                "inference_fingerprint": "a" * 64,
+            }
+        ),
+        encoding="utf-8",
+    )
+    snapshot = live_snapshot(tmp_path)
+    assert snapshot["best_full"]["score"] == 12.5
+    assert snapshot["games"][0]["game"] == "demo"
+    assert snapshot["games"][0]["level_actions"] == [10, 30, 0, 0]
+    assert snapshot["offspring"]["candidate_id"] == "candidate-new"
