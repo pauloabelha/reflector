@@ -137,6 +137,9 @@ class SymbolicPolicy:
             lattice_effect_planning=(
                 self.mind.config.enable_lattice_effect_planning
             ),
+            segmented_permutation_transport=(
+                self.mind.config.enable_segmented_permutation_transport
+            ),
             shape_goal_translation=(
                 self.mind.config.enable_shape_goal_translation
             ),

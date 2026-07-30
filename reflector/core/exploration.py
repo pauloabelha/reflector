@@ -31,9 +31,24 @@ from .lattice_csp import (
     learn_click_effect_model,
     solve_click_csp,
 )
+from .permutation_transport import (
+    MarkerTarget,
+    PermutationBounds,
+    PermutationGenerator,
+    PermutationSystem,
+    infer_segmented_permutations,
+    merge_generator_evidence,
+    plan_marker_transport,
+)
 from .symbolic import ObjectState, Observation, Scene
 
 StateKey = tuple[int, str, str]
+ControllerForm = tuple[
+    int,
+    tuple[tuple[int, int], ...],
+    str | None,
+    tuple[str, ...],
+]
 PhaseSignature = tuple[
     tuple[
         int,
@@ -201,6 +216,14 @@ class _LatticeEffectGrounding:
 
 
 @dataclass(frozen=True, slots=True)
+class _SegmentedPermutationPrediction:
+    """A controller-form prediction registered before its response exists."""
+
+    controller_form: ControllerForm
+    generator: PermutationGenerator
+
+
+@dataclass(frozen=True, slots=True)
 class _MarkedAnchor:
     point: tuple[int, int]
     marker_color: int
@@ -346,6 +369,7 @@ class EpistemicExplorer:
     constructive_connector_placement: bool = False
     connector_graph_synthesis: bool = False
     lattice_effect_planning: bool = False
+    segmented_permutation_transport: bool = False
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
     committed_trajectory_planning: bool = False
@@ -712,6 +736,28 @@ class EpistemicExplorer:
     lattice_effect_plan_steps: int = 0
     lattice_effect_search_nodes: int = 0
     lattice_effect_diagnostic: str = "not-attempted"
+    segmented_permutation_bounds: PermutationBounds = PermutationBounds()
+    segmented_permutation_proposals: dict[
+        ControllerForm, PermutationGenerator
+    ] = field(default_factory=dict)
+    segmented_permutation_generators: tuple[PermutationGenerator, ...] = ()
+    segmented_permutation_controller_effects: dict[
+        ControllerForm, str
+    ] = field(default_factory=dict)
+    segmented_permutation_quarantined_forms: set[ControllerForm] = field(
+        default_factory=set
+    )
+    segmented_permutation_pending_prediction: (
+        _SegmentedPermutationPrediction | None
+    ) = None
+    segmented_permutation_observations: int = 0
+    segmented_permutation_predictions: int = 0
+    segmented_permutation_confirmations: int = 0
+    segmented_permutation_conflicts: int = 0
+    segmented_permutation_plan_steps: int = 0
+    segmented_permutation_last_plan_length: int = 0
+    segmented_permutation_search_states: int = 0
+    segmented_permutation_diagnostic: str = "exact-off"
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -863,6 +909,7 @@ class EpistemicExplorer:
                 "not-attempted" if self.connector_graph_synthesis else "exact-off"
             )
             self._reset_lattice_effect_level()
+            self._reset_segmented_permutation_level()
             self.select_apply_diagnostic = "not-attempted"
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level()
@@ -896,6 +943,7 @@ class EpistemicExplorer:
             self.select_apply_program = ()
             self.select_apply_cursor = 0
             self._reset_lattice_effect_level()
+            self._reset_segmented_permutation_level()
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level(retain_accommodation=True)
             self._reset_boundary_nuisance_state()
@@ -925,6 +973,7 @@ class EpistemicExplorer:
         if self.pending_role is None or not self.pending_frame:
             self.pending_grounding = None
             self.pending_relational_scheme = None
+            self.segmented_permutation_pending_prediction = None
             return
         before = self.pending_frame
         after = observation.frame
@@ -991,6 +1040,21 @@ class EpistemicExplorer:
                 after,
                 progressed=progressed,
             )
+        if (
+            self.segmented_permutation_transport
+            and pending_token is not None
+            and pending_token.action_id == self.complex_action
+            and pending_token.data
+            and grounding is not None
+        ):
+            self._observe_segmented_permutation_transition(
+                before,
+                after,
+                grounding,
+                progressed=progressed,
+            )
+        else:
+            self.segmented_permutation_pending_prediction = None
         if len(before) != len(after) or not before or not after:
             return
         if any(len(left) != len(right) for left, right in zip(before, after)):
@@ -1099,6 +1163,7 @@ class EpistemicExplorer:
         self.pending_grounding = None
         self.pending_relational_scheme = None
         self._reset_lattice_effect_level()
+        self._reset_segmented_permutation_level()
 
     def _reset_compact_component_frontier_retry(
         self,
@@ -1153,6 +1218,25 @@ class EpistemicExplorer:
         self.lattice_effect_search_nodes = 0
         self.lattice_effect_diagnostic = (
             "not-attempted" if self.lattice_effect_planning else "exact-off"
+        )
+
+    def _reset_segmented_permutation_level(self) -> None:
+        self.segmented_permutation_proposals.clear()
+        self.segmented_permutation_generators = ()
+        self.segmented_permutation_controller_effects.clear()
+        self.segmented_permutation_quarantined_forms.clear()
+        self.segmented_permutation_pending_prediction = None
+        self.segmented_permutation_observations = 0
+        self.segmented_permutation_predictions = 0
+        self.segmented_permutation_confirmations = 0
+        self.segmented_permutation_conflicts = 0
+        self.segmented_permutation_plan_steps = 0
+        self.segmented_permutation_last_plan_length = 0
+        self.segmented_permutation_search_states = 0
+        self.segmented_permutation_diagnostic = (
+            "not-attempted"
+            if self.segmented_permutation_transport
+            else "exact-off"
         )
 
     def _reset_boundary_nuisance_state(self) -> None:
@@ -4626,6 +4710,31 @@ class EpistemicExplorer:
                 scene,
             )
 
+        segmented_permutation = self._select_segmented_permutation_transport(
+            observation,
+            scene,
+            state,
+            tokens,
+        )
+        if segmented_permutation is not None:
+            self.cyclic_alignment_level_trials += 1
+            self.segmented_permutation_plan_steps += 1
+            if self.cyclic_alignment_scheme is not None:
+                self.last_scheme_components = (
+                    *self.cyclic_alignment_scheme.components(),
+                    "operator:confirmed-segmented-permutation",
+                    "state:projected-marker-color-positions",
+                )
+            return self._issue(
+                state,
+                segmented_permutation,
+                (
+                    "epistemic-frontier:cyclic-sequence-alignment:"
+                    "segmented-permutation-transport"
+                ),
+                scene,
+            )
+
         paired = self._select_paired_object_contact(
             observation,
             tokens,
@@ -6825,6 +6934,7 @@ class EpistemicExplorer:
         self.pending_frame = self.selection_frame
         self.pending_role = grounding.role
         self.pending_grounding = grounding
+        self._register_segmented_permutation_prediction(grounding)
         self.pending = (state, token)
         return ExplorationChoice(token, reason)
 
@@ -6862,6 +6972,417 @@ class EpistemicExplorer:
                 else "scheme:starter:intervene-on-object"
             )
         return tuple(sorted(components))
+
+    @staticmethod
+    def _segmented_controller_form(
+        grounding: GroundedRole,
+    ) -> ControllerForm | None:
+        """Return a coordinate-, color-, and action-id-free controller form."""
+
+        role = grounding.role
+        if grounding.centroid is None or role.area is None or not role.shape:
+            return None
+        return (
+            role.area,
+            role.shape,
+            role.primitive_kind,
+            role.primitive_properties,
+        )
+
+    @classmethod
+    def _segmented_token_domain(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+        *,
+        bounds: PermutationBounds,
+    ) -> (
+        tuple[
+            tuple[_MarkedAnchor, ...],
+            tuple[tuple[int, int], ...],
+        ]
+        | None
+    ):
+        """Ground conserved token slots from the visible marker token form."""
+
+        anchors = cls._marked_anchors(frame)
+        forms = {(anchor.token_area, anchor.token_shape) for anchor in anchors}
+        if not anchors or len(forms) != 1:
+            return None
+        token_area, token_shape = next(iter(forms))
+        positions = tuple(
+            sorted(
+                item.centroid
+                for item in cls._frame_objects(frame)
+                if item.area == token_area and item.shape == token_shape
+            )
+        )
+        if (
+            len(positions) != len(set(positions))
+            or len(positions) > bounds.max_slots
+            or len(positions) < bounds.min_segment_length * bounds.min_segment_count
+            or any(anchor.point not in positions for anchor in anchors)
+        ):
+            return None
+        return anchors, positions
+
+    @staticmethod
+    def _same_segmented_generator(
+        left: PermutationGenerator,
+        right: PermutationGenerator,
+    ) -> bool:
+        return left.slots == right.slots and left.successor == right.successor
+
+    @classmethod
+    def _segmented_prediction_matches(
+        cls,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        positions: tuple[tuple[int, int], ...],
+        generator: PermutationGenerator,
+        *,
+        bounds: PermutationBounds,
+    ) -> bool:
+        """Validate the complete conserved token domain, ignoring unrelated UI."""
+
+        if (
+            not before
+            or not after
+            or len(before) != len(after)
+            or any(len(left) != len(right) for left, right in zip(before, after))
+        ):
+            return False
+        after_domain = cls._segmented_token_domain(after, bounds=bounds)
+        if after_domain is None or after_domain[1] != positions:
+            return False
+        slot_set = set(generator.slots)
+        if not slot_set.issubset(positions):
+            return False
+        changed_token_points = {
+            point
+            for point in positions
+            if before[point[1]][point[0]] != after[point[1]][point[0]]
+        }
+        if not changed_token_points.issubset(slot_set):
+            return False
+        return all(
+            after[destination[1]][destination[0]] == before[source[1]][source[0]]
+            for source, destination in (
+                (
+                    generator.slots[index],
+                    generator.slots[generator.successor[index]],
+                )
+                for index in range(len(generator.slots))
+            )
+        )
+
+    def _segmented_generator(self, effect_id: str) -> PermutationGenerator | None:
+        return next(
+            (
+                generator
+                for generator in self.segmented_permutation_generators
+                if generator.effect_id == effect_id
+            ),
+            None,
+        )
+
+    def _quarantine_segmented_controller(
+        self,
+        controller_form: ControllerForm,
+        diagnostic: str,
+    ) -> None:
+        self.segmented_permutation_proposals.pop(controller_form, None)
+        self.segmented_permutation_controller_effects.pop(controller_form, None)
+        self.segmented_permutation_quarantined_forms.add(controller_form)
+        self.segmented_permutation_pending_prediction = None
+        self.segmented_permutation_conflicts += 1
+        self.segmented_permutation_diagnostic = diagnostic
+
+    def _observe_segmented_permutation_transition(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        grounding: GroundedRole,
+        *,
+        progressed: bool,
+    ) -> None:
+        """Propose once, then admit only a preregistered exact prediction."""
+
+        pending = self.segmented_permutation_pending_prediction
+        self.segmented_permutation_pending_prediction = None
+        if progressed:
+            self.segmented_permutation_diagnostic = "level-progress"
+            return
+        if (
+            not self.segmented_permutation_transport
+            or self.cyclic_alignment_scheme is None
+            or self.cyclic_alignment_scheme.target_relation
+            != "anchor-token-matches-markers"
+        ):
+            self.segmented_permutation_diagnostic = (
+                "no-earned-marker-goal"
+                if self.segmented_permutation_transport
+                else "exact-off"
+            )
+            return
+        controller_form = self._segmented_controller_form(grounding)
+        domain = self._segmented_token_domain(
+            before,
+            bounds=self.segmented_permutation_bounds,
+        )
+        if controller_form is None or grounding.centroid is None or domain is None:
+            if pending is not None:
+                self._quarantine_segmented_controller(
+                    pending.controller_form,
+                    "prediction-domain-mismatch",
+                )
+            else:
+                self.segmented_permutation_diagnostic = "domain-unrepresented"
+            return
+        _anchors, positions = domain
+        after_domain = self._segmented_token_domain(
+            after,
+            bounds=self.segmented_permutation_bounds,
+        )
+        if after_domain is None or after_domain[1] != positions:
+            if pending is not None:
+                self._quarantine_segmented_controller(
+                    controller_form,
+                    "prediction-domain-mismatch",
+                )
+            else:
+                self.segmented_permutation_diagnostic = (
+                    "token-domain-not-conserved"
+                )
+            return
+        candidates = infer_segmented_permutations(
+            before,
+            after,
+            positions,
+            grounding.centroid,
+            bounds=self.segmented_permutation_bounds,
+        )
+        if candidates:
+            self.segmented_permutation_observations += 1
+
+        if pending is not None:
+            if pending.controller_form != controller_form:
+                self._quarantine_segmented_controller(
+                    pending.controller_form,
+                    "controller-form-changed-before-response",
+                )
+                return
+            if not self._segmented_prediction_matches(
+                before,
+                after,
+                positions,
+                pending.generator,
+                bounds=self.segmented_permutation_bounds,
+            ):
+                self._quarantine_segmented_controller(
+                    controller_form,
+                    "prospective-prediction-conflict",
+                )
+                return
+            matching = tuple(
+                candidate
+                for candidate in candidates
+                if self._same_segmented_generator(candidate, pending.generator)
+            )
+            if len(candidates) != 1 or len(matching) != 1:
+                self.segmented_permutation_diagnostic = (
+                    "prospective-prediction-underdetermined"
+                )
+                return
+            evidence = matching[0]
+            proposal = self.segmented_permutation_proposals.get(controller_form)
+            generators = self.segmented_permutation_generators
+            try:
+                if proposal is not None:
+                    if not self._same_segmented_generator(
+                        proposal,
+                        pending.generator,
+                    ):
+                        self._quarantine_segmented_controller(
+                            controller_form,
+                            "provisional-effect-conflict",
+                        )
+                        return
+                    generators = merge_generator_evidence(
+                        generators,
+                        proposal,
+                        bounds=self.segmented_permutation_bounds,
+                    )
+                generators = merge_generator_evidence(
+                    generators,
+                    evidence,
+                    bounds=self.segmented_permutation_bounds,
+                )
+            except ValueError:
+                self._quarantine_segmented_controller(
+                    controller_form,
+                    "generator-bound-exceeded",
+                )
+                return
+            self.segmented_permutation_generators = generators
+            self.segmented_permutation_controller_effects[controller_form] = (
+                evidence.effect_id
+            )
+            self.segmented_permutation_proposals.pop(controller_form, None)
+            self.segmented_permutation_confirmations += 1
+            self.segmented_permutation_diagnostic = "prospectively-confirmed"
+            return
+
+        if controller_form in self.segmented_permutation_quarantined_forms:
+            self.segmented_permutation_diagnostic = "controller-form-quarantined"
+            return
+        if len(candidates) != 1:
+            self.segmented_permutation_diagnostic = (
+                "ambiguous-transition"
+                if len(candidates) > 1
+                else "no-exact-segmented-permutation"
+            )
+            return
+        if (
+            controller_form in self.segmented_permutation_proposals
+            or controller_form in self.segmented_permutation_controller_effects
+        ):
+            self.segmented_permutation_diagnostic = (
+                "matching-response-not-preregistered"
+            )
+            return
+        self.segmented_permutation_proposals[controller_form] = candidates[0]
+        self.segmented_permutation_diagnostic = "provisional-observation"
+
+    def _register_segmented_permutation_prediction(
+        self,
+        grounding: GroundedRole,
+    ) -> None:
+        """Register an effect before issuing any equivalent controller."""
+
+        self.segmented_permutation_pending_prediction = None
+        if (
+            not self.segmented_permutation_transport
+            or self.cyclic_alignment_scheme is None
+        ):
+            return
+        controller_form = self._segmented_controller_form(grounding)
+        if (
+            controller_form is None
+            or controller_form in self.segmented_permutation_quarantined_forms
+        ):
+            return
+        generator = self.segmented_permutation_proposals.get(controller_form)
+        if generator is None:
+            effect_id = self.segmented_permutation_controller_effects.get(
+                controller_form
+            )
+            generator = (
+                self._segmented_generator(effect_id) if effect_id is not None else None
+            )
+        if generator is None:
+            return
+        self.segmented_permutation_pending_prediction = _SegmentedPermutationPrediction(
+            controller_form, generator
+        )
+        self.segmented_permutation_predictions += 1
+
+    def _select_segmented_permutation_transport(
+        self,
+        observation: Observation,
+        scene: Scene,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Plan one confirmed generator effect, then require re-observation."""
+
+        if (
+            not self.segmented_permutation_transport
+            or self.cyclic_alignment_scheme is None
+            or self.cyclic_alignment_scheme.target_relation
+            != "anchor-token-matches-markers"
+            or self.cyclic_alignment_level_trials
+            >= self.max_cyclic_alignment_trials_per_level
+        ):
+            return None
+        domain = self._segmented_token_domain(
+            observation.frame,
+            bounds=self.segmented_permutation_bounds,
+        )
+        if domain is None:
+            self.segmented_permutation_diagnostic = "domain-unrepresented"
+            return None
+        anchors, positions = domain
+        represented_effects = set(
+            self.segmented_permutation_controller_effects.values()
+        )
+        generators = tuple(
+            generator
+            for generator in self.segmented_permutation_generators
+            if generator.support >= 2 and generator.effect_id in represented_effects
+        )
+        if not generators:
+            self.segmented_permutation_diagnostic = (
+                "provisional-evidence-only"
+                if self.segmented_permutation_proposals
+                else "no-confirmed-generators"
+            )
+            return None
+        try:
+            system = PermutationSystem.create(
+                generators,
+                bounds=self.segmented_permutation_bounds,
+            )
+        except ValueError:
+            self.segmented_permutation_diagnostic = "generator-system-invalid"
+            return None
+        plan = plan_marker_transport(
+            observation.frame,
+            positions,
+            tuple(
+                MarkerTarget(anchor.point, anchor.marker_color) for anchor in anchors
+            ),
+            system,
+            bounds=self.segmented_permutation_bounds,
+        )
+        if plan is None:
+            self.segmented_permutation_last_plan_length = 0
+            self.segmented_permutation_search_states = 0
+            self.segmented_permutation_diagnostic = "no-plan-within-bounds"
+            return None
+        self.segmented_permutation_last_plan_length = len(plan.generator_ids)
+        self.segmented_permutation_search_states = plan.explored_states
+        if not plan.generator_ids:
+            self.segmented_permutation_diagnostic = "marker-goal-already-satisfied"
+            return None
+        effect_id = plan.generator_ids[0]
+        controller_forms = {
+            controller_form
+            for controller_form, represented_effect in (
+                self.segmented_permutation_controller_effects.items()
+            )
+            if represented_effect == effect_id
+            and controller_form not in self.segmented_permutation_quarantined_forms
+        }
+        represented: list[ActionToken] = []
+        for token in tokens:
+            if token.action_id != self.complex_action or not token.data:
+                continue
+            grounding = self._grounding(token, scene)
+            if self._segmented_controller_form(grounding) in controller_forms:
+                represented.append(token)
+        if not represented:
+            self.segmented_permutation_diagnostic = "planned-controller-unrepresented"
+            return None
+        self.segmented_permutation_diagnostic = "planned-confirmed-generator"
+        return min(
+            represented,
+            key=lambda token: (
+                self.attempts[(state, token)],
+                self.global_attempts[token],
+                token,
+            ),
+        )
+
 
     def _observe_cyclic_transition(
         self,
@@ -9246,6 +9767,42 @@ class EpistemicExplorer:
             "cyclic_alignment_level_trials": (self.cyclic_alignment_level_trials),
             "cyclic_last_plan_length": self.cyclic_last_plan_length,
             "grounded_cyclic_transports": len(self.grounded_cyclic_transports),
+            "segmented_permutation_proposals": len(
+                self.segmented_permutation_proposals
+            ),
+            "segmented_permutation_generators": len(
+                self.segmented_permutation_generators
+            ),
+            "segmented_permutation_controller_forms": len(
+                self.segmented_permutation_controller_effects
+            ),
+            "segmented_permutation_quarantined_forms": len(
+                self.segmented_permutation_quarantined_forms
+            ),
+            "segmented_permutation_observations": (
+                self.segmented_permutation_observations
+            ),
+            "segmented_permutation_predictions": (
+                self.segmented_permutation_predictions
+            ),
+            "segmented_permutation_confirmations": (
+                self.segmented_permutation_confirmations
+            ),
+            "segmented_permutation_conflicts": (
+                self.segmented_permutation_conflicts
+            ),
+            "segmented_permutation_plan_steps": (
+                self.segmented_permutation_plan_steps
+            ),
+            "segmented_permutation_last_plan_length": (
+                self.segmented_permutation_last_plan_length
+            ),
+            "segmented_permutation_search_states": (
+                self.segmented_permutation_search_states
+            ),
+            "segmented_permutation_diagnostic": (
+                self.segmented_permutation_diagnostic
+            ),
             "select_apply_program_length": len(self.select_apply_program),
             "select_apply_cursor": self.select_apply_cursor,
             "select_apply_level_trials": self.select_apply_level_trials,

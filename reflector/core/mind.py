@@ -99,6 +99,7 @@ class MindConfig:
     enable_constructive_connector_placement: bool = False
     enable_connector_graph_synthesis: bool = False
     enable_lattice_effect_planning: bool = False
+    enable_segmented_permutation_transport: bool = False
     enable_shape_goal_translation: bool = False
     enable_relational_phase_translation: bool = False
     enable_committed_trajectory_planning: bool = False
@@ -169,6 +170,7 @@ class MindConfig:
             "enable_constructive_connector_placement",
             "enable_connector_graph_synthesis",
             "enable_lattice_effect_planning",
+            "enable_segmented_permutation_transport",
             "enable_shape_goal_translation",
             "enable_relational_phase_translation",
             "enable_committed_trajectory_planning",
@@ -279,6 +281,13 @@ class MindConfig:
             and not self.enable_cyclic_sequence_alignment
         ):
             raise ValueError("graph cycle transport requires cyclic sequence alignment")
+        if (
+            self.enable_segmented_permutation_transport
+            and not self.enable_cyclic_sequence_alignment
+        ):
+            raise ValueError(
+                "segmented permutation transport requires cyclic sequence alignment"
+            )
         if (
             self.enable_multiline_target_binding
             and not self.enable_parameterized_select_apply_commit
