@@ -6,40 +6,45 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 2 of 25 public-development games.**
-> It has solved 28 of 183 levels across 11 games. The suite ran all 25 games,
+> It has solved 30 of 183 levels across 12 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v68 result | Meaning |
+| Outcome metric | Accepted v69 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **2 / 25** | `sb26` and `ft09` were solved through their final levels. |
-| Games with progress | **11 / 25** | At least one level was solved in eleven games. |
-| Levels solved | **28 / 183** | Eight in `sb26`; six in `ft09`; five in `lp85`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **9.6840195267 / 100** | About **9.68%** of the 100-point scale on the known public-development games. |
+| Games with progress | **12 / 25** | At least one level was solved in twelve games. |
+| Levels solved | **30 / 183** | Eight in `sb26`; six in `ft09`; five in `lp85`; two each in `ar25` and `cd82`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **10.2554480981 / 100** | About **10.26%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,486** | The budget was 400 actions per game; completed `sb26` and `ft09` stopped after 124 and 162 actions. |
 | Kaggle submissions | **1 pending** | Submission `55113224` remains `PENDING`; no hidden score has returned yet. |
 
 ## Game × level completion matrix
 
-![Reflector v68 public game by level completion matrix](reports/v68-game-level-matrix.svg)
+![Reflector v69 public game by level completion matrix](reports/v69-game-level-matrix.svg)
 
-[Open the full-resolution PNG](reports/v68-game-level-matrix.png) or
-[open the scalable SVG](reports/v68-game-level-matrix.svg).
+[Open the full-resolution PNG](reports/v69-game-level-matrix.png) or
+[open the scalable SVG](reports/v69-game-level-matrix.svg).
 Green cells are completed levels; black cells are known but incomplete
 levels; gray cells are outside that game's level count. The matrix is
-generated directly from the accepted v68 scorecard by
+generated directly from the accepted v69 scorecard by
 [`scripts/generate_level_matrix.py`](scripts/generate_level_matrix.py).
 SHA-256 values are
-`a4f4c74f568869f873123ab8a4b3bcacd4195e98a3215d3bb7c23e923a3f2b05`
+`237602d06366a41083e4d5e5f30f3b9207610d71b6ab4def809e7f55a56d4520`
 for the SVG and
-`0b4086b06ddef95a4c5a53697054ba44c954b262e7f201a8968567fc3a614f56`
+`2e6df19b3b91803a1e4c70e3a89595dcb408cb969627cb35bf8fa67d43cce2a7`
 for the PNG.
 
 ## Evaluation surfaces
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v68 accepted | **9.6840195267 / 100** | 2 games beaten; 28/183 levels; 9,486 actions | 25/25 coverage |
+| Process-isolated official local suite | v69 accepted | **10.2554480981 / 100** | 2 games beaten; 30/183 levels across 12 games; 9,486 actions | 25/25 coverage |
+| Process-isolated twelve-game gate | v69 accepted | 21.3655168710 / 100 | 30 levels; every non-`cd82` accepted trajectory preserved, while `cd82` added levels 1–2 at `[12,6,382,0,0,0]` | passed |
+| Target-only `cd82` reruns | v69 accepted | 14.2857142857 for one game | 2/6 levels; exact `[12,6,382,0,0,0]` twice after source freeze | deterministic gain twice |
+| Target-only live offspring | secondary edge-stencil, safety-hardened and not promoted | 100.0000000000 for `cd82` | 6/6 levels in 99 actions; per-level authority revalidation; 0 conflicts and 0 causal-validation failures | target passed once; second repeat and preservation pending |
+| Target-only live offspring | factored-orbit transport, safety review hold | 38.7914456145 for `lp85` | 6/8 levels; exact `[37,8,54,71,50,21,159,0]` three times, including the browser-paced recording | target gain reproduced; controller-alias, cover-bound, and interface-identification fixes required before promotion |
+| Process-isolated official local suite | v68 historical accepted | **9.6840195267 / 100** | 2 games beaten; 28/183 levels; 9,486 actions | superseded by v69 |
 | Process-isolated eleven-game gate | v68 accepted | 22.0091352879 / 100 | 28 levels; every non-`lp85` v67 score, level, action total, and completed-level action vector preserved exactly | passed |
 | Target-only `lp85` reruns | v68 accepted | 19.6247789478 for one game | 5/8 levels; exact `[37,8,54,71,50,180,0,0]` twice | deterministic gain twice |
 | Kaggle notebook artifact | v68 accepted package | — | exact export, both network-disabled smoke paths, and technical prize audit pass | not submitted |
@@ -261,6 +266,56 @@ Official competition links:
 - [Kaggle public leaderboard](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/leaderboard)
 - [ARC Prize competition requirements](https://arcprize.org/competitions/2026/arc-agi-3)
 
+## Accepted v69 result
+
+Candidate: `candidate-2336bc12a0bc28de`
+Frozen inference/candidate commit:
+`2f3020804baf7578ff691ace2fa556783eb3735a`
+Candidate inference fingerprint:
+`82a5cb4ae5d5f6a6a813ec3a9b6bef4c609152a02358ba787d9c3aab4e3b893c`
+
+V69 adds an exact primary colored-stencil program behind a separate
+`MindConfig` flag. It grounds a unique congruent reference/construction pair,
+visible palette roles, and an outlined pose template; learns controller
+directions from rendered pose translations; and searches bounded programs of
+attribute selection, pose navigation, and repeated primary half-plane
+overwrites. It contains no game identity, fixed palette value, coordinate,
+action mapping, or solution route.
+
+Evidence:
+
+- two frozen `cd82` target repeats exactly reached 2/6 levels with
+  `[12,6,382,0,0,0]` and game score `14.2857142857`;
+- the twelve-game gate retained every non-`cd82` accepted trajectory and
+  reached 30 levels;
+- the process-isolated 25-game suite scored
+  **10.255448098096416/100**, reached 30/183 levels across 12 games, retained
+  two complete games, covered 25/25 games, and used 9,486 actions;
+- relative to v68, only `cd82` changes: two levels are added and the overall
+  score rises by `0.571428571428573`;
+- the later secondary-stencil and factored-orbit runs in the table above are
+  target-only offspring. They do not change this accepted 25-game score until
+  their safety repairs, deterministic repeats, preservation gate, full suite,
+  exact export, and offline smoke checks pass.
+
+Frozen evidence:
+
+- candidate SHA-256:
+  `32b3e150639aad334fac6d7c1819d1d48aaaa5a75f7c4a6b863d334d1bf55e84`;
+- target report SHA-256 values:
+  `67c9eb13bd457e311da89a645018e6414ecb610c6b6233f7fe077c482046252d`
+  and
+  `0434da5cab1894b23f75fe6e591f7985fb6a3040881d5d24eac449525ac7a13a`;
+- preservation report SHA-256:
+  `731ef7a8ea40f895531cc26f30f0fbe7f1663f061e4e1e8691a0fe43023dc27d`;
+- full report SHA-256:
+  `c3af66b42cf1aa58fea920f553a03883da145aef5e7b663a276e7fe29f5c5347`.
+
+V69 replaces v68 as the accepted local public-development champion. It is a
+causally isolated known-public gain, not hidden-transfer evidence. The only
+Kaggle submission remains the earlier v65b artifact `55113224`; no public or
+private leaderboard score is available.
+
 ## Historical v21 result
 
 Frozen inference commit: `e7037b4a5a2ac56b026f9ca3acbd559bbd0cb0fc`  
@@ -328,7 +383,8 @@ Raw evidence:
 | v65b | 7.9736077792 | 25 | 11 | 1 | Unique exhaustive connector-graph synthesis with ambiguity abstention | historical accepted |
 | v66 | 9.2878934935 | 26 | 11 | 2 | Learned relative lattice effects plus exact visible-constraint planning | historical accepted |
 | v67 | 9.3104639711 | 27 | 11 | 2 | Prospectively confirmed segmented permutations plus bounded exact marker transport | historical accepted |
-| v68 | **9.6840195267** | **28** | **11** | **2** | Contiguous rectilinear subpath cycles plus topology-grounded controller binding | **current accepted** |
+| v68 | 9.6840195267 | 28 | 11 | 2 | Contiguous rectilinear subpath cycles plus topology-grounded controller binding | historical accepted |
+| v69 | **10.2554480981** | **30** | **12** | **2** | Grounded primary colored-stencil composition with exact overwrite search | **current accepted** |
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -345,9 +401,9 @@ ever attempted, and not a Kaggle leaderboard history.
 Regenerate both the SVG and PNG from the table with
 [`scripts/generate_progress_plot.py`](scripts/generate_progress_plot.py).
 Two consecutive renders were byte-identical. Current SHA-256 values are
-`b6233b99ecaf7f9440b05284f28ad3e3d39094294ead91e4a39c96e52518db75`
+`30ce39a581e936617c3b0bb5f973c49da56eff1f9653d67382ec819b940f43f8`
 for the SVG and
-`c9b95e575c117e6d74796a78132d9b39f479033cb589a8121f1740383cc8ae46`
+`c503f4507a238c8250542de6724c5b216e5ce90d2088cbda22c9833b40c715b6`
 for the PNG.
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
@@ -364,9 +420,11 @@ the model is incomplete. V66 uses an exact visible-relation CSP after unique
 lattice grounding. V67 uniquely identifies each observed segmented effect,
 then uses deterministic shortest-path BFS. V68 generalizes that effect
 language to contiguous rectilinear paths and distinguishes otherwise identical
-controllers by their local endpoint/straight/corner topology.
+controllers by their local endpoint/straight/corner topology. V69 adds a
+separate constructive family: it grounds a rendered palette/reference/canvas
+system and composes prospectively evidenced stencil layers.
 
-## Accepted v68 result
+## Historical accepted v68 result
 
 V68 adds a bounded path-cycle generator to the prospectively confirmed
 permutation system. The complete conserved same-form token-centroid domain

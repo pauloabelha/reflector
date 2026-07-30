@@ -92,6 +92,11 @@ MILESTONES = (
         "Topology-grounded path cycles",
         "nested rectilinear transport adds lp85 level 5",
     ),
+    (
+        "v69",
+        "Grounded constructive stencil",
+        "primary layer composition adds cd82 levels 1–2",
+    ),
 )
 
 

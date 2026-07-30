@@ -25,7 +25,7 @@ def _score_report(row: str) -> str:
 def test_progress_plot_loads_every_canonical_score_row() -> None:
     generations = load_generations()
 
-    assert len(generations) == 25
+    assert len(generations) == 26
     assert len({item.version for item in generations}) == len(generations)
     assert tuple(
         item.version for item in generations if not item.accepted
@@ -34,7 +34,7 @@ def test_progress_plot_loads_every_canonical_score_row() -> None:
         item.version
         for item in generations
         if item.decision == "current accepted"
-    ) == ("v68",)
+    ) == ("v69",)
 
 
 def test_progress_plot_rejects_a_malformed_score_row(tmp_path: Path) -> None:
