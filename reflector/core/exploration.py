@@ -9,6 +9,7 @@ from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
 
+from .colored_stencil import PrimaryStencilPlanner
 from .connector_synthesis import (
     Connector,
     ConnectorSynthesisProblem,
@@ -384,6 +385,11 @@ class EpistemicExplorer:
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
     committed_trajectory_planning: bool = False
+    colored_stencil_primary_planning: bool = False
+    colored_stencil_planner: PrimaryStencilPlanner = field(
+        default_factory=PrimaryStencilPlanner,
+        repr=False,
+    )
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -885,6 +891,13 @@ class EpistemicExplorer:
     def observe(self, observation: Observation, scene: Scene) -> StateKey:
         """Record the outcome of the last issued intervention exactly once."""
 
+        self.colored_stencil_planner.enabled = (
+            self.colored_stencil_primary_planning
+        )
+        self.colored_stencil_planner.observe(
+            observation.frame,
+            observation.levels_completed,
+        )
         state = self._state_key(observation, scene)
         self._record_response(observation)
         if self.current_level is None:
@@ -4541,6 +4554,31 @@ class EpistemicExplorer:
         self.selection_frame = observation.frame
         self.last_scheme_components = ()
         self.last_relational_binding = {}
+
+        stencil_choice = self.colored_stencil_planner.select(
+            observation.frame,
+            observation.levels_completed,
+            legal_actions,
+        )
+        if stencil_choice is not None:
+            token = ActionToken(stencil_choice.action_id, stencil_choice.data)
+            if token in tokens:
+                self.last_scheme_components = (
+                    "scheme:layered-stencil-composition",
+                    "operator:ground-relational-pose",
+                    "operator:commit-prospective-layer",
+                    "planner:exact-primary-half-plane-search",
+                )
+                return self._issue(
+                    state,
+                    token,
+                    "epistemic-frontier:colored-stencil-primary",
+                    scene,
+                )
+            self.colored_stencil_planner.quarantined = True
+            self.colored_stencil_planner.diagnostic = (
+                "grounded-token-not-represented"
+            )
 
         if (
             pragmatic_disequilibrium
@@ -9905,7 +9943,7 @@ class EpistemicExplorer:
                 del self.edges[edge]
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        result: dict[str, Any] = {
             "states": len(self.state_status),
             "edges": len(self.edges),
             "attempts": sum(self.attempts.values()),
@@ -10256,3 +10294,10 @@ class EpistemicExplorer:
                 self._has_frontier(state) for state in self.tokens_by_state
             ),
         }
+        result.update(
+            {
+                f"colored_stencil_{key}": value
+                for key, value in self.colored_stencil_planner.to_dict().items()
+            }
+        )
+        return result
