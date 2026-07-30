@@ -403,6 +403,15 @@ These are narrow earned claims, not claims of general intelligence.
     `b342e83f2bb14b134f8febf1b203c208ee74193b0bf0d07bc3796fc8df329a78`.
     It carries zero progress credit and cannot enter action attribution or
     selection until a separate runtime mutation earns pragmatic evidence.
+33. The first cultural offspring preserves behavior exactly. V60 embeds the
+    definition root, evidence-ledger root, and combined common-sense root in
+    its genome. Against a current-source exact-off sibling on `ar25`, `g50t`,
+    `lp85`, `m0r0`, and `sb26`, both scored 8.6109922903, solved the same ten
+    levels, and had identical per-level action vectors. V60 exposed one
+    inherited definition and selected it zero times. The exact candidate also
+    exported and passed the network-disabled Kaggle smoke test. This proves
+    faithful cultural transmission without behavioral leakage; it does not
+    prove task improvement.
 
 ## What is still missing
 

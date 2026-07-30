@@ -13,11 +13,11 @@ from reflector.core.exploration import (
 from reflector.core.mind import MindConfig
 from reflector.core.perception import SceneTracker
 from reflector.core.symbolic import Event, Observation
+from reflector.evolution.inheritance import evidence_from_recording_audits
 from reflector.research.event_audit import (
     ACTION_EFFECT_CONTEXT_CHANGE,
     STABLE_REPEATED_FORM_ACTION_EFFECT,
     audit_recording,
-    evidence_from_recording_audits,
     structural_effect_signature,
 )
 

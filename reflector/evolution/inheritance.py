@@ -13,6 +13,10 @@ from ..core.inheritance import (
     common_sense_root,
 )
 from ..core.mind import MindConfig
+from ..research.event_audit import (
+    STABLE_REPEATED_FORM_ACTION_EFFECT,
+    RecordingEventAudit,
+)
 from .population import Candidate
 
 EvidenceOutcome = Literal[
@@ -288,6 +292,53 @@ def predictive_common_sense_snapshot(
     if not accepted.definitions:
         raise ValueError("no predictive definition cleared the cultural gate")
     return CommonSenseSnapshot(accepted, ledger)
+
+
+def evidence_from_recording_audits(
+    audits: Iterable[
+        tuple[RecordingEventAudit, str, str]
+    ],
+    *,
+    definition: SchemeDefinition = STABLE_REPEATED_FORM_ACTION_EFFECT,
+) -> SchemeEvidenceLedger:
+    """Compile recording predictions into an append-only cultural ledger.
+
+    Each tuple contains ``(audit, candidate_id, partition)``. Confirmations and
+    deviations remain separate evidence; a predictive gate, rather than this
+    adapter, decides whether the calibrated error rate is acceptable.
+    """
+
+    events: list[SchemeEvidence] = []
+    for audit, candidate_id, partition in audits:
+        for index in range(audit.confirmations):
+            events.append(
+                SchemeEvidence(
+                    scheme_id=definition.scheme_id,
+                    candidate_id=candidate_id,
+                    partition=partition,
+                    episode_digest=audit.recording_sha256,
+                    prediction_digest=_stable_digest(
+                        {
+                            "recording": audit.recording_sha256,
+                            "outcome": "prediction-confirmed",
+                            "index": index,
+                        }
+                    ),
+                    outcome="prediction-confirmed",
+                )
+            )
+        for occurrence in audit.occurrences:
+            events.append(
+                SchemeEvidence(
+                    scheme_id=definition.scheme_id,
+                    candidate_id=candidate_id,
+                    partition=partition,
+                    episode_digest=audit.recording_sha256,
+                    prediction_digest=_stable_digest(occurrence.to_dict()),
+                    outcome="prediction-falsified",
+                )
+            )
+    return SchemeEvidenceLedger.create(events)
 
 
 def accommodate_scheme(

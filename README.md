@@ -129,6 +129,10 @@ counterexamples across three agent provenances. Its immutable cultural root is
 Because it has no task-progress credit, it is excluded from action attribution
 and selection. See
 [`reports/common-sense-v1-repeated-form-effect.json`](reports/common-sense-v1-repeated-form-effect.json).
+The v60 cultural offspring embeds all three roots and exactly matched its
+source control across five games and ten solved levels; it also passed export
+and network-disabled Kaggle smoke. This validates transmission, not a better
+ARC score, so v49b remains the accepted task agent.
 
 The rejected v55 population made the missing goal layer operative. Two
 offspring competed object contact with a structurally grounded sparse-marker

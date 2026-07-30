@@ -2386,6 +2386,24 @@ source-matched control test must prove that knowledge inheritance alone
 preserves behavior. V60 cannot replace v49b without an independently promoted,
 task-improving runtime use of the definition.
 
+V60 result:
+
+- candidate `candidate-d1ef98414f250899`;
+- five-game score 8.6109922903, exactly matching its source control;
+- ten levels with identical vectors:
+  `ar25 [17,17,366]`, `g50t [27,373]`,
+  `lp85 [37,8,54,301]`, `m0r0 [20,380]`,
+  `sb26 [9,15,15,361]`;
+- one inherited observation-only definition in every process;
+- zero inherited action selections or operative action attribution;
+- exact library, evidence, and combined roots present in `MindConfig`;
+- Kaggle export succeeded and network-disabled smoke passed;
+- 234 tests passed, 3 skipped; Ruff and mypy passed.
+
+V60 is accepted as a development/cultural offspring but does not replace v49b
+as the task-performance champion. The next generation may use its definition
+only through a separately preregistered policy mutation with pragmatic credit.
+
 The source-matched population has four frozen modes:
 
 - `off`: accepted behavior;
