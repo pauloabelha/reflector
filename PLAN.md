@@ -1928,6 +1928,52 @@ Preregistered v53a repair:
   count;
 - reject on any missed condition. Even a pass validates infrastructure only.
 
+V53a result:
+
+- candidate `candidate-71b134a4f6261be8` on frozen source `a0d2528`
+  reproduced `r11l` at exactly `[18, 382]` and
+  `4.7619047619` for the target;
+- the official cognitive stream reported all six definitions under root
+  `845117a28438262834f23f4c574717e521a83f137cd92da6c2fdf3370e0900b3`;
+- three action-family/object-applicable inherited hashes occurred in 390
+  transition assessments, and typed structural credit reached 98 structures;
+- the exact candidate passed the network-disabled Kaggle smoke and exported
+  without translation. Overlay SHA-256:
+  `0c71a2d66e63e8d0c7cd0167fc1dd826930769b74b1bb79c898de28f95e0cfc7`;
+  notebook SHA-256:
+  `7ce8541e334a435a5f5b2123ab27090e64ff40af1d77d087c8626314f184635b`;
+- the infrastructure prediction passes. V53a is not promoted because it adds
+  no task result and its content-free priors have not earned cultural
+  inheritance evidence.
+
+Next inheritance experiment:
+
+- derive append-only evidence only from inherited definitions that made
+  non-empty effect or goal predictions before an action;
+- aggregate isolated offspring streams by content hash and evaluation
+  partition, retaining falsifications and regressions;
+- breed a child by embedding only the dependency-closed definitions that pass
+  the held-out promotion rule;
+- prove that generic starter forms cannot self-promote merely because they
+  were active when unrelated progress occurred.
+
+Implemented and structurally verified:
+
+- the cognitive-stream compiler requires a preregistered hypothesis, an exact
+  inherited hash, and a definition-specific effect or observable goal
+  contract before emitting evidence;
+- the real v53a `r11l` stream compiled to zero evidence events despite level
+  progress, correctly preventing content-free starter schemes from
+  hitchhiking;
+- the breeder merges isolated ledgers idempotently, applies the held-out
+  promotion rule, preserves dependency closure and previously inherited
+  definitions, and embeds the selected library in a new candidate identity.
+
+The next empirical offspring must therefore propose one risky, general
+effect/goal definition from a trace diagnosis and test it on separated
+development and held-out games. Do not award evidence from the source episode
+used to formulate its contract.
+
 Protocol: `references/INHERITED_SCHEME_PROTOCOL.md`.
 
 ## Completed experimental branch: v26

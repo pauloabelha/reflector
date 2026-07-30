@@ -1,0 +1,3016 @@
+{
+  "scorecard": {
+    "source_url": null,
+    "tags": [
+      "agent",
+      "reflector"
+    ],
+    "opaque": null,
+    "card_id": "0d1b4d21-adab-4362-abcc-8d4d3cf35808",
+    "api_key": null,
+    "score": 4.761904761904762,
+    "environments": [
+      {
+        "id": "r11l-495a7899",
+        "runs": [
+          {
+            "id": null,
+            "guid": "eea9b160-578b-4a33-b47f-6f70a61f8498",
+            "score": 4.761904761904762,
+            "levels_completed": 1,
+            "actions": 400,
+            "resets": 9,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              115.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              18,
+              382,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              22,
+              33,
+              51,
+              26,
+              52,
+              49
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 4.761904761904762,
+        "actions": 400,
+        "levels_completed": 1,
+        "completed": false,
+        "level_count": 6,
+        "resets": 9
+      }
+    ],
+    "tags_scores": [
+      {
+        "id": "click",
+        "guid": null,
+        "score": 4.761904761904762,
+        "levels_completed": 1,
+        "actions": 400,
+        "resets": null,
+        "state": null,
+        "completed": null,
+        "level_scores": null,
+        "level_actions": null,
+        "level_baseline_actions": null,
+        "number_of_levels": 6,
+        "number_of_environments": 1,
+        "message": null
+      }
+    ],
+    "competition_mode": null,
+    "total_environments_completed": 0,
+    "total_environments": 1,
+    "total_levels_completed": 1,
+    "total_levels": 6,
+    "total_actions": 400
+  },
+  "agents": [
+    {
+      "game_id": "r11l",
+      "actions": 400,
+      "seconds": 50.26,
+      "levels_completed": 1,
+      "action_counts": {
+        "0": 9,
+        "6": 391
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 9
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 39
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 41
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 43
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 47
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 51
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 52
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 53
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 54
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 55
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 56
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 57
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 58
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 59
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 60
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 61
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 62
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 3,
+            "y": 3
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 6
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 7,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 20
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 21
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 9,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 9,
+            "y": 56
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 39
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 43
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 43
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 6
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 0
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 7
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 5
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 6
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 7
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 8
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 27
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 28
+          },
+          "count": 5
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 51
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 26
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 49
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 53
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 14
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 55
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 26
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 57
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 14
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 27
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 22
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 27
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 28
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 18
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 30,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 22
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 26
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 22
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 33,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 33,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 33,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 33,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 33,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 10
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 23
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 27
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 29
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 33
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 27
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 0
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 7
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 29
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 50
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 52
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 29
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 49
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 53
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 10
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 14
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 30
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 48
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 54
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 10
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 32
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 33
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 48
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 54
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 18
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 34
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 49
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 51
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 53
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 10
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 52
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 10
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 11
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 27
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 36
+          },
+          "count": 5
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 40
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 51
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 10
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 34
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 35
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 51
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 10
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 26
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 27
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 32
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 33
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 37
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 29
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 38
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 40
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 42
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 31
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 40
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 41
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 8
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 9
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 40
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 41
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 43
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 49
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 43
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 26
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 47
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 49
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 51
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 45
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 19
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 47
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 50
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 24
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 2
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 23
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 57,
+            "y": 57
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 15
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 41
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 59,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 59,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 59,
+            "y": 46
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 19
+          },
+          "count": 1
+        }
+      ],
+      "reason_counts": {
+        "epistemic-frontier": 391,
+        "reset-required": 9
+      },
+      "reason_detail_counts": {
+        "epistemic-frontier:hierarchical-action-family": 274,
+        "epistemic-frontier:reuse-productive-action-role": 64,
+        "epistemic-frontier:untried-current-state": 53,
+        "reset-required": 9
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": true,
+        "enable_hierarchical_action_fairness": true,
+        "enable_failure_conditioned_fairness": true,
+        "enable_successful_role_replay": false,
+        "enable_multicolor_click_objects": false,
+        "enable_click_object_accommodation": true,
+        "enable_productive_role_reuse": true,
+        "enable_cross_retry_maturity": true,
+        "enable_boundary_nuisance_state_key": false,
+        "enable_boundary_nuisance_fairness": false,
+        "enable_paired_object_contact_planning": true,
+        "enable_paired_contextual_transitions": false,
+        "enable_paired_transport_family": false,
+        "enable_paired_post_accommodation_plan": false,
+        "enable_local_relation_solver": true,
+        "enable_constraint_first_role_replay": false,
+        "enable_global_relation_constraint_solver": true,
+        "enable_preregistered_structural_credit": true,
+        "enable_parameterized_scheme_variation": false,
+        "enable_starter_schemas": false,
+        "enable_inherited_scheme_library": true,
+        "enable_relational_scheme_binding": false,
+        "enable_visual_primitives": false,
+        "enable_visual_primitive_actions": false,
+        "enable_temporal_primitives": false,
+        "enable_cyclic_sequence_alignment": true,
+        "enable_graph_cycle_transport": true,
+        "enable_parameterized_select_apply_commit": true,
+        "enable_multiline_target_binding": true,
+        "enable_spatial_order_variation": false,
+        "enable_nested_target_traversal": true,
+        "enable_nested_source_traversal": false,
+        "enable_enclosure_target_traversal": true,
+        "enable_connector_relocation": false,
+        "enable_shape_goal_translation": true,
+        "enable_relational_phase_translation": true,
+        "enable_committed_trajectory_planning": true,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0,
+        "inherited_scheme_definitions": [
+          "{\"complexity_cost\":3,\"composition\":[],\"dependencies\":[],\"effects\":[],\"falsifiers\":[\"no-predictive-or-pragmatic-credit\"],\"goal_contract\":[],\"grounding\":[\"action-family\",\"region\"],\"invariants\":[],\"name\":\"intervene-on-region\",\"operator\":\"intervene\",\"parameters\":[\"action\",\"visual-region\"],\"preconditions\":[],\"resource_cap\":8}",
+          "{\"complexity_cost\":3,\"composition\":[],\"dependencies\":[],\"effects\":[],\"falsifiers\":[\"no-predictive-or-pragmatic-credit\"],\"goal_contract\":[],\"grounding\":[\"action-family\",\"object\",\"relation\"],\"invariants\":[],\"name\":\"repair-relation\",\"operator\":\"intervene\",\"parameters\":[\"action\",\"relation\",\"source\",\"target\"],\"preconditions\":[],\"resource_cap\":8}",
+          "{\"complexity_cost\":1,\"composition\":[],\"dependencies\":[],\"effects\":[],\"falsifiers\":[\"no-predictive-or-pragmatic-credit\"],\"goal_contract\":[],\"grounding\":[\"action-family\"],\"invariants\":[],\"name\":\"probe-action-family\",\"operator\":\"intervene\",\"parameters\":[\"action-family\"],\"preconditions\":[],\"resource_cap\":8}",
+          "{\"complexity_cost\":2,\"composition\":[],\"dependencies\":[],\"effects\":[],\"falsifiers\":[\"no-predictive-or-pragmatic-credit\"],\"goal_contract\":[],\"grounding\":[\"action-family\",\"object\"],\"invariants\":[],\"name\":\"intervene-on-object\",\"operator\":\"intervene\",\"parameters\":[\"action\",\"object\"],\"preconditions\":[],\"resource_cap\":8}",
+          "{\"complexity_cost\":2,\"composition\":[],\"dependencies\":[],\"effects\":[],\"falsifiers\":[\"no-predictive-or-pragmatic-credit\"],\"goal_contract\":[],\"grounding\":[\"action-family\"],\"invariants\":[],\"name\":\"bounded-novelty\",\"operator\":\"intervene\",\"parameters\":[\"action\",\"untried-state\"],\"preconditions\":[],\"resource_cap\":8}",
+          "{\"complexity_cost\":4,\"composition\":[],\"dependencies\":[],\"effects\":[],\"falsifiers\":[\"no-predictive-or-pragmatic-credit\"],\"goal_contract\":[],\"grounding\":[\"procedure\"],\"invariants\":[],\"name\":\"bind-manner-to-action\",\"operator\":\"compose\",\"parameters\":[\"base-scheme\",\"modifier-scheme\",\"role-relation\"],\"preconditions\":[],\"resource_cap\":8}"
+        ],
+        "inherited_scheme_root": "845117a28438262834f23f4c574717e521a83f137cd92da6c2fdf3370e0900b3"
+      },
+      "agent_version": "reflector-symbolic-v26",
+      "exploration_metrics": {
+        "states": 345,
+        "edges": 347,
+        "attempts": 347,
+        "global_interventions": 316,
+        "action_families": 1,
+        "successful_program_length": 0,
+        "program_cursor": 0,
+        "perceptual_accommodations": 9,
+        "productive_roles": 27,
+        "productive_reuse_level_trials": 8,
+        "learned_cyclic_alignments": 0,
+        "cyclic_transport_evidence": 0,
+        "cyclic_alignment_level_trials": 0,
+        "cyclic_last_plan_length": 0,
+        "grounded_cyclic_transports": 0,
+        "select_apply_program_length": 0,
+        "select_apply_cursor": 0,
+        "select_apply_level_trials": 0,
+        "select_apply_diagnostic": "no-structural-candidate",
+        "shape_translation_effects": 0,
+        "shape_translation_effect_evidence": 0,
+        "shape_translation_probes": 0,
+        "shape_translation_invalid_actions": 0,
+        "shape_goal_grounded": 0,
+        "shape_translation_level_trials": 0,
+        "shape_translation_application_trials": 0,
+        "shape_translation_occluded_steps": 0,
+        "shape_translation_phases": 1,
+        "shape_translation_phase_transitions": 0,
+        "shape_translation_phase_blocked": 0,
+        "shape_translation_diagnostic": "not-attempted",
+        "trajectory_stage": "not-attempted",
+        "trajectory_current_anchor": null,
+        "trajectory_latent_anchor": null,
+        "trajectory_target_anchor": null,
+        "trajectory_effects": 0,
+        "trajectory_effect_evidence": 0,
+        "trajectory_probes": 0,
+        "trajectory_endpoint_macros": 0,
+        "trajectory_contextual_blocks": 0,
+        "trajectory_gate_failures": 0,
+        "trajectory_gate_cooldowns": 0,
+        "trajectory_gate_refresh_action_roles": 0,
+        "trajectory_topology_nodes": 0,
+        "trajectory_uncertain_nodes": 0,
+        "trajectory_topology_support_grounded": 0,
+        "trajectory_committed_macro_length": 0,
+        "trajectory_enacted_path_length": 0,
+        "trajectory_replay_cursor": 0,
+        "trajectory_replay_started": 0,
+        "trajectory_replay_validations": 0,
+        "trajectory_causal_states": 0,
+        "trajectory_causal_edges": 0,
+        "trajectory_boundary_nuisance_evidenced": 0,
+        "boundary_nuisance_evidence": 0,
+        "boundary_nuisance_sides": [],
+        "paired_object_grounded": 0,
+        "paired_joint_effects": 0,
+        "paired_probes": 0,
+        "paired_level_trials": 0,
+        "paired_topology_nodes": 0,
+        "paired_search_expansions": 0,
+        "paired_plan_length": 0,
+        "paired_contact_continuations": 0,
+        "paired_latent_contact": 0,
+        "paired_contextual_proposals": 0,
+        "paired_contextual_confirmations": 0,
+        "paired_contextual_conflicts": 0,
+        "paired_contextual_edges": 0,
+        "paired_contextual_planner_uses": 0,
+        "paired_transport_inductions": 0,
+        "paired_transport_family_grounded": 0,
+        "paired_transport_planner_uses": 0,
+        "paired_post_accommodation_allowance": 0,
+        "paired_effective_trial_cap": 64,
+        "paired_diagnostic": "no-unique-reflected-pair",
+        "trajectory_plan_steps": 0,
+        "trajectory_plan_cap": 20,
+        "trajectory_settle_steps": 0,
+        "trajectory_level_trials": 0,
+        "trajectory_disabled": 0,
+        "trajectory_diagnostic": "not-attempted",
+        "level_interventions": 32,
+        "learned_local_relations": 0,
+        "successful_schemes": 0,
+        "parameterized_schemes": 0,
+        "parameterized_scheme_trials": 0,
+        "starter_schemas": 0,
+        "starter_schema_ids": [],
+        "inherited_scheme_count": 6,
+        "inherited_scheme_root": "845117a28438262834f23f4c574717e521a83f137cd92da6c2fdf3370e0900b3",
+        "inherited_scheme_ids": [
+          "10aa819ac66a928d3ee1bebcaa5a26bf904affd97fbfbcbdf83b1cf01c418dc2",
+          "290b665fe1aac9339d85cecf306977b050b1aa3d788a166222ca3ad9d546517a",
+          "2c3a8e0d289dff0223253f87dea4a5677442fe0a5d8851483843a3cb6e25b839",
+          "492502997e9e84781bde6a7aef7684407e77c7510860a1ddfc6d4690a0429aaf",
+          "8b0a7b94bb6eadc36484149c48a1e653451ba0c5ff6950dd130172f15752ec67",
+          "ea2638229164bc73dfcc73e052f7fef282161c16d2ded3c350af431d8641cdc3"
+        ],
+        "successful_relational_schemes": 0,
+        "relational_schemes": 0,
+        "relational_scheme_trials": 0,
+        "responsive_relational_schemes": 0,
+        "progressing_relational_schemes": 0,
+        "falsified_relational_schemes": 0,
+        "relational_level_trials": 0,
+        "last_relational_binding": {},
+        "frontier_states": 335
+      }
+    }
+  ],
+  "source_commit": "a0d25283056ab47c53ce3fd2f324a21a677216a8"
+}

@@ -41,6 +41,18 @@ and cannot act during an episode.
 10. Apply the normal target, preservation, full-suite, export, and
     network-disabled Kaggle gates.
 
+`evidence_from_cognitive_events` enforces the bridge from streamed cognition
+to the ledger. It accepts only assessments with a preregistered hypothesis,
+an inherited component present in the candidate's exact library, and a
+definition-specific effect or externally observable goal contract. Generic
+active priors cannot inherit credit from coincidental progress.
+
+`breed_inherited_candidate` unions isolated ledgers by evidence hash, applies
+the held-out gate, closes promoted definitions over their dependencies,
+retains the parent's previously inherited library, and embeds the result in a
+new candidate identity. This is the cultural exchange boundary between
+offspring; episode bindings and unrestricted cognitive prose do not cross it.
+
 ## Evidence boundaries
 
 An evidence event records a candidate, evaluation partition, episode digest,
@@ -73,9 +85,13 @@ candidate identity, and exported notebook genome.
 
 ## Current empirical status
 
-The substrate is implemented and structurally validated. The historical
-content-free starter forms can now be represented by hashed definitions and
-enter the existing component-specific structural-credit path. This proves
-faithful transport and operative grounding, not task improvement. No inherited
-library offspring is accepted until real-game target and preservation evidence
-passes the existing promotion gates.
+The substrate is implemented and structurally validated. V53a carried six
+content-free definitions through the official `r11l` harness, reproduced the
+accepted level at action 18, grounded three applicable hashes into 390
+transition assessments, passed the network-disabled Kaggle smoke, and exported
+the exact library-bearing genome. Compiling that real stream produced zero
+cultural evidence events, as required, because the generic starter forms make
+no effect or goal prediction. This proves faithful transport, operative
+grounding, and anti-hitchhiking—not task improvement. No inherited library
+offspring is accepted until a definition with a risky contract passes real
+held-out and preservation gates.

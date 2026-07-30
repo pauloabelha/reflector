@@ -5,10 +5,11 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass, replace
-from typing import Any, Iterable, Literal
+from typing import Any, Iterable, Literal, Mapping
 
 from ..core.inheritance import SchemeDefinition, SchemeLibrary
 from ..core.mind import MindConfig
+from .population import Candidate
 
 EvidenceOutcome = Literal[
     "prediction-confirmed",
@@ -207,4 +208,180 @@ def config_with_scheme_library(
         ),
         inherited_scheme_definitions=library.json_definitions(),
         inherited_scheme_root=library.root,
+    )
+
+
+def _predicate_names(values: Iterable[str]) -> frozenset[str]:
+    return frozenset(value.split("(", 1)[0] for value in values)
+
+
+def evidence_from_cognitive_events(
+    library: SchemeLibrary,
+    events: Iterable[Mapping[str, Any]],
+    *,
+    candidate_id: str,
+    partition: str,
+) -> SchemeEvidenceLedger:
+    """Compile only definition-specific preregistered predictions.
+
+    A definition with no effect or externally observable goal contract cannot
+    earn evidence merely by being active during an unrelated successful
+    transition.
+    """
+
+    by_id = {item.scheme_id: item for item in library.definitions}
+    output: list[SchemeEvidence] = []
+    for event in events:
+        deployment = event.get("deployment", {})
+        if (
+            isinstance(deployment, Mapping)
+            and deployment.get("candidate_id") not in (None, candidate_id)
+        ):
+            raise ValueError("cognitive event belongs to another candidate")
+        sequence = event.get("sequence")
+        observation = event.get("observation", {})
+        frame_digest = (
+            observation.get("frame_digest")
+            if isinstance(observation, Mapping)
+            else None
+        )
+        construction = event.get("construction_delta", {})
+        assessments = (
+            construction.get("assessments", ())
+            if isinstance(construction, Mapping)
+            else ()
+        )
+        if not isinstance(assessments, (list, tuple)):
+            continue
+        for assessment in assessments:
+            if not isinstance(assessment, Mapping):
+                continue
+            hypothesis_id = assessment.get("hypothesis_id")
+            if not isinstance(hypothesis_id, str) or not hypothesis_id:
+                continue
+            components = assessment.get("scheme_components", ())
+            if not isinstance(components, (list, tuple)):
+                continue
+            predicted = _predicate_names(
+                item
+                for item in assessment.get("predicted", ())
+                if isinstance(item, str)
+            )
+            confirmed = _predicate_names(
+                item
+                for item in assessment.get("confirmed", ())
+                if isinstance(item, str)
+            )
+            contradicted = _predicate_names(
+                item
+                for item in assessment.get("contradicted", ())
+                if isinstance(item, str)
+            )
+            pragmatic = _predicate_names(
+                item
+                for item in assessment.get("pragmatic", ())
+                if isinstance(item, str)
+            )
+            for component in components:
+                if (
+                    not isinstance(component, str)
+                    or not component.startswith("scheme:inherited:")
+                ):
+                    continue
+                scheme_id = component.rsplit(":", 1)[-1]
+                definition = by_id.get(scheme_id)
+                if definition is None:
+                    raise ValueError(
+                        f"assessment references unknown scheme {scheme_id}"
+                    )
+                effect_contract = _predicate_names(definition.effects)
+                goal_contract = _predicate_names(definition.goal_contract)
+                predicted_effects = effect_contract & predicted
+                level_progress_contract = (
+                    "level_advanced" in goal_contract
+                    and "level_advanced" in pragmatic
+                )
+                outcome: EvidenceOutcome | None = None
+                if level_progress_contract:
+                    outcome = "level-progress"
+                elif predicted_effects & contradicted:
+                    outcome = "prediction-falsified"
+                elif effect_contract and effect_contract <= confirmed:
+                    outcome = "prediction-confirmed"
+                if outcome is None:
+                    continue
+                output.append(
+                    SchemeEvidence(
+                        scheme_id=scheme_id,
+                        candidate_id=candidate_id,
+                        partition=partition,
+                        episode_digest=_stable_digest(
+                            {
+                                "candidate_id": candidate_id,
+                                "partition": partition,
+                                "sequence": sequence,
+                                "frame_digest": frame_digest,
+                            }
+                        ),
+                        prediction_digest=_stable_digest(
+                            {
+                                "hypothesis_id": hypothesis_id,
+                                "scheme_id": scheme_id,
+                                "predicted": sorted(predicted),
+                            }
+                        ),
+                        outcome=outcome,
+                    )
+                )
+    return SchemeEvidenceLedger.create(output)
+
+
+@dataclass(frozen=True, slots=True)
+class InheritedBreedingResult:
+    candidate: Candidate
+    library: SchemeLibrary
+    ledger: SchemeEvidenceLedger
+    newly_promoted: tuple[str, ...]
+
+
+def breed_inherited_candidate(
+    parent: Candidate,
+    *,
+    proposal_libraries: Iterable[SchemeLibrary],
+    evidence_ledgers: Iterable[SchemeEvidenceLedger],
+    contributor_ids: Iterable[str] = (),
+    source_fingerprint: str,
+    rationale: str,
+    rule: SchemePromotionRule | None = None,
+) -> InheritedBreedingResult:
+    """Breed one exact offspring from evidence-clearing cultural artifacts."""
+
+    parent_library = SchemeLibrary.from_json_definitions(
+        parent.config.inherited_scheme_definitions
+    )
+    proposed = SchemeLibrary().merge(*tuple(proposal_libraries))
+    ledger = SchemeEvidenceLedger().merge(*tuple(evidence_ledgers))
+    additions = promoted_library(proposed, ledger, rule)
+    inherited = parent_library.merge(additions)
+    if not inherited.definitions:
+        raise ValueError("no inherited schemes cleared the promotion gate")
+    child = Candidate.create(
+        config_with_scheme_library(parent.config, inherited),
+        parent_id=parent.candidate_id,
+        contributor_ids=tuple(contributor_ids),
+        generation=parent.generation + 1,
+        rationale=rationale,
+        mutation_source="evidence-gated-scheme-breeding-v1",
+        inference_fingerprint=source_fingerprint,
+    )
+    parent_ids = {item.scheme_id for item in parent_library.definitions}
+    return InheritedBreedingResult(
+        candidate=child,
+        library=inherited,
+        ledger=ledger,
+        newly_promoted=tuple(
+            item.scheme_id
+            for item in additions.definitions
+            if item.scheme_id not in parent_ids
+        ),
     )

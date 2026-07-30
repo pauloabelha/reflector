@@ -20,7 +20,9 @@ from reflector.evolution.inheritance import (
     SchemeEvidenceLedger,
     SchemePromotionRule,
     accommodate_scheme,
+    breed_inherited_candidate,
     config_with_scheme_library,
+    evidence_from_cognitive_events,
     promoted_library,
 )
 from reflector.evolution.mutations import (
@@ -218,3 +220,109 @@ def test_inherited_schemes_enter_operative_structural_credit() -> None:
     telemetry = explorer.to_dict()
     assert telemetry["inherited_scheme_count"] == len(library.definitions)
     assert telemetry["inherited_scheme_root"] == library.root
+
+
+def test_cognitive_evidence_requires_a_definition_specific_contract() -> None:
+    definition = _definition()
+    library = SchemeLibrary.create((definition,))
+    component = f"scheme:inherited:{definition.scheme_id}"
+    event = {
+        "sequence": 4,
+        "deployment": {"candidate_id": "candidate-test"},
+        "observation": {"frame_digest": "frame-a"},
+        "construction_delta": {
+            "assessments": [
+                {
+                    "hypothesis_id": "primed-a",
+                    "scheme_components": [component],
+                    "predicted": ["translated(object,north)"],
+                    "confirmed": ["translated(object,north)"],
+                    "contradicted": [],
+                    "pragmatic": [],
+                }
+            ]
+        },
+    }
+    ledger = evidence_from_cognitive_events(
+        library,
+        (event,),
+        candidate_id="candidate-test",
+        partition="heldout:a",
+    )
+
+    assert len(ledger.events) == 1
+    assert ledger.events[0].outcome == "prediction-confirmed"
+
+    generic = starter_scheme_library()
+    generic_component = (
+        f"scheme:inherited:{generic.definitions[0].scheme_id}"
+    )
+    unrelated_progress = {
+        **event,
+        "construction_delta": {
+            "assessments": [
+                {
+                    "hypothesis_id": "primed-generic",
+                    "scheme_components": [generic_component],
+                    "predicted": ["frame_changed(scene)"],
+                    "confirmed": ["frame_changed(scene)"],
+                    "contradicted": [],
+                    "pragmatic": ["level_advanced(game,0,1)"],
+                }
+            ]
+        },
+    }
+    assert not evidence_from_cognitive_events(
+        generic,
+        (unrelated_progress,),
+        candidate_id="candidate-test",
+        partition="heldout:a",
+    ).events
+
+
+def test_evidence_gated_breeding_embeds_only_promoted_definitions() -> None:
+    definition = SchemeDefinition(
+        **{
+            **_definition().to_dict(),
+            "goal_contract": ("level_advanced",),
+        }
+    )
+    proposal = SchemeLibrary.create((definition,))
+    ledger = SchemeEvidenceLedger.create(
+        (
+            _evidence(
+                definition,
+                "prediction-confirmed",
+                partition="development:a",
+                suffix="a",
+            ),
+            _evidence(
+                definition,
+                "prediction-confirmed",
+                partition="heldout:b",
+                suffix="b",
+            ),
+            _evidence(
+                definition,
+                "level-progress",
+                partition="heldout:b",
+                suffix="c",
+            ),
+        )
+    )
+    parent = root_candidate()
+    result = breed_inherited_candidate(
+        parent,
+        proposal_libraries=(proposal,),
+        evidence_ledgers=(ledger,),
+        contributor_ids=("candidate-donor",),
+        source_fingerprint="a" * 64,
+        rationale="inherit held-out validated transport",
+    )
+
+    assert result.newly_promoted == (definition.scheme_id,)
+    assert result.candidate.config.inherited_scheme_root == proposal.root
+    assert result.candidate.config.enable_preregistered_structural_credit
+    assert result.candidate.contributor_ids == tuple(
+        sorted((parent.candidate_id, "candidate-donor"))
+    )

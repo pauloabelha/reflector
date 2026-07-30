@@ -31,6 +31,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Target-only symbolic offspring | v51 induced convergent transport family | 4.7619047619 for one game | 1/6 `m0r0` levels; family prediction passed, task prediction failed | rejected; post-family plan was cut off by base cap |
 | Target-only symbolic offspring | v52 one post-accommodation plan | 4.7619047619 for one game | 1/6 `m0r0` levels; `[20, 380]`; allowance 19, effective cap 83 | rejected; extra grounded planning did not supply the missing goal/phase model |
 | Target-only inheritance substrate | v53 content-addressed starter schemes | 4.7619047619 for one game | 1/6 `r11l` levels; `[18, 382]`; correct six-definition library root | rejected; inherited components were not credited because structural preregistration remained disabled |
+| Target-only inheritance substrate | v53a operative content-addressed schemes | 4.7619047619 for one game | 1/6 `r11l` levels; `[18, 382]`; three inherited hashes in 390 assessments | infrastructure passed; no task gain, not promoted |
 | Process-isolated official local suite | v47b accepted | **4.4496962800 / 100** | 0 games beaten; 18/183 levels | 25/25 coverage |
 | Process-isolated nine-game gate | v47b accepted | 12.3602674444 / 100 | 18 levels; every v42 level preserved | exact twice |
 | Target-only `sp80` reruns | v47b accepted | 0.1885375141 for one game | 1/6 levels; `[196, 204]` under 400 actions | deterministic gain twice |
@@ -347,6 +348,9 @@ Raw evidence:
 - [v49b exact `m0r0` rerun 1](reports/experimental-v49b-m0r0-latent-contact-r1-400.json)
 - [v49b exact `m0r0` rerun 2](reports/experimental-v49b-m0r0-latent-contact-r2-400.json)
 - [v52 rejected `m0r0` target](reports/experimental-v52-m0r0-post-accommodation-plan-r1-400.json)
+- [v53 rejected `r11l` inheritance wiring audit](reports/experimental-v53-r11l-inherited-schemes-r1-400.json)
+- [v53a operative `r11l` inheritance audit](reports/experimental-v53a-r11l-operative-inheritance-r1-400.json)
+- [v53a candidate](candidates/v53a-operative-content-addressed-inheritance-400.json)
 - [v49b candidate](candidates/v49b-latent-paired-contact-400.json)
 
 The earned claim is narrow: a learned joint causal state and operator can solve

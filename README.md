@@ -109,6 +109,18 @@ phase-conditioned action semantics after its own target, preservation, and
 full-suite controls. Other richer ontology traits stay behind exact-off genome
 flags for future source-matched offspring.
 
+The experimental v53a substrate makes cross-run inheritance exact and
+auditable. Typed scheme definitions are immutable and content-addressed;
+mutable confirmations and counterexamples live in a development-only evidence
+ledger. A Merkle-style library root and the complete canonical snapshot are
+embedded in `MindConfig`, candidate identity, traces, and the generated Kaggle
+notebook. On `r11l`, v53a preserved the accepted action result exactly at
+`[18, 382]` while three grounded inherited hashes entered 390 transition
+assessments. Its exact package passed the network-disabled smoke test. This
+validates transport and operative credit, not learning benefit, so v49b
+remains accepted. See the
+[inherited scheme protocol](references/INHERITED_SCHEME_PROTOCOL.md).
+
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction
 between local and Kaggle scores. This table and that report must be updated
