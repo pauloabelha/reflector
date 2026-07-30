@@ -2908,6 +2908,14 @@ as symbolic hypothesis proposal rather than symbolic execution. The next
 offspring should therefore add one compact typed operator family at a time,
 with exact replay and ambiguity abstention:
 
+The next major cross-game branch is specified in
+`references/M8_CAUSAL_OBJECT_WORLD_MODEL.md`: compile a bounded typed causal
+model over persistent object roles, nuisance layers, controllers, modes,
+dynamic blockers, and progress-validated relational goals; choose probes by
+worst-case model elimination; and plan in belief state. `tu93` is the watched
+development game, but M8 promotion requires a gain on at least one
+structurally distinct transfer game.
+
 1. Freeze v69 as the preservation anchor. No target-only offspring changes the
    accepted score until its exact source/config identity, deterministic target
    repeat, twelve-game preservation gate, 25-game run, quality checks, exact
