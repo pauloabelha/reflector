@@ -509,7 +509,10 @@ class ReflectorRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            return
 
     def _error(self, status: HTTPStatus, message: str) -> None:
         self._json({"error": message}, status)
