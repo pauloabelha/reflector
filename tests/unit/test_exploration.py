@@ -412,6 +412,25 @@ def test_paired_marker_relation_is_recolored_action_equivariant_and_credited() -
     assert explorer.paired_relation_confirmations == 1
     assert explorer.paired_relation_falsifications == 0
 
+    explorer.paired_relation_target = ((5, 14), (14, 14))
+    explorer.paired_relation_pending = (
+        "paired-marker-coverage",
+        2,
+        0,
+    )
+    explorer._assess_paired_terminal_relation(initial)
+    assert explorer.paired_relation_falsifications == 1
+    assert explorer.paired_rejected_relation_targets == {
+        ((5, 14), (14, 14))
+    }
+    accommodated = explorer._paired_marker_plan(
+        initial_frame,
+        initial,
+        frozenset({2, 7}),
+    )
+    assert accommodated is not None
+    assert accommodated[2] != ((5, 14), (14, 14))
+
     recolored = EpistemicExplorer(
         paired_object_contact_planning=True,
         paired_terminal_relation_mode="marker-first",

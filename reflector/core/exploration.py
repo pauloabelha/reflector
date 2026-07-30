@@ -530,6 +530,9 @@ class EpistemicExplorer:
         tuple[tuple[int, int], tuple[int, int]] | None
     ) = None
     paired_relation_pending: tuple[str, int, int] | None = None
+    paired_rejected_relation_targets: set[
+        tuple[tuple[int, int], tuple[int, int]]
+    ] = field(default_factory=set)
     paired_relation_confirmations: int = 0
     paired_relation_falsifications: int = 0
     paired_relation_plan_length: int = 0
@@ -1115,6 +1118,7 @@ class EpistemicExplorer:
         self.paired_relation_candidates = 1
         self.paired_relation_target = None
         self.paired_relation_pending = None
+        self.paired_rejected_relation_targets.clear()
         self.paired_relation_confirmations = 0
         self.paired_relation_falsifications = 0
         self.paired_relation_plan_length = 0
@@ -1754,6 +1758,11 @@ class EpistemicExplorer:
             self.paired_relation_confirmations += 1
         elif actual != expected:
             self.paired_relation_falsifications += 1
+            if (
+                expected == 0
+                and len(self.paired_rejected_relation_targets) < 16
+            ):
+                self.paired_rejected_relation_targets.add(target)
 
     def _paired_marker_plan(
         self,
@@ -1804,12 +1813,12 @@ class EpistemicExplorer:
         best_state = anchors
         best_depth = 0
         best_action: int | None = None
-        best_score = score(anchors)
+        best_score = (-1, -1)
         expanded_edges = 0
         while queue and len(visited) <= 2048 and expanded_edges < 8192:
             state, depth, first_action = queue.popleft()
             state_score = score(state)
-            if (
+            if state not in self.paired_rejected_relation_targets and (
                 state_score[0],
                 state_score[1],
                 -depth,
@@ -7124,6 +7133,9 @@ class EpistemicExplorer:
             ),
             "paired_relation_falsifications": (
                 self.paired_relation_falsifications
+            ),
+            "paired_rejected_relation_targets": len(
+                self.paired_rejected_relation_targets
             ),
             "paired_contextual_proposals": self.paired_contextual_proposals,
             "paired_contextual_confirmations": (
