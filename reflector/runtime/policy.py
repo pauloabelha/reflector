@@ -87,6 +87,9 @@ class SymbolicPolicy:
             relational_phase_translation=(
                 self.mind.config.enable_relational_phase_translation
             ),
+            committed_trajectory_planning=(
+                self.mind.config.enable_committed_trajectory_planning
+            ),
         )
         self._previous_decision: Decision | None = None
         self._last_observation: Observation | None = None

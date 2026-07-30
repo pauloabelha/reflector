@@ -1,0 +1,272 @@
+{
+  "kind": "process-isolated-official-evaluation",
+  "scorecard": {
+    "source_url": null,
+    "tags": [
+      "agent",
+      "reflector",
+      "process-isolated"
+    ],
+    "opaque": null,
+    "card_id": null,
+    "api_key": null,
+    "score": 0.0,
+    "environments": [
+      {
+        "id": "g50t-5849a774",
+        "runs": [
+          {
+            "id": null,
+            "guid": "6a63b185-d2d8-46f0-b892-eb274a9e92f0",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 3,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              78,
+              175,
+              179,
+              230,
+              96,
+              54,
+              67
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 7,
+        "resets": 3
+      }
+    ],
+    "tags_scores": [],
+    "competition_mode": null,
+    "total_environments_completed": 0,
+    "total_environments": 1,
+    "total_levels_completed": 0,
+    "total_levels": 7,
+    "total_actions": 400
+  },
+  "agents": [
+    {
+      "game_id": "g50t",
+      "actions": 400,
+      "seconds": 8.85,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 3,
+        "1": 80,
+        "2": 79,
+        "3": 80,
+        "4": 80,
+        "5": 78
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 3
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 80
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 79
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 80
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 80
+        },
+        {
+          "action_id": 5,
+          "data": {},
+          "count": 78
+        }
+      ],
+      "reason_counts": {
+        "epistemic-frontier": 397,
+        "reset-required": 3
+      },
+      "reason_detail_counts": {
+        "epistemic-frontier:committed-trajectory-planning": 100,
+        "epistemic-frontier:untried-current-state": 297,
+        "reset-required": 3
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": true,
+        "enable_hierarchical_action_fairness": false,
+        "enable_successful_role_replay": false,
+        "enable_multicolor_click_objects": false,
+        "enable_click_object_accommodation": false,
+        "enable_productive_role_reuse": false,
+        "enable_local_relation_solver": false,
+        "enable_constraint_first_role_replay": false,
+        "enable_global_relation_constraint_solver": false,
+        "enable_preregistered_structural_credit": false,
+        "enable_parameterized_scheme_variation": false,
+        "enable_starter_schemas": false,
+        "enable_relational_scheme_binding": false,
+        "enable_visual_primitives": false,
+        "enable_visual_primitive_actions": false,
+        "enable_temporal_primitives": false,
+        "enable_cyclic_sequence_alignment": false,
+        "enable_graph_cycle_transport": false,
+        "enable_parameterized_select_apply_commit": false,
+        "enable_multiline_target_binding": false,
+        "enable_spatial_order_variation": false,
+        "enable_nested_target_traversal": false,
+        "enable_nested_source_traversal": false,
+        "enable_enclosure_target_traversal": false,
+        "enable_connector_relocation": false,
+        "enable_shape_goal_translation": false,
+        "enable_relational_phase_translation": false,
+        "enable_committed_trajectory_planning": true,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v26",
+      "exploration_metrics": {
+        "states": 207,
+        "edges": 328,
+        "attempts": 397,
+        "global_interventions": 5,
+        "action_families": 5,
+        "successful_program_length": 0,
+        "program_cursor": 0,
+        "perceptual_accommodations": 3,
+        "productive_roles": 5,
+        "productive_reuse_level_trials": 0,
+        "learned_cyclic_alignments": 0,
+        "cyclic_transport_evidence": 0,
+        "cyclic_alignment_level_trials": 0,
+        "cyclic_last_plan_length": 0,
+        "grounded_cyclic_transports": 0,
+        "select_apply_program_length": 0,
+        "select_apply_cursor": 0,
+        "select_apply_level_trials": 0,
+        "select_apply_diagnostic": "not-attempted",
+        "shape_translation_effects": 0,
+        "shape_translation_effect_evidence": 0,
+        "shape_translation_probes": 0,
+        "shape_translation_invalid_actions": 0,
+        "shape_goal_grounded": 0,
+        "shape_translation_level_trials": 0,
+        "shape_translation_application_trials": 0,
+        "shape_translation_occluded_steps": 0,
+        "shape_translation_phases": 0,
+        "shape_translation_phase_transitions": 0,
+        "shape_translation_phase_blocked": 0,
+        "shape_translation_diagnostic": "not-attempted",
+        "trajectory_stage": "macro",
+        "trajectory_current_anchor": [
+          20,
+          8
+        ],
+        "trajectory_latent_anchor": null,
+        "trajectory_target_anchor": [
+          44,
+          50
+        ],
+        "trajectory_effects": 4,
+        "trajectory_effect_evidence": 5,
+        "trajectory_probes": 4,
+        "trajectory_endpoint_macros": 0,
+        "trajectory_contextual_blocks": 0,
+        "trajectory_committed_macro_length": 0,
+        "trajectory_replay_cursor": 0,
+        "trajectory_replay_started": 0,
+        "trajectory_replay_validations": 0,
+        "trajectory_causal_states": 3,
+        "trajectory_causal_edges": 6,
+        "trajectory_boundary_nuisance_evidenced": 0,
+        "trajectory_plan_steps": 0,
+        "trajectory_settle_steps": 0,
+        "trajectory_level_trials": 7,
+        "trajectory_disabled": 0,
+        "trajectory_diagnostic": "extending-endpoint-macro",
+        "level_interventions": 7,
+        "learned_local_relations": 0,
+        "successful_schemes": 0,
+        "parameterized_schemes": 0,
+        "parameterized_scheme_trials": 0,
+        "starter_schemas": 0,
+        "starter_schema_ids": [],
+        "successful_relational_schemes": 0,
+        "relational_schemes": 0,
+        "relational_scheme_trials": 0,
+        "responsive_relational_schemes": 0,
+        "progressing_relational_schemes": 0,
+        "falsified_relational_schemes": 0,
+        "relational_level_trials": 0,
+        "last_relational_binding": {},
+        "frontier_states": 205
+      }
+    }
+  ],
+  "source_commit": "a2f4a2678d4560e4b608b0325e4a961f4b469697",
+  "execution": {
+    "isolation": "one fresh Python process per game",
+    "parallel": true,
+    "max_workers": 1,
+    "games": [
+      "g50t"
+    ],
+    "child_report_sha256": {
+      "g50t": "3f2311bf4d70037f02753144d12ff8b9a132b1567d5f0926852c1e69c34ef4e9"
+    },
+    "claim_boundary": "Local official public-development evidence; not a Kaggle leaderboard score."
+  }
+}

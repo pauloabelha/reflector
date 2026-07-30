@@ -47,3 +47,7 @@ are in [`MORPHISMS_CATEGORIES_NOTES.md`](MORPHISMS_CATEGORIES_NOTES.md).
 The reinforcement-learning comparison and non-scalar structural-credit
 contract are in
 [`SUTTON_BARTO_CONSTRUCTIVIST_GAP.md`](SUTTON_BARTO_CONSTRUCTIVIST_GAP.md).
+The apples-to-apples ARC-AGI-3 baseline protocol is in
+[`SYMBOLIC_ARC3_COMPARISON.md`](SYMBOLIC_ARC3_COMPARISON.md). The proposed
+hierarchical algorithm derived from the local paper corpus is in
+[`REFLECTIVE_CAUSAL_HRL.md`](REFLECTIVE_CAUSAL_HRL.md).

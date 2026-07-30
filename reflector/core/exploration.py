@@ -156,6 +156,16 @@ class _CyclicTrack:
 
 
 @dataclass(frozen=True, slots=True)
+class _TrajectoryGrounding:
+    mover_signature: tuple[int, int, int, tuple[tuple[int, int], ...]]
+    mover_anchor: tuple[int, int]
+    mover_color: int
+    target_anchor: tuple[int, int]
+    target_color: int
+    receptacle_signature: tuple[int, int, int, tuple[tuple[int, int], ...]]
+
+
+@dataclass(frozen=True, slots=True)
 class RoleRelation:
     """Content-free relation supplied by one scheme to another."""
 
@@ -252,6 +262,7 @@ class EpistemicExplorer:
     connector_relocation: bool = False
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
+    committed_trajectory_planning: bool = False
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -364,6 +375,88 @@ class EpistemicExplorer:
     ] = field(default_factory=dict)
     shape_translation_phase_transition_count: int = 0
     shape_translation_phase_blocked: bool = False
+    trajectory_stage: str = "not-attempted"
+    trajectory_mover_signature: (
+        tuple[int, int, int, tuple[tuple[int, int], ...]] | None
+    ) = None
+    trajectory_receptacle_signature: (
+        tuple[int, int, int, tuple[tuple[int, int], ...]] | None
+    ) = None
+    trajectory_mover_color: int | None = None
+    trajectory_target_color: int | None = None
+    trajectory_origin: tuple[int, int] | None = None
+    trajectory_current_anchor: tuple[int, int] | None = None
+    trajectory_latent_anchor: tuple[int, int] | None = None
+    trajectory_target_anchor: tuple[int, int] | None = None
+    trajectory_probes: set[int] = field(default_factory=set)
+    trajectory_no_effect_actions: set[int] = field(default_factory=set)
+    trajectory_effects: dict[int, tuple[int, int]] = field(default_factory=dict)
+    trajectory_effect_evidence: Counter[int] = field(default_factory=Counter)
+    trajectory_invalid_actions: set[int] = field(default_factory=set)
+    trajectory_contextual_blocks: Counter[tuple[tuple[int, int], int]] = field(
+        default_factory=Counter
+    )
+    trajectory_topology_nodes: set[tuple[int, int]] = field(
+        default_factory=set
+    )
+    trajectory_uncertain_nodes: set[tuple[int, int]] = field(
+        default_factory=set
+    )
+    trajectory_topology_support_color: int | None = None
+    trajectory_restore_tried: set[int] = field(default_factory=set)
+    trajectory_macro_action: int | None = None
+    trajectory_macro_effect: tuple[int, int] | None = None
+    trajectory_previous_failed_macro_action: int | None = None
+    trajectory_active_path: list[tuple[int, int]] = field(default_factory=list)
+    trajectory_endpoint_macros: list[tuple[tuple[int, int], ...]] = field(
+        default_factory=list
+    )
+    trajectory_commit_action: int | None = None
+    trajectory_commit_trials: int = 0
+    trajectory_committed_macro: tuple[tuple[int, int], ...] = ()
+    trajectory_replay_started: bool = False
+    trajectory_replay_anchor: tuple[int, int] | None = None
+    trajectory_replay_cursor: int = 0
+    trajectory_replay_validations: int = 0
+    trajectory_replay_misses: int = 0
+    trajectory_navigation_action: int | None = None
+    trajectory_settle_steps: int = 0
+    trajectory_plan_steps: int = 0
+    trajectory_level_trials: int = 0
+    trajectory_pending: (
+        tuple[str, int, tuple[int, int], tuple[int, int] | None] | None
+    ) = None
+    trajectory_causal_states: set[
+        tuple[
+            tuple[int, int],
+            tuple[int, int],
+            tuple[int, tuple[int, int], int] | None,
+            int,
+        ]
+    ] = field(default_factory=set)
+    trajectory_causal_edges: set[
+        tuple[
+            tuple[
+                tuple[int, int],
+                tuple[int, int],
+                tuple[int, tuple[int, int], int] | None,
+                int,
+            ],
+            int,
+            tuple[
+                tuple[int, int],
+                tuple[int, int],
+                tuple[int, tuple[int, int], int] | None,
+                int,
+            ],
+        ]
+    ] = field(default_factory=set)
+    trajectory_boundary_transitions: list[
+        tuple[int, tuple[int, ...], tuple[int, ...]]
+    ] = field(default_factory=list)
+    trajectory_boundary_nuisance_evidenced: bool = False
+    trajectory_diagnostic: str = "not-attempted"
+    trajectory_disabled: bool = False
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -385,6 +478,8 @@ class EpistemicExplorer:
             order.append("parameterized-select-apply-commit")
         if self.cyclic_sequence_alignment:
             order.append("cyclic-sequence-alignment")
+        if self.committed_trajectory_planning:
+            order.append("committed-trajectory-planning")
         if self.shape_goal_translation:
             order.append("shape-goal-translation")
         if self.productive_role_reuse:
@@ -406,6 +501,8 @@ class EpistemicExplorer:
             if "reuse-productive-action-role" in selected_reason
             else "cyclic-sequence-alignment"
             if "cyclic-sequence-alignment" in selected_reason
+            else "committed-trajectory-planning"
+            if "committed-trajectory-planning" in selected_reason
             else "shape-goal-translation"
             if "shape-goal-translation" in selected_reason
             else "parameterized-select-apply-commit"
@@ -484,6 +581,7 @@ class EpistemicExplorer:
             self.connector_relocation_plan_active = False
             self.select_apply_diagnostic = "not-attempted"
             self._reset_shape_translation_level()
+            self._reset_committed_trajectory_level()
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -506,6 +604,7 @@ class EpistemicExplorer:
             self.select_apply_program = ()
             self.select_apply_cursor = 0
             self._reset_shape_translation_level()
+            self._reset_committed_trajectory_level(retain_accommodation=True)
             self.level_interventions = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
@@ -542,6 +641,19 @@ class EpistemicExplorer:
             self.current_level is not None
             and observation.levels_completed > self.current_level
         )
+        if (
+            self.committed_trajectory_planning
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+        ):
+            self._observe_committed_trajectory(
+                before,
+                after,
+                pending_token.action_id,
+                progressed=progressed,
+            )
         phase_changed = (
             self.shape_goal_translation
             and pending_token is not None
@@ -665,6 +777,708 @@ class EpistemicExplorer:
         self.shape_translation_phase_transitions.clear()
         self.shape_translation_phase_transition_count = 0
         self.shape_translation_phase_blocked = False
+
+    def _reset_committed_trajectory_level(
+        self,
+        *,
+        retain_accommodation: bool = False,
+    ) -> None:
+        """Reset episode state, optionally retaining same-level causal learning."""
+
+        self.trajectory_stage = "not-attempted"
+        self.trajectory_mover_signature = None
+        self.trajectory_receptacle_signature = None
+        self.trajectory_mover_color = None
+        self.trajectory_target_color = None
+        self.trajectory_origin = None
+        self.trajectory_current_anchor = None
+        self.trajectory_latent_anchor = None
+        self.trajectory_target_anchor = None
+        if not retain_accommodation:
+            self.trajectory_probes.clear()
+            self.trajectory_no_effect_actions.clear()
+            self.trajectory_effects.clear()
+            self.trajectory_effect_evidence.clear()
+            self.trajectory_invalid_actions.clear()
+        self.trajectory_contextual_blocks.clear()
+        self.trajectory_topology_nodes.clear()
+        self.trajectory_uncertain_nodes.clear()
+        self.trajectory_topology_support_color = None
+        self.trajectory_restore_tried.clear()
+        self.trajectory_macro_action = None
+        self.trajectory_macro_effect = None
+        if not retain_accommodation:
+            self.trajectory_previous_failed_macro_action = None
+        self.trajectory_active_path.clear()
+        self.trajectory_endpoint_macros.clear()
+        self.trajectory_commit_action = None
+        self.trajectory_commit_trials = 0
+        self.trajectory_committed_macro = ()
+        self.trajectory_replay_started = False
+        self.trajectory_replay_anchor = None
+        self.trajectory_replay_cursor = 0
+        self.trajectory_replay_validations = 0
+        self.trajectory_replay_misses = 0
+        self.trajectory_navigation_action = None
+        self.trajectory_settle_steps = 0
+        self.trajectory_plan_steps = 0
+        self.trajectory_level_trials = 0
+        self.trajectory_pending = None
+        self.trajectory_causal_states.clear()
+        self.trajectory_causal_edges.clear()
+        self.trajectory_boundary_transitions.clear()
+        self.trajectory_boundary_nuisance_evidenced = False
+        self.trajectory_diagnostic = "not-attempted"
+        self.trajectory_disabled = False
+
+    @staticmethod
+    def _trajectory_signature(
+        item: _FrameObject,
+    ) -> tuple[int, int, int, tuple[tuple[int, int], ...]]:
+        return (
+            item.area,
+            item.bbox[2] - item.bbox[0] + 1,
+            item.bbox[3] - item.bbox[1] + 1,
+            item.shape,
+        )
+
+    @classmethod
+    def _trajectory_grounding(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> _TrajectoryGrounding | None:
+        """Ground a hosted near-filled square and one compatible receptacle."""
+
+        if not frame or not frame[0]:
+            return None
+        height = len(frame)
+        width = len(frame[0])
+        objects = cls._frame_objects(frame)
+        interior = tuple(
+            item
+            for item in objects
+            if 0 < item.bbox[0]
+            and 0 < item.bbox[1]
+            and item.bbox[2] < width - 1
+            and item.bbox[3] < height - 1
+        )
+        markers = tuple(item for item in interior if item.area <= 2)
+
+        def hosted_markers(host: _FrameObject) -> tuple[_FrameObject, ...]:
+            return tuple(
+                marker
+                for marker in markers
+                if marker is not host
+                and host.bbox[0] < marker.centroid[0] < host.bbox[2]
+                and host.bbox[1] < marker.centroid[1] < host.bbox[3]
+            )
+
+        movers = []
+        for item in interior:
+            item_width = item.bbox[2] - item.bbox[0] + 1
+            item_height = item.bbox[3] - item.bbox[1] + 1
+            if (
+                item_width == item_height
+                and 3 <= item_width <= 9
+                and item.area == item_width * item_height - 1
+                and len(hosted_markers(item)) == 1
+            ):
+                movers.append(item)
+        grounded = []
+        for mover in movers:
+            mover_width = mover.bbox[2] - mover.bbox[0] + 1
+            mover_height = mover.bbox[3] - mover.bbox[1] + 1
+            receptacles = []
+            for item in interior:
+                item_width = item.bbox[2] - item.bbox[0] + 1
+                item_height = item.bbox[3] - item.bbox[1] + 1
+                if (
+                    item is not mover
+                    and item_width == mover_width + 2
+                    and item_height == mover_height + 2
+                    and 2 * max(item_width, item_height) <= item.area
+                    < item_width * item_height - 1
+                    and hosted_markers(item)
+                ):
+                    receptacles.append(item)
+            if len(receptacles) != 1:
+                continue
+            target = receptacles[0]
+            grounded.append(
+                _TrajectoryGrounding(
+                    mover_signature=cls._trajectory_signature(mover),
+                    mover_anchor=mover.bbox[:2],
+                    mover_color=mover.color,
+                    target_anchor=(
+                        target.bbox[0] + (target.bbox[2] - target.bbox[0] + 1 - mover_width) // 2,
+                        target.bbox[1] + (target.bbox[3] - target.bbox[1] + 1 - mover_height) // 2,
+                    ),
+                    target_color=target.color,
+                    receptacle_signature=cls._trajectory_signature(target),
+                )
+            )
+        return grounded[0] if len(grounded) == 1 else None
+
+    @classmethod
+    def _trajectory_mover_anchors(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+        signature: tuple[int, int, int, tuple[tuple[int, int], ...]],
+    ) -> tuple[tuple[int, int], ...]:
+        return tuple(
+            sorted(
+                item.bbox[:2]
+                for item in cls._frame_objects(frame)
+                if cls._trajectory_signature(item) == signature
+            )
+        )
+
+    @classmethod
+    def _trajectory_phase_signature(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+        mover_color: int,
+        target_color: int,
+    ) -> tuple[
+        tuple[
+            int,
+            int,
+            int,
+            tuple[tuple[int, int], ...],
+            bool,
+            bool,
+        ],
+        ...,
+    ]:
+        if not frame or not frame[0]:
+            return ()
+        height = len(frame)
+        width = len(frame[0])
+        return tuple(
+            sorted(
+                (
+                    item.area,
+                    item.bbox[2] - item.bbox[0] + 1,
+                    item.bbox[3] - item.bbox[1] + 1,
+                    item.shape,
+                    item.color == mover_color,
+                    item.color == target_color,
+                )
+                for item in cls._frame_objects(frame)
+                if item.area <= 16
+                and 0 < item.bbox[0]
+                and 0 < item.bbox[1]
+                and item.bbox[2] < width - 1
+                and item.bbox[3] < height - 1
+            )
+        )
+
+    @staticmethod
+    def _trajectory_boundary_signature(
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[int, ...]:
+        if not frame or not frame[0]:
+            return ()
+        height = len(frame)
+        width = len(frame[0])
+        sides = (
+            tuple(frame[0]),
+            tuple(frame[height - 1]),
+            tuple(frame[y][0] for y in range(height)),
+            tuple(frame[y][width - 1] for y in range(height)),
+        )
+        return tuple(
+            len(side) - max(Counter(side).values(), default=0) for side in sides
+        )
+
+    def _observe_trajectory_boundary(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+    ) -> None:
+        before_signature = self._trajectory_boundary_signature(before)
+        after_signature = self._trajectory_boundary_signature(after)
+        if before_signature == after_signature:
+            return
+        if len(self.trajectory_boundary_transitions) < 8:
+            self.trajectory_boundary_transitions.append(
+                (action_id, before_signature, after_signature)
+            )
+        transitions = self.trajectory_boundary_transitions
+        if len(transitions) < 4 or len({item[0] for item in transitions}) < 3:
+            return
+        deltas = tuple(
+            tuple(right - left for left, right in zip(before_item, after_item))
+            for _action, before_item, after_item in transitions
+        )
+        monotone = all(
+            all(value >= 0 for value in axis_values)
+            or all(value <= 0 for value in axis_values)
+            for axis_values in zip(*deltas)
+        )
+        if monotone and any(any(value != 0 for value in delta) for delta in deltas):
+            self.trajectory_boundary_nuisance_evidenced = True
+
+    def _trajectory_causal_key(
+        self,
+        anchor: tuple[int, int],
+    ) -> tuple[
+        tuple[int, int],
+        tuple[int, int],
+        tuple[int, tuple[int, int], int] | None,
+        int,
+    ]:
+        assert self.trajectory_origin is not None
+        assert self.trajectory_target_anchor is not None
+        macro = (
+            (
+                self.trajectory_macro_action,
+                self.trajectory_macro_effect,
+                len(self.trajectory_committed_macro),
+            )
+            if self.trajectory_macro_action is not None
+            and self.trajectory_macro_effect is not None
+            and self.trajectory_committed_macro
+            else None
+        )
+        return (
+            (
+                anchor[0] - self.trajectory_origin[0],
+                anchor[1] - self.trajectory_origin[1],
+            ),
+            (
+                self.trajectory_target_anchor[0] - anchor[0],
+                self.trajectory_target_anchor[1] - anchor[1],
+            ),
+            macro,
+            self.trajectory_replay_cursor,
+        )
+
+    def _record_trajectory_effect(
+        self,
+        action_id: int,
+        displacement: tuple[int, int],
+    ) -> bool:
+        previous = self.trajectory_effects.get(action_id)
+        if previous is not None and previous != displacement:
+            self.trajectory_effects.pop(action_id, None)
+            self.trajectory_invalid_actions.add(action_id)
+            self.trajectory_disabled = True
+            self.trajectory_diagnostic = "inconsistent-translation"
+            return False
+        self.trajectory_effects[action_id] = displacement
+        self.trajectory_effect_evidence[action_id] += 1
+        self.trajectory_no_effect_actions.discard(action_id)
+        return True
+
+    def _trajectory_axes_grounded(self) -> bool:
+        effects = set(self.trajectory_effects.values())
+        return (
+            any(dx > 0 and dy == 0 for dx, dy in effects)
+            and any(dx < 0 and dy == 0 for dx, dy in effects)
+            and any(dy > 0 and dx == 0 for dx, dy in effects)
+            and any(dy < 0 and dx == 0 for dx, dy in effects)
+        )
+
+    def _trajectory_structural_endpoint(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+        anchor: tuple[int, int],
+        effect: tuple[int, int],
+    ) -> bool:
+        """Recognize that the next translated footprint leaves rendered slots."""
+
+        signature = self.trajectory_mover_signature
+        if signature is None or not frame or not frame[0]:
+            return False
+        predicted = (
+            anchor[0] + effect[0],
+            anchor[1] + effect[1],
+        )
+        height = len(frame)
+        width = len(frame[0])
+        background = Counter(
+            value for row in frame for value in row
+        ).most_common(1)[0][0]
+        footprint = tuple(
+            (predicted[0] + local_x, predicted[1] + local_y)
+            for local_x, local_y in signature[3]
+        )
+        if any(not (0 <= x < width and 0 <= y < height) for x, y in footprint):
+            return True
+        return all(frame[y][x] == background for x, y in footprint)
+
+    def _trajectory_topology(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[
+        frozenset[tuple[int, int]],
+        frozenset[tuple[int, int]],
+        int | None,
+    ]:
+        """Infer a bounded movement lattice over rendered substrate."""
+
+        origin = self.trajectory_origin
+        target = self.trajectory_target_anchor
+        signature = self.trajectory_mover_signature
+        if (
+            origin is None
+            or target is None
+            or signature is None
+            or not frame
+            or not frame[0]
+        ):
+            return frozenset(), frozenset(), None
+        x_steps = sorted(
+            {
+                abs(effect[0])
+                for effect in self.trajectory_effects.values()
+                if effect[0] and not effect[1]
+            }
+        )
+        y_steps = sorted(
+            {
+                abs(effect[1])
+                for effect in self.trajectory_effects.values()
+                if effect[1] and not effect[0]
+            }
+        )
+        if len(x_steps) != 1 or len(y_steps) != 1:
+            return frozenset(), frozenset(), None
+        background = Counter(
+            value for row in frame for value in row
+        ).most_common(1)[0][0]
+        height = len(frame)
+        width = len(frame[0])
+        interior = tuple(
+            item
+            for item in self._frame_objects(frame)
+            if item.color != background
+            and 0 < item.bbox[0]
+            and 0 < item.bbox[1]
+            and item.bbox[2] < width - 1
+            and item.bbox[3] < height - 1
+        )
+        if not interior:
+            return frozenset(), frozenset(), None
+        support = max(
+            interior,
+            key=lambda item: (item.area, -item.color),
+        )
+        mover_width = signature[1]
+        mover_height = signature[2]
+        center_dx = mover_width // 2
+        center_dy = mover_height // 2
+        x_step = x_steps[0]
+        y_step = y_steps[0]
+        xs = tuple(
+            x
+            for offset in range(-16, 17)
+            for x in (origin[0] + offset * x_step,)
+            if (
+                0 <= x
+                and x + mover_width <= width
+                and support.bbox[0] <= x
+                and x + mover_width - 1 <= support.bbox[2]
+            )
+        )
+        ys = tuple(
+            y
+            for offset in range(-16, 17)
+            for y in (origin[1] + offset * y_step,)
+            if (
+                0 <= y
+                and y + mover_height <= height
+                and support.bbox[1] <= y
+                and y + mover_height - 1 <= support.bbox[3]
+            )
+        )
+        candidates = sorted(
+            ((x, y) for y in ys for x in xs),
+            key=lambda anchor: (
+                abs(anchor[0] - origin[0])
+                + abs(anchor[1] - origin[1]),
+                anchor,
+            ),
+        )[:128]
+        admitted: set[tuple[int, int]] = set()
+        uncertain: set[tuple[int, int]] = set()
+        grounded_colors = {
+            support.color,
+            self.trajectory_mover_color,
+            self.trajectory_target_color,
+        }
+        current = self.trajectory_current_anchor
+        for anchor in candidates:
+            center_color = frame[anchor[1] + center_dy][
+                anchor[0] + center_dx
+            ]
+            if (
+                center_color == background
+                and anchor not in {origin, current, target}
+            ):
+                continue
+            admitted.add(anchor)
+            if (
+                center_color not in grounded_colors
+                and center_color != background
+                and anchor not in {origin, current, target}
+            ):
+                uncertain.add(anchor)
+        admitted.update(
+            anchor
+            for anchor in (origin, current, target)
+            if anchor is not None
+        )
+        return frozenset(admitted), frozenset(uncertain), support.color
+
+    def _disable_trajectory(self, diagnostic: str) -> None:
+        if (
+            diagnostic
+            in {
+                "no-causal-plan",
+                "replay-diverged",
+                "replay-never-started",
+                "trajectory-plan-cap-reached",
+            }
+            and self.trajectory_macro_action is not None
+        ):
+            self.trajectory_previous_failed_macro_action = (
+                self.trajectory_macro_action
+            )
+        self.trajectory_disabled = True
+        self.trajectory_pending = None
+        self.trajectory_diagnostic = diagnostic
+
+    def _trajectory_block_threshold(self) -> int:
+        """Let a bounded committed replay clear before declaring a hard block."""
+
+        return max(2, len(self.trajectory_committed_macro) - 1)
+
+    def _observe_committed_trajectory(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+        *,
+        progressed: bool,
+    ) -> None:
+        pending = self.trajectory_pending
+        self.trajectory_pending = None
+        if pending is None or self.trajectory_disabled:
+            return
+        self._observe_trajectory_boundary(before, after, action_id)
+        kind, expected_action, before_anchor, expected_anchor = pending
+        if expected_action != action_id:
+            self._disable_trajectory("pending-action-mismatch")
+            return
+        if progressed:
+            self.trajectory_diagnostic = "level-advanced"
+            return
+        signature = self.trajectory_mover_signature
+        if signature is None:
+            self._disable_trajectory("missing-mover-signature")
+            return
+        anchors = self._trajectory_mover_anchors(after, signature)
+        if expected_anchor is not None and expected_anchor in anchors:
+            after_anchor = expected_anchor
+        elif kind == "settle":
+            after_anchor = before_anchor
+        elif kind == "navigate" and before_anchor in anchors:
+            after_anchor = before_anchor
+        elif kind == "commit" and self.trajectory_origin in anchors:
+            after_anchor = self.trajectory_origin
+        elif len(anchors) == 1:
+            after_anchor = anchors[0]
+        else:
+            self._disable_trajectory("ambiguous-mover-identity")
+            return
+        displacement = (
+            after_anchor[0] - before_anchor[0],
+            after_anchor[1] - before_anchor[1],
+        )
+        latent_before = (
+            self.trajectory_latent_anchor
+            if kind == "navigate" and self.trajectory_latent_anchor is not None
+            else before_anchor
+        )
+        before_key = self._trajectory_causal_key(latent_before)
+
+        if kind == "probe":
+            if displacement == (0, 0):
+                self.trajectory_no_effect_actions.add(action_id)
+                self.trajectory_stage = "probe"
+                self.trajectory_diagnostic = "probe-no-translation"
+            elif self._record_trajectory_effect(action_id, displacement):
+                self.trajectory_current_anchor = after_anchor
+                self.trajectory_restore_tried.clear()
+                self.trajectory_stage = "restore"
+                self.trajectory_diagnostic = "translation-probed"
+        elif kind == "restore":
+            if displacement != (0, 0):
+                if not self._record_trajectory_effect(action_id, displacement):
+                    return
+            if after_anchor == self.trajectory_origin:
+                self.trajectory_current_anchor = after_anchor
+                self.trajectory_restore_tried.clear()
+                self.trajectory_stage = (
+                    "macro" if self._trajectory_axes_grounded() else "probe"
+                )
+                self.trajectory_diagnostic = "origin-restored"
+            else:
+                self.trajectory_current_anchor = after_anchor
+                self.trajectory_stage = "restore"
+                self.trajectory_diagnostic = "restoring-origin"
+        elif kind == "macro":
+            if displacement == self.trajectory_macro_effect:
+                if len(self.trajectory_active_path) >= 16:
+                    self._disable_trajectory("trajectory-cap-reached")
+                    return
+                self._record_trajectory_effect(action_id, displacement)
+                self.trajectory_active_path.append(after_anchor)
+                self.trajectory_current_anchor = after_anchor
+                self.trajectory_stage = "macro"
+                self.trajectory_diagnostic = "extending-endpoint-macro"
+            elif displacement == (0, 0) and len(self.trajectory_active_path) >= 2:
+                macro = tuple(self.trajectory_active_path)
+                if len(self.trajectory_endpoint_macros) >= 4:
+                    self._disable_trajectory("endpoint-cap-reached")
+                    return
+                self.trajectory_endpoint_macros.append(macro)
+                self.trajectory_current_anchor = after_anchor
+                self.trajectory_stage = "commit"
+                self.trajectory_diagnostic = "blocked-endpoint"
+            else:
+                self._disable_trajectory("macro-effect-falsified")
+                return
+        elif kind == "commit":
+            if (
+                after_anchor != self.trajectory_origin
+                or len(self.trajectory_active_path) < 2
+                or self.trajectory_mover_color is None
+                or self.trajectory_target_color is None
+            ):
+                self._disable_trajectory("commit-dependencies-failed")
+                return
+            before_phase = self._trajectory_phase_signature(
+                before,
+                self.trajectory_mover_color,
+                self.trajectory_target_color,
+            )
+            after_phase = self._trajectory_phase_signature(
+                after,
+                self.trajectory_mover_color,
+                self.trajectory_target_color,
+            )
+            if before_phase == after_phase:
+                self.trajectory_stage = "commit"
+                self.trajectory_diagnostic = "commit-no-phase-change"
+                return
+            self.trajectory_commit_action = action_id
+            self.trajectory_committed_macro = tuple(self.trajectory_active_path)
+            self.trajectory_current_anchor = after_anchor
+            self.trajectory_latent_anchor = after_anchor
+            self.trajectory_replay_started = False
+            self.trajectory_replay_anchor = None
+            self.trajectory_replay_cursor = 0
+            self.trajectory_stage = "navigate"
+            self.trajectory_diagnostic = "trajectory-committed"
+        elif kind == "navigate":
+            if displacement == (0, 0):
+                self.trajectory_contextual_blocks[
+                    (latent_before, action_id)
+                ] += 1
+                self.trajectory_current_anchor = after_anchor
+                self.trajectory_stage = "navigate"
+                self.trajectory_diagnostic = "planned-edge-blocked"
+            elif displacement != self.trajectory_effects.get(action_id):
+                self._disable_trajectory("planned-effect-falsified")
+                return
+            else:
+                self.trajectory_contextual_blocks.clear()
+                self.trajectory_current_anchor = after_anchor
+                effect = self.trajectory_effects[action_id]
+                assert self.trajectory_latent_anchor is not None
+                self.trajectory_latent_anchor = (
+                    self.trajectory_latent_anchor[0] + effect[0],
+                    self.trajectory_latent_anchor[1] + effect[1],
+                )
+            if displacement != (0, 0) and self.trajectory_replay_cursor < len(
+                self.trajectory_committed_macro
+            ):
+                other_anchors = tuple(
+                    anchor for anchor in anchors if anchor != after_anchor
+                )
+                if not self.trajectory_replay_started:
+                    if self.trajectory_origin in other_anchors:
+                        self.trajectory_replay_started = True
+                        self.trajectory_replay_anchor = self.trajectory_origin
+                        self.trajectory_replay_misses = 0
+                    elif (
+                        self.trajectory_committed_macro
+                        and self.trajectory_committed_macro[0]
+                        in other_anchors
+                    ):
+                        first_replay_anchor = (
+                            self.trajectory_committed_macro[0]
+                        )
+                        self.trajectory_replay_started = True
+                        self.trajectory_replay_anchor = first_replay_anchor
+                        self.trajectory_replay_cursor = 1
+                        self.trajectory_replay_validations += 1
+                        self.trajectory_replay_misses = 0
+                    else:
+                        self.trajectory_replay_misses += 1
+                        if self.trajectory_replay_misses >= 4:
+                            self._disable_trajectory("replay-never-started")
+                            return
+                else:
+                    replay_anchor = self.trajectory_committed_macro[
+                        self.trajectory_replay_cursor
+                    ]
+                    if replay_anchor in other_anchors:
+                        self.trajectory_replay_validations += 1
+                        self.trajectory_replay_cursor += 1
+                        self.trajectory_replay_anchor = replay_anchor
+                        self.trajectory_replay_misses = 0
+                    elif self.trajectory_replay_anchor in other_anchors:
+                        self.trajectory_diagnostic = "replay-paused"
+                    else:
+                        self.trajectory_replay_misses += 1
+                        if self.trajectory_replay_misses >= 2:
+                            self._disable_trajectory("replay-diverged")
+                            return
+            self.trajectory_stage = "navigate"
+            if displacement != (0, 0):
+                self.trajectory_diagnostic = (
+                    "replay-validated"
+                    if self.trajectory_replay_validations >= 2
+                    else "validating-replay"
+                )
+        elif kind == "settle":
+            if displacement not in {
+                (0, 0),
+                self.trajectory_effects.get(action_id),
+            }:
+                self._disable_trajectory("settling-effect-falsified")
+                return
+            self.trajectory_current_anchor = after_anchor
+            self.trajectory_stage = "navigate"
+            self.trajectory_diagnostic = "equilibrating-committed-replay"
+
+        if self.trajectory_current_anchor is None:
+            return
+        causal_anchor = (
+            self.trajectory_latent_anchor
+            if kind == "navigate" and self.trajectory_latent_anchor is not None
+            else self.trajectory_current_anchor
+        )
+        after_key = self._trajectory_causal_key(causal_anchor)
+        if len(self.trajectory_causal_states) < 64:
+            self.trajectory_causal_states.update((before_key, after_key))
+        if len(self.trajectory_causal_edges) < 64:
+            self.trajectory_causal_edges.add((before_key, action_id, after_key))
 
     @classmethod
     def _relational_phase_signature(
@@ -1169,6 +1983,456 @@ class EpistemicExplorer:
         self.shape_translation_diagnostic = "probing-action"
         return probe
 
+    def _select_committed_trajectory(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Construct, commit, and reuse one evidenced trajectory macro."""
+
+        if (
+            not self.committed_trajectory_planning
+            or self.trajectory_disabled
+            or self.trajectory_level_trials >= 40
+        ):
+            return None
+        plain_tokens = tuple(
+            token
+            for token in tokens
+            if not token.data
+            and token.action_id not in {self.reset_action, self.complex_action}
+        )
+        if not plain_tokens:
+            return None
+        represented = {token.action_id: token for token in plain_tokens}
+
+        if self.trajectory_stage == "not-attempted":
+            grounding = self._trajectory_grounding(observation.frame)
+            if grounding is None:
+                self.trajectory_diagnostic = "no-unique-trajectory-grounding"
+                return None
+            self.trajectory_mover_signature = grounding.mover_signature
+            self.trajectory_receptacle_signature = grounding.receptacle_signature
+            self.trajectory_mover_color = grounding.mover_color
+            self.trajectory_target_color = grounding.target_color
+            self.trajectory_origin = grounding.mover_anchor
+            self.trajectory_current_anchor = grounding.mover_anchor
+            self.trajectory_target_anchor = grounding.target_anchor
+            self.trajectory_stage = "probe"
+            self.trajectory_causal_states.add(
+                self._trajectory_causal_key(grounding.mover_anchor)
+            )
+            self.trajectory_diagnostic = "trajectory-grounded"
+
+        current = self.trajectory_current_anchor
+        origin = self.trajectory_origin
+        target = self.trajectory_target_anchor
+        if current is None or origin is None or target is None:
+            self._disable_trajectory("incomplete-trajectory-grounding")
+            return None
+
+        if self.trajectory_stage == "probe":
+            if self._trajectory_axes_grounded():
+                self.trajectory_stage = "macro"
+            else:
+                unprobed = tuple(
+                    token
+                    for token in plain_tokens
+                    if token.action_id not in self.trajectory_probes
+                    and token.action_id not in self.trajectory_invalid_actions
+                )
+                if not unprobed:
+                    self._disable_trajectory("translation-probes-exhausted")
+                    return None
+                token = min(unprobed)
+                self.trajectory_probes.add(token.action_id)
+                self.trajectory_pending = (
+                    "probe",
+                    token.action_id,
+                    current,
+                    None,
+                )
+                self.trajectory_level_trials += 1
+                self.trajectory_diagnostic = "probing-trajectory-action"
+                return token
+
+        if self.trajectory_stage == "restore":
+            required = (origin[0] - current[0], origin[1] - current[1])
+            evidenced = tuple(
+                represented[action_id]
+                for action_id, effect in self.trajectory_effects.items()
+                if effect == required
+                and action_id in represented
+                and action_id not in self.trajectory_restore_tried
+            )
+            candidates = evidenced or tuple(
+                token
+                for token in plain_tokens
+                if token.action_id not in self.trajectory_invalid_actions
+                and token.action_id not in self.trajectory_restore_tried
+                and (
+                    token.action_id in self.trajectory_no_effect_actions
+                    or token.action_id not in self.trajectory_probes
+                )
+            )
+            if not candidates:
+                self._disable_trajectory("origin-restore-exhausted")
+                return None
+            token = min(candidates)
+            self.trajectory_restore_tried.add(token.action_id)
+            effect = self.trajectory_effects.get(token.action_id)
+            expected = (
+                (current[0] + effect[0], current[1] + effect[1])
+                if effect is not None
+                else None
+            )
+            self.trajectory_pending = (
+                "restore",
+                token.action_id,
+                current,
+                expected,
+            )
+            self.trajectory_level_trials += 1
+            self.trajectory_diagnostic = "probing-origin-restore"
+            return token
+
+        if self.trajectory_stage == "macro":
+            if self.trajectory_macro_action is None:
+                delta = (target[0] - current[0], target[1] - current[1])
+                reducers = []
+                for action_id, effect in self.trajectory_effects.items():
+                    dx, dy = effect
+                    if (
+                        action_id not in represented
+                        or action_id
+                        == self.trajectory_previous_failed_macro_action
+                        or (dx != 0) == (dy != 0)
+                    ):
+                        continue
+                    axis = 0 if dx else 1
+                    effect_axis = effect[axis]
+                    delta_axis = delta[axis]
+                    if (
+                        delta_axis == 0
+                        or (effect_axis > 0) != (delta_axis > 0)
+                        or abs(effect_axis) > abs(delta_axis)
+                    ):
+                        continue
+                    reducers.append(
+                        (
+                            abs(delta_axis),
+                            action_id,
+                            effect,
+                        )
+                    )
+                if not reducers:
+                    self._disable_trajectory("no-endpoint-macro")
+                    return None
+                _residual, action_id, effect = min(reducers)
+                self.trajectory_macro_action = action_id
+                self.trajectory_macro_effect = effect
+            action_id = self.trajectory_macro_action
+            effect = self.trajectory_macro_effect
+            if action_id not in represented or effect is None:
+                self._disable_trajectory("endpoint-action-unavailable")
+                return None
+            if (
+                len(self.trajectory_active_path) >= 2
+                and self._trajectory_structural_endpoint(
+                    observation.frame,
+                    current,
+                    effect,
+                )
+            ):
+                macro = tuple(self.trajectory_active_path)
+                if len(self.trajectory_endpoint_macros) >= 4:
+                    self._disable_trajectory("endpoint-cap-reached")
+                    return None
+                self.trajectory_endpoint_macros.append(macro)
+                self.trajectory_stage = "commit"
+                self.trajectory_diagnostic = "rendered-structural-endpoint"
+            else:
+                token = represented[action_id]
+                expected = (current[0] + effect[0], current[1] + effect[1])
+                self.trajectory_pending = (
+                    "macro",
+                    action_id,
+                    current,
+                    expected,
+                )
+                self.trajectory_level_trials += 1
+                self.trajectory_diagnostic = "applying-endpoint-macro"
+                return token
+
+        if self.trajectory_stage == "commit":
+            candidates = tuple(
+                token
+                for token in plain_tokens
+                if token.action_id not in self.trajectory_effects
+                and token.action_id not in self.trajectory_invalid_actions
+                and token.action_id != self.trajectory_macro_action
+                and token.action_id != self.trajectory_commit_action
+            )
+            if not candidates or self.trajectory_commit_trials >= 2:
+                self._disable_trajectory("commit-candidates-exhausted")
+                return None
+            token = min(candidates)
+            self.trajectory_commit_action = token.action_id
+            self.trajectory_commit_trials += 1
+            self.trajectory_pending = (
+                "commit",
+                token.action_id,
+                current,
+                origin,
+            )
+            self.trajectory_level_trials += 1
+            self.trajectory_diagnostic = "probing-trajectory-commit"
+            return token
+
+        if self.trajectory_stage == "navigate":
+            if self.trajectory_plan_steps >= 20:
+                self._disable_trajectory("trajectory-plan-cap-reached")
+                return None
+            planning_anchor = self.trajectory_latent_anchor or current
+            (
+                topology_nodes,
+                uncertain_nodes,
+                support_color,
+            ) = self._trajectory_topology(observation.frame)
+            if not topology_nodes:
+                self._disable_trajectory("no-substrate-topology")
+                return None
+            self.trajectory_topology_nodes = set(topology_nodes)
+            self.trajectory_uncertain_nodes = set(uncertain_nodes)
+            self.trajectory_topology_support_color = support_color
+            delta = (
+                target[0] - planning_anchor[0],
+                target[1] - planning_anchor[1],
+            )
+            if delta == (0, 0):
+                settle_action = self.trajectory_navigation_action
+                if (
+                    settle_action is None
+                    or settle_action not in represented
+                    or self.trajectory_settle_steps
+                    >= len(self.trajectory_committed_macro)
+                ):
+                    self._disable_trajectory("latent-plan-not-validated")
+                    return None
+                effect = self.trajectory_effects[settle_action]
+                expected = (current[0] + effect[0], current[1] + effect[1])
+                self.trajectory_pending = (
+                    "settle",
+                    settle_action,
+                    current,
+                    expected,
+                )
+                self.trajectory_settle_steps += 1
+                self.trajectory_plan_steps += 1
+                self.trajectory_level_trials += 1
+                self.trajectory_diagnostic = "equilibrating-committed-replay"
+                return represented[settle_action]
+            planned_action = self._trajectory_bfs_action(
+                planning_anchor,
+                target,
+                represented=frozenset(represented),
+                frame_width=len(observation.frame[0]),
+                frame_height=len(observation.frame),
+                allowed_nodes=topology_nodes,
+                forbidden_first=frozenset(
+                    action_id
+                    for action_id, effect in self.trajectory_effects.items()
+                    if (
+                        not self.trajectory_replay_started
+                        and self.trajectory_macro_effect is not None
+                        and (
+                            (effect[0] != 0)
+                            == (self.trajectory_macro_effect[0] != 0)
+                        )
+                    )
+                ),
+            )
+            if planned_action is None:
+                planned_action = self._trajectory_gate_refresh_action(
+                    planning_anchor,
+                    represented=frozenset(represented),
+                    allowed_nodes=topology_nodes,
+                    uncertain_nodes=uncertain_nodes,
+                )
+                if planned_action is None:
+                    self._disable_trajectory("no-causal-plan")
+                    return None
+                self.trajectory_diagnostic = "refreshing-uncertain-gate"
+            effect = self.trajectory_effects[planned_action]
+            self.trajectory_navigation_action = planned_action
+            token = represented[planned_action]
+            expected = (current[0] + effect[0], current[1] + effect[1])
+            self.trajectory_pending = (
+                "navigate",
+                planned_action,
+                current,
+                expected,
+            )
+            self.trajectory_plan_steps += 1
+            self.trajectory_level_trials += 1
+            if self.trajectory_diagnostic != "refreshing-uncertain-gate":
+                self.trajectory_diagnostic = "executing-causal-plan"
+            return token
+        return None
+
+    def _trajectory_gate_refresh_action(
+        self,
+        start: tuple[int, int],
+        *,
+        represented: frozenset[int],
+        allowed_nodes: frozenset[tuple[int, int]],
+        uncertain_nodes: frozenset[tuple[int, int]],
+    ) -> int | None:
+        """Choose one safe world-tick only after an uncertain gate blocks."""
+
+        if not self.trajectory_contextual_blocks or not uncertain_nodes:
+            return None
+        candidates: list[tuple[int, int, int]] = []
+        for action_id, effect in self.trajectory_effects.items():
+            if (
+                action_id not in represented
+                or action_id in self.trajectory_invalid_actions
+                or effect == (0, 0)
+                or self.trajectory_contextual_blocks.get(
+                    (start, action_id), 0
+                )
+            ):
+                continue
+            next_anchor = (
+                start[0] + effect[0],
+                start[1] + effect[1],
+            )
+            if next_anchor not in allowed_nodes:
+                continue
+            candidates.append(
+                (
+                    int(next_anchor in uncertain_nodes),
+                    self.trajectory_effect_evidence[action_id] * -1,
+                    action_id,
+                )
+            )
+        return min(candidates)[2] if candidates else None
+
+    def _trajectory_bfs_action(
+        self,
+        start: tuple[int, int],
+        target: tuple[int, int],
+        *,
+        represented: frozenset[int],
+        frame_width: int,
+        frame_height: int,
+        allowed_nodes: frozenset[tuple[int, int]] | None = None,
+        forbidden_first: frozenset[int] = frozenset(),
+    ) -> int | None:
+        """Return a bounded A* action around blocks and first-step constraints."""
+
+        if start == target:
+            return None
+        x_steps = [
+            abs(effect[0])
+            for effect in self.trajectory_effects.values()
+            if effect[0]
+        ]
+        y_steps = [
+            abs(effect[1])
+            for effect in self.trajectory_effects.values()
+            if effect[1]
+        ]
+
+        def heuristic(anchor: tuple[int, int]) -> int:
+            dx = abs(target[0] - anchor[0])
+            dy = abs(target[1] - anchor[1])
+            x_cost = (
+                (dx + max(x_steps) - 1) // max(x_steps)
+                if x_steps
+                else (0 if dx == 0 else 10**6)
+            )
+            y_cost = (
+                (dy + max(y_steps) - 1) // max(y_steps)
+                if y_steps
+                else (0 if dy == 0 else 10**6)
+            )
+            return x_cost + y_cost
+
+        queue: list[
+            tuple[int, int, tuple[int, int], int | None]
+        ] = [(heuristic(start), 0, start, None)]
+        visited = {start}
+        expanded = 0
+        while queue and expanded < 64:
+            _priority, depth, anchor, first_action = heapq.heappop(queue)
+            expanded += 1
+            if depth >= 16:
+                continue
+            actions = sorted(
+                (
+                    action_id
+                    for action_id, effect in self.trajectory_effects.items()
+                    if action_id in represented
+                    and (depth > 0 or action_id not in forbidden_first)
+                    and action_id not in self.trajectory_invalid_actions
+                    and effect != (0, 0)
+                    and self.trajectory_contextual_blocks.get(
+                        (anchor, action_id), 0
+                    )
+                    == 0
+                ),
+                key=lambda action_id: (
+                    abs(
+                        target[0]
+                        - (
+                            anchor[0]
+                            + self.trajectory_effects[action_id][0]
+                        )
+                    )
+                    + abs(
+                        target[1]
+                        - (
+                            anchor[1]
+                            + self.trajectory_effects[action_id][1]
+                        )
+                    ),
+                    action_id,
+                ),
+            )
+            for action_id in actions:
+                effect = self.trajectory_effects[action_id]
+                next_anchor = (
+                    anchor[0] + effect[0],
+                    anchor[1] + effect[1],
+                )
+                if (
+                    not 0 <= next_anchor[0] < frame_width
+                    or not 0 <= next_anchor[1] < frame_height
+                    or (
+                        allowed_nodes is not None
+                        and next_anchor not in allowed_nodes
+                    )
+                    or next_anchor in visited
+                ):
+                    continue
+                next_first = (
+                    action_id if first_action is None else first_action
+                )
+                if next_anchor == target:
+                    return next_first
+                visited.add(next_anchor)
+                heapq.heappush(
+                    queue,
+                    (
+                        depth + 1 + heuristic(next_anchor),
+                        depth + 1,
+                        next_anchor,
+                        next_first,
+                    ),
+                )
+        return None
+
     def select(
         self,
         observation: Observation,
@@ -1285,6 +2549,26 @@ class EpistemicExplorer:
                 state,
                 cyclic,
                 "epistemic-frontier:cyclic-sequence-alignment",
+                scene,
+            )
+
+        trajectory = self._select_committed_trajectory(
+            observation,
+            tokens,
+        )
+        if trajectory is not None:
+            self.last_scheme_components = (
+                "scheme:committed-trajectory",
+                "relation:hosted-mover-receptacle",
+                "operator:probe-translation-role",
+                "operator:construct-endpoint-macro",
+                "operator:commit-enacted-trajectory",
+                "state:committed-macro-and-replay-cursor",
+            )
+            return self._issue(
+                state,
+                trajectory,
+                "epistemic-frontier:committed-trajectory-planning",
                 scene,
             )
 
@@ -4223,6 +5507,44 @@ class EpistemicExplorer:
                 self.shape_translation_phase_blocked
             ),
             "shape_translation_diagnostic": self.shape_translation_diagnostic,
+            "trajectory_stage": self.trajectory_stage,
+            "trajectory_current_anchor": self.trajectory_current_anchor,
+            "trajectory_latent_anchor": self.trajectory_latent_anchor,
+            "trajectory_target_anchor": self.trajectory_target_anchor,
+            "trajectory_effects": len(self.trajectory_effects),
+            "trajectory_effect_evidence": sum(
+                self.trajectory_effect_evidence.values()
+            ),
+            "trajectory_probes": len(self.trajectory_probes),
+            "trajectory_endpoint_macros": len(self.trajectory_endpoint_macros),
+            "trajectory_contextual_blocks": len(
+                self.trajectory_contextual_blocks
+            ),
+            "trajectory_topology_nodes": len(self.trajectory_topology_nodes),
+            "trajectory_uncertain_nodes": len(
+                self.trajectory_uncertain_nodes
+            ),
+            "trajectory_topology_support_grounded": int(
+                self.trajectory_topology_support_color is not None
+            ),
+            "trajectory_committed_macro_length": len(
+                self.trajectory_committed_macro
+            ),
+            "trajectory_replay_cursor": self.trajectory_replay_cursor,
+            "trajectory_replay_started": int(self.trajectory_replay_started),
+            "trajectory_replay_validations": (
+                self.trajectory_replay_validations
+            ),
+            "trajectory_causal_states": len(self.trajectory_causal_states),
+            "trajectory_causal_edges": len(self.trajectory_causal_edges),
+            "trajectory_boundary_nuisance_evidenced": int(
+                self.trajectory_boundary_nuisance_evidenced
+            ),
+            "trajectory_plan_steps": self.trajectory_plan_steps,
+            "trajectory_settle_steps": self.trajectory_settle_steps,
+            "trajectory_level_trials": self.trajectory_level_trials,
+            "trajectory_disabled": int(self.trajectory_disabled),
+            "trajectory_diagnostic": self.trajectory_diagnostic,
             "level_interventions": self.level_interventions,
             "learned_local_relations": len(self.learned_local_relation),
             "successful_schemes": len(self.successful_schemes),

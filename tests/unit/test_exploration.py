@@ -811,3 +811,226 @@ def test_policy_explorer_is_an_exact_configuration_ablation() -> None:
     assert enabled_decision.reason.startswith("epistemic-frontier:")
     assert ablated_decision.reason.startswith("schema-selection:")
     assert enabled_decision.action_id == ablated_decision.action_id == 6
+
+
+def test_committed_trajectory_bfs_detours_around_evidenced_block() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_effects = {
+        1: (1, 0),
+        2: (0, 1),
+        3: (-1, 0),
+        4: (0, -1),
+    }
+    explorer.trajectory_contextual_blocks[((0, 0), 1)] = 1
+
+    action = explorer._trajectory_bfs_action(
+        (0, 0),
+        (2, 0),
+        represented=frozenset({1, 2, 3, 4}),
+        frame_width=4,
+        frame_height=4,
+    )
+
+    assert action == 2
+
+
+def test_committed_trajectory_bfs_is_action_id_equivariant() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_effects = {
+        4: (1, 0),
+        1: (0, 1),
+        2: (-1, 0),
+        3: (0, -1),
+    }
+    explorer.trajectory_contextual_blocks[((0, 0), 4)] = 1
+
+    action = explorer._trajectory_bfs_action(
+        (0, 0),
+        (2, 0),
+        represented=frozenset({1, 2, 3, 4}),
+        frame_width=4,
+        frame_height=4,
+    )
+
+    assert action == 1
+
+
+def test_committed_trajectory_bfs_honors_first_step_independence() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_effects = {
+        1: (1, 0),
+        2: (0, 1),
+        3: (-1, 0),
+        4: (0, -1),
+    }
+
+    action = explorer._trajectory_bfs_action(
+        (0, 0),
+        (2, 2),
+        represented=frozenset({1, 2, 3, 4}),
+        frame_width=4,
+        frame_height=4,
+        forbidden_first=frozenset({1, 3}),
+    )
+
+    assert action == 2
+
+
+def _topology_fixture() -> tuple[tuple[int, ...], ...]:
+    frame = [[0 for _x in range(15)] for _y in range(15)]
+    for y in range(2, 13):
+        for x in range(2, 13):
+            frame[y][x] = 5
+    for y in range(6, 9):
+        for x in range(6, 9):
+            frame[y][x] = 0
+    for y in range(3, 5):
+        for x in range(3, 5):
+            frame[y][x] = 9
+    frame[4][4] = 5
+    frame[4][7] = 8
+    for y in range(9, 11):
+        for x in range(9, 11):
+            frame[y][x] = 9
+    frame[10][10] = 5
+    return tuple(tuple(row) for row in frame)
+
+
+def _topology_explorer(
+    *,
+    origin: tuple[int, int] = (3, 3),
+    target: tuple[int, int] = (9, 9),
+) -> EpistemicExplorer:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_origin = origin
+    explorer.trajectory_current_anchor = origin
+    explorer.trajectory_target_anchor = target
+    explorer.trajectory_mover_signature = (
+        8,
+        3,
+        3,
+        (
+            (0, 0),
+            (0, 1),
+            (0, 2),
+            (1, 0),
+            (1, 2),
+            (2, 0),
+            (2, 1),
+            (2, 2),
+        ),
+    )
+    explorer.trajectory_mover_color = 9
+    explorer.trajectory_target_color = 9
+    explorer.trajectory_effects = {
+        1: (3, 0),
+        2: (0, 3),
+        3: (-3, 0),
+        4: (0, -3),
+    }
+    return explorer
+
+
+def test_committed_trajectory_topology_excludes_holes_and_marks_overlay() -> None:
+    explorer = _topology_explorer()
+
+    nodes, uncertain, support_color = explorer._trajectory_topology(
+        _topology_fixture()
+    )
+
+    assert support_color == 5
+    assert (6, 6) not in nodes
+    assert (6, 3) in nodes
+    assert (6, 3) in uncertain
+    assert {(3, 3), (9, 9)} <= nodes
+    assert len(nodes) <= 128
+
+
+def test_committed_trajectory_topology_reflects_with_frame() -> None:
+    frame = _topology_fixture()
+    width = len(frame[0])
+    reflected = tuple(tuple(reversed(row)) for row in frame)
+    explorer = _topology_explorer()
+    nodes, uncertain, _support = explorer._trajectory_topology(frame)
+    reflected_explorer = _topology_explorer(
+        origin=(width - 3 - 3, 3),
+        target=(width - 9 - 3, 9),
+    )
+    reflected_nodes, reflected_uncertain, _reflected_support = (
+        reflected_explorer._trajectory_topology(reflected)
+    )
+
+    def reflect_anchor(anchor: tuple[int, int]) -> tuple[int, int]:
+        return (width - anchor[0] - 3, anchor[1])
+
+    assert reflected_nodes == frozenset(map(reflect_anchor, nodes))
+    assert reflected_uncertain == frozenset(
+        map(reflect_anchor, uncertain)
+    )
+
+
+def test_committed_trajectory_refreshes_disconnected_uncertain_gate() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_effects = {
+        7: (0, 1),
+        3: (0, -1),
+        9: (1, 0),
+    }
+    explorer.trajectory_effect_evidence.update({7: 2, 3: 2, 9: 2})
+    explorer.trajectory_contextual_blocks[((0, 1), 7)] = 1
+
+    action = explorer._trajectory_gate_refresh_action(
+        (0, 1),
+        represented=frozenset({3, 7, 9}),
+        allowed_nodes=frozenset({(0, 0), (0, 1), (0, 2)}),
+        uncertain_nodes=frozenset({(0, 2)}),
+    )
+
+    assert action == 3
+
+
+def test_committed_trajectory_does_not_refresh_without_gate_evidence() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_effects = {1: (0, -1), 2: (0, 1)}
+
+    action = explorer._trajectory_gate_refresh_action(
+        (0, 1),
+        represented=frozenset({1, 2}),
+        allowed_nodes=frozenset({(0, 0), (0, 1), (0, 2)}),
+        uncertain_nodes=frozenset({(0, 2)}),
+    )
+
+    assert action is None
+
+
+def test_committed_trajectory_retry_retains_only_same_level_accommodation() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_stage = "navigate"
+    explorer.trajectory_effects = {1: (1, 0), 2: (0, 1)}
+    explorer.trajectory_effect_evidence.update({1: 2, 2: 2})
+    explorer.trajectory_probes.update({1, 2})
+    explorer.trajectory_contextual_blocks[((6, 6), 1)] = 1
+    explorer.trajectory_committed_macro = ((0, 1), (0, 2))
+    explorer.trajectory_previous_failed_macro_action = 2
+    explorer.trajectory_replay_cursor = 1
+    explorer.trajectory_plan_steps = 7
+
+    explorer._reset_committed_trajectory_level(retain_accommodation=True)
+
+    assert explorer.trajectory_stage == "not-attempted"
+    assert explorer.trajectory_effects == {1: (1, 0), 2: (0, 1)}
+    assert explorer.trajectory_effect_evidence == {1: 2, 2: 2}
+    assert explorer.trajectory_probes == {1, 2}
+    assert explorer.trajectory_contextual_blocks == {}
+    assert explorer.trajectory_committed_macro == ()
+    assert explorer.trajectory_previous_failed_macro_action == 2
+    assert explorer.trajectory_replay_cursor == 0
+    assert explorer.trajectory_plan_steps == 0
+
+    explorer._reset_committed_trajectory_level()
+
+    assert explorer.trajectory_effects == {}
+    assert explorer.trajectory_effect_evidence == {}
+    assert explorer.trajectory_probes == set()
+    assert explorer.trajectory_contextual_blocks == {}
+    assert explorer.trajectory_previous_failed_macro_action is None

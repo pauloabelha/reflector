@@ -1,0 +1,114 @@
+{
+  "kind": "research-inference-time-llm-evaluation",
+  "classification": "hybrid-symbolic-llm",
+  "game": "g50t",
+  "model": "google_gemma-4-E2B-it-Q4_K_M.gguf",
+  "endpoint": "http://127.0.0.1:18092",
+  "scorecard": {
+    "source_url": null,
+    "tags": [
+      "agent",
+      "gemma-hybrid"
+    ],
+    "opaque": null,
+    "card_id": "2d6487c1-bd20-4546-a537-d90731266283",
+    "api_key": null,
+    "score": 0.0,
+    "environments": [
+      {
+        "id": "g50t-5849a774",
+        "runs": [
+          {
+            "id": null,
+            "guid": "a532acac-a442-4454-b9cb-37572e87bbf3",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 40,
+            "resets": 0,
+            "state": "NOT_FINISHED",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              40,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              78,
+              175,
+              179,
+              230,
+              96,
+              54,
+              67
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 40,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 7,
+        "resets": 0
+      }
+    ],
+    "tags_scores": [
+      {
+        "id": "keyboard",
+        "guid": null,
+        "score": 0.0,
+        "levels_completed": 0,
+        "actions": 40,
+        "resets": null,
+        "state": null,
+        "completed": null,
+        "level_scores": null,
+        "level_actions": null,
+        "level_baseline_actions": null,
+        "number_of_levels": 7,
+        "number_of_environments": 1,
+        "message": null
+      }
+    ],
+    "competition_mode": null,
+    "total_environments_completed": 0,
+    "total_environments": 1,
+    "total_levels_completed": 0,
+    "total_levels": 7,
+    "total_actions": 40
+  },
+  "agent": {
+    "actions": 40,
+    "levels_completed": 0,
+    "brain_metrics": {
+      "requests": 40,
+      "valid_responses": 40,
+      "fallbacks": 0,
+      "action_counts": {
+        "1": 25,
+        "2": 4,
+        "3": 5,
+        "4": 6
+      },
+      "retained_history": 32
+    }
+  },
+  "kaggle_compatible": false,
+  "kaggle_limitation": "The current offspring depends on an external local llama.cpp process and model weight not included in the submission overlay.",
+  "claim_boundary": "Experimental local hybrid comparison; not a symbolic candidate and not a Kaggle score."
+}
