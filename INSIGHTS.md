@@ -362,6 +362,14 @@ These are narrow earned claims, not claims of general intelligence.
     variation: after one member of a structural action role becomes newly
     effective, try an untested equivalent member rather than immediately
     repeating the same potentially reversible intervention.
+28. Parameterized propagation needs causal scope just as confirmation does.
+    V58 applied the intended role variation four times and preserved every
+    control level, but one variation triggered the next, alternating between
+    equivalent targets. It slowed `lp85` level 2 from 8 to 10 actions and
+    supplied no score gain. An offspring action must not automatically become
+    fresh evidence for producing another offspring. V58a therefore permits
+    exactly one role variation per originating surprise and observes its result
+    without recursively propagating it.
 
 ## What is still missing
 

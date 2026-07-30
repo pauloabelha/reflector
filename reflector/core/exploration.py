@@ -320,6 +320,7 @@ class EpistemicExplorer:
     repeated_form_confirmation_observation_token: ActionToken | None = None
     repeated_form_affordance_role: ActionRole | None = None
     repeated_form_affordance_trigger_token: ActionToken | None = None
+    repeated_form_affordance_observation_token: ActionToken | None = None
     repeated_form_event_predictions: int = 0
     repeated_form_event_confirmations: int = 0
     repeated_form_event_detections: int = 0
@@ -1004,6 +1005,7 @@ class EpistemicExplorer:
         self.repeated_form_confirmation_observation_token = None
         self.repeated_form_affordance_role = None
         self.repeated_form_affordance_trigger_token = None
+        self.repeated_form_affordance_observation_token = None
         self.repeated_form_event_predictions = 0
         self.repeated_form_event_confirmations = 0
         self.repeated_form_event_detections = 0
@@ -1092,6 +1094,11 @@ class EpistemicExplorer:
         )
         if confirmation_observation:
             self.repeated_form_confirmation_observation_token = None
+        affordance_variation_observation = (
+            token == self.repeated_form_affordance_observation_token
+        )
+        if affordance_variation_observation:
+            self.repeated_form_affordance_observation_token = None
         detected = False
         actionable = False
         for subject, arity, effect in self._repeated_form_effects(
@@ -1142,11 +1149,19 @@ class EpistemicExplorer:
         elif (
             actionable
             and self.repeated_form_event_mode == "propagate-affordance"
+            and not affordance_variation_observation
         ):
             self.repeated_form_affordance_role = represented_role
             self.repeated_form_affordance_trigger_token = token
             self.repeated_form_event_diagnostic = (
                 "affordance-variation-preregistered"
+            )
+        elif (
+            actionable
+            and self.repeated_form_event_mode == "propagate-affordance"
+        ):
+            self.repeated_form_event_diagnostic = (
+                "affordance-variation-observed"
             )
         elif actionable and not confirmation_observation:
             self.repeated_form_confirmation_token = token
@@ -4262,6 +4277,9 @@ class EpistemicExplorer:
             if variations:
                 affordance_variation = min(variations)
                 self.repeated_form_affordance_variations += 1
+                self.repeated_form_affordance_observation_token = (
+                    affordance_variation
+                )
                 self.repeated_form_event_diagnostic = (
                     "executing-affordance-variation"
                 )

@@ -175,6 +175,27 @@ def test_new_affordance_varies_the_structural_target() -> None:
     assert explorer._role(choice.token, scene) == role
     assert "propagate-repeated-form-affordance" in choice.reason
     assert explorer.repeated_form_affordance_variations == 1
+    assert explorer.repeated_form_affordance_observation_token == choice.token
+
+
+def test_affordance_variation_does_not_cascade() -> None:
+    explorer = EpistemicExplorer(
+        repeated_form_event_mode="propagate-affordance"
+    )
+    token = ActionToken(1)
+    role = ActionRole(1)
+    still = tuple(tuple(row) for row in _frame(2))
+    moved = tuple(tuple(row) for row in _frame(3))
+    explorer._observe_repeated_form_effect_event(still, still, token, role)
+    explorer._observe_repeated_form_effect_event(still, still, token, role)
+    explorer.repeated_form_affordance_observation_token = token
+
+    explorer._observe_repeated_form_effect_event(still, moved, token, role)
+
+    assert explorer.repeated_form_affordance_role is None
+    assert explorer.repeated_form_event_diagnostic == (
+        "affordance-variation-observed"
+    )
 
 
 def test_phase_event_changes_belief_key_without_replaying() -> None:

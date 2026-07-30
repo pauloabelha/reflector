@@ -2295,6 +2295,17 @@ selected base action, if it loses any control level, or if it does not add a
 level or materially improve action efficiency. Develop first on the identical
 `lp85`/`g50t` pair, with exact-off and v57a phase-segment controls.
 
+V58 result: the parameterized advisor fired four times on `lp85`, preserved all
+four control levels, and exactly matched the 6.6465283447 two-game score.
+However, it slowed `lp85` level 2 from 8 to 10 actions. Trace inspection showed
+four consecutive alternating variations: each varied action's response
+scheduled another variation. This violated the intended one-variation causal
+scope, so v58 is rejected.
+
+V58a adds a causal guard: the observation caused by the one varied action may
+update the effect model but cannot schedule another propagation. Rerun the
+identical three-way control/phase/propagation population.
+
 The source-matched population has four frozen modes:
 
 - `off`: accepted behavior;
