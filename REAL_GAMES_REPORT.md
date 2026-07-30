@@ -30,6 +30,12 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Research symbolic control, same local suite and budget | object/frame graph frontier v1 | **0.0003283918 / 100** | 0 games beaten; 1/183 levels (`vc33`) | 25/25 coverage; not a candidate |
 | Target-only research hybrid | local Gemma 4 E2B + symbolic scene summary | 0.0000000000 for one game | 0/7 `g50t` levels in 40 actions | not symbolic; not Kaggle-compatible; rejected |
 | Target-only integrated hybrid | v43f symbolic core + impasse-gated local Gemma 4 E2B | 3.5714285714 for one game | 1/7 `g50t` levels; `[27, 53]` in 80 actions, exactly matching symbolic v43f | not symbolic; no gain; rejected |
+| Target-only symbolic offspring | v44 action-family fairness | 0.0000000000 for one game | 0/6 `sp80` levels in 400 actions | fairness operative; productive reuse absent; rejected |
+| Target-only symbolic offspring | v45 primitive-grounded family reuse | 0.0000000000 for one game | 0/6 `sp80` levels in 400 actions | primitives present but behavior identical to v44; rejected |
+| Source-matched historical-genome audit | v28 genome on current source | 0.0000000000 for one game | 0/6 `sp80` levels in 400 actions versus historical one level | source drift isolated to later maturity gating |
+| Target-only symbolic offspring | v46 cross-retry maturity | 0.0473757834 for one game | 1/6 `sp80` levels at action 391 | real progress, but rejected: reuse began after one failure and breached preregistration |
+| Target-only symbolic offspring | v46b non-bypass cross-retry maturity | 0.0673228096 for one game | 1/6 `sp80` levels at action 328, exact twice | target passed; rejected after losing `lf52` and `lp85` in preservation |
+| Target-only symbolic offspring | v47 failure-conditioned fairness | 0.1885375141 for one game | 1/6 `sp80` levels at action 196, exact twice | target passed; rejected after losing `lp85` in preservation |
 | Target-only symbolic offspring | v41h committed trajectory | 0.0000000000 for one game | 0/7 `g50t` levels in 400 actions | falsified; not promoted |
 | Source-matched process-isolated suite | v40 exact-off / v39 policy | 4.0770754143 / 100 | 0 games beaten; 15/183 levels | exact parent reproduction |
 | Process-isolated seven-game gate | v40 accepted | 15.3546344162 / 100 | 16 levels in the seven affected games | every v39 action count preserved |

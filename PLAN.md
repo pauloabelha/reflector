@@ -1147,6 +1147,258 @@ offspring added `lp85` and `sp80`, but lost `tn36` and slowed `lf52` and
 `r11l`, scoring `2.8820272500/100`. The ontology remains behind exact-off
 genome flags, but none of its active policy traits are inherited by v29.
 
+## Active experiment: v44 action-family fairness interaction
+
+Parent: accepted v42 `candidate-8c51fecdfdb99959`.
+
+Observed disequilibrium:
+
+- a fresh five-game v42 audit reproduced `sp80` at 0/6 after 400 actions,
+  spending 388 decisions on untried state interventions and resetting 12
+  times;
+- the rejected v28 full offspring nevertheless completed `sp80` level 1 in
+  329 actions;
+- v28's factorial controls show that neither hierarchical action-family
+  fairness alone nor productive-role reuse without fairness solved `sp80`;
+- the successful v28 run used 281 family-balanced interventions and 107
+  responsive-role reuses, suggesting an interaction between broad
+  action-family coverage and causal exploitation rather than a visual
+  primitive-specific solver;
+- accepted v42 already contains the bounded productive-role reuse mechanism,
+  so enabling fairness is a clean one-field variation on the accepted genome.
+
+Preregistered mutation:
+
+- enable only `enable_hierarchical_action_fairness` relative to the accepted
+  v42 genome;
+- retain the existing finite legal-action family representation, state graph,
+  eight-trial productive-role cap, all accepted structural advisors, and
+  400-action budget;
+- rank untried interventions first by global action-family use, then
+  state-local family use, exact-token use, and stable token order;
+- embed no game identifier, action ID, coordinate, color, route, or source
+  information.
+
+Prediction and falsifier:
+
+- predict environment-reported completion of `sp80` level 1 within 400 actions
+  on a fresh isolated run;
+- require both hierarchical-family and bounded productive-reuse decisions to
+  be operative before attributing a success to their interaction;
+- reject v44 if `sp80` remains at zero, if productive reuse exceeds eight
+  trials per level, if a complete fairness round fails to cover every legal
+  action family exactly once, or if any later preservation gate regresses an
+  accepted completion;
+- only complete-round coverage is permutation-invariant; deterministic order
+  inside an evidence-free tie is an explicit action-ID protocol tie-break and
+  is not claimed as semantic action-permutation equivariance;
+- run a second exact target and the eight-game accepted-win gate only after the
+  first target qualifies. V42 remains accepted otherwise.
+
+V44 result:
+
+- action-family fairness was fully operative, issuing 387 family-balanced
+  interventions with nearly uniform action counts;
+- `sp80` nevertheless remained at **0/6 levels** after 400 actions and 13
+  resets;
+- the run learned four responsive roles but never reached one bounded
+  productive-role reuse trial, whereas the historical v28 success learned five
+  roles and issued 107 reuses across retries;
+- the one-field interaction prediction is falsified. V44 is rejected.
+
+## Active experiment: v45 primitive-grounded family reuse
+
+Parent: rejected v44 one-field diagnostic; accepted parent remains v42.
+Historical contributor: rejected v28
+`candidate-71007b83cd0d153d`.
+
+Observed disequilibrium:
+
+- v44 balanced all six legal action families but represented each coordinate
+  click as a distinct token/object grounding, so coordinate changes did not
+  become a reusable causal click role before a retry;
+- v28's visual primitive grounding can map a click to a bounded
+  `multicolor_region` or `enclosed_region` role using normalized shape and
+  primitive properties;
+- v28 primitive grounding without fairness did not solve `sp80`, and v44
+  fairness without primitive grounding did not solve it; their conjunction is
+  the smallest remaining explanation of the historical success.
+
+Preregistered mutation:
+
+- relative to v44, enable only visual primitive perception and primitive
+  action grounding;
+- keep temporal primitives, starter schemas, preregistered credit, and every
+  other rejected v28 trait off;
+- when a click lies in an admitted multicolor/enclosed primitive, bind its
+  role to normalized primitive kind, area, shape, and properties rather than
+  absolute coordinate or concrete color;
+- retain family-balanced exploration and the existing eight-trial
+  productive-role cap per retry;
+- abstain from primitive grounding outside an exact represented primitive and
+  embed no game identifier, coordinate, color, action ID, or route.
+
+Prediction and falsifier:
+
+- predict `sp80` level 1 within 400 actions, with at least one
+  primitive-grounded click role and at least one bounded productive-role reuse;
+- reject if the target stays at zero, no primitive role is operative, reuse
+  exceeds its cap, or the primitive representation changes under translation
+  or color permutation;
+- only after a qualifying first run, reproduce the target and test every
+  accepted v42 completion.
+
+V45 result:
+
+- visual perception produced two multicolor-region primitives per frame, but
+  the official result and every action/state metric were exactly identical to
+  v44: 0/6 levels, 387 fairness decisions, 13 resets, four responsive roles,
+  and zero productive reuses;
+- the exact historical v28 genome also failed identically on current source,
+  although it solved `sp80` at source `3a97b067`;
+- source comparison isolated the drift: v29 added a 32-intervention maturity
+  threshold and resets `level_interventions` to zero on every `GAME_OVER`;
+- `sp80` retries terminate before 32 interventions, making mature productive
+  reuse unreachable regardless of accumulated same-level failures;
+- v45 is rejected. Primitive grounding was perceptually present but causally
+  inoperative.
+
+## Active experiment: v46 cross-retry maturity conservation
+
+Parent genome: accepted v42 plus the rejected v44 fairness diagnostic.
+
+Observed disequilibrium:
+
+- a `GAME_OVER` retry clears failed episode cursors and plans correctly, but
+  it also clears the maturity evidence that 32 interventions were attempted on
+  the same unsolved level;
+- this conflates episode policy state with level-level epistemic experience;
+- historical v28 could exploit responsive roles after repeated failures,
+  while current v44 never satisfies the later v29 maturity gate;
+- the general accommodation principle is to conserve independently supported
+  causal evidence across a retry while discarding the failed control episode.
+
+Preregistered mutation:
+
+- add an exact-off `enable_cross_retry_maturity` genome trait;
+- when enabled, preserve the bounded `level_interventions` maturity counter
+  across `GAME_OVER` on the same environment-reported level;
+- continue clearing episode roles, program/variation cursors, per-retry
+  productive trial count, cyclic/select-apply/shape/trajectory episode state,
+  and transient plans exactly as before;
+- clear cumulative maturity on actual level progress;
+- cap cumulative maturity at the existing threshold because values above 32
+  have no policy meaning;
+- combine the trait with v44 family fairness and accepted productive-role
+  reuse, but leave v45 visual primitives and all other rejected v28 traits off.
+
+Prediction and falsifier:
+
+- a synthetic retry must conserve maturity only with the new trait, reset
+  per-retry reuse trials, and clear maturity on level progress;
+- predict `sp80` level 1 within 400 actions, with productive reuse becoming
+  operative only after the cumulative threshold and at least two failures;
+- reject if reuse occurs early, exceeds eight trials per retry, maturity leaks
+  across level progress, `sp80` remains at zero, or any accepted completion
+  regresses in a later gate.
+
+V46 first result and falsifier audit:
+
+- the offspring completed `sp80` level 1 at action 391, with five responsive
+  roles, 96 productive reuses, and at most eight reuses in each retry;
+- cumulative maturity reached its cap after the first retry and cleared on
+  level progress as intended;
+- however, pragmatic disequilibrium allowed the first reuse at action 33 after
+  only one completed failure, violating the preregistered two-failure
+  condition;
+- this run is real progress but does not qualify for promotion.
+
+Preregistered v46b non-bypass amendment:
+
+- for the exact-off cross-retry trait only, require two completed same-level
+  failures even when pragmatic disequilibrium is already active;
+- preserve the accepted default pragmatic path when the trait is off;
+- retain the same maturity cap, per-retry eight-trial cap, and 400-action
+  target;
+- require a fresh `sp80` level-1 completion with the first reuse occurring
+  only after failure two.
+
+V46b result:
+
+- two exact target runs completed `sp80` level 1 at action 328 with allocation
+  `[328, 72]`;
+- first productive reuse occurred at action 60 after exactly two completed
+  failures, cumulative maturity was capped at 32, and every retry used at most
+  eight reuses;
+- the nine-game gate added `sp80`, improved `g50t` level 1 from 29 to 27, and
+  exactly preserved `ar25`, `ft09`, `r11l`, `sb26`, and `tn36`;
+- it regressed `lf52` from one level to zero and `lp85` from three levels to
+  zero, so v46b is rejected and v42 remains accepted.
+
+## Active experiment: v47 failure-conditioned fairness
+
+Parent: rejected v46b diagnostic; accepted parent remains v42.
+
+Observed disequilibrium:
+
+- v46b's cross-retry maturity distinction produced reproducible `sp80`
+  progress, but hierarchical fairness controlled every intervention from the
+  beginning of every game;
+- accepted `lf52` normally solves level 1 in 34 actions and accepted `lp85`
+  solves level 1 in 37, before repeated same-level failure supplies evidence
+  that their exploration policy should be accommodated;
+- in the rejected gate, `lp85` had only one failure yet lost all three levels,
+  while `sp80` required two failures before the newly valid reuse mechanism
+  could activate;
+- fairness is therefore an accommodation policy, not a universal prior.
+
+Preregistered mutation:
+
+- add exact-off `enable_failure_conditioned_fairness`;
+- when enabled, hierarchical action-family ranking remains inactive until two
+  completed failures on the same environment-reported level;
+- before that threshold, preserve the accepted flat token-ranking policy
+  exactly;
+- after the threshold, balance finite legal action families using the existing
+  global/state-local counts and retain cross-retry maturity plus bounded reuse;
+- reset the failure gate on actual level progress, so each new level starts
+  with the accepted policy;
+- keep the old unconditional fairness behavior exact when the new trait is
+  off.
+
+Prediction and falsifier:
+
+- synthetic tests must show exact flat ordering before failure two, family
+  round coverage after failure two, and return to flat ordering on progress;
+- predict exact `sp80` level-1 reproduction within 400 actions;
+- require the nine-game gate to preserve every v42 completion, with exact
+  action counts preferred and no lost level permitted;
+- reject on early fairness, missing target progress, reuse-cap violation, or
+  any accepted regression.
+
+V47 result:
+
+- two exact target runs completed `sp80` level 1 at action 196, improving the
+  qualifying v46b target by 132 actions;
+- the nine-game gate exactly preserved `ar25`, `ft09`, `lf52`, `r11l`,
+  `sb26`, and `tn36`, improved `g50t` level 1 to 27 actions, and added
+  `sp80`;
+- `lp85` nevertheless regressed from three levels to zero;
+- trace inspection showed that accepted `lp85` earns same-episode productive
+  reuse after 32 interventions with zero failures, while v47's cross-retry
+  two-failure guard incorrectly blocked that parent path;
+- v47 is rejected.
+
+Preregistered v47b zero-failure non-interference amendment:
+
+- preserve the accepted mature-stall productive-reuse path when there are zero
+  failures and pragmatic disequilibrium is active;
+- suppress reuse only in the one-failure ambiguous state;
+- enable conserved cross-retry maturity at two or more failures;
+- leave failure-conditioned fairness unchanged: flat before failure two,
+  family-balanced afterward;
+- require exact target reproduction and no lost level in the nine-game gate.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural

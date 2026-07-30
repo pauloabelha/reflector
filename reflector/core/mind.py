@@ -54,10 +54,12 @@ class MindConfig:
     enable_concept_retirement: bool = True
     enable_epistemic_state_graph: bool = False
     enable_hierarchical_action_fairness: bool = False
+    enable_failure_conditioned_fairness: bool = False
     enable_successful_role_replay: bool = False
     enable_multicolor_click_objects: bool = False
     enable_click_object_accommodation: bool = False
     enable_productive_role_reuse: bool = False
+    enable_cross_retry_maturity: bool = False
     enable_local_relation_solver: bool = False
     enable_constraint_first_role_replay: bool = False
     enable_global_relation_constraint_solver: bool = False
@@ -105,10 +107,12 @@ class MindConfig:
             "enable_concept_retirement",
             "enable_epistemic_state_graph",
             "enable_hierarchical_action_fairness",
+            "enable_failure_conditioned_fairness",
             "enable_successful_role_replay",
             "enable_multicolor_click_objects",
             "enable_click_object_accommodation",
             "enable_productive_role_reuse",
+            "enable_cross_retry_maturity",
             "enable_local_relation_solver",
             "enable_constraint_first_role_replay",
             "enable_global_relation_constraint_solver",
@@ -137,6 +141,20 @@ class MindConfig:
         if self.enable_visual_primitive_actions and not self.enable_visual_primitives:
             raise ValueError(
                 "visual primitive actions require visual primitive perception"
+            )
+        if (
+            self.enable_failure_conditioned_fairness
+            and not self.enable_hierarchical_action_fairness
+        ):
+            raise ValueError(
+                "failure-conditioned fairness requires hierarchical fairness"
+            )
+        if (
+            self.enable_cross_retry_maturity
+            and not self.enable_productive_role_reuse
+        ):
+            raise ValueError(
+                "cross-retry maturity requires productive role reuse"
             )
         if (
             self.enable_graph_cycle_transport

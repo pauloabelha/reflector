@@ -1,5 +1,5 @@
 from reflector import STARTER_OBJECT_CONCEPTS, MindConfig
-from reflector.exploration import EpistemicExplorer
+from reflector.exploration import ActionToken, EpistemicExplorer
 from reflector.perception import SceneTracker
 from reflector.symbolic import Observation
 
@@ -323,6 +323,109 @@ def test_disequilibrium_reuses_a_causally_responsive_action_role() -> None:
     )
     assert released.token.action_id == 2
     assert "untried-current-state" in released.reason
+
+
+def test_cross_retry_maturity_conserves_only_level_experience() -> None:
+    active = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((0, 0), (0, 1)),
+        levels_completed=0,
+    )
+    failed = Observation.create(
+        state="GAME_OVER",
+        available_actions=(0,),
+        frame=((0, 0), (0, 1)),
+        levels_completed=0,
+    )
+    progressed = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2),
+        frame=((0, 1), (0, 0)),
+        levels_completed=1,
+    )
+    tracker = SceneTracker()
+    active_scene, _events = tracker.perceive(active)
+    failed_scene, _events = tracker.perceive(failed)
+    progressed_scene, _events = tracker.perceive(progressed)
+    explorer = EpistemicExplorer(
+        productive_role_reuse=True,
+        cross_retry_maturity=True,
+    )
+    explorer.observe(active, active_scene)
+    explorer.level_interventions = 31
+    explorer.productive_reuse_level_trials = 7
+
+    explorer.observe(failed, failed_scene)
+
+    assert explorer.level_interventions == 31
+    assert explorer.productive_reuse_level_trials == 0
+    assert explorer.level_failures == 1
+
+    explorer.observe(progressed, progressed_scene)
+
+    assert explorer.level_interventions == 0
+    assert explorer.level_failures == 0
+
+
+def test_default_retry_clears_maturity_counter() -> None:
+    active = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1,),
+        frame=((0,),),
+    )
+    failed = Observation.create(
+        state="GAME_OVER",
+        available_actions=(0,),
+        frame=((0,),),
+    )
+    tracker = SceneTracker()
+    active_scene, _events = tracker.perceive(active)
+    failed_scene, _events = tracker.perceive(failed)
+    explorer = EpistemicExplorer(productive_role_reuse=True)
+    explorer.observe(active, active_scene)
+    explorer.level_interventions = 31
+
+    explorer.observe(failed, failed_scene)
+
+    assert explorer.level_interventions == 0
+
+
+def test_cross_retry_reuse_preserves_parent_or_requires_two_failures() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1,),
+        frame=((0,),),
+    )
+    tracker = SceneTracker()
+    scene, _events = tracker.perceive(observation)
+    explorer = EpistemicExplorer(
+        productive_role_reuse=True,
+        cross_retry_maturity=True,
+    )
+    explorer.observe(observation, scene)
+    explorer.level_interventions = explorer.min_productive_reuse_interventions
+    role = explorer._role(ActionToken(1), scene)
+    explorer.role_trials[role] = 1
+    explorer.role_responses[role] = 1
+    explorer.pragmatic_disequilibrium_active = True
+    state = explorer.current_state
+    assert state is not None
+
+    explorer.level_failures = 0
+    assert explorer._select_productive_role(
+        (ActionToken(1),), scene, state
+    ) == ActionToken(1)
+
+    explorer.level_failures = 1
+    assert explorer._select_productive_role(
+        (ActionToken(1),), scene, state
+    ) is None
+
+    explorer.level_failures = 2
+    assert explorer._select_productive_role(
+        (ActionToken(1),), scene, state
+    ) == ActionToken(1)
 
 
 def test_primitive_actions_require_primitive_perception() -> None:

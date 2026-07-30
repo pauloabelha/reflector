@@ -1,5 +1,8 @@
 from collections import Counter
 
+import pytest
+
+from reflector import MindConfig
 from reflector.exploration import (
     STARTER_SCHEMA_SET,
     ActionRole,
@@ -155,6 +158,53 @@ def test_flat_exploration_preserves_coordinate_level_ablation() -> None:
         explorer.observe(observation, scene)
 
     assert choices == [1, 2, 6, 6, 6, 6]
+
+
+def test_failure_conditioned_fairness_preserves_parent_then_accommodates() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2, 6),
+        frame=(
+            (1, 0, 2, 0, 3),
+            (0, 4, 0, 5, 0),
+        ),
+    )
+    scene = _scene(observation)
+    before = EpistemicExplorer(
+        hierarchical_action_fairness=True,
+        failure_conditioned_fairness=True,
+    )
+    before.observe(observation, scene)
+    parent_choices = []
+    for _ in range(6):
+        parent_choices.append(
+            before.select(observation, scene, (1, 2, 6)).token.action_id
+        )
+        before.observe(observation, scene)
+
+    after = EpistemicExplorer(
+        hierarchical_action_fairness=True,
+        failure_conditioned_fairness=True,
+    )
+    after.observe(observation, scene)
+    after.level_failures = 2
+    accommodated_choices = []
+    for _ in range(6):
+        accommodated_choices.append(
+            after.select(observation, scene, (1, 2, 6)).token.action_id
+        )
+        after.observe(observation, scene)
+
+    assert parent_choices == [1, 2, 6, 6, 6, 6]
+    assert accommodated_choices == [1, 2, 6, 1, 2, 6]
+
+
+def test_failure_conditioned_fairness_requires_parent_mechanism() -> None:
+    with pytest.raises(
+        ValueError,
+        match="failure-conditioned fairness requires hierarchical fairness",
+    ):
+        MindConfig(enable_failure_conditioned_fairness=True)
 
 
 def test_successful_level_compiles_and_replays_coordinate_free_roles() -> None:

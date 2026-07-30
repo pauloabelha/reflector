@@ -240,10 +240,12 @@ class EpistemicExplorer:
     max_cyclic_alignment_trials_per_level: int = 24
     max_cyclic_plan_expansions: int = 8192
     hierarchical_action_fairness: bool = False
+    failure_conditioned_fairness: bool = False
     successful_role_replay: bool = False
     multicolor_click_objects: bool = False
     click_object_accommodation: bool = False
     productive_role_reuse: bool = False
+    cross_retry_maturity: bool = False
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
@@ -471,7 +473,10 @@ class EpistemicExplorer:
 
     @property
     def uses_action_family_schema(self) -> bool:
-        return self.hierarchical_action_fairness or self.starter_schemas
+        fairness_active = self.hierarchical_action_fairness and (
+            not self.failure_conditioned_fairness or self.level_failures >= 2
+        )
+        return fairness_active or self.starter_schemas
 
     def arbitration_snapshot(self, selected_reason: str) -> tuple[dict[str, str], ...]:
         """Explain deterministic advisor priority without inventing prose."""
@@ -616,7 +621,8 @@ class EpistemicExplorer:
             self.select_apply_cursor = 0
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level(retain_accommodation=True)
-            self.level_interventions = 0
+            if not self.cross_retry_maturity:
+                self.level_interventions = 0
             self.level_failures += 1
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
@@ -3755,7 +3761,10 @@ class EpistemicExplorer:
         reason: str,
         scene: Scene,
     ) -> ExplorationChoice:
-        self.level_interventions += 1
+        self.level_interventions = min(
+            self.min_productive_reuse_interventions,
+            self.level_interventions + 1,
+        )
         self.attempts[(state, token)] += 1
         self.global_attempts[token] += 1
         self.family_attempts[(state, token.action_id)] += 1
@@ -4525,9 +4534,17 @@ class EpistemicExplorer:
         scene: Scene,
         state: StateKey,
     ) -> ActionToken | None:
-        if not self.productive_role_reuse or (
-            self.level_failures < 2 and not self.pragmatic_disequilibrium_active
-        ):
+        if not self.productive_role_reuse:
+            return None
+        if self.cross_retry_maturity:
+            if self.level_failures == 1:
+                return None
+            if (
+                self.level_failures == 0
+                and not self.pragmatic_disequilibrium_active
+            ):
+                return None
+        elif self.level_failures < 2 and not self.pragmatic_disequilibrium_active:
             return None
         if self.level_interventions < self.min_productive_reuse_interventions:
             return None

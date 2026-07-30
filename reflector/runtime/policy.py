@@ -32,6 +32,9 @@ class SymbolicPolicy:
             hierarchical_action_fairness=(
                 self.mind.config.enable_hierarchical_action_fairness
             ),
+            failure_conditioned_fairness=(
+                self.mind.config.enable_failure_conditioned_fairness
+            ),
             successful_role_replay=(
                 self.mind.config.enable_successful_role_replay
                 or self.mind.config.enable_constraint_first_role_replay
@@ -41,6 +44,9 @@ class SymbolicPolicy:
                 self.mind.config.enable_click_object_accommodation
             ),
             productive_role_reuse=self.mind.config.enable_productive_role_reuse,
+            cross_retry_maturity=(
+                self.mind.config.enable_cross_retry_maturity
+            ),
             local_relation_solver=self.mind.config.enable_local_relation_solver,
             constraint_first_role_replay=(
                 self.mind.config.enable_constraint_first_role_replay
