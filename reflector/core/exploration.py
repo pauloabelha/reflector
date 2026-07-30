@@ -724,8 +724,6 @@ class EpistemicExplorer:
             self._reset_committed_trajectory_level(retain_accommodation=True)
             self._reset_boundary_nuisance_state()
             self._reset_paired_object_level()
-            self.inherited_scheme_trials.clear()
-            self.inherited_scheme_diagnostic = "not-attempted"
             if not self.cross_retry_maturity:
                 self.level_interventions = 0
             self.level_failures += 1

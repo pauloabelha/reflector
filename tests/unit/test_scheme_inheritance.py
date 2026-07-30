@@ -378,3 +378,14 @@ def test_inherited_ranking_definitions_create_bounded_policy_variation() -> None
     assert smallest.inherited_scheme_trials[
         smallest_definition.scheme_id
     ] == 1
+
+    failed = Observation.create(
+        state="GAME_OVER",
+        available_actions=(0,),
+        frame=observation.frame,
+    )
+    failed_scene, _events = SceneTracker().perceive(failed)
+    smallest.observe(failed, failed_scene)
+    assert smallest.inherited_scheme_trials[
+        smallest_definition.scheme_id
+    ] == 1

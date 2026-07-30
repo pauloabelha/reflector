@@ -2028,6 +2028,31 @@ Prediction and falsifier:
   accepted regression, or purely internal improvement. V49b remains accepted
   unless a descendant later passes the full promotion protocol.
 
+First development population result:
+
+- smallest-area solved `r11l` level 1 at action 16, rarest-shape at action 35,
+  and largest-area completed 0/6 levels;
+- the first interventions were distinct and trace-attributed:
+  `(7,36)`, `(17,46)`, and `(4,4)` respectively, expressed here only as
+  diagnostic observations and not encoded in any definition;
+- smallest-area reported 42 selections and rarest-shape 72 despite a
+  `resource_cap` of 24. The implementation cleared its counter on
+  environment-reported `GAME_OVER`, confusing a retry with a new level;
+- this activates the cap-breach falsifier. None of these apparent task
+  outcomes qualifies as inheritance evidence and held-out games are not run
+  from this source.
+
+Preregistered v54a repair:
+
+- retain inherited-scheme trial counts across `GAME_OVER` retries and clear
+  them only on an environment-reported level advance;
+- change no definition, rank, budget, advisor priority, or target partition;
+- rerun the three-way `r11l` development population and require every
+  definition to remain at or below 24 total trials for the unsolved current
+  level;
+- only after that structural condition passes may qualifying variants proceed
+  unchanged to the already frozen `s5i5`, `tn36`, and `vc33` held-out set.
+
 Protocol: `references/INHERITED_SCHEME_PROTOCOL.md`.
 
 ## Completed experimental branch: v26

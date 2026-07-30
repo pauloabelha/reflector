@@ -32,6 +32,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Target-only symbolic offspring | v52 one post-accommodation plan | 4.7619047619 for one game | 1/6 `m0r0` levels; `[20, 380]`; allowance 19, effective cap 83 | rejected; extra grounded planning did not supply the missing goal/phase model |
 | Target-only inheritance substrate | v53 content-addressed starter schemes | 4.7619047619 for one game | 1/6 `r11l` levels; `[18, 382]`; correct six-definition library root | rejected; inherited components were not credited because structural preregistration remained disabled |
 | Target-only inheritance substrate | v53a operative content-addressed schemes | 4.7619047619 for one game | 1/6 `r11l` levels; `[18, 382]`; three inherited hashes in 390 assessments | infrastructure passed; no task gain, not promoted |
+| Three-offspring inheritance development round | v54 smallest / rarest / largest relative object ranks | 4.7619047619 / 1.8814382896 / 0.0000000000 for `r11l` | level 1 at action 16 / 35 / no level | invalidated for promotion: two offspring renewed the 24-trial cap across same-level retries |
 | Process-isolated official local suite | v47b accepted | **4.4496962800 / 100** | 0 games beaten; 18/183 levels | 25/25 coverage |
 | Process-isolated nine-game gate | v47b accepted | 12.3602674444 / 100 | 18 levels; every v42 level preserved | exact twice |
 | Target-only `sp80` reruns | v47b accepted | 0.1885375141 for one game | 1/6 levels; `[196, 204]` under 400 actions | deterministic gain twice |
