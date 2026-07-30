@@ -202,6 +202,9 @@ def config_with_scheme_library(
     return replace(
         config,
         enable_inherited_scheme_library=enabled,
+        enable_preregistered_structural_credit=(
+            True if enabled else config.enable_preregistered_structural_credit
+        ),
         inherited_scheme_definitions=library.json_definitions(),
         inherited_scheme_root=library.root,
     )

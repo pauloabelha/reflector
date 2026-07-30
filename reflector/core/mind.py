@@ -306,6 +306,14 @@ class MindConfig:
             raise ValueError(
                 "enabled inherited scheme library must not be empty"
             )
+        if (
+            self.enable_inherited_scheme_library
+            and not self.enable_preregistered_structural_credit
+        ):
+            raise ValueError(
+                "inherited scheme library requires preregistered "
+                "structural credit"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         value = asdict(self)

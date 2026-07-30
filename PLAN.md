@@ -1904,6 +1904,30 @@ Preregistered first runtime audit:
   not as a promotion or task gain. A later offspring must use an
   evidence-promoted scheme to improve a held-out real-game outcome.
 
+First audit result:
+
+- v53 `candidate-48c1e7c59c64c07a` reproduced accepted `r11l` level 1
+  exactly at action 18 and carried the correct six-definition root through the
+  official harness;
+- no inherited hash appeared in a transition assessment because accepted
+  v49b disables preregistered structural credit; the explorer computed the
+  grounding but `SymbolicMind.prime_hypothesis` correctly ignored all
+  components behind that flag;
+- this activates the operative-path falsifier. V53 is rejected as substrate
+  wiring evidence, not promoted.
+
+Preregistered v53a repair:
+
+- require `enable_inherited_scheme_library` to depend on
+  `enable_preregistered_structural_credit`, and make typed library embedding
+  enable that dependency atomically;
+- change no other accepted v49b behavior field or inherited definition;
+- rerun `r11l`; require level 1 at action 18, the same six-definition root,
+  at least one transition assessment containing a
+  `scheme:inherited:<definition-hash>`, and positive typed-credit structure
+  count;
+- reject on any missed condition. Even a pass validates infrastructure only.
+
 Protocol: `references/INHERITED_SCHEME_PROTOCOL.md`.
 
 ## Completed experimental branch: v26

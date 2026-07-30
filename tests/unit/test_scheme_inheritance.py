@@ -177,6 +177,7 @@ def test_exact_library_snapshot_round_trips_and_is_inherited_by_offspring() -> N
     (child,) = descendants(parent, (provider,), {})
 
     assert restored == config
+    assert restored.enable_preregistered_structural_credit
     assert child.config.inherited_scheme_root == library.root
     assert (
         child.config.inherited_scheme_definitions
@@ -188,6 +189,11 @@ def test_exact_library_snapshot_round_trips_and_is_inherited_by_offspring() -> N
     invalid["inherited_scheme_root"] = "0" * 64
     with pytest.raises(ValueError, match="does not match"):
         MindConfig.from_dict(invalid)
+
+    disabled_credit = config.to_dict()
+    disabled_credit["enable_preregistered_structural_credit"] = False
+    with pytest.raises(ValueError, match="requires preregistered"):
+        MindConfig.from_dict(disabled_credit)
 
 
 def test_inherited_schemes_enter_operative_structural_credit() -> None:
