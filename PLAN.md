@@ -25,16 +25,17 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last known participant-remote commit: `27f5ac5`
-- Accepted candidate: `candidate-34708ca0a3fb4129`
-- Accepted agent: Reflector v65b
-- Accepted frozen inference commit:
-  `ad68c9cd4c4915cbc220c25fba9998425ba5abd9`
+- Accepted candidate: `candidate-a1ccbdb17d674b78`
+- Accepted agent: Reflector v67
+- Accepted frozen source/candidate commit:
+  `509575e88cff60d33368006ca77b6eb30db67a40`
 - Accepted public-development report:
-  `reports/official-isolated-v65b-public-400.json`
-- Accepted score: `7.973607779187656`
-- Accepted coverage: 25/25 games, 9,724 actions
-- Accepted completions: 25/183 levels across 11 games; 1/25 games complete
-- Kaggle public score: not submitted
+  `reports/official-isolated-v67-public-400.json`
+- Accepted score: `9.310463971112286`
+- Accepted coverage: 25/25 games, 9,486 actions
+- Accepted completions: 27/183 levels across 11 games; 2/25 games complete
+- Kaggle submission: `55113224`, v65b notebook version 1, pending hidden rerun
+- Kaggle public score: pending; not yet returned
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
 - Maintenance state: canonical code is organized under `reflector/core/`,
@@ -62,6 +63,8 @@ generalization.
 | Paired-object contact planning | v49b learned ordered joint effects for one reflected congruent pair, planned over independently blocked anchors, and treated planned contact as a bounded latent intermediate; it preserved all 18 v47b levels exactly and solved `m0r0` L1 at action 20 twice. |
 | Compressive compact-component frontier | v64b admitted an object-graph vocabulary only when it did not expand the current perceptual ontology, preserved all 19 v49b level/action vectors, suppressed the 87-for-47 expansion that had regressed `tn36`, and solved `vc33` L1 at action 262 twice. |
 | Bounded connector-graph synthesis | v65b selected a unique minimum-cost assignment over visible ordered references, nested containers, fixed payloads, and connector inventory only as a legacy fallback or under a strict repeated-reference dominance proof; it preserved every non-target trajectory and completed all eight `sb26` levels in 124 actions twice. |
+| Learned lattice effects plus exact CSP | v66 grounded one regular repeated-actuator lattice, induced a relative binary click-effect law from two structurally distinct interventions, prospectively quarantined mismatches, and solved visible relation constraints exactly; it preserved every non-`ft09` trajectory and completed all six `ft09` levels in 162 actions twice. |
+| Confirmed segmented permutations plus exact transport | v67 proposed a unique equal-pitch permutation from one rendered transition, preregistered its full-domain successor before a subsequent same-form action, promoted only after an exact match, and searched a bounded projected marker state; it preserved every non-`lp85` outcome and solved `lp85` L4 at action 71 twice. The confirmer need not yet be a spatially distinct controller. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -2603,9 +2606,14 @@ Promotion evidence:
   unique-plus-ambiguous roots;
 - 271 tests passed and 3 skipped; Ruff and mypy passed;
 - both network-disabled Kaggle smoke paths passed, the exact candidate
-  exported without translation, and the technical prize audit passed. The
-  participant account, rule acceptance, identity verification, notebook
-  commit/rerun, public publication, and actual submission remain manual.
+  exported without translation, and the technical prize audit passed;
+- the private, internet-disabled notebook
+  `pauloabelha/reflector-arc-agi-3-v65b` version 1 completed on Kaggle and
+  emitted `submission.parquet`; submission `55113224` was accepted at
+  2026-07-30T15:36:04.110000Z and its hidden rerun is pending. No public or
+  private Kaggle score has returned. Public competition publication,
+  participant-owned repository confirmation, and eligibility evidence remain
+  manual.
 
 Frozen evidence:
 
@@ -2635,9 +2643,194 @@ Reports:
 
 V65b replaces v64b as the task-performance champion. It is a substantial
 known-public gain and the first complete game, not hidden-transfer evidence.
-The exact export is technically ready for a Kaggle notebook submission; use
-`references/KAGGLE_ARC3_SUBMISSION.md` and keep local, Kaggle public, and
-Kaggle private scores separate.
+The exact export has entered Kaggle hidden evaluation as submission
+`55113224`; use `references/KAGGLE_ARC3_SUBMISSION.md` and keep the pending
+submission, local score, Kaggle public score, and Kaggle private score
+separate.
+
+## Accepted experiment: v66 learned lattice effects and exact CSP
+
+Parent: accepted v65b `candidate-34708ca0a3fb4129`.
+
+Disequilibrium:
+
+- v65b preserved the first five `ft09` completions exactly but exhausted the
+  remaining 265 actions on level 6;
+- the retained local relation vocabulary could interpret the visible clues,
+  but the runtime lacked a learned actuator-effect model and a global inverse
+  planner over the repeated lattice;
+- exact action centroids were not stable intervention groundings, so clicks
+  had to bind generically to a unique actuator region.
+
+Mechanism and safety boundary:
+
+- ground exactly one regular lattice of repeated dense, non-solid square
+  actuator forms with visible relation clues;
+- canonicalize a click only when exactly one node region contains it;
+- induce a binary relative effect law from at least two normalized,
+  structurally distinct node-neighborhood contexts;
+- validate every successor prospectively and quarantine the lattice for the
+  level on any mismatch, including an unexpected no-op;
+- reject unknown clue symbols, mixed forms, ambiguous groundings, unstable
+  membership, inconsistent cycles, or unrepresented planned actions;
+- solve the visible equality/inequality system with an exact CSP bounded to
+  64 clicks and 100,000 search nodes;
+- include no game ID, coordinate, color, literal action ID, direction, or
+  known route.
+
+Promotion evidence:
+
+- candidate `candidate-c9825fedf72a2a32`;
+- inference fingerprint
+  `e7319dd72e4c3060951d0061a671d704be04052584c3737f86699a01d3e29b49`;
+- two frozen process-isolated target repeats completed `ft09` 6/6 at 162
+  actions with identical level actions `[4,7,14,16,94,27]`, score
+  `99.00375088921943`, and 11 lattice-planned actions;
+- the eleven-game preservation gate retained every non-target score, level,
+  action total, and completed-level action vector exactly;
+- the process-isolated full public-development suite reached
+  `9.287893493473371/100`, 26/183 levels across 11 games, 2/25 complete games,
+  25/25 coverage, and 9,486 actions;
+- relative to v65b, only `ft09` changes; score increases by
+  `1.314285714285715`, levels by one, complete games by one, and actions fall
+  by 238;
+- 282 tests passed and 3 skipped; Ruff and mypy passed;
+- both network-disabled Kaggle smoke paths passed, exact export passed, and
+  the technical prize audit passed;
+- v66 has not been submitted to Kaggle; pending submission `55113224` is the
+  earlier frozen v65b notebook and must remain attributed to v65b.
+
+Frozen evidence:
+
+- inference commit:
+  `b6f9ba4476d19c3bea99acce1aa3a75c332e9678`;
+- candidate SHA-256:
+  `eeca3f9f3d4115ed280348d906680543bf8c53c3eaddf38f8bdb7f7676d27c00`;
+- full report SHA-256:
+  `aa5a77a95fe4178e3c2a463caf40d0a611f71e7eb75b10272b42b2b3f7f32de3`;
+- target report SHA-256 values:
+  `d3f80c529bc60a9fd457a9e0f0c944b5d50430fc0eb55c8bd430d82ce28ad540`
+  and
+  `4fb4a64be5d9aabe0256d416b9b3cbb7af80b72e740fa73aae639b55490ab34d`;
+- preservation report SHA-256:
+  `d0d195099332da3be20244a2b74ebad45219014ea74d8843899ce134f4009b68`;
+- export overlay SHA-256:
+  `7f44f6ca6a6ee9b8deeac39610975e747c370bdf3c8ce02957c1d9e66b7dd2ef`;
+- export notebook SHA-256:
+  `bb2a69f46ad78fc98915506f2f815223c7132edfa2c93a1b3a255c9c7b9de1d0`.
+
+Reports:
+
+- `reports/official-isolated-v66-ft09-r1-400.json`;
+- `reports/official-isolated-v66-ft09-r2-400.json`;
+- `reports/official-isolated-v66-progress-gate-400.json`;
+- `reports/official-isolated-v66-public-400.json`.
+
+V66 replaces v65b as the local task-performance champion. It is a narrow,
+causally isolated known-public gain and the second complete game, not hidden
+transfer evidence.
+
+## Accepted experiment: v67 segmented permutation transport
+
+Parent: accepted v66 `candidate-c9825fedf72a2a32`.
+
+Hypothesis:
+
+- when a conserved same-form token domain changes by one unique equal-pitch
+  segmented permutation, retain that effect only provisionally;
+- register the full-domain prediction before a subsequent same-form
+  controller intervention and promote only after an exact rendered successor
+  match;
+- bind confirmed generator identities back to currently represented
+  controller forms and run bounded exact marker transport over the projected
+  token-color state;
+- reject ambiguity, same-transition promotion, domain drift, prediction
+  conflict, unsupported effects, and unrepresented plan steps.
+
+Result:
+
+- frozen source/candidate commit
+  `509575e88cff60d33368006ca77b6eb30db67a40`;
+- candidate `candidate-a1ccbdb17d674b78`;
+- inference fingerprint
+  `fa8781903bfbe765a67d7839d28089213b43a585a84ca8188309ec4e6f2794e9`;
+- two frozen `lp85` repeats exactly reached 4/8 levels, score
+  `10.285890058914008`, level-action vector
+  `[37,8,54,71,230,0,0,0]`, 400 actions, and zero resets;
+- the archived cognition stream shows the level-4 plan beginning after 58
+  exploratory actions with eight same-form confirmations, three represented
+  effects, and zero conflicts; it explores 651 projected states and completes
+  in 13 planned actions at level action 71;
+- the eleven-game gate scored `21.16014538889156/100`, reached 27 levels, and
+  preserved every non-`lp85` v66 outcome exactly;
+- the full process-isolated suite scored `9.310463971112286/100`, reached
+  27/183 levels across 11 games, retained two complete games and 9,486 total
+  actions, and changed only `lp85`;
+- relative to v66, score increases by `0.022570477638915065` and levels by
+  one, with no change in complete games, progress games, or total actions;
+- 313 tests passed and 3 skipped; Ruff and mypy passed;
+- exact export, both network-disabled smoke paths, and the technical prize
+  audit passed;
+- v67 has not been submitted to Kaggle; live status still reports v65b
+  submission `55113224` as `PENDING`.
+
+Audit limitation:
+
+- the frozen candidate rationale says “distinct equivalent controller,” but
+  the runtime does not compare controller centroids; a repeated controller
+  can supply the preregistered confirmation;
+- v67 is therefore prospective but not structurally held out. A source-matched
+  distinct-controller gate must be tested before claiming that stronger
+  evidence boundary;
+- the 12 observations, eight confirmations, three represented effects, zero
+  conflicts, 651 search states, and 13 plan steps are preserved in the
+  archived cognition stream. Terminal scorecards reset the detailed counters
+  after progress, though they retain all 13 decision reasons.
+
+Frozen evidence:
+
+- candidate SHA-256:
+  `80e90a68142ee31eebc743c4eb3fa0f30c31b7b531e9d348b8f936e9216b911a`;
+- target report SHA-256 values:
+  `df27742d92b09faf3b2852e59b1fcf5a24e202e367211e72d13966c5d22018f7`
+  and
+  `21ede94cf45b9a2aea93a86b3495f3bc972f13f3ad9f88f8b2a74f9bce63040c`;
+- preservation report SHA-256:
+  `7a83fa2ec26dda1d2b1d5a113c36e5db5f7642ab95c35108869ff32e3ccfb949`;
+- full report SHA-256:
+  `e938f460d3f100b52a11ac652b80e63c4cf184ecbaf9d5fdfce54a6fb1e6d69d`;
+- export overlay SHA-256:
+  `b6dc044439077ea6d01f6021791c659ee84ab9b8731e932a9454ddd03b88ef8f`;
+- export notebook SHA-256:
+  `1e8a4d916eb46f30242789db7797aac19b3eb19340e3f641e76218d4dde930bf`.
+- archived v67 cognition JSONL gzip SHA-256:
+  `93da482f144a4effddb80ea94e2a09a6fb320d69fd2e4e60e9aa1cf6e44b9898`.
+
+Reports:
+
+- `reports/official-isolated-v67-lp85-r1-400.json`;
+- `reports/official-isolated-v67-lp85-r2-400.json`;
+- `reports/official-isolated-v67-progress-gate-400.json`;
+- `reports/official-isolated-v67-public-400.json`.
+- `reports/official-isolated-v67-lp85-cognitive.jsonl.gz`.
+
+V67 replaces v66 as the local task-performance champion. The mechanism is
+generic and prospectively grounded, but the gain is one known-public level
+and is not hidden-transfer evidence.
+
+The requested K-line work has completed its first, behaviorally isolated
+substrate: `reflector/core/kline_memory.py` now provides immutable
+content-addressed definitions, explicit registered-generator dispositions,
+separate evidence identities, collision-checked snapshot roots, sparse
+partial-cue postings, deterministic bounded ranking, hard
+precondition/contradiction abstention, and an optional exact structural
+matcher. Cue overlap alone cannot claim grounding and retrieval exposes no
+action or executable payload. Focused tests pass, but this module is not in
+`MindConfig`, exploration, policy, or the Kaggle overlay and therefore is not
+part of accepted v67 inference. Runtime integration remains exact-off until
+cue compilation, structural grounding, scheduler fairness, and held-out
+retrieval evidence pass the gates in
+`references/KLINE_SYMBOLIC_MEMORY.md`.
 
 ## Immediate continuation toward 20/100
 
@@ -2647,19 +2840,26 @@ as symbolic hypothesis proposal rather than symbolic execution. The next
 offspring should therefore add one compact typed operator family at a time,
 with exact replay and ambiguity abstention:
 
-1. diagnose `ft09` level 6 as a lattice constraint system and attempt a
-   held-out structural mutation rather than extending a memorized panel rule;
-2. diagnose `lp85` level 4 as permutation transport over shared cyclic tracks;
-3. test articulated actuator/kinematic grounding on `s5i5`;
-4. test palette/stamp algebra on `cd82`;
-5. retain the exact transition graph as a bounded fallback and trace
+1. diagnose the accepted v67 `lp85` level-5 stall without weakening the
+   prospective permutation gate;
+2. after the standalone K-line retrieval substrate just completed, add the
+   frozen `MindConfig` snapshot and grounded cue compiler exact-off, then
+   measure held-out recall before allowing it to reorder generators;
+3. test the staged `cd82` colored-stencil design in
+   `references/CD82_COLORED_STENCIL_DIAGNOSIS.md`: uniquely ground reference,
+   palette, construction, and the eight-pose outlined template group; learn
+   primary overwrite masks through recolored prospective confirmation and
+   target 2/6 within 80 actions before admitting secondary components;
+4. retain the exact transition graph as a bounded fallback and trace
    generator, but rank probes by expected hypothesis elimination per action;
-6. make the first Kaggle submission from frozen v65b after the user completes
-   the account, identity, rule, team, and participant-owned-publication steps.
+5. monitor v65b Kaggle submission `55113224` to a terminal result, archive its
+   rerun status/logs and returned public score, then complete the
+   participant-owned public-repository and public-notebook publication gates;
+6. submit v67 separately only with its exact candidate/notebook identity.
 
 Each task mutation remains subject to the full target-repeat, preservation,
 25-game, quality, and exact-export gates below. The `/goal` remains active:
-`7.973607779187656 < 20`.
+`9.310463971112286 < 20`.
 
 ## Promotion gates
 

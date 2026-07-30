@@ -10,7 +10,7 @@ submission.
 
 ## Decision
 
-Submit Reflector after the exact v65b source, candidate, and permanent local
+Submit Reflector after the exact v67 source, candidate, and permanent local
 reports have been frozen and verified. A Kaggle submission is valuable because
 it tests transfer to hidden games; the score on the 25 downloadable
 public-development games cannot answer that question.
@@ -27,10 +27,10 @@ that predates the accepted source commit.
 | Kaggle public-leaderboard score | 55 hidden games, half of the 110-game evaluation | After a scored Kaggle rerun | Hidden-transfer calibration and public ranking |
 | Kaggle private-leaderboard score | Remaining 55 hidden games | Final evaluation/verification | Final competition standing |
 
-Never infer either Kaggle score from a local report. Until a real submission is
-scored, record the Kaggle public score as **not submitted**. Until Kaggle
-releases or verifies the final result, record the private score as
-**unavailable**.
+Never infer either Kaggle score from a local report. Submission `55113224`
+contains frozen v65b and is pending; record its public score as **pending; not
+yet returned**. V67 has not been submitted. Until Kaggle releases or verifies
+the final result, record the private score as **unavailable**.
 
 `REAL_GAMES_REPORT.md` is the canonical root-level score report. Raw local
 scorecards belong under `reports/`. A target-only report and a report generated
@@ -96,7 +96,7 @@ Primary sources:
 The intended candidate is:
 
 ```text
-candidates/v65b-connector-graph-synthesis-400.json
+candidates/v67-segmented-permutation-transport-400.json
 ```
 
 First confirm that the implementation and candidate are in one frozen source
@@ -105,7 +105,7 @@ commit and that the worktree contains no uncommitted inference-path changes:
 ```bash
 git status --short
 git rev-parse HEAD
-git show HEAD:candidates/v65b-connector-graph-synthesis-400.json
+git show HEAD:candidates/v67-segmented-permutation-transport-400.json
 ```
 
 The permanent target, preservation, and full 25-game reports must all name that
@@ -122,10 +122,10 @@ Run the local quality and exact-candidate gates:
 .venv/bin/mypy reflector
 
 .venv/bin/reflector-kaggle smoke-test \
-  --config candidates/v65b-connector-graph-synthesis-400.json
+  --config candidates/v67-segmented-permutation-transport-400.json
 
 .venv/bin/reflector-kaggle export \
-  --config candidates/v65b-connector-graph-synthesis-400.json \
+  --config candidates/v67-segmented-permutation-transport-400.json \
   --output dist
 
 .venv/bin/kaggle_smoke_test
@@ -139,7 +139,7 @@ dist/reflector-kaggle-overlay.zip
 dist/reflector-kaggle-submission.ipynb
 ```
 
-The notebook embeds both the exact inference overlay and the serialized v65b
+The notebook embeds both the exact inference overlay and the serialized v67
 `MindConfig`; it is the artifact to upload. The ZIP is an auditable copy of the
 inference overlay and does not need to be attached as a separate Kaggle
 dataset.
@@ -148,7 +148,7 @@ Record the final artifact hashes only after the last export:
 
 ```bash
 sha256sum \
-  candidates/v65b-connector-graph-synthesis-400.json \
+  candidates/v67-segmented-permutation-transport-400.json \
   dist/reflector-kaggle-overlay.zip \
   dist/reflector-kaggle-submission.ipynb
 ```
@@ -303,14 +303,14 @@ private code sharing outside the registered team is prohibited.
 
 At the 2026-07-30 audit:
 
-- v65b is frozen at source commit
-  `ad68c9cd4c4915cbc220c25fba9998425ba5abd9`; its candidate fingerprint,
+- v67 is frozen at source/candidate commit
+  `509575e88cff60d33368006ca77b6eb30db67a40`; its candidate fingerprint,
   two target repeats, preservation gate, full 25-game report, exact export,
   both network-disabled smoke paths, and technical prize checks pass;
-- no Kaggle public or private score exists because no Kaggle submission has
-  been made;
-- the project virtual environment has no Kaggle CLI, and no Kaggle credential
-  file is configured locally;
+- frozen v65b submission `55113224` is pending and has returned no Kaggle
+  public or private score; v67 has not been submitted;
+- the project virtual environment has a working authenticated Kaggle CLI; a
+  live read-only check still reports submission `55113224` as `PENDING`;
 - rule acceptance, identity verification, eligibility confirmation, team
   selection, notebook upload, competition-source attachment, internet-off
   setting, committed rerun, and submission all require participant account

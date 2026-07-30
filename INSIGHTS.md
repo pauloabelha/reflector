@@ -11,24 +11,95 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v65b, frozen inference commit
-  `ad68c9cd4c4915cbc220c25fba9998425ba5abd9`.
-- Accepted candidate: `candidate-34708ca0a3fb4129`.
-- Local known-public-development score: **7.973607779187656 / 100**.
-- Progress: **25 / 183 levels across the 25 public-development games**.
-- Fully completed games: **1 / 25**.
-- Total actions: **9,724**.
-- Kaggle submissions: **0**.
-- Kaggle public score: **not submitted**.
+- Accepted agent: v67, frozen source/candidate commit
+  `509575e88cff60d33368006ca77b6eb30db67a40`.
+- Accepted candidate: `candidate-a1ccbdb17d674b78`.
+- Local known-public-development score: **9.310463971112286 / 100**.
+- Progress: **27 / 183 levels across the 25 public-development games**.
+- Fully completed games: **2 / 25**.
+- Total actions: **9,486**.
+- Kaggle submissions: **1 pending** (`55113224`, frozen v65b).
+- Kaggle public score: **pending; not yet returned**.
 - Kaggle private score: **unavailable**.
-- V65b is accepted. It preserves every non-`sb26` public-development result
-  from v64b exactly and completes `sb26` in 124 actions.
+- V67 is accepted. It preserves every non-`lp85` v66 outcome exactly and
+  completes `lp85` level 4 in 71 actions.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem
 is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
+
+## 2026-07-30 — v67 accepted segmented-permutation result
+
+V67 is frozen at
+`509575e88cff60d33368006ca77b6eb30db67a40`, candidate
+`candidate-a1ccbdb17d674b78`. It raises the local 25-game score from
+`9.287893493473371` to `9.310463971112286` and levels from 26 to 27, while
+preserving 11 games with progress, two complete games, and 9,486 total
+actions.
+
+The gain is localized to `lp85` level 4. V66 stalled after
+`[37,8,54,301]`; two frozen v67 repeats both produce
+`[37,8,54,71,230,0,0,0]`. A first segmented permutation stays provisional.
+A subsequent same-form action must be preregistered and its full
+conserved-token successor must match exactly before support reaches two.
+Three represented effects then define a bounded permutation system; the
+archived cognition stream shows exact BFS exploring 651 projected states
+before its 13-step plan finishes level 4 at action 71. Every non-`lp85`
+outcome is exact in both the eleven-game gate and full suite.
+
+This evidence is prospective, not structurally held out: current v67 does not
+require the confirming controller centroid to differ from the provisional
+one. The frozen candidate rationale's “distinct equivalent controller”
+wording overstates the runtime check. The exact current claim, archived trace,
+and required distinct-controller follow-up are recorded in
+`REAL_GAMES_REPORT.md`.
+
+The abstraction is a reusable middle layer between observed dynamics and
+search: controller forms exclude coordinates, colors, and action IDs; effect
+laws retain episode-grounded slot permutations; and visible marker relations
+define the projected goal. Ambiguity, prediction conflict, domain drift,
+unsupported effects, or an unrepresented controller all abstain. The result
+is still evidence on one known public game, not cross-game or hidden transfer.
+
+## 2026-07-30 — v66 historical lattice-effect result
+
+V66 is frozen at
+`b6f9ba4476d19c3bea99acce1aa3a75c332e9678`, candidate
+`candidate-c9825fedf72a2a32`. It raises the local 25-game score from
+`7.973607779187656` to `9.287893493473371`, levels from 25 to 26, complete
+games from one to two, and reduces total actions from 9,724 to 9,486.
+
+The gain is causally localized. Two frozen `ft09` repeats both completed 6/6
+levels at `[4,7,14,16,94,27]`, score `99.00375088921943`, and 162 actions.
+Every non-`ft09` outcome in both the eleven-game gate and full suite is exact
+relative to v65b.
+
+One reporting lesson remains: the immutable target scorecards preserve all 11
+lattice-planning decisions, but terminal level resets erase the earlier
+lattice-grounding counters from `exploration_metrics`. Future runs should
+aggregate mechanism counters across level boundaries. The reports also carry
+the old generic `reflector-symbolic-v26` compatibility label, so exact
+identity must continue to come from source commit, candidate fingerprint, and
+artifact hashes.
+
+The important abstraction is not “a solver for one board.” It is a three-step
+symbolic procedure:
+
+1. Ground one unambiguous regular lattice of repeated actuator forms and
+   reuse only an already-earned local relation vocabulary.
+2. Infer a binary relative click-effect law from at least two structurally
+   different rendered interventions, then quarantine the law on any
+   prospective mismatch.
+3. Convert visible relation clues into an exact bounded CSP and execute only
+   represented legal node actions.
+
+The runtime does not contain a game ID, coordinate, color, action ID,
+direction, or solution. Unknown clue symbols, mixed forms, ambiguous
+groundings, same-context-only evidence, inconsistent effects, and planned
+actions outside the represented frontier all abstain. This is still local
+development evidence rather than proof of unseen transfer.
 
 ## 2026-07-30 — v65b accepted result and public-strategy reassessment
 
@@ -56,6 +127,32 @@ a Kaggle public-leaderboard result, not a Kaggle private-leaderboard result,
 and not evidence of transfer to unseen games. The frozen source and exact
 preservation gate make it strong engineering evidence within that development
 surface only.
+
+### Progress across generations
+
+![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
+
+The trajectory is not a smooth story of accumulating score. Most accepted
+mechanisms add one level at a time, and several apparently promising
+experiments are correctly left as hollow, non-lineage points. V65b is the
+largest absolute accepted-score jump so far: exhaustive structural closure,
+uniqueness, and ambiguity abstention turned a three-level prefix into five
+additional levels and the first complete game. The milestone boxes record
+which general insight accompanied selected major gains; they do not claim that
+version succession alone establishes causality. The chart contains every row
+of the canonical score table in `REAL_GAMES_REPORT.md` and is generated by
+[`scripts/generate_progress_plot.py`](scripts/generate_progress_plot.py).
+
+The connector result reveals a broader architectural prior worth remembering:
+when perception yields a small, finite, fully grounded problem, complete
+enumeration with uniqueness is better than a plausible greedy repair.
+Generalized carefully, the recurring disposition is to enumerate the bounded
+operator or assignment space, require unique grounded identification where
+the evidence supports that claim, and then search the resulting exact model
+deterministically. V67's BFS returns a shortest goal path but does not prove
+the path is unique. Exact modeling, bounded search, and abstention—not unique
+execution plans in every mechanism—form the high-value K-line activation
+bundle; the literal connector assignments are not.
 
 ### Public-strategy landscape and the proposal problem
 
@@ -86,6 +183,71 @@ hypothesis elimination per action, use exact replay and counterexample-guided
 synthesis, price model complexity explicitly, and anti-unify validated
 programs into a held-out-tested symbolic library. V65b is a real gain, but it
 does not by itself show that this general proposal problem has been solved.
+
+## K-lines: associative priors for the proposal problem
+
+The requested “K-lines” idea is Marvin Minsky's original memory proposal, not
+merely k-nearest-neighbor search. A successful inference creates a K-line over
+the useful agencies that were active; a later partial cue recreates a partial
+problem-solving state. This maps unusually well onto Reflector.
+
+The implementation decision is:
+
+> content-addressed symbolic K-lines + exact sparse partial retrieval +
+> bounded structural verification.
+
+SHA-256 remains the identity and deduplication mechanism for an immutable
+prior. A deterministic inverted index over canonical, typed cue atoms answers
+which priors share part of the current symbolic state. IDF-weighted
+containment produces at most 64 coarse candidates; exact relational
+unification reranks at most 16; at most four registered generator dispositions
+may be activated. Operation caps, not wall-clock limits, preserve replay.
+
+Minsky's level-band principle supplies the central safety boundary. Recall
+mid-level dispositions—an object vocabulary, transition hypothesis family,
+informative experiment, or planner—not old pixels, literal actions, or the
+claim that the current problem is already solved. A recalled K-line may reorder
+probes; a structurally grounded one may prioritize hypothesis generation; only
+a current-game-confirmed operator may enter planning. Similarity itself never
+selects an action.
+
+This is the missing retrieval layer for the existing content-addressed scheme
+library. Definitions and evidence remain separately rooted; cue atoms are
+translation-, recoloring-, object-order-, and action-role-invariant; canonical
+tokens are verified after hash lookup; hidden evaluation cannot mutate the
+frozen ancestral snapshot. The complete data contract, retrieval bounds,
+tests, integration sequence, and primary sources are in
+[KLINE_SYMBOLIC_MEMORY.md](references/KLINE_SYMBOLIC_MEMORY.md).
+
+The first exact-off substrate now exists in
+`reflector/core/kline_memory.py`. It content-addresses immutable definitions,
+returns explicit registered generator dispositions from partial typed cues,
+keeps evidence identities separate, verifies snapshot roots, enforces hard
+posting/candidate/result caps, and never returns actions or code. Importantly,
+even a complete cue overlap remains only **recalled** unless an explicit
+current-state structural matcher grounds it. This implementation is isolated
+from `MindConfig`, the explorer, policy, and Kaggle packaging; it therefore
+changes neither v67 behavior nor its 9.310463971112286 score.
+
+## `cd82`: colored-stencil composition, not a pose check
+
+The public human trace resolves the main representation error. `cd82` contains
+a reference grid, a construction grid, a selected palette attribute, and an
+outlined template group that moves over eight relative poses. Applying the
+dominant component overwrites a normalized cardinal or diagonal half-plane;
+clicking a separate smaller outlined component overwrites its own radially
+projected mask. The previously puzzling 12-cell effects are secondary
+components, not clipping exceptions.
+
+This suggests the compact language `SelectPalette`, `NavigatePose`,
+`ApplyPrimaryTemplate`, and `ApplySecondaryTemplate`. Planning must use exact
+last-write-wins composition rather than greedy pixel descent because useful
+strokes may temporarily increase disagreement. The smallest safe experiment
+learns primary masks from recolored prospective confirmations and targets only
+levels 1–2. Secondary components and the still-ambiguous diagonal-boundary
+terminal condition remain later gated stages. The complete grounding,
+induction, planning, falsifier, and test design is in
+[CD82_COLORED_STENCIL_DIAGNOSIS.md](references/CD82_COLORED_STENCIL_DIAGNOSIS.md).
 
 ## Answer to the external research question
 
@@ -781,19 +943,27 @@ advisors. It is a **causal graph explorer that learns executable abstractions**.
 
 ## Immediate experimental priorities
 
-The external graph baseline, nuisance-reduced component frontier, and first
-paired-object transfer experiments above have now been run; v64b and v65b
-incorporate their accepted consequences. The active priorities are:
+The external graph baseline, nuisance-reduced component frontier, paired-object
+experiments, connector synthesis, and lattice-effect experiment have now been
+run; v64b through v67 incorporate their accepted consequences. The active
+priorities are:
 
-1. **Diagnose `ft09` level 6 as a lattice constraint system.** Propose a
-   coordinate-free constraint language, require exact replay of the first five
-   levels, and reject any rule that depends on a fixed panel, color, or route.
-2. **Diagnose `lp85` level 4 as shared-track permutation transport.** Extend
-   only if a bounded operator is grounded from conserved motions and predicts
-   a held-out transition before controlling a plan.
-3. **Test articulated kinematics and palette/stamp algebra as generic operator
-   families.** Use `s5i5` and `cd82` only as development falsifiers; require
-   translation, reflection, recoloring, and action-role permutation controls.
+1. **Extend or falsify v67 on `lp85` level 5.** Level 4 now passes through
+   prospectively confirmed segmented permutations and bounded exact search.
+   Diagnose why 230 remaining actions make no further progress before adding
+   another transport family.
+2. **Integrate K-line recall exact-off.** The standalone content-addressed
+   index is built and adversarially tested. Next bind its immutable index root
+   into `MindConfig`, compile cues only from existing symbolic state, and
+   measure held-out retrieval before it may reorder generators.
+3. **Test colored-stencil composition on `cd82`.** Public replay evidence
+   supports a unique reference, palette, construction canvas, outlined
+   template group, eight-pose perimeter graph, primary half-plane overwrites,
+   and separate secondary outlined components. Start with recolored
+   prospective confirmation of primary masks and require 2/6 within 80
+   actions; do not add secondary components or the narrow diagonal-boundary
+   goal fallback before that gate. See
+   `references/CD82_COLORED_STENCIL_DIAGNOSIS.md`.
 4. **Maintain competing causal hypotheses and choose discriminating probes.**
    Add an explicit version-space/CEGIS experiment on one target before
    widening the shared policy. Count eliminated hypotheses per action and
@@ -805,11 +975,10 @@ incorporate their accepted consequences. The active priorities are:
 6. **Use human replays only as development diagnostics, not policies.** The
    public human dataset can reveal what information humans acquire early and
    which actions are wasteful. Do not encode replay routes or public game IDs.
-7. **Make a real Kaggle submission.** Frozen v65b is the first technically
-   ready checkpoint worth using for hidden-transfer calibration. The user must
-   complete the participant account, identity, team, rule, publication, and
-   notebook-commit actions described in
-   `references/KAGGLE_ARC3_SUBMISSION.md`; until Kaggle returns a result,
+7. **Monitor v65b and submit v67 deliberately.** Submission `55113224` remains
+   a pending v65b hidden-transfer calibration; v67 is technically ready but
+   not submitted. Preserve the exact candidate/notebook mapping described in
+   `references/KAGGLE_ARC3_SUBMISSION.md`. Until Kaggle returns a result,
    public and private leaderboard scores remain absent.
 
 ## What the runtime-LLM probe actually established
