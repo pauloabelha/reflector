@@ -5,7 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from reflector.core.exploration import ActionToken, EpistemicExplorer
+from reflector.core.exploration import (
+    ActionRole,
+    ActionToken,
+    EpistemicExplorer,
+)
 from reflector.core.mind import MindConfig
 from reflector.core.perception import SceneTracker
 from reflector.core.symbolic import Event, Observation
@@ -148,6 +152,29 @@ def test_ungrounded_parameterized_action_abstains() -> None:
     assert explorer.repeated_form_event_diagnostic == (
         "parameterized-action-without-structural-role"
     )
+
+
+def test_new_affordance_varies_the_structural_target() -> None:
+    explorer = EpistemicExplorer(
+        repeated_form_event_mode="propagate-affordance"
+    )
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=_frame(2),
+    )
+    scene, _events = SceneTracker().perceive(observation)
+    role = ActionRole(6, color=8, area=1, shape=((0, 0),))
+    trigger = ActionToken(6, (("x", 2), ("y", 3)))
+    explorer.repeated_form_affordance_role = role
+    explorer.repeated_form_affordance_trigger_token = trigger
+
+    choice = explorer.select(observation, scene, (6,))
+
+    assert choice.token != trigger
+    assert explorer._role(choice.token, scene) == role
+    assert "propagate-repeated-form-affordance" in choice.reason
+    assert explorer.repeated_form_affordance_variations == 1
 
 
 def test_phase_event_changes_belief_key_without_replaying() -> None:

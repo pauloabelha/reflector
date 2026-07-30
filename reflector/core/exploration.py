@@ -318,10 +318,13 @@ class EpistemicExplorer:
     ] = field(default_factory=dict)
     repeated_form_confirmation_token: ActionToken | None = None
     repeated_form_confirmation_observation_token: ActionToken | None = None
+    repeated_form_affordance_role: ActionRole | None = None
+    repeated_form_affordance_trigger_token: ActionToken | None = None
     repeated_form_event_predictions: int = 0
     repeated_form_event_confirmations: int = 0
     repeated_form_event_detections: int = 0
     repeated_form_event_replays: int = 0
+    repeated_form_affordance_variations: int = 0
     repeated_form_event_phase: int = 0
     repeated_form_event_diagnostic: str = "not-attempted"
     level_interventions: int = 0
@@ -999,10 +1002,13 @@ class EpistemicExplorer:
         self.repeated_form_effect_history.clear()
         self.repeated_form_confirmation_token = None
         self.repeated_form_confirmation_observation_token = None
+        self.repeated_form_affordance_role = None
+        self.repeated_form_affordance_trigger_token = None
         self.repeated_form_event_predictions = 0
         self.repeated_form_event_confirmations = 0
         self.repeated_form_event_detections = 0
         self.repeated_form_event_replays = 0
+        self.repeated_form_affordance_variations = 0
         self.repeated_form_event_phase = 0
         self.repeated_form_event_diagnostic = "not-attempted"
 
@@ -1121,7 +1127,10 @@ class EpistemicExplorer:
                                 == "confirm-discontinuity"
                                 or (
                                     self.repeated_form_event_mode
-                                    == "confirm-affordance"
+                                    in {
+                                        "confirm-affordance",
+                                        "propagate-affordance",
+                                    }
                                     and expected_zero
                                 )
                             )
@@ -1130,6 +1139,15 @@ class EpistemicExplorer:
         if detected and self.repeated_form_event_mode == "phase-segment":
             self.repeated_form_event_phase += 1
             self.repeated_form_event_diagnostic = "phase-segmented"
+        elif (
+            actionable
+            and self.repeated_form_event_mode == "propagate-affordance"
+        ):
+            self.repeated_form_affordance_role = represented_role
+            self.repeated_form_affordance_trigger_token = token
+            self.repeated_form_event_diagnostic = (
+                "affordance-variation-preregistered"
+            )
         elif actionable and not confirmation_observation:
             self.repeated_form_confirmation_token = token
             self.repeated_form_event_diagnostic = (
@@ -4228,6 +4246,39 @@ class EpistemicExplorer:
         self.selection_frame = observation.frame
         self.last_scheme_components = ()
         self.last_relational_binding = {}
+
+        if self.repeated_form_affordance_role is not None:
+            role = self.repeated_form_affordance_role
+            trigger = self.repeated_form_affordance_trigger_token
+            self.repeated_form_affordance_role = None
+            self.repeated_form_affordance_trigger_token = None
+            variations = tuple(
+                token
+                for token in tokens
+                if token != trigger
+                and self.attempts[(state, token)] == 0
+                and self._role(token, scene) == role
+            )
+            if variations:
+                affordance_variation = min(variations)
+                self.repeated_form_affordance_variations += 1
+                self.repeated_form_event_diagnostic = (
+                    "executing-affordance-variation"
+                )
+                self.last_scheme_components = (
+                    "scheme:action-effect-context-change",
+                    "operator:parameterize-new-affordance",
+                    "state:repeated-form-effect-model",
+                )
+                return self._issue(
+                    state,
+                    affordance_variation,
+                    "epistemic-frontier:propagate-repeated-form-affordance",
+                    scene,
+                )
+            self.repeated_form_event_diagnostic = (
+                "no-untried-equivalent-affordance-target"
+            )
 
         if self.repeated_form_confirmation_token is not None:
             pending_confirmation = self.repeated_form_confirmation_token
@@ -7545,6 +7596,9 @@ class EpistemicExplorer:
                 self.repeated_form_event_detections
             ),
             "repeated_form_event_replays": self.repeated_form_event_replays,
+            "repeated_form_affordance_variations": (
+                self.repeated_form_affordance_variations
+            ),
             "repeated_form_event_phase": self.repeated_form_event_phase,
             "repeated_form_event_diagnostic": (
                 self.repeated_form_event_diagnostic

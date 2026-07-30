@@ -247,10 +247,12 @@ class MindConfig:
             "confirm-affordance",
             "confirm-discontinuity",
             "phase-segment",
+            "propagate-affordance",
         }:
             raise ValueError(
                 "repeated_form_event_mode must be off, confirm-affordance, "
-                "confirm-discontinuity, or phase-segment"
+                "confirm-discontinuity, phase-segment, or "
+                "propagate-affordance"
             )
         if (
             self.enable_graph_cycle_transport
