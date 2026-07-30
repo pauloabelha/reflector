@@ -14,6 +14,10 @@ from collections import Counter, deque
 from dataclasses import dataclass
 from typing import Any, Iterable
 
+from ..core.mind import MindConfig
+from ..core.symbolic import Decision, Observation
+from ..runtime.policy import SymbolicPolicy
+
 
 @dataclass(frozen=True, order=True, slots=True)
 class HybridAction:
@@ -78,6 +82,9 @@ class GemmaHybridBrain:
         self.requests = 0
         self.valid_responses = 0
         self.fallbacks = 0
+        self.consultations = 0
+        self.symbolic_accepts = 0
+        self.symbolic_overrides = 0
         self.action_counts: Counter[int] = Counter()
         self.last_event: dict[str, Any] = {}
 
@@ -176,9 +183,153 @@ class GemmaHybridBrain:
             "requests": self.requests,
             "valid_responses": self.valid_responses,
             "fallbacks": self.fallbacks,
+            "consultations": self.consultations,
+            "symbolic_accepts": self.symbolic_accepts,
+            "symbolic_overrides": self.symbolic_overrides,
             "action_counts": dict(sorted(self.action_counts.items())),
             "retained_history": len(self.history),
         }
+
+    def arbitrate_symbolic(
+        self,
+        *,
+        frame: tuple[tuple[int, ...], ...],
+        available_actions: Iterable[int],
+        state: str,
+        levels_completed: int,
+        proposal: Decision,
+        symbolic_state: dict[str, Any],
+        consult: bool,
+    ) -> Decision:
+        """Conservatively arbitrate a symbolic proposal at evidenced impasses."""
+
+        digest = self._digest(frame)
+        self._settle_pending(digest, state, levels_completed)
+        candidates = self._candidates(frame, available_actions)
+        proposal_index = next(
+            (
+                index
+                for index, candidate in enumerate(candidates)
+                if candidate.action_id == proposal.action_id
+                and candidate.data == proposal.data_dict()
+            ),
+            None,
+        )
+        if proposal_index is None:
+            raise ValueError("symbolic proposal is not a grounded legal candidate")
+
+        selected = candidates[proposal_index]
+        raw_response = ""
+        hypothesis = "symbolic proposal retained; no evidenced impasse"
+        error: str | None = None
+        if consult:
+            payload = {
+                "objective": (
+                    "Resolve a concrete control impasse while preserving the "
+                    "symbolic agent's learned causal model."
+                ),
+                "constraints": [
+                    "Choose exactly one grounded legal candidate index.",
+                    "The symbolic proposal is the default; override it only when "
+                    "the supplied failure evidence supports a different test.",
+                    "Action meanings come only from learned_effects.",
+                    "State a falsifiable expected observation.",
+                    "Do not invent coordinates, objects, rewards, or action semantics.",
+                ],
+                "state": state,
+                "levels_completed": levels_completed,
+                "scene": self._summary(frame),
+                "change_since_previous_decision": self._difference(
+                    self.previous_frame, frame
+                ),
+                "symbolic_proposal": {
+                    "candidate": proposal_index,
+                    "action_id": proposal.action_id,
+                    "reason": proposal.reason,
+                },
+                "symbolic_state": symbolic_state,
+                "recent_actual_outcomes": [
+                    item.compact() for item in self.history[-self.max_history :]
+                ],
+                "candidates": [
+                    {
+                        "index": index,
+                        "label": candidate.label,
+                        "is_symbolic_proposal": index == proposal_index,
+                    }
+                    for index, candidate in enumerate(candidates)
+                ],
+                "response_schema": {
+                    "candidate": "integer candidate index",
+                    "hypothesis": (
+                        "brief causal claim plus the next observation that "
+                        "would falsify it"
+                    ),
+                },
+            }
+            prompt = json.dumps(
+                payload, sort_keys=True, separators=(",", ":")
+            )
+            try:
+                raw_response = self._query(prompt)
+                choice, hypothesis = self.parse_response(raw_response)
+                if 0 <= choice < len(candidates):
+                    selected = candidates[choice]
+                    self.valid_responses += 1
+                else:
+                    error = f"candidate-out-of-range:{choice}"
+            except (OSError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
+                error = f"{type(exc).__name__}:{exc}"
+            self.consultations += 1
+            self.requests += 1
+            if error is not None:
+                selected = candidates[proposal_index]
+                hypothesis = f"symbolic fallback after {error}"
+                self.fallbacks += 1
+
+        if selected.action_id == proposal.action_id and selected.data == (
+            proposal.data_dict()
+        ):
+            if consult:
+                self.symbolic_accepts += 1
+            decision = proposal
+        else:
+            self.symbolic_overrides += 1
+            decision = Decision(
+                selected.action_id,
+                data=tuple(sorted(selected.data.items())),
+                reason=f"gemma-impasse-arbitration:{hypothesis[:240]}",
+            )
+        self.action_counts[decision.action_id] += 1
+        self.pending = _ActionOutcome(
+            action=HybridAction(
+                decision.action_id,
+                x=decision.data_dict().get("x", -1),
+                y=decision.data_dict().get("y", -1),
+                label=(
+                    selected.label
+                    if decision is not proposal
+                    else candidates[proposal_index].label
+                ),
+            ),
+            before_digest=digest,
+            levels_before=levels_completed,
+            hypothesis=hypothesis,
+        )
+        self.previous_frame = frame
+        self.last_event = {
+            "format": "reflector-gemma-symbolic-arbitration-v1",
+            "consulted": consult,
+            "model": self.model,
+            "symbolic_proposal": proposal.to_dict(),
+            "selected": decision.to_dict(),
+            "hypothesis": hypothesis[:500],
+            "raw_response": raw_response[:1000],
+            "fallback_error": error,
+            "symbolic_state": symbolic_state,
+        }
+        return decision
+
 
     def _settle_pending(
         self, digest: str, state: str, levels_completed: int
@@ -413,3 +564,79 @@ class GemmaHybridBrain:
     def _digest(frame: tuple[tuple[int, ...], ...]) -> str:
         raw = bytes(value & 0xFF for row in frame for value in row)
         return hashlib.sha256(raw).hexdigest()[:16]
+
+
+class GemmaAugmentedSymbolicPolicy(SymbolicPolicy):
+    """Reflector policy with Gemma gated behind explicit impasse evidence."""
+
+    def __init__(
+        self,
+        config: MindConfig,
+        *,
+        endpoint: str,
+        model: str,
+    ) -> None:
+        super().__init__(config)
+        self.gemma = GemmaHybridBrain(endpoint, model=model)
+
+    def _record(self, decision: Decision) -> Decision:
+        observation = self._last_observation
+        if observation is None or decision.action_id == self.RESET:
+            return super()._record(decision)
+        explorer = self.explorer
+        failure_count = sum(explorer.trajectory_gate_failures.values())
+        consult = (
+            failure_count >= 2
+            or explorer.trajectory_disabled
+            or explorer.trajectory_diagnostic
+            in {"trajectory-plan-cap-reached", "no-causal-plan"}
+        )
+        symbolic_state = {
+            "trajectory_stage": explorer.trajectory_stage,
+            "trajectory_diagnostic": explorer.trajectory_diagnostic,
+            "current_anchor": explorer.trajectory_current_anchor,
+            "target_anchor": explorer.trajectory_target_anchor,
+            "learned_effects": {
+                str(action): list(effect)
+                for action, effect in sorted(explorer.trajectory_effects.items())
+            },
+            "effect_evidence": dict(
+                sorted(explorer.trajectory_effect_evidence.items())
+            ),
+            "gate_failure_count": failure_count,
+            "gate_failures": [
+                {
+                    "anchor": list(anchor),
+                    "action_id": action,
+                    "count": count,
+                }
+                for (anchor, action), count in sorted(
+                    explorer.trajectory_gate_failures.items()
+                )
+            ][:16],
+            "gate_refresh_usage": dict(
+                sorted(explorer.trajectory_gate_refresh_actions.items())
+            ),
+            "consecutive_without_progress": (
+                self.mind.reinforcement.consecutive_without_progress
+            ),
+        }
+        actual = self.gemma.arbitrate_symbolic(
+            frame=observation.frame,
+            available_actions=observation.available_actions,
+            state=observation.state,
+            levels_completed=observation.levels_completed,
+            proposal=decision,
+            symbolic_state=symbolic_state,
+            consult=consult,
+        )
+        return super()._record(actual)
+
+    def cognitive_event(
+        self,
+        observation: Observation,
+        decision: Decision,
+    ) -> dict[str, Any]:
+        event = super().cognitive_event(observation, decision)
+        event["gemma_arbitration"] = self.gemma.last_event
+        return event

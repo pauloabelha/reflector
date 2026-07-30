@@ -1,0 +1,314 @@
+{
+  "kind": "process-isolated-official-evaluation",
+  "scorecard": {
+    "source_url": null,
+    "tags": [
+      "agent",
+      "reflector",
+      "process-isolated"
+    ],
+    "opaque": null,
+    "card_id": null,
+    "api_key": null,
+    "score": 3.571428571428571,
+    "environments": [
+      {
+        "id": "g50t-5849a774",
+        "runs": [
+          {
+            "id": null,
+            "guid": "8dac5a42-ef34-447f-bb7f-715e93384c0c",
+            "score": 3.571428571428571,
+            "levels_completed": 1,
+            "actions": 400,
+            "resets": 2,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              115.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              29,
+              371,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              78,
+              175,
+              179,
+              230,
+              96,
+              54,
+              67
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 3.571428571428571,
+        "actions": 400,
+        "levels_completed": 1,
+        "completed": false,
+        "level_count": 7,
+        "resets": 2
+      }
+    ],
+    "tags_scores": [],
+    "competition_mode": null,
+    "total_environments_completed": 0,
+    "total_environments": 1,
+    "total_levels_completed": 1,
+    "total_levels": 7,
+    "total_actions": 400
+  },
+  "agents": [
+    {
+      "game_id": "g50t",
+      "actions": 400,
+      "seconds": 19.99,
+      "levels_completed": 1,
+      "action_counts": {
+        "0": 2,
+        "1": 80,
+        "2": 80,
+        "3": 80,
+        "4": 80,
+        "5": 78
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 2
+        },
+        {
+          "action_id": 1,
+          "data": {},
+          "count": 80
+        },
+        {
+          "action_id": 2,
+          "data": {},
+          "count": 80
+        },
+        {
+          "action_id": 3,
+          "data": {},
+          "count": 80
+        },
+        {
+          "action_id": 4,
+          "data": {},
+          "count": 80
+        },
+        {
+          "action_id": 5,
+          "data": {},
+          "count": 78
+        }
+      ],
+      "reason_counts": {
+        "epistemic-frontier": 398,
+        "reset-required": 2
+      },
+      "reason_detail_counts": {
+        "epistemic-frontier:committed-trajectory-planning": 90,
+        "epistemic-frontier:reuse-productive-action-role": 24,
+        "epistemic-frontier:shape-goal-translation": 18,
+        "epistemic-frontier:untried-current-state": 266,
+        "reset-required": 2
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": true,
+        "enable_hierarchical_action_fairness": false,
+        "enable_successful_role_replay": false,
+        "enable_multicolor_click_objects": false,
+        "enable_click_object_accommodation": true,
+        "enable_productive_role_reuse": true,
+        "enable_local_relation_solver": true,
+        "enable_constraint_first_role_replay": false,
+        "enable_global_relation_constraint_solver": true,
+        "enable_preregistered_structural_credit": false,
+        "enable_parameterized_scheme_variation": false,
+        "enable_starter_schemas": false,
+        "enable_relational_scheme_binding": false,
+        "enable_visual_primitives": false,
+        "enable_visual_primitive_actions": false,
+        "enable_temporal_primitives": false,
+        "enable_cyclic_sequence_alignment": true,
+        "enable_graph_cycle_transport": true,
+        "enable_parameterized_select_apply_commit": true,
+        "enable_multiline_target_binding": true,
+        "enable_spatial_order_variation": false,
+        "enable_nested_target_traversal": true,
+        "enable_nested_source_traversal": false,
+        "enable_enclosure_target_traversal": true,
+        "enable_connector_relocation": false,
+        "enable_shape_goal_translation": true,
+        "enable_relational_phase_translation": true,
+        "enable_committed_trajectory_planning": true,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0
+      },
+      "agent_version": "reflector-symbolic-v26",
+      "exploration_metrics": {
+        "states": 216,
+        "edges": 238,
+        "attempts": 239,
+        "global_interventions": 5,
+        "action_families": 5,
+        "successful_program_length": 0,
+        "program_cursor": 0,
+        "perceptual_accommodations": 2,
+        "productive_roles": 5,
+        "productive_reuse_level_trials": 8,
+        "learned_cyclic_alignments": 0,
+        "cyclic_transport_evidence": 0,
+        "cyclic_alignment_level_trials": 0,
+        "cyclic_last_plan_length": 0,
+        "grounded_cyclic_transports": 0,
+        "select_apply_program_length": 0,
+        "select_apply_cursor": 0,
+        "select_apply_level_trials": 0,
+        "select_apply_diagnostic": "complex-action-unavailable",
+        "shape_translation_effects": 3,
+        "shape_translation_effect_evidence": 31,
+        "shape_translation_probes": 4,
+        "shape_translation_invalid_actions": 1,
+        "shape_goal_grounded": 1,
+        "shape_translation_level_trials": 12,
+        "shape_translation_application_trials": 8,
+        "shape_translation_occluded_steps": 0,
+        "shape_translation_phases": 1,
+        "shape_translation_phase_transitions": 0,
+        "shape_translation_phase_blocked": 1,
+        "shape_translation_diagnostic": "translation-grounded",
+        "trajectory_stage": "navigate",
+        "trajectory_current_anchor": [
+          8,
+          14
+        ],
+        "trajectory_latent_anchor": [
+          8,
+          14
+        ],
+        "trajectory_target_anchor": [
+          26,
+          20
+        ],
+        "trajectory_effects": 4,
+        "trajectory_effect_evidence": 14,
+        "trajectory_probes": 3,
+        "trajectory_endpoint_macros": 1,
+        "trajectory_contextual_blocks": 0,
+        "trajectory_topology_nodes": 41,
+        "trajectory_uncertain_nodes": 9,
+        "trajectory_topology_support_grounded": 1,
+        "trajectory_committed_macro_length": 3,
+        "trajectory_replay_cursor": 3,
+        "trajectory_replay_started": 1,
+        "trajectory_replay_validations": 3,
+        "trajectory_causal_states": 17,
+        "trajectory_causal_edges": 18,
+        "trajectory_boundary_nuisance_evidenced": 1,
+        "trajectory_plan_steps": 20,
+        "trajectory_settle_steps": 0,
+        "trajectory_level_trials": 24,
+        "trajectory_disabled": 1,
+        "trajectory_diagnostic": "trajectory-plan-cap-reached",
+        "level_interventions": 109,
+        "learned_local_relations": 0,
+        "successful_schemes": 0,
+        "parameterized_schemes": 0,
+        "parameterized_scheme_trials": 0,
+        "starter_schemas": 0,
+        "starter_schema_ids": [],
+        "successful_relational_schemes": 0,
+        "relational_schemes": 0,
+        "relational_scheme_trials": 0,
+        "responsive_relational_schemes": 0,
+        "progressing_relational_schemes": 0,
+        "falsified_relational_schemes": 0,
+        "relational_level_trials": 0,
+        "last_relational_binding": {},
+        "frontier_states": 213
+      },
+      "trace_metrics": {
+        "actions": 400,
+        "action_efficiency": 0.0025,
+        "resets": 2,
+        "transitions": 399,
+        "levels_advanced": 1,
+        "failed_experiments": 26,
+        "prediction_accuracy": 0.5485330389465728,
+        "schema_count": 399,
+        "concept_count": 16,
+        "retired_concept_count": 116,
+        "concept_lifecycle_events": 266,
+        "schema_reuse": 0,
+        "concept_reuse": 866,
+        "duplicate_schemas": 98,
+        "contradictory_schemas": 7,
+        "dead_schemas": 0,
+        "orphan_concepts": 0,
+        "schema_family_count": 353,
+        "concept_type_count": 34,
+        "language_operator_count": 0,
+        "language_proposal_count": 0,
+        "language_mechanism_revision_count": 1,
+        "procedure_count": 0,
+        "causal_hypotheses": 54,
+        "temporal_hypotheses": 69,
+        "mean_schema_reliability": 0.6637426900584795,
+        "schema_description_length": 507419,
+        "abstraction_description_savings": 1520259,
+        "planner_expansions": 0,
+        "recoverable_redundancy": 3568,
+        "counterfactual_replay_savings": 160293,
+        "deterministic_replay_rate": 1.0
+      }
+    }
+  ],
+  "source_commit": "89db9836eb007611a3b98cf5e23992382103aa07",
+  "execution": {
+    "isolation": "one fresh Python process per game",
+    "parallel": true,
+    "max_workers": 1,
+    "games": [
+      "g50t"
+    ],
+    "child_report_sha256": {
+      "g50t": "c7411a73454fc2eb2e063e875ec9fdbae052179c033a536ccc27bde507ba0f69"
+    },
+    "claim_boundary": "Local official public-development evidence; not a Kaggle leaderboard score."
+  }
+}

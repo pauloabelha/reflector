@@ -29,6 +29,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Process-isolated official local suite | v40 accepted | **4.2992976365 / 100** | 0 games beaten; 16/183 levels | 25/25 coverage |
 | Research symbolic control, same local suite and budget | object/frame graph frontier v1 | **0.0003283918 / 100** | 0 games beaten; 1/183 levels (`vc33`) | 25/25 coverage; not a candidate |
 | Target-only research hybrid | local Gemma 4 E2B + symbolic scene summary | 0.0000000000 for one game | 0/7 `g50t` levels in 40 actions | not symbolic; not Kaggle-compatible; rejected |
+| Target-only integrated hybrid | v43f symbolic core + impasse-gated local Gemma 4 E2B | 3.5714285714 for one game | 1/7 `g50t` levels; `[27, 53]` in 80 actions, exactly matching symbolic v43f | not symbolic; no gain; rejected |
 | Target-only symbolic offspring | v41h committed trajectory | 0.0000000000 for one game | 0/7 `g50t` levels in 400 actions | falsified; not promoted |
 | Source-matched process-isolated suite | v40 exact-off / v39 policy | 4.0770754143 / 100 | 0 games beaten; 15/183 levels | exact parent reproduction |
 | Process-isolated seven-game gate | v40 accepted | 15.3546344162 / 100 | 16 levels in the seven affected games | every v39 action count preserved |
@@ -115,6 +116,25 @@ is useful negative evidence: fluent verbal hypotheses did not provide grounded
 causal credit. It is not symbolic, depends on an external model process, and
 is not a Kaggle-compatible candidate.
 
+The follow-up hybrid did not replace Reflector's controller. It retained the
+symbolic perception, causal ledger, schemes, topology, and planner, and opened
+a Gemma arbitration gate only after at least two evidenced trajectory-gate
+failures or planner disablement. The selected hybrid action was installed as
+the actual symbolic `Decision` before hypothesis priming and trace recording,
+so subsequent structural credit was assigned to the action really taken.
+
+On the same 80-action `g50t` target used for v43f, this integrated hybrid
+completed level 1 in 27 actions and then spent 53 actions on level 2:
+**1/7 levels**, exactly the v43f symbolic result. Gemma received 27
+consultations, accepted the symbolic proposal 22 times, overrode it five
+times, and returned six invalid responses that safely fell back. Its typed
+action grounding was still unreliable: one response hypothesized `ACTION4`
+while candidate index 4 denoted and selected action 5. Continuous arbitration
+also cost roughly 5.5 minutes of CPU inference for no task gain. The evidence
+supports a narrower future role—one bounded typed model-mutation proposal,
+followed by symbolic execution and falsification—not an LLM vote on every
+action after an impasse.
+
 The symbolic v41 branch then learned four translation effects, a four-step
 committed macro, autonomous replay, and contextual collision edges from
 rendered interaction alone. Successive trace-driven repairs added bounded A*
@@ -138,6 +158,7 @@ knowledge without preserving a failed control scheme.
 Raw evidence:
 
 - [Gemma hybrid probe](reports/experimental-gemma4-hybrid-g50t-40.json)
+- [Gemma + symbolic impasse arbitration](reports/experimental-gemma-symbolic-g50t-r1-80.json)
 - [v41 bounded-A* run](reports/experimental-v41c-g50t-astar-r1-400.json)
 - [v41 asynchronous-replay run](reports/experimental-v41d-g50t-asynchronous-replay-r1-400.json)
 - [v41 cross-life accommodation run](reports/experimental-v41e-g50t-cross-life-accommodation-r1-400.json)

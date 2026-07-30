@@ -1,3 +1,5 @@
+from collections import Counter
+
 from reflector.exploration import (
     STARTER_SCHEMA_SET,
     ActionRole,
@@ -1001,6 +1003,161 @@ def test_committed_trajectory_does_not_refresh_without_gate_evidence() -> None:
     )
 
     assert action is None
+
+
+def test_committed_trajectory_refresh_varies_least_used_action_role() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_effects = {1: (0, 1), 4: (1, 0)}
+    explorer.trajectory_effect_evidence.update({1: 2, 4: 2})
+    explorer.trajectory_contextual_blocks[((2, 2), 9)] = 1
+    explorer.trajectory_gate_refresh_actions[1] = 2
+
+    action = explorer._trajectory_gate_refresh_action(
+        (0, 0),
+        represented=frozenset({1, 4}),
+        allowed_nodes=frozenset({(0, 0), (0, 1), (1, 0)}),
+        uncertain_nodes=frozenset({(2, 2)}),
+    )
+
+    assert action == 4
+
+    explorer.trajectory_effects = {7: (0, 1), 2: (1, 0)}
+    explorer.trajectory_effect_evidence = Counter({7: 2, 2: 2})
+    explorer.trajectory_gate_refresh_actions = Counter({7: 2})
+    action = explorer._trajectory_gate_refresh_action(
+        (0, 0),
+        represented=frozenset({2, 7}),
+        allowed_nodes=frozenset({(0, 0), (0, 1), (1, 0)}),
+        uncertain_nodes=frozenset({(2, 2)}),
+    )
+
+    assert action == 2
+
+
+def test_committed_trajectory_retains_full_enacted_inverse_order() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    enacted = ((0, 1), (0, 0), (1, 0), (0, 0), (0, -1))
+
+    for anchor in enacted:
+        assert explorer._record_trajectory_enacted(anchor)
+
+    assert tuple(explorer.trajectory_enacted_path) == enacted
+    assert explorer.trajectory_enacted_path.count((0, 0)) == 2
+
+    reflected = EpistemicExplorer(committed_trajectory_planning=True)
+    for x, y in enacted:
+        assert reflected._record_trajectory_enacted((-x, y))
+
+    assert tuple(reflected.trajectory_enacted_path) == tuple(
+        (-x, y) for x, y in enacted
+    )
+
+
+def test_committed_trajectory_enacted_path_is_bounded() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+
+    for index in range(32):
+        assert explorer._record_trajectory_enacted((index, 0))
+
+    assert not explorer._record_trajectory_enacted((32, 0))
+    assert explorer.trajectory_disabled
+    assert explorer.trajectory_diagnostic == "enacted-trajectory-cap-reached"
+
+
+def test_committed_trajectory_plan_cap_is_paid_by_bounded_enacted_path() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+
+    assert explorer._trajectory_plan_cap() == 20
+
+    explorer.trajectory_committed_macro = tuple((index, 0) for index in range(7))
+    assert explorer._trajectory_plan_cap() == 27
+
+    explorer.trajectory_committed_macro = tuple(
+        (index, 0) for index in range(32)
+    )
+    assert explorer._trajectory_plan_cap() == 32
+
+
+def test_committed_trajectory_gate_cooldown_requires_successful_ticks() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    first = ((0, 0), 1)
+    repeated = ((2, 0), 4)
+    explorer.trajectory_contextual_blocks.update({first: 1, repeated: 3})
+    explorer.trajectory_gate_cooldowns.update({first: 1, repeated: 3})
+
+    explorer._advance_trajectory_gate_cooldowns()
+
+    assert first not in explorer.trajectory_contextual_blocks
+    assert first not in explorer.trajectory_gate_cooldowns
+    assert explorer.trajectory_contextual_blocks[repeated] == 3
+    assert explorer.trajectory_gate_cooldowns[repeated] == 2
+
+    explorer._advance_trajectory_gate_cooldowns()
+    explorer._advance_trajectory_gate_cooldowns()
+
+    assert repeated not in explorer.trajectory_contextual_blocks
+    assert repeated not in explorer.trajectory_gate_cooldowns
+
+
+def test_committed_trajectory_first_replay_axis_is_action_equivariant() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_origin = (4, 4)
+    explorer.trajectory_committed_macro = ((4, 7), (4, 4), (7, 4))
+    explorer.trajectory_effects = {
+        1: (0, 3),
+        2: (3, 0),
+        3: (0, -3),
+        4: (-3, 0),
+    }
+
+    assert explorer._trajectory_replay_parallel_actions() == frozenset(
+        {1, 3}
+    )
+
+    explorer.trajectory_effects = {
+        4: (0, 3),
+        1: (3, 0),
+        2: (0, -3),
+        3: (-3, 0),
+    }
+    assert explorer._trajectory_replay_parallel_actions() == frozenset(
+        {2, 4}
+    )
+
+    explorer.trajectory_replay_started = True
+    assert explorer._trajectory_replay_parallel_actions() == frozenset()
+
+
+def test_committed_trajectory_avoids_next_replay_anchor() -> None:
+    explorer = EpistemicExplorer(committed_trajectory_planning=True)
+    explorer.trajectory_origin = (0, 0)
+    explorer.trajectory_committed_macro = (
+        (0, 1),
+        (0, 0),
+        (1, 0),
+    )
+    explorer.trajectory_effects = {
+        8: (-1, 0),
+        2: (1, 0),
+        6: (0, 1),
+        4: (0, -1),
+    }
+    explorer.trajectory_replay_started = True
+    explorer.trajectory_replay_cursor = 1
+
+    assert explorer._trajectory_replay_forbidden_actions(
+        (1, 0)
+    ) == frozenset({8})
+
+    explorer.trajectory_effects = {
+        3: (-1, 0),
+        7: (1, 0),
+        1: (0, 1),
+        5: (0, -1),
+    }
+    assert explorer._trajectory_replay_forbidden_actions(
+        (1, 0)
+    ) == frozenset({3})
 
 
 def test_committed_trajectory_retry_retains_only_same_level_accommodation() -> None:

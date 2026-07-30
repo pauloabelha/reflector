@@ -525,6 +525,16 @@ propose typed, falsifiable model mutations or goal hypotheses whose
 predictions are checked by the symbolic core. Do not let free-form prose
 directly choose actions and call that reflection.
 
+The integrated follow-up sharpened this conclusion. Gemma was placed behind
+the symbolic controller's explicit impasse detector, saw learned displacement
+roles and gate failures, and its actual action received subsequent symbolic
+credit. It still matched the symbolic control exactly on `g50t` at `[27, 53]`.
+Twenty-seven consultations produced only five overrides, six invalid outputs,
+and at least one action-name/candidate mismatch. The promising interface is
+therefore not repeated action arbitration. It is a single typed proposal such
+as “treat this gate as period-k,” with a bounded predicted observation,
+symbolic compilation, and automatic retirement on falsification.
+
 ## What v41 established before rejection
 
 The useful sequence was:

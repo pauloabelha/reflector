@@ -937,6 +937,207 @@ V42b result:
 - frozen inference source is `0bc1c52`; candidate
   `candidate-8c51fecdfdb99959` is accepted.
 
+## Active experiment: v43 enacted-operation replay
+
+Parent: accepted v42 `candidate-8c51fecdfdb99959`
+
+Observed disequilibrium:
+
+- on `g50t` level 2, v42 grounded four translations, committed a three-step
+  endpoint macro, and detected the first autonomous replay state;
+- rendered diagnostic frames then showed replay anchors at the prior probe,
+  restored origin, and alternate-axis probe states;
+- the environment was replaying the complete successful pre-commit
+  intervention history, while v42 predicted only the retrospectively selected
+  endpoint suffix and falsely declared divergence;
+- this is a general reflecting-abstraction error: a replayable operation is
+  the enacted coordination, including successful inverses, not merely its
+  final goal-directed suffix.
+
+Preregistered mutation:
+
+- append every successful mover displacement during probe, restoration, and
+  endpoint construction to one ordered enacted path;
+- preserve repeated anchors because returning to an earlier rendered state is
+  an operative inverse, not redundant data;
+- on commit, retain that full path as private replay state while keeping the
+  endpoint suffix separately for commit evidence;
+- cap the enacted path at 32 anchors and reject overflow;
+- validate replay against the enacted path with the existing pause and
+  synchronous-onset rules;
+- embed no game identifier, coordinate, color, action ID, source data, or
+  recorded route.
+
+Prediction and falsifier:
+
+- the synthetic replay fixture must preserve probe/inverse order under
+  reflection and consistent action-ID permutation;
+- on a fresh 80-action `g50t` run, v43 must preserve level 1 at action 29 and
+  avoid `replay-diverged` during the first level-2 committed sequence;
+- reject v43 if level 1 regresses, the full enacted path does not predict the
+  observed replay prefix, any cap/equivariance gate fails, or no additional
+  environment-reported progress is achieved in a later bounded target
+  refinement. V42 remains accepted until all promotion gates pass.
+
+V43a result:
+
+- the first 80-action run regressed `g50t` level 1 to 0/7;
+- the full eight-anchor enacted path was retained, but the fresh mover's first
+  action followed the same displacement as replay step 1, causing exact visual
+  overlap and preventing replay identity from being observed;
+- v43a is rejected under its preregistered preservation falsifier.
+
+Preregistered v43b accommodation:
+
+- derive first-step independence from the vector between the operation origin
+  and the first enacted replay anchor, rather than from the endpoint suffix;
+- forbid only actions parallel to that first enacted vector on the first
+  fresh-mover plan step, then release the constraint after replay identity is
+  grounded;
+- require synthetic action-ID permutation and axis-reflection equivariance;
+- retain the 80-action target: level 1 at action 29 and no false level-2
+  replay divergence. V42 remains accepted if either condition fails.
+
+V43b result:
+
+- the fresh and replaying movers separated on replay step 1;
+- on replay step 2, the fresh mover returned to the operation origin exactly
+  when the autonomous mover replayed the inverse restoration to that origin;
+- identity became visually merged and v43b regressed level 1 to 0/7, so it is
+  rejected.
+
+Preregistered v43c accommodation:
+
+- represent the immediate joint-state constraint
+  `fresh_next_anchor != predicted_replay_next_anchor`;
+- before each bounded A* call, forbid only first actions whose learned effect
+  would place the fresh mover on the next enacted replay anchor;
+- replan after every rendered transition, so the constraint follows repeated
+  anchors and inverses without embedding a route;
+- preserve the pre-onset axis-separation rule, caps, reflection, and action-ID
+  equivariance;
+- retain the exact 80-action target and reject on any level-1 regression or
+  false level-2 replay divergence.
+
+V43c result:
+
+- level 1 completed in 27 actions, improving accepted v42 by two actions;
+- all eight level-1 enacted replay anchors and all nine level-2 enacted replay
+  anchors validated without divergence;
+- identity-safe detours left the fresh mover four lattice moves from the
+  level-2 target when the fixed 20-step plan cap fired at action 57;
+- v43c earns its replay representation but has not yet earned promotion
+  because it adds no environment-reported level.
+
+Preregistered v43d accommodation:
+
+- replace the fixed 20-step cap with
+  `min(32, 20 + committed_enacted_path_length)`;
+- the extra allowance is therefore paid for by the evidenced operation whose
+  joint-state avoidance created the detour, not by a game or route constant;
+- retain all topology/search caps and the 80-action total target budget;
+- predict `g50t` level 2 completion within 80 actions while preserving level 1
+  at no more than 29 actions;
+- reject if the dynamic cap exceeds 32, activates without a committed enacted
+  path, regresses level 1, or fails to add level 2.
+
+V43d result:
+
+- level 1 remained at 27 actions and both enacted replays remained fully
+  validated;
+- the added nine plan steps repeated the same
+  `approach gate -> collide -> one-step backtrack` cycle;
+- the autonomous gate returned to the same blocking phase after each
+  two-transition cycle, so v43d added no level and is rejected.
+
+Preregistered v43e accommodation:
+
+- count failures of each uncertain state-action edge separately from transient
+  current-plan blocking;
+- assign that edge a cooldown of `min(4, failure_count)` successful mover
+  transitions before it can be planned again;
+- decrement cooldown only after observed mover displacement, never after a
+  no-effect or arbitrary action;
+- while the failed edge is cooling down, use the existing safe topology
+  information action, thereby varying excursion length without a route,
+  coordinate, action ID, or assumed period;
+- clear failures and cooldowns on level/reset boundaries and cap both by the
+  existing topology edge bound;
+- predict both `g50t` levels 1 and 2 within 80 actions, with level 1 no slower
+  than 29; reject on any preservation, cap, or progress failure.
+
+V43e result:
+
+- cooldowns grew from one through four successful transitions as predicted;
+- the agent nevertheless chose the same safe return operator at the first
+  branch, so longer excursions remained in the same vertical orbit;
+- level 1 remained at 27 actions, but level 2 did not advance; v43e is
+  rejected.
+
+Preregistered v43f accommodation:
+
+- count selected gate-refresh actions by learned action role within the level;
+- among admitted unblocked refresh edges, prefer the least-used action before
+  destination uncertainty and evidence tie-breaks;
+- increment the count only when the advisor actually selects a refresh action;
+- require consistent action-ID permutation to permute the selected role when
+  usage evidence is permuted;
+- cap counts by the finite action family and clear them at level/reset
+  boundaries;
+- retain the 80-action two-level prediction and reject on any v42
+  preservation or progress failure.
+
+V43f result:
+
+- level 1 remained at 27 actions, but level 2 again exhausted the remaining
+  53 actions without advancing;
+- refresh-role usage diversified the chosen safe actions but did not escape
+  the phase-locked uncertain-gate cycle;
+- the two-level prediction is falsified, so v43f is rejected and no
+  preservation or full-suite gate is warranted.
+
+## Rejected research hybrid: symbolic core with Gemma arbitration
+
+Question:
+
+- can Gemma add value as a bounded component inside the agent's brain, rather
+  than replacing the symbolic agent or acting as the development-time critic?
+
+Architecture:
+
+- retain the full symbolic controller and v42 genome configuration;
+- use the current experimental enacted-replay/gate substrate, matching the
+  v43f source under test;
+- consult local Gemma 4 E2B only after two evidenced gate failures, planner
+  disablement, or a causal-plan cap;
+- expose only grounded legal candidates, learned displacement roles, explicit
+  gate failures, refresh usage, current/target anchors, recent actual outcomes,
+  and the symbolic proposal;
+- install Gemma's selected action as the real symbolic `Decision` before
+  priming and trace recording, so structural credit follows the action taken;
+- fall back to the symbolic proposal on malformed or out-of-range output.
+
+Falsifier:
+
+- require `g50t` level 2 within the fixed 80-action target while preserving
+  level 1 at no more than 29 actions;
+- reject if the hybrid merely matches v43f, loses level 1, produces ungrounded
+  candidate/action semantics, or requires continuous expensive arbitration.
+
+Observed result:
+
+- **1/7 levels**, `[27, 53]`, score `3.5714285714`: exactly the v43f symbolic
+  control and therefore no task gain;
+- 27 consultations yielded 22 accepted symbolic proposals, five overrides,
+  and six safe fallbacks;
+- at least one override's prose named `ACTION4` while candidate index 4
+  actually selected action 5, reproducing the grounding defect;
+- the run took roughly 5.5 minutes on the local CPU server versus seconds for
+  the symbolic control;
+- the hybrid is rejected. Future LLM use, if any, should be one bounded typed
+  model-mutation proposal followed by symbolic execution and falsification,
+  not continuous action arbitration.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -960,10 +1161,9 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Replace v41's absolute point-collision list with a bounded, object-relative
-   topological belief graph over regions, passages, barriers, control
-   assignment, committed macro, and replay phase. Preregister predictions on
-   synthetic reflected/action-permuted mazes before another `g50t` run.
+1. Preserve accepted v42 and stop extending the `g50t` plan cap. Learn an
+   explicit gate-phase experiment or switch target games; the v43c-v43f and
+   integrated-Gemma runs all preserved level 1 but added no level 2.
 2. Treat `m0r0` separately as equivariant multi-object composition; require
    held-out prediction of both congruent objects and obstacle-explained
    one-sided blocking before planning.

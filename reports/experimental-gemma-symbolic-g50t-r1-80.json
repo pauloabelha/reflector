@@ -1,0 +1,117 @@
+{
+  "kind": "research-inference-time-llm-evaluation",
+  "classification": "symbolic-core-with-llm-component",
+  "game": "g50t",
+  "model": "google_gemma-4-E2B-it-Q4_K_M.gguf",
+  "endpoint": "http://127.0.0.1:18093",
+  "scorecard": {
+    "source_url": null,
+    "tags": [
+      "agent",
+      "gemma-symbolic"
+    ],
+    "opaque": null,
+    "card_id": "a3812fce-c54f-4c71-9367-911e130e0a61",
+    "api_key": null,
+    "score": 3.571428571428571,
+    "environments": [
+      {
+        "id": "g50t-5849a774",
+        "runs": [
+          {
+            "id": null,
+            "guid": "99c72180-cd33-4bd2-91ad-588e984e1b97",
+            "score": 3.571428571428571,
+            "levels_completed": 1,
+            "actions": 80,
+            "resets": 0,
+            "state": "NOT_FINISHED",
+            "completed": false,
+            "level_scores": [
+              115.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              27,
+              53,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              78,
+              175,
+              179,
+              230,
+              96,
+              54,
+              67
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 3.571428571428571,
+        "actions": 80,
+        "levels_completed": 1,
+        "completed": false,
+        "level_count": 7,
+        "resets": 0
+      }
+    ],
+    "tags_scores": [
+      {
+        "id": "keyboard",
+        "guid": null,
+        "score": 3.571428571428571,
+        "levels_completed": 1,
+        "actions": 80,
+        "resets": null,
+        "state": null,
+        "completed": null,
+        "level_scores": null,
+        "level_actions": null,
+        "level_baseline_actions": null,
+        "number_of_levels": 7,
+        "number_of_environments": 1,
+        "message": null
+      }
+    ],
+    "competition_mode": null,
+    "total_environments_completed": 0,
+    "total_environments": 1,
+    "total_levels_completed": 1,
+    "total_levels": 7,
+    "total_actions": 80
+  },
+  "agent": {
+    "actions": 80,
+    "levels_completed": 1,
+    "brain_metrics": {
+      "requests": 27,
+      "valid_responses": 21,
+      "fallbacks": 6,
+      "consultations": 27,
+      "symbolic_accepts": 22,
+      "symbolic_overrides": 5,
+      "action_counts": {
+        "1": 18,
+        "2": 17,
+        "3": 19,
+        "4": 17,
+        "5": 9
+      },
+      "retained_history": 32
+    }
+  },
+  "kaggle_compatible": false,
+  "claim_boundary": "Experimental local hybrid; compared separately from the accepted offline symbolic candidate."
+}

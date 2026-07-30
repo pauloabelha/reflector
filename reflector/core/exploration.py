@@ -396,6 +396,16 @@ class EpistemicExplorer:
     trajectory_contextual_blocks: Counter[tuple[tuple[int, int], int]] = field(
         default_factory=Counter
     )
+    trajectory_gate_failures: Counter[tuple[tuple[int, int], int]] = field(
+        default_factory=Counter
+    )
+    trajectory_gate_cooldowns: dict[
+        tuple[tuple[int, int], int],
+        int,
+    ] = field(default_factory=dict)
+    trajectory_gate_refresh_actions: Counter[int] = field(
+        default_factory=Counter
+    )
     trajectory_topology_nodes: set[tuple[int, int]] = field(
         default_factory=set
     )
@@ -408,6 +418,7 @@ class EpistemicExplorer:
     trajectory_macro_effect: tuple[int, int] | None = None
     trajectory_previous_failed_macro_action: int | None = None
     trajectory_active_path: list[tuple[int, int]] = field(default_factory=list)
+    trajectory_enacted_path: list[tuple[int, int]] = field(default_factory=list)
     trajectory_endpoint_macros: list[tuple[tuple[int, int], ...]] = field(
         default_factory=list
     )
@@ -801,6 +812,9 @@ class EpistemicExplorer:
             self.trajectory_effect_evidence.clear()
             self.trajectory_invalid_actions.clear()
         self.trajectory_contextual_blocks.clear()
+        self.trajectory_gate_failures.clear()
+        self.trajectory_gate_cooldowns.clear()
+        self.trajectory_gate_refresh_actions.clear()
         self.trajectory_topology_nodes.clear()
         self.trajectory_uncertain_nodes.clear()
         self.trajectory_topology_support_color = None
@@ -810,6 +824,7 @@ class EpistemicExplorer:
         if not retain_accommodation:
             self.trajectory_previous_failed_macro_action = None
         self.trajectory_active_path.clear()
+        self.trajectory_enacted_path.clear()
         self.trajectory_endpoint_macros.clear()
         self.trajectory_commit_action = None
         self.trajectory_commit_trials = 0
@@ -1251,10 +1266,37 @@ class EpistemicExplorer:
         self.trajectory_pending = None
         self.trajectory_diagnostic = diagnostic
 
+    def _record_trajectory_enacted(
+        self,
+        anchor: tuple[int, int],
+    ) -> bool:
+        """Retain the full successful operation history, including inverses."""
+
+        if len(self.trajectory_enacted_path) >= 32:
+            self._disable_trajectory("enacted-trajectory-cap-reached")
+            return False
+        self.trajectory_enacted_path.append(anchor)
+        return True
+
+    def _advance_trajectory_gate_cooldowns(self) -> None:
+        """Advance uncertain-gate experiments only after actual movement."""
+
+        for edge, remaining in tuple(self.trajectory_gate_cooldowns.items()):
+            if remaining <= 1:
+                self.trajectory_gate_cooldowns.pop(edge, None)
+                self.trajectory_contextual_blocks.pop(edge, None)
+            else:
+                self.trajectory_gate_cooldowns[edge] = remaining - 1
+
     def _trajectory_block_threshold(self) -> int:
         """Let a bounded committed replay clear before declaring a hard block."""
 
         return max(2, len(self.trajectory_committed_macro) - 1)
+
+    def _trajectory_plan_cap(self) -> int:
+        """Pay bounded joint-state detours from evidenced operation length."""
+
+        return min(32, 20 + len(self.trajectory_committed_macro))
 
     def _observe_committed_trajectory(
         self,
@@ -1311,6 +1353,8 @@ class EpistemicExplorer:
                 self.trajectory_stage = "probe"
                 self.trajectory_diagnostic = "probe-no-translation"
             elif self._record_trajectory_effect(action_id, displacement):
+                if not self._record_trajectory_enacted(after_anchor):
+                    return
                 self.trajectory_current_anchor = after_anchor
                 self.trajectory_restore_tried.clear()
                 self.trajectory_stage = "restore"
@@ -1318,6 +1362,8 @@ class EpistemicExplorer:
         elif kind == "restore":
             if displacement != (0, 0):
                 if not self._record_trajectory_effect(action_id, displacement):
+                    return
+                if not self._record_trajectory_enacted(after_anchor):
                     return
             if after_anchor == self.trajectory_origin:
                 self.trajectory_current_anchor = after_anchor
@@ -1336,6 +1382,8 @@ class EpistemicExplorer:
                     self._disable_trajectory("trajectory-cap-reached")
                     return
                 self._record_trajectory_effect(action_id, displacement)
+                if not self._record_trajectory_enacted(after_anchor):
+                    return
                 self.trajectory_active_path.append(after_anchor)
                 self.trajectory_current_anchor = after_anchor
                 self.trajectory_stage = "macro"
@@ -1376,7 +1424,9 @@ class EpistemicExplorer:
                 self.trajectory_diagnostic = "commit-no-phase-change"
                 return
             self.trajectory_commit_action = action_id
-            self.trajectory_committed_macro = tuple(self.trajectory_active_path)
+            self.trajectory_committed_macro = tuple(
+                self.trajectory_enacted_path
+            )
             self.trajectory_current_anchor = after_anchor
             self.trajectory_latent_anchor = after_anchor
             self.trajectory_replay_started = False
@@ -1386,9 +1436,14 @@ class EpistemicExplorer:
             self.trajectory_diagnostic = "trajectory-committed"
         elif kind == "navigate":
             if displacement == (0, 0):
-                self.trajectory_contextual_blocks[
-                    (latent_before, action_id)
-                ] += 1
+                blocked_edge = (latent_before, action_id)
+                self.trajectory_contextual_blocks[blocked_edge] += 1
+                if expected_anchor in self.trajectory_uncertain_nodes:
+                    self.trajectory_gate_failures[blocked_edge] += 1
+                    self.trajectory_gate_cooldowns[blocked_edge] = min(
+                        4,
+                        self.trajectory_gate_failures[blocked_edge],
+                    )
                 self.trajectory_current_anchor = after_anchor
                 self.trajectory_stage = "navigate"
                 self.trajectory_diagnostic = "planned-edge-blocked"
@@ -1396,7 +1451,7 @@ class EpistemicExplorer:
                 self._disable_trajectory("planned-effect-falsified")
                 return
             else:
-                self.trajectory_contextual_blocks.clear()
+                self._advance_trajectory_gate_cooldowns()
                 self.trajectory_current_anchor = after_anchor
                 effect = self.trajectory_effects[action_id]
                 assert self.trajectory_latent_anchor is not None
@@ -2190,7 +2245,7 @@ class EpistemicExplorer:
             return token
 
         if self.trajectory_stage == "navigate":
-            if self.trajectory_plan_steps >= 20:
+            if self.trajectory_plan_steps >= self._trajectory_plan_cap():
                 self._disable_trajectory("trajectory-plan-cap-reached")
                 return None
             planning_anchor = self.trajectory_latent_anchor or current
@@ -2239,17 +2294,8 @@ class EpistemicExplorer:
                 frame_width=len(observation.frame[0]),
                 frame_height=len(observation.frame),
                 allowed_nodes=topology_nodes,
-                forbidden_first=frozenset(
-                    action_id
-                    for action_id, effect in self.trajectory_effects.items()
-                    if (
-                        not self.trajectory_replay_started
-                        and self.trajectory_macro_effect is not None
-                        and (
-                            (effect[0] != 0)
-                            == (self.trajectory_macro_effect[0] != 0)
-                        )
-                    )
+                forbidden_first=self._trajectory_replay_forbidden_actions(
+                    planning_anchor
                 ),
             )
             if planned_action is None:
@@ -2262,6 +2308,7 @@ class EpistemicExplorer:
                 if planned_action is None:
                     self._disable_trajectory("no-causal-plan")
                     return None
+                self.trajectory_gate_refresh_actions[planned_action] += 1
                 self.trajectory_diagnostic = "refreshing-uncertain-gate"
             effect = self.trajectory_effects[planned_action]
             self.trajectory_navigation_action = planned_action
@@ -2280,6 +2327,54 @@ class EpistemicExplorer:
             return token
         return None
 
+    def _trajectory_replay_parallel_actions(self) -> frozenset[int]:
+        """Keep the fresh mover distinct from the first enacted replay step."""
+
+        if (
+            self.trajectory_replay_started
+            or not self.trajectory_committed_macro
+            or self.trajectory_origin is None
+        ):
+            return frozenset()
+        first_anchor = self.trajectory_committed_macro[0]
+        first_effect = (
+            first_anchor[0] - self.trajectory_origin[0],
+            first_anchor[1] - self.trajectory_origin[1],
+        )
+        return frozenset(
+            action_id
+            for action_id, effect in self.trajectory_effects.items()
+            if effect != (0, 0)
+            and (effect[0] != 0) == (first_effect[0] != 0)
+        )
+
+    def _trajectory_replay_forbidden_actions(
+        self,
+        fresh_anchor: tuple[int, int],
+    ) -> frozenset[int]:
+        """Prevent the fresh mover from merging with predicted replay."""
+
+        forbidden = set(self._trajectory_replay_parallel_actions())
+        if (
+            not self.trajectory_replay_started
+            or self.trajectory_replay_cursor
+            >= len(self.trajectory_committed_macro)
+        ):
+            return frozenset(forbidden)
+        replay_next = self.trajectory_committed_macro[
+            self.trajectory_replay_cursor
+        ]
+        forbidden.update(
+            action_id
+            for action_id, effect in self.trajectory_effects.items()
+            if (
+                fresh_anchor[0] + effect[0],
+                fresh_anchor[1] + effect[1],
+            )
+            == replay_next
+        )
+        return frozenset(forbidden)
+
     def _trajectory_gate_refresh_action(
         self,
         start: tuple[int, int],
@@ -2292,7 +2387,7 @@ class EpistemicExplorer:
 
         if not self.trajectory_contextual_blocks or not uncertain_nodes:
             return None
-        candidates: list[tuple[int, int, int]] = []
+        candidates: list[tuple[int, int, int, int]] = []
         for action_id, effect in self.trajectory_effects.items():
             if (
                 action_id not in represented
@@ -2311,12 +2406,13 @@ class EpistemicExplorer:
                 continue
             candidates.append(
                 (
+                    self.trajectory_gate_refresh_actions[action_id],
                     int(next_anchor in uncertain_nodes),
                     self.trajectory_effect_evidence[action_id] * -1,
                     action_id,
                 )
             )
-        return min(candidates)[2] if candidates else None
+        return min(candidates)[3] if candidates else None
 
     def _trajectory_bfs_action(
         self,
@@ -5520,6 +5616,15 @@ class EpistemicExplorer:
             "trajectory_contextual_blocks": len(
                 self.trajectory_contextual_blocks
             ),
+            "trajectory_gate_failures": sum(
+                self.trajectory_gate_failures.values()
+            ),
+            "trajectory_gate_cooldowns": len(
+                self.trajectory_gate_cooldowns
+            ),
+            "trajectory_gate_refresh_action_roles": len(
+                self.trajectory_gate_refresh_actions
+            ),
             "trajectory_topology_nodes": len(self.trajectory_topology_nodes),
             "trajectory_uncertain_nodes": len(
                 self.trajectory_uncertain_nodes
@@ -5529,6 +5634,9 @@ class EpistemicExplorer:
             ),
             "trajectory_committed_macro_length": len(
                 self.trajectory_committed_macro
+            ),
+            "trajectory_enacted_path_length": len(
+                self.trajectory_enacted_path
             ),
             "trajectory_replay_cursor": self.trajectory_replay_cursor,
             "trajectory_replay_started": int(self.trajectory_replay_started),
@@ -5541,6 +5649,7 @@ class EpistemicExplorer:
                 self.trajectory_boundary_nuisance_evidenced
             ),
             "trajectory_plan_steps": self.trajectory_plan_steps,
+            "trajectory_plan_cap": self._trajectory_plan_cap(),
             "trajectory_settle_steps": self.trajectory_settle_steps,
             "trajectory_level_trials": self.trajectory_level_trials,
             "trajectory_disabled": int(self.trajectory_disabled),

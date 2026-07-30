@@ -75,6 +75,16 @@ negative results motivated v42's substrate topology and uncertain-gate
 information actions. The accepted v42 result and all rejected predecessors are
 documented in the [real-games scorecard](REAL_GAMES_REPORT.md).
 
+A second hybrid tests the stronger architecture: the symbolic agent remains
+the controller and Gemma is an internal arbitrator only after repeated,
+explicit trajectory-gate failures. The action Gemma actually selects receives
+the next transition's symbolic credit. On an 80-action `g50t` comparison it
+matched the v43f symbolic control exactly at **1/7 levels and `[27, 53]`**.
+Gemma was consulted 27 times, accepted 22 symbolic proposals, made five
+overrides, and produced six invalid responses that safely fell back. It added
+no level and still sometimes named a different action in prose than its chosen
+candidate denoted. The hybrid is therefore rejected; v42 remains accepted.
+
 The v26 research branch now preregisters intervention hypotheses, keeps
 predictive and pragmatic credit separate, and treats successful action-role
 programs as first-class inputs to bounded prefix, suffix, interleaving, and
