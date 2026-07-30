@@ -2242,10 +2242,23 @@ game identity, color, absolute position, or action constants:
 It normalizes exact repeated objects by shape and arity and their member
 displacements by common scale. An expectation becomes eligible only after two
 matching prior effects. The accepted `m0r0` recording yielded 354 supported
-predictions, 334 confirmations, and 20 deviations. Five independent held-out
-recordings yielded 987/987 confirmations and zero deviations. A separate
-`lp85` recording yielded ten rare deviations at two action-6 interventions
-after long no-effect histories.
+predictions, 334 confirmations, and 20 deviations.
+
+The first v57 population exposed an invalid action abstraction. Its history key
+used only the API action ID, conflating every coordinate-bearing action-6
+click. `confirm-affordance` replayed 135 actions on `lp85` and regressed from
+three levels to one. `confirm-discontinuity` replayed 338, regressed `lp85` to
+one level, and lost `g50t` level 1. A confirmation could also generate another
+confirmation recursively. Both variants are rejected. `phase-segment` exactly
+matched the control at four total levels and score 6.6465283447 across the two
+games, so it supplied no gain.
+
+V57a grounds a parameterized action by the selected object's structural role,
+abstains when the coordinate has no structural binding, and prevents the
+immediate confirmation result from scheduling another confirmation. With this
+correction, five independent held-out recordings yield 913/913 confirmations
+and zero deviations. The previously reported ten `lp85` action-6 deviations
+disappear; they were artifacts of action-ID conflation.
 
 The source-matched population has four frozen modes:
 
@@ -2261,10 +2274,9 @@ Falsifier: a mode is rejected if its detector remains inert, if it adds
 replays without a new level or material efficiency gain, or if it regresses an
 accepted level. Recording prediction accuracy alone cannot promote it.
 
-When experimentation resumes, start with source-matched development runs on
-`lp85` and `g50t`, because the former contains a rare affordance change and the
-latter has an accepted later-level stall. Only a qualifying variant proceeds
-to `ar25`, `m0r0`, `sb26`, deterministic rerun, and the full suite.
+V57a must rerun the same `lp85` and `g50t` development pair. Only a qualifying
+variant proceeds to `ar25`, `m0r0`, `sb26`, deterministic rerun, and the full
+suite.
 
 ## Promotion gates
 

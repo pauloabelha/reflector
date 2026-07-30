@@ -205,6 +205,37 @@ def _action_id(data: dict[str, Any]) -> int | None:
     return int(action["id"])
 
 
+def _action_role(data: dict[str, Any], scene: Scene) -> str | None:
+    """Return a structural action binding, or abstain if it is ungrounded."""
+
+    action_id = _action_id(data)
+    if action_id is None:
+        return None
+    action = data.get("action_input")
+    action_data = action.get("data", {}) if isinstance(action, dict) else {}
+    if not isinstance(action_data, dict):
+        return None
+    if "x" not in action_data and "y" not in action_data:
+        return _digest({"action_id": action_id})
+    x, y = action_data.get("x"), action_data.get("y")
+    if not isinstance(x, int) or not isinstance(y, int):
+        return None
+    for item in scene.objects:
+        min_x, min_y, _max_x, _max_y = item.bbox
+        if (x - min_x, y - min_y) in item.shape:
+            return _digest(
+                {
+                    "action_id": action_id,
+                    "target": {
+                        "color": item.color,
+                        "area": item.area,
+                        "shape": item.shape,
+                    },
+                }
+            )
+    return None
+
+
 def _repeated_form_groups(
     scene: Scene,
 ) -> dict[
@@ -287,7 +318,7 @@ def audit_recording(
     tracker = SceneTracker()
     previous_observation: Observation | None = None
     histories: dict[
-        tuple[str, int, int],
+        tuple[str, int, str],
         Counter[tuple[str, ...]],
     ] = {}
     transitions = 0
@@ -313,8 +344,9 @@ def audit_recording(
 
         scene, _events = tracker.perceive(observation)
         action_id = _action_id(data)
+        action_role = _action_role(data, previous_scene)
         previous_observation = observation
-        if action_id is None or action_id == 0:
+        if action_id is None or action_id == 0 or action_role is None:
             previous_scene = scene
             continue
         transitions += 1
@@ -323,7 +355,7 @@ def audit_recording(
             scene,
         ):
             history = histories.setdefault(
-                (subject_digest, arity, action_id),
+                (subject_digest, arity, action_role),
                 Counter(),
             )
             if history:

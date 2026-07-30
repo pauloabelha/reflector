@@ -334,12 +334,24 @@ These are narrow earned claims, not claims of general intelligence.
     matching observations. On the accepted `m0r0` recording it made 354
     supported predictions, confirmed 334, and exposed 20 real context changes,
     including the portal transitions that v56 had misdescribed. On five
-    independently recorded held-out games it confirmed 987 of 987 supported
-    predictions with zero deviations. A separate `lp85` trace exposed ten rare
-    action-6 affordance changes after long histories of no effect. This is
-    evidence for a reusable structural event vocabulary. It is not yet evidence
-    of improved play: the runtime descendants must still show that confirming
-    or phase-segmenting such events advances a level or saves actions.
+    independently recorded held-out games it initially appeared to confirm
+    987 of 987 supported predictions with zero deviations. V57 runtime traces
+    then falsified the action representation behind that count: all coordinate
+    clicks shared one action ID, so different object-relative clicks were
+    incorrectly pooled. After grounding coordinate actions by their selected
+    object role and abstaining on ungrounded coordinates, the held-out result
+    is 913/913 confirmations with zero deviations; the alleged ten rare
+    `lp85` affordance changes disappear. The event vocabulary remains
+    predictive, but the correction is the deeper lesson: a causal event is
+    defined jointly over state and a parameterized action role, never over an
+    API action ID alone.
+26. Confirmation is itself an intervention and must not recursively request
+    confirmation. V57 `confirm-affordance` replayed 135 actions on `lp85` and
+    fell from three levels to one; `confirm-discontinuity` replayed 338 and
+    also fell to one, while losing `g50t` level 1. Two errors combined:
+    coordinate-action conflation and a confirmation result being treated as a
+    fresh surprise. The corrected mechanism structurally binds clicks and
+    suppresses a second confirmation from the immediate contrastive replay.
 
 ## What is still missing
 

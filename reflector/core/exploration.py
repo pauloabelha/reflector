@@ -313,10 +313,11 @@ class EpistemicExplorer:
     role_responses: Counter[ActionRole] = field(default_factory=Counter)
     productive_reuse_level_trials: int = 0
     repeated_form_effect_history: dict[
-        tuple[str, int, int],
+        tuple[str, int, ActionRole],
         Counter[tuple[tuple[int, int], ...]],
     ] = field(default_factory=dict)
     repeated_form_confirmation_token: ActionToken | None = None
+    repeated_form_confirmation_observation_token: ActionToken | None = None
     repeated_form_event_predictions: int = 0
     repeated_form_event_confirmations: int = 0
     repeated_form_event_detections: int = 0
@@ -886,6 +887,7 @@ class EpistemicExplorer:
                 before,
                 after,
                 pending_token,
+                role,
             )
         if (
             self.shape_goal_translation
@@ -996,6 +998,7 @@ class EpistemicExplorer:
     def _reset_repeated_form_events(self) -> None:
         self.repeated_form_effect_history.clear()
         self.repeated_form_confirmation_token = None
+        self.repeated_form_confirmation_observation_token = None
         self.repeated_form_event_predictions = 0
         self.repeated_form_event_confirmations = 0
         self.repeated_form_event_detections = 0
@@ -1070,7 +1073,19 @@ class EpistemicExplorer:
         before: tuple[tuple[int, ...], ...],
         after: tuple[tuple[int, ...], ...],
         token: ActionToken,
+        role: ActionRole | None = None,
     ) -> None:
+        represented_role = role or ActionRole(token.action_id)
+        if token.data and represented_role == ActionRole(token.action_id):
+            self.repeated_form_event_diagnostic = (
+                "parameterized-action-without-structural-role"
+            )
+            return
+        confirmation_observation = (
+            token == self.repeated_form_confirmation_observation_token
+        )
+        if confirmation_observation:
+            self.repeated_form_confirmation_observation_token = None
         detected = False
         actionable = False
         for subject, arity, effect in self._repeated_form_effects(
@@ -1078,7 +1093,7 @@ class EpistemicExplorer:
             after,
         ):
             history = self.repeated_form_effect_history.setdefault(
-                (subject, arity, token.action_id),
+                (subject, arity, represented_role),
                 Counter(),
             )
             if history:
@@ -1115,11 +1130,13 @@ class EpistemicExplorer:
         if detected and self.repeated_form_event_mode == "phase-segment":
             self.repeated_form_event_phase += 1
             self.repeated_form_event_diagnostic = "phase-segmented"
-        elif actionable:
+        elif actionable and not confirmation_observation:
             self.repeated_form_confirmation_token = token
             self.repeated_form_event_diagnostic = (
                 "confirmation-preregistered"
             )
+        elif actionable:
+            self.repeated_form_event_diagnostic = "confirmation-observed"
         elif detected:
             self.repeated_form_event_diagnostic = (
                 "context-change-observed"
@@ -4225,6 +4242,9 @@ class EpistemicExplorer:
             )
             if confirmation is not None:
                 self.repeated_form_event_replays += 1
+                self.repeated_form_confirmation_observation_token = (
+                    confirmation
+                )
                 self.repeated_form_event_diagnostic = (
                     "executing-event-confirmation"
                 )

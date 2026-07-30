@@ -125,6 +125,29 @@ def test_affordance_event_preregisters_one_exact_confirmation() -> None:
     assert "confirm-repeated-form-event" in choice.reason
     assert explorer.repeated_form_confirmation_token is None
     assert explorer.repeated_form_event_replays == 1
+    explorer._observe_repeated_form_effect_event(
+        moved,
+        tuple(tuple(row) for row in _frame(4)),
+        token,
+    )
+    assert explorer.repeated_form_confirmation_token is None
+    assert explorer.repeated_form_event_diagnostic == "confirmation-observed"
+
+
+def test_ungrounded_parameterized_action_abstains() -> None:
+    explorer = EpistemicExplorer(
+        repeated_form_event_mode="confirm-discontinuity"
+    )
+    token = ActionToken(6, (("x", 0), ("y", 0)))
+    still = tuple(tuple(row) for row in _frame(2))
+    moved = tuple(tuple(row) for row in _frame(3))
+
+    explorer._observe_repeated_form_effect_event(still, moved, token)
+
+    assert not explorer.repeated_form_effect_history
+    assert explorer.repeated_form_event_diagnostic == (
+        "parameterized-action-without-structural-role"
+    )
 
 
 def test_phase_event_changes_belief_key_without_replaying() -> None:
