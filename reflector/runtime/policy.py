@@ -154,6 +154,9 @@ class SymbolicPolicy:
             path_cycle_transport=(
                 self.mind.config.enable_path_cycle_transport
             ),
+            factored_orbit_transport=(
+                self.mind.config.enable_factored_orbit_transport
+            ),
             shape_goal_translation=(
                 self.mind.config.enable_shape_goal_translation
             ),
@@ -165,6 +168,9 @@ class SymbolicPolicy:
             ),
             colored_stencil_primary_planning=(
                 self.mind.config.enable_colored_stencil_primary_planning
+            ),
+            colored_stencil_secondary_planning=(
+                self.mind.config.enable_colored_stencil_secondary_planning
             ),
         )
         self._previous_decision: Decision | None = None

@@ -33,13 +33,23 @@ from .lattice_csp import (
     solve_click_csp,
 )
 from .permutation_transport import (
+    FactoredOrbitDomain,
+    FactoredOrbitGenerator,
     MarkerTarget,
     PermutationBounds,
     PermutationGenerator,
     PermutationSystem,
+    canonical_dihedral_shape,
+    factored_effect_matches,
+    ground_polar_controller,
+    infer_disjoint_polar_product_diagnostic,
+    infer_factored_interface_generator,
+    infer_factored_orbit_generators,
     infer_path_cycle_permutations,
     infer_segmented_permutations,
+    merge_factored_evidence,
     merge_generator_evidence,
+    plan_factored_orbit_transport,
     plan_marker_transport,
 )
 from .symbolic import ObjectState, Observation, Scene
@@ -60,6 +70,12 @@ ControllerForm = (
         tuple[str, ...],
     ]
 )
+type FactoredControllerBase = tuple[
+    int,
+    tuple[tuple[int, int], ...],
+    str | None,
+    tuple[str, ...],
+]
 PhaseSignature = tuple[
     tuple[
         int,
@@ -235,6 +251,33 @@ class _SegmentedPermutationPrediction:
 
 
 @dataclass(frozen=True, slots=True)
+class _FactoredOrbitProposal:
+    """One provisional abstract effect and its originating grounding."""
+
+    controller_form: ControllerForm
+    generator: FactoredOrbitGenerator
+    module_index: int | None
+    controller: tuple[int, int]
+
+
+@dataclass(frozen=True, slots=True)
+class _FactoredOrbitPrediction:
+    """An abstract factor effect registered before a grounded intervention."""
+
+    controller_form: ControllerForm
+    generator: FactoredOrbitGenerator
+    module_index: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class _FactoredControllerCandidate:
+    token: ActionToken
+    controller_form: ControllerForm
+    module_index: int | None
+    controller: tuple[int, int]
+
+
+@dataclass(frozen=True, slots=True)
 class _MarkedAnchor:
     point: tuple[int, int]
     marker_color: int
@@ -383,10 +426,12 @@ class EpistemicExplorer:
     lattice_effect_planning: bool = False
     segmented_permutation_transport: bool = False
     path_cycle_transport: bool = False
+    factored_orbit_transport: bool = False
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
     committed_trajectory_planning: bool = False
     colored_stencil_primary_planning: bool = False
+    colored_stencil_secondary_planning: bool = False
     colored_stencil_planner: PrimaryStencilPlanner = field(
         default_factory=PrimaryStencilPlanner,
         repr=False,
@@ -788,6 +833,39 @@ class EpistemicExplorer:
     segmented_permutation_last_segmented_candidates: int = 0
     segmented_permutation_last_path_candidates: int = 0
     segmented_permutation_last_controller_context: tuple[str, ...] = ()
+    factored_orbit_proposals: dict[
+        ControllerForm, _FactoredOrbitProposal
+    ] = field(default_factory=dict)
+    factored_orbit_generators: tuple[FactoredOrbitGenerator, ...] = ()
+    factored_orbit_controller_effects: dict[
+        ControllerForm, str
+    ] = field(default_factory=dict)
+    factored_orbit_quarantined_forms: set[ControllerForm] = field(
+        default_factory=set
+    )
+    factored_orbit_unique_bindings: dict[
+        tuple[ControllerForm, int | None], tuple[int, int]
+    ] = field(default_factory=dict)
+    factored_orbit_pending_prediction: _FactoredOrbitPrediction | None = None
+    factored_orbit_observations: int = 0
+    factored_orbit_predictions: int = 0
+    factored_orbit_confirmations: int = 0
+    factored_orbit_conflicts: int = 0
+    factored_orbit_plan_steps: int = 0
+    factored_orbit_last_plan_length: int = 0
+    factored_orbit_search_states: int = 0
+    factored_orbit_module_count: int = 0
+    factored_orbit_factor_shape: tuple[int, int] | None = None
+    factored_orbit_last_candidate_count: int = 0
+    factored_orbit_ambiguous_controller_slots: int = 0
+    factored_orbit_factorization_states: int = 0
+    factored_orbit_factorization_search_exhausted: bool = False
+    factored_orbit_diagnostic: str = "exact-off"
+    factored_orbit_total_observations: int = 0
+    factored_orbit_total_predictions: int = 0
+    factored_orbit_total_confirmations: int = 0
+    factored_orbit_total_conflicts: int = 0
+    factored_orbit_total_plan_steps: int = 0
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -897,6 +975,9 @@ class EpistemicExplorer:
         self.colored_stencil_planner.enabled = (
             self.colored_stencil_primary_planning
         )
+        self.colored_stencil_planner.secondary_enabled = (
+            self.colored_stencil_secondary_planning
+        )
         self.colored_stencil_planner.observe(
             observation.frame,
             observation.levels_completed,
@@ -947,6 +1028,7 @@ class EpistemicExplorer:
             )
             self._reset_lattice_effect_level()
             self._reset_segmented_permutation_level()
+            self._reset_factored_orbit_level()
             self.select_apply_diagnostic = "not-attempted"
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level()
@@ -981,6 +1063,7 @@ class EpistemicExplorer:
             self.select_apply_cursor = 0
             self._reset_lattice_effect_level()
             self._reset_segmented_permutation_level()
+            self._reset_factored_orbit_level()
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level(retain_accommodation=True)
             self._reset_boundary_nuisance_state()
@@ -1092,6 +1175,21 @@ class EpistemicExplorer:
             )
         else:
             self.segmented_permutation_pending_prediction = None
+        if (
+            self.factored_orbit_transport
+            and pending_token is not None
+            and pending_token.action_id == self.complex_action
+            and pending_token.data
+            and grounding is not None
+        ):
+            self._observe_factored_orbit_transition(
+                before,
+                after,
+                grounding,
+                progressed=progressed,
+            )
+        else:
+            self.factored_orbit_pending_prediction = None
         if len(before) != len(after) or not before or not after:
             return
         if any(len(left) != len(right) for left, right in zip(before, after)):
@@ -1201,6 +1299,7 @@ class EpistemicExplorer:
         self.pending_relational_scheme = None
         self._reset_lattice_effect_level()
         self._reset_segmented_permutation_level()
+        self._reset_factored_orbit_level()
 
     def _reset_compact_component_frontier_retry(
         self,
@@ -1281,6 +1380,30 @@ class EpistemicExplorer:
             "not-attempted"
             if self.segmented_permutation_transport
             else "exact-off"
+        )
+
+    def _reset_factored_orbit_level(self) -> None:
+        self.factored_orbit_proposals.clear()
+        self.factored_orbit_generators = ()
+        self.factored_orbit_controller_effects.clear()
+        self.factored_orbit_quarantined_forms.clear()
+        self.factored_orbit_unique_bindings.clear()
+        self.factored_orbit_pending_prediction = None
+        self.factored_orbit_observations = 0
+        self.factored_orbit_predictions = 0
+        self.factored_orbit_confirmations = 0
+        self.factored_orbit_conflicts = 0
+        self.factored_orbit_plan_steps = 0
+        self.factored_orbit_last_plan_length = 0
+        self.factored_orbit_search_states = 0
+        self.factored_orbit_module_count = 0
+        self.factored_orbit_factor_shape = None
+        self.factored_orbit_last_candidate_count = 0
+        self.factored_orbit_ambiguous_controller_slots = 0
+        self.factored_orbit_factorization_states = 0
+        self.factored_orbit_factorization_search_exhausted = False
+        self.factored_orbit_diagnostic = (
+            "not-attempted" if self.factored_orbit_transport else "exact-off"
         )
 
     def _reset_boundary_nuisance_state(self) -> None:
@@ -4568,16 +4691,35 @@ class EpistemicExplorer:
         if stencil_choice is not None:
             token = ActionToken(stencil_choice.action_id, stencil_choice.data)
             if token in tokens:
+                secondary = "secondary" in (
+                    self.colored_stencil_planner.diagnostic
+                )
                 self.last_scheme_components = (
-                    "scheme:layered-stencil-composition",
+                    (
+                        "scheme:projected-edge-stencil-composition"
+                        if secondary
+                        else "scheme:layered-stencil-composition"
+                    ),
                     "operator:ground-relational-pose",
-                    "operator:commit-prospective-layer",
-                    "planner:exact-primary-half-plane-search",
+                    (
+                        "operator:project-visible-secondary-component"
+                        if secondary
+                        else "operator:commit-prospective-layer"
+                    ),
+                    (
+                        "planner:reverse-last-write-synthesis"
+                        if secondary
+                        else "planner:exact-primary-half-plane-search"
+                    ),
                 )
                 return self._issue(
                     state,
                     token,
-                    "epistemic-frontier:colored-stencil-primary",
+                    (
+                        "epistemic-frontier:colored-stencil-secondary"
+                        if secondary
+                        else "epistemic-frontier:colored-stencil-primary"
+                    ),
                     scene,
                 )
             self.colored_stencil_planner.quarantined = True
@@ -4776,6 +4918,32 @@ class EpistemicExplorer:
                 state,
                 cyclic,
                 "epistemic-frontier:cyclic-sequence-alignment",
+                scene,
+            )
+
+        factored_orbit = self._select_factored_orbit_transport(
+            observation,
+            scene,
+            state,
+            tokens,
+        )
+        if factored_orbit is not None:
+            self.cyclic_alignment_level_trials += 1
+            if self.factored_orbit_diagnostic == "planned-confirmed-generator":
+                self.factored_orbit_plan_steps += 1
+                self.factored_orbit_total_plan_steps += 1
+            self.last_scheme_components = (
+                "relation:anchor-token-matches-markers",
+                "operator:factored-orbit-transport",
+                "state:controller-local-product-topology",
+            )
+            return self._issue(
+                state,
+                factored_orbit,
+                (
+                    "epistemic-frontier:cyclic-sequence-alignment:"
+                    "factored-orbit-transport"
+                ),
                 scene,
             )
 
@@ -7005,6 +7173,7 @@ class EpistemicExplorer:
         self.pending_role = grounding.role
         self.pending_grounding = grounding
         self._register_segmented_permutation_prediction(grounding)
+        self._register_factored_orbit_prediction(grounding)
         self.pending = (state, token)
         return ExplorationChoice(token, reason)
 
@@ -7042,6 +7211,851 @@ class EpistemicExplorer:
                 else "scheme:starter:intervene-on-object"
             )
         return tuple(sorted(components))
+
+    @classmethod
+    def _factored_token_domain(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+        *,
+        bounds: PermutationBounds,
+    ) -> (
+        tuple[
+            tuple[_MarkedAnchor, ...],
+            tuple[tuple[int, int], ...],
+            FactoredOrbitDomain,
+        ]
+        | None
+    ):
+        """Ground one uniquely factorable repeated-module token domain."""
+
+        represented, _explored_states, _search_exhausted = (
+            cls._factored_token_domain_diagnostic(frame, bounds=bounds)
+        )
+        return represented
+
+    @classmethod
+    def _factored_token_domain_diagnostic(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+        *,
+        bounds: PermutationBounds,
+    ) -> tuple[
+        tuple[
+            tuple[_MarkedAnchor, ...],
+            tuple[tuple[int, int], ...],
+            FactoredOrbitDomain,
+        ]
+        | None,
+        int,
+        bool,
+    ]:
+        """Ground a factored domain and preserve bounded-search diagnostics."""
+
+        anchors = cls._marked_anchors(frame)
+        forms = {(anchor.token_area, anchor.token_shape) for anchor in anchors}
+        if not anchors or len(forms) != 1:
+            return None, 0, False
+        token_area, token_shape = next(iter(forms))
+        positions = tuple(
+            sorted(
+                item.centroid
+                for item in cls._frame_objects(frame)
+                if item.area == token_area and item.shape == token_shape
+            )
+        )
+        if (
+            len(positions) != len(set(positions))
+            or len(positions) > bounds.max_factored_slots
+            or any(anchor.point not in positions for anchor in anchors)
+        ):
+            return None, 0, False
+        inference = infer_disjoint_polar_product_diagnostic(
+            positions,
+            tuple(anchor.point for anchor in anchors),
+            bounds=bounds,
+        )
+        domain = inference.domain
+        if domain is None or set(domain.all_slots) != set(positions):
+            return (
+                None,
+                inference.explored_states,
+                inference.search_exhausted,
+            )
+        return (
+            (anchors, positions, domain),
+            inference.explored_states,
+            inference.search_exhausted,
+        )
+
+    def _ground_factored_domain(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> (
+        tuple[
+            tuple[_MarkedAnchor, ...],
+            tuple[tuple[int, int], ...],
+            FactoredOrbitDomain,
+        ]
+        | None
+    ):
+        represented, explored_states, search_exhausted = (
+            self._factored_token_domain_diagnostic(
+                frame,
+                bounds=self.segmented_permutation_bounds,
+            )
+        )
+        self.factored_orbit_factorization_states = max(
+            self.factored_orbit_factorization_states,
+            explored_states,
+        )
+        if search_exhausted:
+            self.factored_orbit_factorization_search_exhausted = True
+            self.factored_orbit_diagnostic = (
+                "factorization-search-bound-exceeded"
+            )
+        return represented
+
+    @staticmethod
+    def _factored_controller_base(
+        grounding: GroundedRole,
+    ) -> FactoredControllerBase | None:
+        role = grounding.role
+        if grounding.centroid is None or role.area is None or not role.shape:
+            return None
+        return (
+            role.area,
+            canonical_dihedral_shape(role.shape),
+            role.primitive_kind,
+            role.primitive_properties,
+        )
+
+    @classmethod
+    def _factored_local_controller_form(
+        cls,
+        grounding: GroundedRole,
+        domain: FactoredOrbitDomain,
+    ) -> tuple[ControllerForm, int] | None:
+        base = cls._factored_controller_base(grounding)
+        if base is None or grounding.centroid is None:
+            return None
+        local = ground_polar_controller(
+            grounding.centroid,
+            grounding.role.shape,
+            domain,
+        )
+        if local is None:
+            return None
+        directions, ranks = domain.factor_shape
+        return (
+            (
+                *base,
+                (
+                    "polar-product",
+                    f"axis-relation:{local.relation}",
+                    f"direction-factor:{directions}",
+                    f"rank-factor:{ranks}",
+                ),
+            ),
+            local.module_index,
+        )
+
+    @classmethod
+    def _factored_interface_controller_form(
+        cls,
+        grounding: GroundedRole,
+        domain: FactoredOrbitDomain,
+        controller_bases: set[FactoredControllerBase],
+    ) -> ControllerForm | None:
+        base = cls._factored_controller_base(grounding)
+        if base is None or base not in controller_bases:
+            return None
+        directions, ranks = domain.factor_shape
+        return (
+            *base,
+            (
+                "polar-product",
+                "interface-controller",
+                f"direction-factor:{directions}",
+                f"rank-factor:{ranks}",
+            ),
+        )
+
+    def _known_factored_controller_bases(self) -> set[FactoredControllerBase]:
+        forms = set(self.factored_orbit_proposals) | set(
+            self.factored_orbit_controller_effects
+        )
+        return {
+            (form[0], form[1], form[2], form[3])
+            for form in forms
+            if len(form) == 5 and "axis-relation:" in " ".join(form[4])
+        }
+
+    def _resolve_factored_controller(
+        self,
+        grounding: GroundedRole,
+        domain: FactoredOrbitDomain,
+    ) -> tuple[ControllerForm, int | None] | None:
+        local = self._factored_local_controller_form(grounding, domain)
+        if local is not None:
+            return local
+        interface = self._factored_interface_controller_form(
+            grounding,
+            domain,
+            self._known_factored_controller_bases(),
+        )
+        if interface is None:
+            return None
+        return interface, None
+
+    def _factored_controller_candidates(
+        self,
+        scene: Scene,
+        tokens: tuple[ActionToken, ...],
+        domain: FactoredOrbitDomain,
+    ) -> tuple[_FactoredControllerCandidate, ...]:
+        grounded = tuple(
+            (token, self._grounding(token, scene))
+            for token in tokens
+            if token.action_id == self.complex_action and token.data
+        )
+        local_by_key: dict[
+            tuple[ControllerForm, int, tuple[int, int]],
+            _FactoredControllerCandidate,
+        ] = {}
+        for token, grounding in grounded:
+            local = self._factored_local_controller_form(grounding, domain)
+            if local is None or grounding.centroid is None:
+                continue
+            controller_form, module_index = local
+            key = (controller_form, module_index, grounding.centroid)
+            candidate = _FactoredControllerCandidate(
+                token=token,
+                controller_form=controller_form,
+                module_index=module_index,
+                controller=grounding.centroid,
+            )
+            previous = local_by_key.get(key)
+            if previous is None or token < previous.token:
+                local_by_key[key] = candidate
+        local_by_binding: dict[
+            tuple[ControllerForm, int],
+            list[_FactoredControllerCandidate],
+        ] = {}
+        for candidate in local_by_key.values():
+            assert candidate.module_index is not None
+            local_by_binding.setdefault(
+                (candidate.controller_form, candidate.module_index),
+                [],
+            ).append(candidate)
+        required_modules = set(range(len(domain.modules)))
+        forms = {form for form, _module_index in local_by_binding}
+        eligible_forms = {
+            form
+            for form in forms
+            if {
+                module_index
+                for candidate_form, module_index in local_by_binding
+                if candidate_form == form
+            }
+            == required_modules
+            and all(
+                len(local_by_binding[(form, module_index)]) == 1
+                for module_index in required_modules
+            )
+        }
+        local_candidates = tuple(
+            local_by_binding[(form, module_index)][0]
+            for form in sorted(eligible_forms, key=repr)
+            for module_index in sorted(required_modules)
+        )
+        ambiguous_slots = sum(
+            len(candidates) > 1
+            for candidates in local_by_binding.values()
+        )
+        controller_bases = {
+            (
+                candidate.controller_form[0],
+                candidate.controller_form[1],
+                candidate.controller_form[2],
+                candidate.controller_form[3],
+            )
+            for candidate in local_candidates
+        }
+        interface_by_key: dict[
+            tuple[ControllerForm, tuple[int, int]],
+            _FactoredControllerCandidate,
+        ] = {}
+        for token, grounding in grounded:
+            if (
+                self._factored_local_controller_form(grounding, domain)
+                is not None
+                or grounding.centroid is None
+            ):
+                continue
+            interface_form = self._factored_interface_controller_form(
+                grounding,
+                domain,
+                controller_bases,
+            )
+            if interface_form is None:
+                continue
+            interface_key = (interface_form, grounding.centroid)
+            candidate = _FactoredControllerCandidate(
+                token=token,
+                controller_form=interface_form,
+                module_index=None,
+                controller=grounding.centroid,
+            )
+            previous = interface_by_key.get(interface_key)
+            if previous is None or token < previous.token:
+                interface_by_key[interface_key] = candidate
+        interface_candidates = tuple(interface_by_key.values())
+        if len(interface_candidates) > 1:
+            ambiguous_slots += 1
+            interface_candidates = ()
+        output = tuple(
+            sorted(
+                (*local_candidates, *interface_candidates),
+                key=lambda item: (
+                    repr(item.controller_form),
+                    (
+                        item.module_index
+                        if item.module_index is not None
+                        else len(domain.modules)
+                    ),
+                    item.controller,
+                    item.token,
+                ),
+            )
+        )
+        self.factored_orbit_ambiguous_controller_slots = ambiguous_slots
+        self.factored_orbit_unique_bindings = {
+            (candidate.controller_form, candidate.module_index): (
+                candidate.controller
+            )
+            for candidate in output
+        }
+        return output
+
+    @staticmethod
+    def _same_factored_generator(
+        left: FactoredOrbitGenerator,
+        right: FactoredOrbitGenerator,
+    ) -> bool:
+        return (
+            left.kind == right.kind
+            and left.factor_shape == right.factor_shape
+            and left.delta == right.delta
+            and left.interface_count == right.interface_count
+        )
+
+    def _factored_generator(
+        self,
+        effect_id: str,
+    ) -> FactoredOrbitGenerator | None:
+        return next(
+            (
+                generator
+                for generator in self.factored_orbit_generators
+                if generator.effect_id == effect_id
+            ),
+            None,
+        )
+
+    def _quarantine_factored_controller(
+        self,
+        controller_form: ControllerForm,
+        diagnostic: str,
+    ) -> None:
+        self.factored_orbit_proposals.pop(controller_form, None)
+        self.factored_orbit_controller_effects.pop(controller_form, None)
+        self.factored_orbit_quarantined_forms.add(controller_form)
+        self.factored_orbit_pending_prediction = None
+        self.factored_orbit_conflicts += 1
+        self.factored_orbit_total_conflicts += 1
+        self.factored_orbit_diagnostic = diagnostic
+
+    def _observe_factored_orbit_transition(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        grounding: GroundedRole,
+        *,
+        progressed: bool,
+    ) -> None:
+        """Induce an abstract effect, then require prospective confirmation."""
+
+        pending = self.factored_orbit_pending_prediction
+        self.factored_orbit_pending_prediction = None
+        if progressed:
+            self.factored_orbit_diagnostic = "level-progress"
+            return
+        if (
+            not self.factored_orbit_transport
+            or self.cyclic_alignment_scheme is None
+            or self.cyclic_alignment_scheme.target_relation
+            != "anchor-token-matches-markers"
+        ):
+            self.factored_orbit_diagnostic = (
+                "no-earned-marker-goal"
+                if self.factored_orbit_transport
+                else "exact-off"
+            )
+            return
+        represented = self._ground_factored_domain(before)
+        if self.factored_orbit_factorization_search_exhausted:
+            return
+        if represented is None or grounding.centroid is None:
+            if pending is not None:
+                self._quarantine_factored_controller(
+                    pending.controller_form,
+                    "prediction-domain-mismatch",
+                )
+            else:
+                self.factored_orbit_diagnostic = "domain-unrepresented"
+            return
+        _anchors, _positions, domain = represented
+        self.factored_orbit_module_count = len(domain.modules)
+        self.factored_orbit_factor_shape = domain.factor_shape
+        resolved = self._resolve_factored_controller(grounding, domain)
+        if resolved is None:
+            if pending is not None:
+                self._quarantine_factored_controller(
+                    pending.controller_form,
+                    "controller-role-unrepresented",
+                )
+            else:
+                self.factored_orbit_diagnostic = "controller-role-unrepresented"
+            return
+        controller_form, module_index = resolved
+        binding = (controller_form, module_index)
+        if (
+            self.factored_orbit_unique_bindings.get(binding)
+            != grounding.centroid
+        ):
+            if pending is not None:
+                self._quarantine_factored_controller(
+                    pending.controller_form,
+                    "controller-binding-changed-before-response",
+                )
+            else:
+                self.factored_orbit_diagnostic = (
+                    "controller-binding-not-unique"
+                )
+            return
+        after_represented = self._ground_factored_domain(after)
+        if self.factored_orbit_factorization_search_exhausted:
+            return
+        if after_represented is None or after_represented[2] != domain:
+            if pending is not None:
+                self._quarantine_factored_controller(
+                    pending.controller_form,
+                    "prediction-domain-mismatch",
+                )
+            else:
+                self.factored_orbit_diagnostic = "token-domain-not-conserved"
+            return
+        candidates: tuple[FactoredOrbitGenerator, ...]
+        if module_index is None:
+            interface = infer_factored_interface_generator(
+                before,
+                after,
+                domain,
+                grounding.centroid,
+            )
+            candidates = (interface,) if interface is not None else ()
+        else:
+            candidates = infer_factored_orbit_generators(
+                before,
+                after,
+                domain,
+                module_index,
+                grounding.centroid,
+                bounds=self.segmented_permutation_bounds,
+            )
+        self.factored_orbit_last_candidate_count = len(candidates)
+        if candidates:
+            self.factored_orbit_observations += 1
+            self.factored_orbit_total_observations += 1
+
+        if pending is not None:
+            if (
+                pending.controller_form != controller_form
+                or pending.module_index != module_index
+            ):
+                self._quarantine_factored_controller(
+                    pending.controller_form,
+                    "controller-role-changed-before-response",
+                )
+                return
+            if not factored_effect_matches(
+                before,
+                after,
+                domain,
+                pending.generator,
+                module_index=module_index,
+            ):
+                self._quarantine_factored_controller(
+                    controller_form,
+                    "prospective-prediction-conflict",
+                )
+                return
+            matching = tuple(
+                candidate
+                for candidate in candidates
+                if self._same_factored_generator(candidate, pending.generator)
+            )
+            if len(candidates) != 1 or len(matching) != 1:
+                self.factored_orbit_diagnostic = (
+                    "prospective-prediction-underdetermined"
+                )
+                return
+            proposal = self.factored_orbit_proposals.get(controller_form)
+            generators = self.factored_orbit_generators
+            if proposal is not None:
+                if not self._same_factored_generator(
+                    proposal.generator,
+                    pending.generator,
+                ):
+                    self._quarantine_factored_controller(
+                        controller_form,
+                        "provisional-effect-conflict",
+                    )
+                    return
+                if (
+                    module_index is not None
+                    and proposal.module_index == module_index
+                ):
+                    self.factored_orbit_diagnostic = (
+                        "confirmation-module-not-independent"
+                    )
+                    return
+                if (
+                    module_index is None
+                    and proposal.controller != grounding.centroid
+                ):
+                    self.factored_orbit_diagnostic = (
+                        "interface-controller-not-repeated"
+                    )
+                    return
+            elif (
+                self.factored_orbit_controller_effects.get(controller_form)
+                != pending.generator.effect_id
+            ):
+                self._quarantine_factored_controller(
+                    controller_form,
+                    "confirmed-effect-role-conflict",
+                )
+                return
+            try:
+                if proposal is not None:
+                    generators = merge_factored_evidence(
+                        generators,
+                        proposal.generator,
+                        bounds=self.segmented_permutation_bounds,
+                    )
+                generators = merge_factored_evidence(
+                    generators,
+                    matching[0],
+                    bounds=self.segmented_permutation_bounds,
+                )
+            except ValueError:
+                self._quarantine_factored_controller(
+                    controller_form,
+                    "generator-bound-exceeded",
+                )
+                return
+            self.factored_orbit_generators = generators
+            self.factored_orbit_controller_effects[controller_form] = (
+                matching[0].effect_id
+            )
+            if proposal is not None:
+                self.factored_orbit_proposals.pop(controller_form, None)
+                self.factored_orbit_confirmations += 1
+                self.factored_orbit_total_confirmations += 1
+                self.factored_orbit_diagnostic = "prospectively-confirmed"
+            else:
+                self.factored_orbit_diagnostic = "confirmed-prediction-observed"
+            return
+
+        if controller_form in self.factored_orbit_quarantined_forms:
+            self.factored_orbit_diagnostic = "controller-form-quarantined"
+            return
+        if len(candidates) != 1:
+            self.factored_orbit_diagnostic = (
+                "ambiguous-factor-translation"
+                if len(candidates) > 1
+                else "no-exact-factored-effect"
+            )
+            return
+        if (
+            controller_form in self.factored_orbit_proposals
+            or controller_form in self.factored_orbit_controller_effects
+        ):
+            self.factored_orbit_diagnostic = (
+                "matching-response-not-preregistered"
+            )
+            return
+        self.factored_orbit_proposals[controller_form] = _FactoredOrbitProposal(
+            controller_form=controller_form,
+            generator=candidates[0],
+            module_index=module_index,
+            controller=grounding.centroid,
+        )
+        self.factored_orbit_diagnostic = "provisional-observation"
+
+    def _register_factored_orbit_prediction(
+        self,
+        grounding: GroundedRole,
+    ) -> None:
+        """Register the module-bound abstract response before an intervention."""
+
+        self.factored_orbit_pending_prediction = None
+        if (
+            not self.factored_orbit_transport
+            or self.cyclic_alignment_scheme is None
+            or self.factored_orbit_factorization_search_exhausted
+        ):
+            return
+        represented = self._ground_factored_domain(self.selection_frame)
+        if represented is None:
+            return
+        resolved = self._resolve_factored_controller(grounding, represented[2])
+        if resolved is None:
+            return
+        controller_form, module_index = resolved
+        if controller_form in self.factored_orbit_quarantined_forms:
+            return
+        if (
+            self.factored_orbit_unique_bindings.get(
+                (controller_form, module_index)
+            )
+            != grounding.centroid
+        ):
+            return
+        proposal = self.factored_orbit_proposals.get(controller_form)
+        generator: FactoredOrbitGenerator | None
+        if proposal is not None:
+            if (
+                module_index is not None
+                and proposal.module_index == module_index
+            ):
+                return
+            if (
+                module_index is None
+                and proposal.controller != grounding.centroid
+            ):
+                return
+            generator = proposal.generator
+        else:
+            effect_id = self.factored_orbit_controller_effects.get(
+                controller_form
+            )
+            generator = (
+                self._factored_generator(effect_id)
+                if effect_id is not None
+                else None
+            )
+        if generator is None:
+            return
+        self.factored_orbit_pending_prediction = _FactoredOrbitPrediction(
+            controller_form=controller_form,
+            generator=generator,
+            module_index=module_index,
+        )
+        self.factored_orbit_predictions += 1
+        self.factored_orbit_total_predictions += 1
+
+    def _select_factored_orbit_transport(
+        self,
+        observation: Observation,
+        scene: Scene,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Probe, confirm, and plan over a unique factored product topology."""
+
+        if (
+            not self.factored_orbit_transport
+            or self.cyclic_alignment_scheme is None
+            or self.cyclic_alignment_scheme.target_relation
+            != "anchor-token-matches-markers"
+            or self.factored_orbit_factorization_search_exhausted
+            or self.cyclic_alignment_level_trials
+            >= self.max_cyclic_alignment_trials_per_level
+        ):
+            return None
+        represented = self._ground_factored_domain(observation.frame)
+        if represented is None:
+            if not self.factored_orbit_factorization_search_exhausted:
+                self.factored_orbit_diagnostic = "domain-unrepresented"
+            return None
+        anchors, _positions, domain = represented
+        self.factored_orbit_module_count = len(domain.modules)
+        self.factored_orbit_factor_shape = domain.factor_shape
+        candidates = self._factored_controller_candidates(scene, tokens, domain)
+        if not candidates:
+            self.factored_orbit_diagnostic = (
+                "controller-slot-ambiguous"
+                if self.factored_orbit_ambiguous_controller_slots
+                else "no-controller-candidates"
+            )
+            return None
+
+        for controller_form, proposal in sorted(
+            self.factored_orbit_proposals.items(),
+            key=lambda item: repr(item[0]),
+        ):
+            confirmation = tuple(
+                candidate
+                for candidate in candidates
+                if candidate.controller_form == controller_form
+                and (
+                    (
+                        candidate.module_index is not None
+                        and candidate.module_index != proposal.module_index
+                    )
+                    or (
+                        candidate.module_index is None
+                        and candidate.controller == proposal.controller
+                    )
+                )
+            )
+            if confirmation:
+                self.factored_orbit_diagnostic = "confirming-provisional-effect"
+                return min(
+                    confirmation,
+                    key=lambda item: (
+                        self.attempts[(state, item.token)],
+                        self.global_attempts[item.token],
+                        item.token,
+                    ),
+                ).token
+
+        local_candidates = tuple(
+            candidate
+            for candidate in candidates
+            if candidate.module_index is not None
+        )
+        local_forms = {candidate.controller_form for candidate in local_candidates}
+        for controller_form in sorted(local_forms, key=repr):
+            if (
+                controller_form in self.factored_orbit_proposals
+                or controller_form in self.factored_orbit_controller_effects
+                or controller_form in self.factored_orbit_quarantined_forms
+            ):
+                continue
+            probes = tuple(
+                candidate
+                for candidate in local_candidates
+                if candidate.controller_form == controller_form
+            )
+            self.factored_orbit_diagnostic = "probing-local-controller"
+            return min(
+                probes,
+                key=lambda item: (
+                    self.attempts[(state, item.token)],
+                    self.global_attempts[item.token],
+                    item.module_index,
+                    item.token,
+                ),
+            ).token
+
+        if not local_forms.issubset(self.factored_orbit_controller_effects):
+            self.factored_orbit_diagnostic = "local-controller-evidence-incomplete"
+            return None
+        interface_candidates = tuple(
+            candidate for candidate in candidates if candidate.module_index is None
+        )
+        interface_forms = {
+            candidate.controller_form for candidate in interface_candidates
+        }
+        unrepresented_interfaces = tuple(
+            form
+            for form in sorted(interface_forms, key=repr)
+            if form not in self.factored_orbit_controller_effects
+            and form not in self.factored_orbit_proposals
+            and form not in self.factored_orbit_quarantined_forms
+        )
+        if unrepresented_interfaces:
+            form = unrepresented_interfaces[0]
+            probes = tuple(
+                candidate
+                for candidate in interface_candidates
+                if candidate.controller_form == form
+            )
+            self.factored_orbit_diagnostic = "probing-interface-controller"
+            return min(
+                probes,
+                key=lambda item: (
+                    self.attempts[(state, item.token)],
+                    self.global_attempts[item.token],
+                    item.token,
+                ),
+            ).token
+
+        represented_effects = set(self.factored_orbit_controller_effects.values())
+        generators = tuple(
+            generator
+            for generator in self.factored_orbit_generators
+            if generator.support >= 2
+            and generator.effect_id in represented_effects
+        )
+        plan = plan_factored_orbit_transport(
+            observation.frame,
+            tuple(
+                MarkerTarget(anchor.point, anchor.marker_color)
+                for anchor in anchors
+            ),
+            domain,
+            generators,
+            bounds=self.segmented_permutation_bounds,
+        )
+        if plan is None:
+            self.factored_orbit_last_plan_length = 0
+            self.factored_orbit_search_states = 0
+            self.factored_orbit_diagnostic = (
+                "controller-slot-ambiguous"
+                if self.factored_orbit_ambiguous_controller_slots
+                else "no-interface-controller-candidate"
+                if not interface_candidates
+                else "no-plan-within-bounds"
+            )
+            return None
+        self.factored_orbit_last_plan_length = len(plan.steps)
+        self.factored_orbit_search_states = plan.explored_states
+        if not plan.steps:
+            self.factored_orbit_diagnostic = "marker-goal-already-satisfied"
+            return None
+        step = plan.steps[0]
+        forms = {
+            form
+            for form, effect_id in self.factored_orbit_controller_effects.items()
+            if effect_id == step.effect_id
+            and form not in self.factored_orbit_quarantined_forms
+        }
+        represented_controllers = tuple(
+            candidate
+            for candidate in candidates
+            if candidate.controller_form in forms
+            and candidate.module_index == step.module_index
+        )
+        if not represented_controllers:
+            self.factored_orbit_diagnostic = (
+                "controller-slot-ambiguous"
+                if self.factored_orbit_ambiguous_controller_slots
+                else "planned-controller-unrepresented"
+            )
+            return None
+        self.factored_orbit_diagnostic = "planned-confirmed-generator"
+        return min(
+            represented_controllers,
+            key=lambda item: (
+                self.attempts[(state, item.token)],
+                self.global_attempts[item.token],
+                item.token,
+            ),
+        ).token
 
     @staticmethod
     def _segmented_controller_form(
@@ -10101,6 +11115,60 @@ class EpistemicExplorer:
             ),
             "segmented_permutation_last_controller_context": list(
                 self.segmented_permutation_last_controller_context
+            ),
+            "factored_orbit_proposals": len(self.factored_orbit_proposals),
+            "factored_orbit_generators": len(self.factored_orbit_generators),
+            "factored_orbit_controller_forms": len(
+                self.factored_orbit_controller_effects
+            ),
+            "factored_orbit_quarantined_forms": len(
+                self.factored_orbit_quarantined_forms
+            ),
+            "factored_orbit_unique_bindings": len(
+                self.factored_orbit_unique_bindings
+            ),
+            "factored_orbit_observations": self.factored_orbit_observations,
+            "factored_orbit_predictions": self.factored_orbit_predictions,
+            "factored_orbit_confirmations": self.factored_orbit_confirmations,
+            "factored_orbit_conflicts": self.factored_orbit_conflicts,
+            "factored_orbit_plan_steps": self.factored_orbit_plan_steps,
+            "factored_orbit_last_plan_length": (
+                self.factored_orbit_last_plan_length
+            ),
+            "factored_orbit_search_states": self.factored_orbit_search_states,
+            "factored_orbit_module_count": self.factored_orbit_module_count,
+            "factored_orbit_factor_shape": (
+                list(self.factored_orbit_factor_shape)
+                if self.factored_orbit_factor_shape is not None
+                else []
+            ),
+            "factored_orbit_last_candidate_count": (
+                self.factored_orbit_last_candidate_count
+            ),
+            "factored_orbit_ambiguous_controller_slots": (
+                self.factored_orbit_ambiguous_controller_slots
+            ),
+            "factored_orbit_factorization_states": (
+                self.factored_orbit_factorization_states
+            ),
+            "factored_orbit_factorization_search_exhausted": int(
+                self.factored_orbit_factorization_search_exhausted
+            ),
+            "factored_orbit_diagnostic": self.factored_orbit_diagnostic,
+            "factored_orbit_total_observations": (
+                self.factored_orbit_total_observations
+            ),
+            "factored_orbit_total_predictions": (
+                self.factored_orbit_total_predictions
+            ),
+            "factored_orbit_total_confirmations": (
+                self.factored_orbit_total_confirmations
+            ),
+            "factored_orbit_total_conflicts": (
+                self.factored_orbit_total_conflicts
+            ),
+            "factored_orbit_total_plan_steps": (
+                self.factored_orbit_total_plan_steps
             ),
             "select_apply_program_length": len(self.select_apply_program),
             "select_apply_cursor": self.select_apply_cursor,

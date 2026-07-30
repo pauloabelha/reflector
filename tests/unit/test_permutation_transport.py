@@ -3,15 +3,25 @@ from __future__ import annotations
 import pytest
 
 from reflector.core.permutation_transport import (
+    FactoredOrbitDomain,
+    FactoredOrbitGenerator,
     Frame,
     MarkerTarget,
     PermutationBounds,
     PermutationGenerator,
     PermutationSystem,
     Point,
+    canonical_dihedral_shape,
+    ground_polar_controller,
+    infer_disjoint_polar_product,
+    infer_disjoint_polar_product_diagnostic,
+    infer_factored_interface_generator,
+    infer_factored_orbit_generators,
     infer_path_cycle_permutations,
     infer_segmented_permutations,
+    merge_factored_evidence,
     merge_generator_evidence,
+    plan_factored_orbit_transport,
     plan_marker_transport,
 )
 
@@ -66,6 +76,69 @@ def _apply_values(
     output = dict(values)
     for source in generator.slots:
         output[generator.destination(source)] = values[source]
+    return output
+
+
+def _polar_fixture(
+    *,
+    scale: int = 1,
+    ranks: int = 2,
+) -> tuple[tuple[Point, ...], tuple[Point, ...]]:
+    pitch = 2 * scale
+    hubs = ((12 * scale, 12 * scale), (36 * scale, 12 * scale), (24 * scale, 36 * scale))
+    rays = (
+        (-1, -1),
+        (0, -1),
+        (1, -1),
+        (1, 0),
+        (1, 1),
+        (0, 1),
+        (-1, 1),
+        (-1, 0),
+    )
+    modules = tuple(
+        (
+            hub[0] + ray[0] * pitch * rank,
+            hub[1] + ray[1] * pitch * rank,
+        )
+        for hub in hubs
+        for ray in rays
+        for rank in range(1, ranks + 1)
+    )
+    anchor_rank = ranks + 1
+    anchors = (
+        (
+            hubs[0][0] + anchor_rank * pitch,
+            hubs[0][1] + anchor_rank * pitch,
+        ),
+        (
+            hubs[1][0] - anchor_rank * pitch,
+            hubs[1][1] + anchor_rank * pitch,
+        ),
+        (hubs[2][0], hubs[2][1] - anchor_rank * pitch),
+    )
+    return tuple(sorted((*modules, *anchors))), tuple(sorted(anchors))
+
+
+def _apply_factored_effect(
+    values: dict[Point, int],
+    domain: FactoredOrbitDomain,
+    generator: FactoredOrbitGenerator,
+    module_index: int | None,
+) -> dict[Point, int]:
+    output = dict(values)
+    if generator.kind == "interface":
+        for interface in domain.interfaces:
+            output[interface.anchor] = values[interface.outlet]
+            output[interface.outlet] = values[interface.anchor]
+        return output
+    assert module_index is not None
+    module = domain.modules[module_index]
+    for point in module.slots:
+        destination = module.point(
+            generator.apply_coordinate(module.coordinate(point))
+        )
+        output[destination] = values[point]
     return output
 
 
@@ -436,3 +509,324 @@ def test_path_cycle_inference_is_d4_translation_and_color_equivariant(
     assert candidates[0].slots == expected.slots
     assert candidates[0].successor == expected.successor
     assert candidates[0].axis == "path"
+
+
+@pytest.mark.parametrize("transform_index", range(8))
+def test_polar_product_factorization_and_controller_roles_are_d4_equivariant(
+    transform_index: int,
+) -> None:
+    points, anchors = _polar_fixture(scale=2)
+    controller_shape = ((0, 0), (0, 1), (0, 2), (1, 0))
+
+    def raw_transform(point: Point) -> Point:
+        x, y = point
+        return (
+            (x, y),
+            (-x, y),
+            (x, -y),
+            (-x, -y),
+            (y, x),
+            (-y, x),
+            (y, -x),
+            (-y, -x),
+        )[transform_index]
+
+    transformed = tuple(raw_transform(point) for point in points)
+    shift_x = 7 - min(point[0] for point in transformed)
+    shift_y = 9 - min(point[1] for point in transformed)
+
+    def transform(point: Point) -> Point:
+        x, y = raw_transform(point)
+        return x + shift_x, y + shift_y
+
+    transformed_points = tuple(transform(point) for point in points)
+    transformed_anchors = tuple(transform(point) for point in anchors)
+    domain = infer_disjoint_polar_product(
+        transformed_points,
+        transformed_anchors,
+    )
+
+    assert domain is not None
+    assert len(domain.modules) == 3
+    assert domain.factor_shape == (8, 2)
+    assert {module.pitch for module in domain.modules} == {4}
+    assert {item.anchor for item in domain.interfaces} == set(transformed_anchors)
+
+    source_hub = (12 * 2, 12 * 2)
+    source_controller = (source_hub[0], source_hub[1] + 3 * 4)
+    transformed_shape = tuple(raw_transform(point) for point in controller_shape)
+    local = ground_polar_controller(
+        transform(source_controller),
+        transformed_shape,
+        domain,
+    )
+    assert local is not None
+    assert local.relation == "parallel"
+    assert canonical_dihedral_shape(transformed_shape) == (
+        canonical_dihedral_shape(controller_shape)
+    )
+
+
+def test_factored_effects_are_exact_and_plan_without_global_cross_product() -> None:
+    points, anchors = _polar_fixture()
+    domain = infer_disjoint_polar_product(points, anchors)
+    assert domain is not None
+    values = {point: 100 + index for index, point in enumerate(domain.all_slots)}
+    width = max(point[0] for point in points) + 4
+    height = max(point[1] for point in points) + 4
+
+    angular = FactoredOrbitGenerator.create_local(
+        factor_shape=domain.factor_shape,
+        delta=(1, 0),
+        controller=(0, 0),
+    )
+    radial = FactoredOrbitGenerator.create_local(
+        factor_shape=domain.factor_shape,
+        delta=(0, 1),
+        controller=(0, 1),
+    )
+    angular_after = _apply_factored_effect(values, domain, angular, 0)
+    radial_after = _apply_factored_effect(values, domain, radial, 1)
+    angular_evidence = infer_factored_orbit_generators(
+        _paint(values, width=width, height=height),
+        _paint(angular_after, width=width, height=height),
+        domain,
+        0,
+        (0, 0),
+    )
+    radial_evidence = infer_factored_orbit_generators(
+        _paint(values, width=width, height=height),
+        _paint(radial_after, width=width, height=height),
+        domain,
+        1,
+        (0, 1),
+    )
+    assert len(angular_evidence) == 1
+    assert angular_evidence[0].delta == (1, 0)
+    assert len(radial_evidence) == 1
+    assert radial_evidence[0].delta == (0, 1)
+
+    interface = FactoredOrbitGenerator.create_interface(
+        factor_shape=domain.factor_shape,
+        interface_count=len(domain.interfaces),
+        controller=(0, 2),
+    )
+    interface_after = _apply_factored_effect(values, domain, interface, None)
+    interface_evidence = infer_factored_interface_generator(
+        _paint(values, width=width, height=height),
+        _paint(interface_after, width=width, height=height),
+        domain,
+        (0, 2),
+    )
+    assert interface_evidence is not None
+
+    generators: tuple[FactoredOrbitGenerator, ...] = ()
+    for evidence in (
+        angular_evidence[0],
+        FactoredOrbitGenerator.create_local(
+            factor_shape=domain.factor_shape,
+            delta=(1, 0),
+            controller=(1, 0),
+        ),
+        radial_evidence[0],
+        FactoredOrbitGenerator.create_local(
+            factor_shape=domain.factor_shape,
+            delta=(0, 1),
+            controller=(1, 1),
+        ),
+        interface_evidence,
+        FactoredOrbitGenerator.create_interface(
+            factor_shape=domain.factor_shape,
+            interface_count=len(domain.interfaces),
+            controller=(0, 2),
+        ),
+    ):
+        generators = merge_factored_evidence(generators, evidence)
+
+    marker_targets: list[MarkerTarget] = []
+    planned_values = dict(values)
+    for index, edge in enumerate(domain.interfaces):
+        marker_color = 900 + index
+        marker_targets.append(MarkerTarget(edge.anchor, marker_color))
+        planned_values[edge.anchor] = 700 + index
+        source = domain.modules[edge.module_index].point((index + 2, 1))
+        planned_values[source] = marker_color
+    frame = _paint(planned_values, width=width, height=height)
+    plan = plan_factored_orbit_transport(
+        frame,
+        tuple(marker_targets),
+        domain,
+        generators,
+    )
+
+    assert plan is not None
+    assert plan.explored_states <= 3 * 16
+    assert plan.steps[-1].module_index is None
+    simulated = dict(planned_values)
+    by_id = {generator.effect_id: generator for generator in generators}
+    for step in plan.steps:
+        simulated = _apply_factored_effect(
+            simulated,
+            domain,
+            by_id[step.effect_id],
+            step.module_index,
+        )
+    assert all(simulated[target.point] == target.color for target in marker_targets)
+
+
+def test_polar_product_falsifiers_abstain_on_incomplete_or_ambiguous_structure() -> None:
+    points, anchors = _polar_fixture()
+    module_point = next(point for point in points if point not in set(anchors))
+
+    assert infer_disjoint_polar_product(
+        tuple(point for point in points if point != module_point),
+        anchors,
+    ) is None
+    assert infer_disjoint_polar_product(
+        points,
+        anchors,
+        bounds=PermutationBounds(max_factor_directions=7),
+    ) is None
+
+    domain = infer_disjoint_polar_product(points, anchors)
+    assert domain is not None
+    module = domain.modules[0]
+    assert ground_polar_controller(
+        (module.hub[0], module.hub[1] + 3 * module.pitch),
+        ((0, 0), (0, 1), (1, 0), (1, 1)),
+        domain,
+    ) is None
+
+    values = {point: 100 + index for index, point in enumerate(domain.all_slots)}
+    generator = FactoredOrbitGenerator.create_local(
+        factor_shape=domain.factor_shape,
+        delta=(1, 0),
+        controller=(0, 0),
+    )
+    changed = _apply_factored_effect(values, domain, generator, 0)
+    changed[domain.modules[1].slots[0]] += 1
+    width = max(point[0] for point in points) + 4
+    height = max(point[1] for point in points) + 4
+    assert infer_factored_orbit_generators(
+        _paint(values, width=width, height=height),
+        _paint(changed, width=width, height=height),
+        domain,
+        0,
+        (0, 0),
+    ) == ()
+
+
+def test_interface_requires_every_edge_to_be_visibly_discriminated() -> None:
+    points, anchors = _polar_fixture()
+    domain = infer_disjoint_polar_product(points, anchors)
+    assert domain is not None
+    values = {point: 100 + index for index, point in enumerate(domain.all_slots)}
+    for interface in domain.interfaces[1:]:
+        values[interface.outlet] = values[interface.anchor]
+    after = dict(values)
+    changed = domain.interfaces[0]
+    after[changed.anchor], after[changed.outlet] = (
+        values[changed.outlet],
+        values[changed.anchor],
+    )
+    width = max(point[0] for point in points) + 4
+    height = max(point[1] for point in points) + 4
+
+    assert (
+        infer_factored_interface_generator(
+            _paint(values, width=width, height=height),
+            _paint(after, width=width, height=height),
+            domain,
+            (0, 0),
+        )
+        is None
+    )
+
+
+def test_factorization_search_exhaustion_fails_closed() -> None:
+    points, anchors = _polar_fixture()
+
+    inference = infer_disjoint_polar_product_diagnostic(
+        points,
+        anchors,
+        bounds=PermutationBounds(max_factorization_search_states=1),
+    )
+
+    assert inference.domain is None
+    assert inference.explored_states == 1
+    assert inference.search_exhausted
+
+
+@pytest.mark.parametrize("transform_index", range(8))
+def test_alternate_rank_factored_effect_is_d4_and_recolor_equivariant(
+    transform_index: int,
+) -> None:
+    points, anchors = _polar_fixture(ranks=3)
+
+    def raw_transform(point: Point) -> Point:
+        x, y = point
+        return (
+            (x, y),
+            (-x, y),
+            (x, -y),
+            (-x, -y),
+            (y, x),
+            (-y, x),
+            (y, -x),
+            (-y, -x),
+        )[transform_index]
+
+    raw_points = tuple(raw_transform(point) for point in points)
+    shift_x = 4 - min(point[0] for point in raw_points)
+    shift_y = 4 - min(point[1] for point in raw_points)
+
+    def transform(point: Point) -> Point:
+        x, y = raw_transform(point)
+        return x + shift_x, y + shift_y
+
+    transformed_points = tuple(transform(point) for point in points)
+    transformed_anchors = tuple(transform(point) for point in anchors)
+    domain = infer_disjoint_polar_product(
+        transformed_points,
+        transformed_anchors,
+    )
+    assert domain is not None
+    assert domain.factor_shape == (8, 3)
+    generator = FactoredOrbitGenerator.create_local(
+        factor_shape=domain.factor_shape,
+        delta=(1, 1),
+        controller=(0, 0),
+    )
+    values = {
+        point: 100 + index for index, point in enumerate(domain.all_slots)
+    }
+    changed = _apply_factored_effect(values, domain, generator, 0)
+    width = max(point[0] for point in transformed_points) + 4
+    height = max(point[1] for point in transformed_points) + 4
+
+    inferred = infer_factored_orbit_generators(
+        _paint(values, width=width, height=height),
+        _paint(changed, width=width, height=height),
+        domain,
+        0,
+        (0, 0),
+    )
+    recolored_values = {point: color * 7 + 3 for point, color in values.items()}
+    recolored_changed = _apply_factored_effect(
+        recolored_values,
+        domain,
+        generator,
+        0,
+    )
+    recolored = infer_factored_orbit_generators(
+        _paint(recolored_values, width=width, height=height),
+        _paint(recolored_changed, width=width, height=height),
+        domain,
+        0,
+        (0, 0),
+    )
+
+    assert len(inferred) == 1
+    assert inferred[0].delta == (1, 1)
+    assert len(recolored) == 1
+    assert recolored[0].delta == inferred[0].delta

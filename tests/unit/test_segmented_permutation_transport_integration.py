@@ -730,14 +730,21 @@ def test_bounds_reset_flag_off_and_submission_overlay() -> None:
         enable_cyclic_sequence_alignment=True,
         enable_segmented_permutation_transport=True,
         enable_path_cycle_transport=True,
+        enable_factored_orbit_transport=True,
     )
     assert SymbolicPolicy(config).explorer.segmented_permutation_transport
     assert SymbolicPolicy(config).explorer.path_cycle_transport
+    assert SymbolicPolicy(config).explorer.factored_orbit_transport
     with pytest.raises(
         ValueError,
         match="path cycle transport requires segmented permutation transport",
     ):
         MindConfig(enable_path_cycle_transport=True)
+    with pytest.raises(
+        ValueError,
+        match="factored orbit transport requires segmented permutation transport",
+    ):
+        MindConfig(enable_factored_orbit_transport=True)
 
     with zipfile.ZipFile(io.BytesIO(build_overlay())) as archive:
         assert "reflector/core/permutation_transport.py" in archive.namelist()

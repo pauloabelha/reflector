@@ -102,10 +102,12 @@ class MindConfig:
     enable_lattice_effect_planning: bool = False
     enable_segmented_permutation_transport: bool = False
     enable_path_cycle_transport: bool = False
+    enable_factored_orbit_transport: bool = False
     enable_shape_goal_translation: bool = False
     enable_relational_phase_translation: bool = False
     enable_committed_trajectory_planning: bool = False
     enable_colored_stencil_primary_planning: bool = False
+    enable_colored_stencil_secondary_planning: bool = False
     enable_first_contact_center_probe: bool = False
     enable_deep_failure_productive_reuse: bool = False
     enable_compact_component_frontier: bool = False
@@ -177,10 +179,12 @@ class MindConfig:
             "enable_lattice_effect_planning",
             "enable_segmented_permutation_transport",
             "enable_path_cycle_transport",
+            "enable_factored_orbit_transport",
             "enable_shape_goal_translation",
             "enable_relational_phase_translation",
             "enable_committed_trajectory_planning",
             "enable_colored_stencil_primary_planning",
+            "enable_colored_stencil_secondary_planning",
             "enable_first_contact_center_probe",
             "enable_deep_failure_productive_reuse",
             "enable_compact_component_frontier",
@@ -195,6 +199,13 @@ class MindConfig:
             raise ValueError(
                 "compact component nuisance filtering requires the compact "
                 "component frontier"
+            )
+        if (
+            self.enable_colored_stencil_secondary_planning
+            and not self.enable_colored_stencil_primary_planning
+        ):
+            raise ValueError(
+                "secondary stencil planning requires primary stencil planning"
             )
         if self.enable_visual_primitive_actions and not self.enable_visual_primitives:
             raise ValueError(
@@ -310,6 +321,13 @@ class MindConfig:
         ):
             raise ValueError(
                 "path cycle transport requires segmented permutation transport"
+            )
+        if (
+            self.enable_factored_orbit_transport
+            and not self.enable_segmented_permutation_transport
+        ):
+            raise ValueError(
+                "factored orbit transport requires segmented permutation transport"
             )
         if (
             self.enable_multiline_target_binding
