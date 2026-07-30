@@ -31,6 +31,7 @@ OVERLAY_FILES = (
     "reflector/core/causal.py",
     "reflector/core/planning.py",
     "reflector/core/connector_synthesis.py",
+    "reflector/core/lattice_csp.py",
     "reflector/core/exploration.py",
     "reflector/core/graph.py",
     "reflector/core/mind.py",

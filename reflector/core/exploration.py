@@ -20,6 +20,17 @@ from .connector_synthesis import (
     synthesize_connector_program,
 )
 from .inheritance import SchemeLibrary
+from .lattice_csp import (
+    ClickEffectModel,
+    ClickTransition,
+    ColorCycle,
+    LatticeState,
+    Relation,
+    RelationConstraint,
+    SolveStatus,
+    learn_click_effect_model,
+    solve_click_csp,
+)
 from .symbolic import ObjectState, Observation, Scene
 
 StateKey = tuple[int, str, str]
@@ -175,6 +186,21 @@ class _ConnectorGraphGrounding:
 
 
 @dataclass(frozen=True, slots=True)
+class _LatticeEffectGrounding:
+    """One percept-grounded cyclic lattice and its visible clue constraints."""
+
+    state: LatticeState
+    constraints: tuple[RelationConstraint, ...]
+    anchors: tuple[tuple[int, int], ...]
+    action_regions: tuple[
+        tuple[tuple[int, int], tuple[int, int, int, int]],
+        ...,
+    ]
+    step: int
+    signature: tuple[object, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class _MarkedAnchor:
     point: tuple[int, int]
     marker_color: int
@@ -319,6 +345,7 @@ class EpistemicExplorer:
     connector_relocation: bool = False
     constructive_connector_placement: bool = False
     connector_graph_synthesis: bool = False
+    lattice_effect_planning: bool = False
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
     committed_trajectory_planning: bool = False
@@ -671,6 +698,20 @@ class EpistemicExplorer:
     compact_component_frontier_retry_active: bool | None = None
     compact_component_frontier_retry_diagnostic: str = "not-evaluated"
     compact_component_frontier_previous_retry_active: bool | None = None
+    lattice_effect_transitions: list[ClickTransition] = field(
+        default_factory=list
+    )
+    lattice_effect_probe_contexts: list[
+        tuple[tuple[int, int], ...]
+    ] = field(default_factory=list)
+    lattice_effect_signature: tuple[object, ...] | None = None
+    lattice_effect_model: ClickEffectModel | None = None
+    lattice_effect_quarantined: bool = False
+    lattice_effect_prediction_mismatches: int = 0
+    lattice_effect_observations: int = 0
+    lattice_effect_plan_steps: int = 0
+    lattice_effect_search_nodes: int = 0
+    lattice_effect_diagnostic: str = "not-attempted"
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -694,6 +735,8 @@ class EpistemicExplorer:
             order.append("successful-role-replay")
         if self.local_relation_solver and not self.constraint_first_role_replay:
             order.append("local-relation-repair")
+        if self.lattice_effect_planning:
+            order.append("lattice-effect-planning")
         if self.relational_scheme_binding:
             order.append("relational-scheme-binding")
         if self.parameterized_select_apply_commit:
@@ -735,6 +778,8 @@ class EpistemicExplorer:
             if "shape-goal-translation" in selected_reason
             else "parameterized-select-apply-commit"
             if "parameterized-select-apply-commit" in selected_reason
+            else "lattice-effect-planning"
+            if "lattice-effect-planning" in selected_reason
             else "local-relation-repair"
             if "repair-local-relation" in selected_reason
             else "parameterized-scheme-variation"
@@ -817,6 +862,7 @@ class EpistemicExplorer:
             self.connector_graph_diagnostic = (
                 "not-attempted" if self.connector_graph_synthesis else "exact-off"
             )
+            self._reset_lattice_effect_level()
             self.select_apply_diagnostic = "not-attempted"
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level()
@@ -849,6 +895,7 @@ class EpistemicExplorer:
             self.grounded_cyclic_transports.clear()
             self.select_apply_program = ()
             self.select_apply_cursor = 0
+            self._reset_lattice_effect_level()
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level(retain_accommodation=True)
             self._reset_boundary_nuisance_state()
@@ -949,6 +996,18 @@ class EpistemicExplorer:
         if any(len(left) != len(right) for left, right in zip(before, after)):
             return
         if (
+            self.lattice_effect_planning
+            and pending_token is not None
+            and pending_token.action_id == self.complex_action
+            and pending_token.data
+            and not progressed
+        ):
+            self._observe_lattice_effect_transition(
+                before,
+                after,
+                pending_token,
+            )
+        if (
             self.repeated_form_event_mode != "off"
             and pending_token is not None
             and pending_token.action_id != self.reset_action
@@ -1039,6 +1098,7 @@ class EpistemicExplorer:
         self.pending_role = None
         self.pending_grounding = None
         self.pending_relational_scheme = None
+        self._reset_lattice_effect_level()
 
     def _reset_compact_component_frontier_retry(
         self,
@@ -1080,6 +1140,20 @@ class EpistemicExplorer:
         self.shape_translation_phase_transitions.clear()
         self.shape_translation_phase_transition_count = 0
         self.shape_translation_phase_blocked = False
+
+    def _reset_lattice_effect_level(self) -> None:
+        self.lattice_effect_transitions.clear()
+        self.lattice_effect_probe_contexts.clear()
+        self.lattice_effect_signature = None
+        self.lattice_effect_model = None
+        self.lattice_effect_quarantined = False
+        self.lattice_effect_prediction_mismatches = 0
+        self.lattice_effect_observations = 0
+        self.lattice_effect_plan_steps = 0
+        self.lattice_effect_search_nodes = 0
+        self.lattice_effect_diagnostic = (
+            "not-attempted" if self.lattice_effect_planning else "exact-off"
+        )
 
     def _reset_boundary_nuisance_state(self) -> None:
         self.boundary_nuisance_motion.clear()
@@ -4472,6 +4546,25 @@ class EpistemicExplorer:
                     "epistemic-frontier:repair-local-relation",
                     scene,
                 )
+
+        lattice_plan = self._select_lattice_effect_plan(
+            observation,
+            tokens,
+        )
+        if lattice_plan is not None:
+            self.lattice_effect_plan_steps += 1
+            self.last_scheme_components = (
+                "scheme:cyclic-lattice-effect-planning",
+                "operator:induce-relative-click-effect",
+                "operator:solve-visible-relation-constraints",
+                "state:percept-grounded-lattice",
+            )
+            return self._issue(
+                state,
+                lattice_plan,
+                "epistemic-frontier:lattice-effect-planning",
+                scene,
+            )
 
         select_apply = self._select_parameterized_select_apply_commit(
             observation,
@@ -8350,6 +8443,432 @@ class EpistemicExplorer:
             repr(normalized).encode()
         ).hexdigest()
 
+    def _lattice_effect_grounding(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> _LatticeEffectGrounding | None:
+        """Ground one actuator-marked lattice and visible clue relations.
+
+        The trigger is deliberately narrower than the legacy relation repair:
+        every actionable tile must share one dense, non-solid square form.
+        Its internal mark is not interpreted.  Only observed transitions may
+        turn the form into an effect model.
+        """
+
+        relation = self.learned_local_relation
+        if (
+            not self.lattice_effect_planning
+            or not relation
+            or not frame
+            or not frame[0]
+        ):
+            return None
+        height = len(frame)
+        width = len(frame[0])
+        objects = self._frame_objects(frame)
+        groups: dict[int, list[_FrameObject]] = {}
+        for item in objects:
+            min_x, min_y, max_x, max_y = item.bbox
+            item_width = max_x - min_x + 1
+            item_height = max_y - min_y + 1
+            if (
+                item_width == item_height
+                and 3 <= item_width <= 12
+                and item_width % 3 == 0
+                and item.area * 4 >= item_width * item_height * 3
+                and item.area < item_width * item_height
+            ):
+                groups.setdefault(item_width, []).append(item)
+
+        candidates: list[_LatticeEffectGrounding] = []
+        directions = (
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+            (-1, 0),
+            (1, 0),
+            (-1, 1),
+            (0, 1),
+            (1, 1),
+        )
+        clue_indexes = (0, 1, 2, 3, 5, 6, 7, 8)
+        for size, raw_items in sorted(groups.items()):
+            if not 8 <= len(raw_items) <= 64:
+                continue
+            x_values = sorted({item.bbox[0] for item in raw_items})
+            y_values = sorted({item.bbox[1] for item in raw_items})
+            deltas = [
+                right - left
+                for values in (x_values, y_values)
+                for left, right in zip(values, values[1:])
+                if size < right - left <= size * 2
+            ]
+            if not deltas:
+                continue
+            delta_counts = Counter(deltas)
+            step = max(
+                delta_counts,
+                key=lambda value: (delta_counts[value], -value),
+            )
+            x_phases = Counter(item.bbox[0] % step for item in raw_items)
+            y_phases = Counter(item.bbox[1] % step for item in raw_items)
+            x_phase = max(
+                x_phases,
+                key=lambda value: (x_phases[value], -value),
+            )
+            y_phase = max(
+                y_phases,
+                key=lambda value: (y_phases[value], -value),
+            )
+            nodes = tuple(
+                sorted(
+                    (
+                        item
+                        for item in raw_items
+                        if item.bbox[0] % step == x_phase
+                        and item.bbox[1] % step == y_phase
+                    ),
+                    key=lambda item: (item.bbox[1], item.bbox[0]),
+                )
+            )
+            if (
+                not 8 <= len(nodes) <= 64
+                or len({item.shape for item in nodes}) != 1
+            ):
+                continue
+            origins = {
+                (item.bbox[0], item.bbox[1]): item for item in nodes
+            }
+            if len(origins) != len(nodes):
+                continue
+
+            subcell = size // 3
+            constraints: list[RelationConstraint] = []
+            clue_count = 0
+            unsupported_relation = False
+            for origin_y in range(y_phase, height - size + 1, step):
+                for origin_x in range(x_phase, width - size + 1, step):
+                    if (origin_x, origin_y) in origins:
+                        continue
+                    clue: list[int] = []
+                    uniform = True
+                    for row in range(3):
+                        for column in range(3):
+                            start_x = origin_x + column * subcell
+                            start_y = origin_y + row * subcell
+                            values = {
+                                frame[y][x]
+                                for y in range(start_y, start_y + subcell)
+                                for x in range(start_x, start_x + subcell)
+                            }
+                            if len(values) != 1:
+                                uniform = False
+                                break
+                            clue.append(next(iter(values)))
+                        if not uniform:
+                            break
+                    if (
+                        not uniform
+                        or len(clue) != 9
+                        or len(set(clue)) < 2
+                    ):
+                        continue
+                    center_color = clue[4]
+                    local_constraints = 0
+                    for clue_index, (dx, dy) in zip(
+                        clue_indexes,
+                        directions,
+                    ):
+                        neighbor = origins.get(
+                            (
+                                origin_x + dx * step,
+                                origin_y + dy * step,
+                            )
+                        )
+                        if neighbor is None:
+                            continue
+                        symbol = clue[clue_index]
+                        expected_same = relation.get(symbol)
+                        if expected_same is None:
+                            unsupported_relation = True
+                            break
+                        constraints.append(
+                            RelationConstraint(
+                                left=neighbor.centroid,
+                                relation=(
+                                    Relation.EQUAL
+                                    if expected_same
+                                    else Relation.NOT_EQUAL
+                                ),
+                                right_color=center_color,
+                            )
+                        )
+                        local_constraints += 1
+                    if unsupported_relation:
+                        break
+                    if local_constraints >= 2:
+                        clue_count += 1
+                if unsupported_relation:
+                    break
+
+            if (
+                unsupported_relation
+                or clue_count < 1
+                or len(constraints) < 4
+            ):
+                continue
+            ordered_constraints = tuple(
+                sorted(
+                    constraints,
+                    key=lambda item: (
+                        item.left,
+                        item.relation.value,
+                        item.right_color,
+                    ),
+                )
+            )
+            state = LatticeState.create(
+                {item.centroid: item.color for item in nodes}
+            )
+            action_regions = tuple(
+                (item.centroid, item.bbox)
+                for item in nodes
+            )
+            signature: tuple[object, ...] = (
+                size,
+                step,
+                state.points,
+                action_regions,
+                tuple(
+                    (
+                        item.left,
+                        item.relation.value,
+                        item.right_color,
+                    )
+                    for item in ordered_constraints
+                ),
+            )
+            candidates.append(
+                _LatticeEffectGrounding(
+                    state=state,
+                    constraints=ordered_constraints,
+                    anchors=state.points,
+                    action_regions=action_regions,
+                    step=step,
+                    signature=signature,
+                )
+            )
+
+        if len(candidates) != 1:
+            return None
+        return candidates[0]
+
+    @staticmethod
+    def _lattice_effect_action_anchor(
+        grounding: _LatticeEffectGrounding,
+        action_point: tuple[int, int],
+    ) -> tuple[int, int] | None:
+        """Canonicalize a click contained by exactly one repeated node."""
+
+        matches = tuple(
+            anchor
+            for anchor, (min_x, min_y, max_x, max_y) in grounding.action_regions
+            if min_x <= action_point[0] <= max_x
+            and min_y <= action_point[1] <= max_y
+        )
+        if len(matches) != 1:
+            return None
+        return matches[0]
+
+    @staticmethod
+    def _lattice_effect_probe_context(
+        grounding: _LatticeEffectGrounding,
+        anchor: tuple[int, int],
+    ) -> tuple[tuple[int, int], ...]:
+        """Describe represented immediate neighbors relative to one probe."""
+
+        represented = set(grounding.anchors)
+        return tuple(
+            (dx, dy)
+            for dy in (-1, 0, 1)
+            for dx in (-1, 0, 1)
+            if (dx, dy) != (0, 0)
+            and (
+                anchor[0] + dx * grounding.step,
+                anchor[1] + dy * grounding.step,
+            )
+            in represented
+        )
+
+    def _observe_lattice_effect_transition(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        token: ActionToken,
+    ) -> None:
+        """Learn one strict translation-invariant click effect from evidence."""
+
+        before_grounding = self._lattice_effect_grounding(before)
+        after_grounding = self._lattice_effect_grounding(after)
+        if before_grounding is None or after_grounding is None:
+            self.lattice_effect_diagnostic = "no-unique-marked-lattice"
+            return
+        if before_grounding.signature != after_grounding.signature:
+            self.lattice_effect_diagnostic = "lattice-grounding-changed"
+            return
+        action_data = dict(token.data)
+        action_x = action_data.get("x")
+        action_y = action_data.get("y")
+        if action_x is None or action_y is None:
+            self.lattice_effect_diagnostic = "action-not-lattice-grounded"
+            return
+        anchor = self._lattice_effect_action_anchor(
+            before_grounding,
+            (int(action_x), int(action_y)),
+        )
+        if anchor is None:
+            self.lattice_effect_diagnostic = "action-not-uniquely-lattice-grounded"
+            return
+        if self.lattice_effect_signature != before_grounding.signature:
+            self.lattice_effect_transitions.clear()
+            self.lattice_effect_probe_contexts.clear()
+            self.lattice_effect_model = None
+            self.lattice_effect_quarantined = False
+            self.lattice_effect_signature = before_grounding.signature
+        if self.lattice_effect_quarantined:
+            self.lattice_effect_diagnostic = "effect-model-quarantined"
+            return
+
+        transition = ClickTransition(
+            anchor=anchor,
+            before=before_grounding.state,
+            after=after_grounding.state,
+        )
+        context = self._lattice_effect_probe_context(
+            before_grounding,
+            anchor,
+        )
+        model = self.lattice_effect_model
+        if model is not None:
+            try:
+                predicted = model.apply(before_grounding.state, anchor)
+            except ValueError:
+                predicted = None
+            if predicted != after_grounding.state:
+                self.lattice_effect_transitions.clear()
+                self.lattice_effect_probe_contexts.clear()
+                self.lattice_effect_model = None
+                self.lattice_effect_quarantined = True
+                self.lattice_effect_prediction_mismatches += 1
+                self.lattice_effect_diagnostic = (
+                    "effect-model-prediction-mismatch-quarantined"
+                )
+                return
+            self.lattice_effect_transitions.append(transition)
+            self.lattice_effect_probe_contexts.append(context)
+            del self.lattice_effect_transitions[:-16]
+            del self.lattice_effect_probe_contexts[:-16]
+            self.lattice_effect_observations += 1
+            self.lattice_effect_diagnostic = "effect-model-prediction-confirmed"
+            return
+
+        changed_pairs = {
+            (
+                before_grounding.state.value_at(point),
+                after_grounding.state.value_at(point),
+            )
+            for point in before_grounding.state.points
+            if before_grounding.state.value_at(point)
+            != after_grounding.state.value_at(point)
+        }
+        if not changed_pairs:
+            self.lattice_effect_diagnostic = "grounded-action-had-no-effect"
+            return
+        cycle_values = {
+            value for pair in changed_pairs for value in pair
+        }
+        if len(cycle_values) != 2 or any(
+            left == right or {left, right} != cycle_values
+            for left, right in changed_pairs
+        ):
+            self.lattice_effect_diagnostic = "nonbinary-or-inconsistent-cycle"
+            return
+        cycle = ColorCycle.create(tuple(sorted(cycle_values)))
+        self.lattice_effect_transitions.append(transition)
+        self.lattice_effect_probe_contexts.append(context)
+        del self.lattice_effect_transitions[:-16]
+        del self.lattice_effect_probe_contexts[:-16]
+        self.lattice_effect_observations += 1
+        if len(set(self.lattice_effect_probe_contexts)) < 2:
+            self.lattice_effect_model = None
+            self.lattice_effect_diagnostic = "awaiting-diverse-effect-evidence"
+            return
+        self.lattice_effect_model = learn_click_effect_model(
+            cycle,
+            tuple(self.lattice_effect_transitions),
+            min_transitions=2,
+            min_confirmations=1,
+        )
+        self.lattice_effect_diagnostic = (
+            "effect-model-grounded"
+            if self.lattice_effect_model is not None
+            else "awaiting-consistent-effect-evidence"
+        )
+
+    def _select_lattice_effect_plan(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Invert the grounded click effect against all visible constraints."""
+
+        if not self.lattice_effect_planning:
+            return None
+        if self.lattice_effect_quarantined:
+            self.lattice_effect_diagnostic = "effect-model-quarantined"
+            return None
+        grounding = self._lattice_effect_grounding(observation.frame)
+        if grounding is None:
+            self.lattice_effect_diagnostic = "no-unique-marked-lattice"
+            return None
+        model = self.lattice_effect_model
+        if (
+            model is None
+            or self.lattice_effect_signature != grounding.signature
+        ):
+            if self.lattice_effect_diagnostic == "not-attempted":
+                self.lattice_effect_diagnostic = "awaiting-effect-evidence"
+            return None
+        try:
+            result = solve_click_csp(
+                grounding.state,
+                model,
+                grounding.constraints,
+                anchors=grounding.anchors,
+                max_clicks=64,
+                max_search_nodes=100_000,
+            )
+        except ValueError:
+            self.lattice_effect_diagnostic = "effect-domain-mismatch"
+            return None
+        self.lattice_effect_search_nodes += result.search_nodes
+        if result.status is not SolveStatus.SOLVED or result.plan is None:
+            self.lattice_effect_diagnostic = result.status.value
+            return None
+        if not result.plan.actions:
+            self.lattice_effect_diagnostic = "constraints-already-satisfied"
+            return None
+        action_point = result.plan.actions[0]
+        token = ActionToken(
+            self.complex_action,
+            (("x", action_point[0]), ("y", action_point[1])),
+        )
+        if token not in tokens:
+            self.lattice_effect_diagnostic = "planned-anchor-not-represented"
+            return None
+        self.lattice_effect_diagnostic = "executing-minimum-click-plan"
+        return token
+
     def _local_relation_candidates(
         self,
         observation: Observation,
@@ -8741,6 +9260,22 @@ class EpistemicExplorer:
                 self.connector_graph_unused_payloads
             ),
             "connector_graph_diagnostic": self.connector_graph_diagnostic,
+            "lattice_effect_observations": self.lattice_effect_observations,
+            "lattice_effect_probe_contexts": len(
+                set(self.lattice_effect_probe_contexts)
+            ),
+            "lattice_effect_model_grounded": int(
+                self.lattice_effect_model is not None
+            ),
+            "lattice_effect_quarantined": int(
+                self.lattice_effect_quarantined
+            ),
+            "lattice_effect_prediction_mismatches": (
+                self.lattice_effect_prediction_mismatches
+            ),
+            "lattice_effect_plan_steps": self.lattice_effect_plan_steps,
+            "lattice_effect_search_nodes": self.lattice_effect_search_nodes,
+            "lattice_effect_diagnostic": self.lattice_effect_diagnostic,
             "shape_translation_effects": len(self.shape_translation_effects),
             "shape_translation_effect_evidence": sum(
                 self.shape_translation_effect_evidence.values()

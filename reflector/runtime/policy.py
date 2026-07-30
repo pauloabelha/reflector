@@ -134,6 +134,9 @@ class SymbolicPolicy:
             connector_graph_synthesis=(
                 self.mind.config.enable_connector_graph_synthesis
             ),
+            lattice_effect_planning=(
+                self.mind.config.enable_lattice_effect_planning
+            ),
             shape_goal_translation=(
                 self.mind.config.enable_shape_goal_translation
             ),
