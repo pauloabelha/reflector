@@ -25,15 +25,15 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last known participant-remote commit: `27f5ac5`
-- Accepted candidate: `candidate-a1ccbdb17d674b78`
-- Accepted agent: Reflector v67
+- Accepted candidate: `candidate-35de85c4fe395c3a`
+- Accepted agent: Reflector v68
 - Accepted frozen source/candidate commit:
-  `509575e88cff60d33368006ca77b6eb30db67a40`
+  `59daf6171026b986c1e26aaa5fa1f56e2ef03269`
 - Accepted public-development report:
-  `reports/official-isolated-v67-public-400.json`
-- Accepted score: `9.310463971112286`
+  `reports/official-isolated-v68-frozen-public-400.json`
+- Accepted score: `9.684019526667843`
 - Accepted coverage: 25/25 games, 9,486 actions
-- Accepted completions: 27/183 levels across 11 games; 2/25 games complete
+- Accepted completions: 28/183 levels across 11 games; 2/25 games complete
 - Kaggle submission: `55113224`, v65b notebook version 1, pending hidden rerun
 - Kaggle public score: pending; not yet returned
 - Kaggle private score: unavailable
@@ -65,6 +65,7 @@ generalization.
 | Bounded connector-graph synthesis | v65b selected a unique minimum-cost assignment over visible ordered references, nested containers, fixed payloads, and connector inventory only as a legacy fallback or under a strict repeated-reference dominance proof; it preserved every non-target trajectory and completed all eight `sb26` levels in 124 actions twice. |
 | Learned lattice effects plus exact CSP | v66 grounded one regular repeated-actuator lattice, induced a relative binary click-effect law from two structurally distinct interventions, prospectively quarantined mismatches, and solved visible relation constraints exactly; it preserved every non-`ft09` trajectory and completed all six `ft09` levels in 162 actions twice. |
 | Confirmed segmented permutations plus exact transport | v67 proposed a unique equal-pitch permutation from one rendered transition, preregistered its full-domain successor before a subsequent same-form action, promoted only after an exact match, and searched a bounded projected marker state; it preserved every non-`lp85` outcome and solved `lp85` L4 at action 71 twice. The confirmer need not yet be a spatially distinct controller. |
+| Contiguous path cycles plus topology-grounded controllers | v68 inferred nested one-step rotations over a uniform degree-at-most-two rectilinear slot path and distinguished identical controller sprites by endpoint/straight/corner context; it preserved every non-`lp85` trajectory and solved `lp85` L5 at action 50 twice. Branching level-6 structure remains explicitly unrepresented. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -2832,6 +2833,41 @@ cue compilation, structural grounding, scheduler fairness, and held-out
 retrieval evidence pass the gates in
 `references/KLINE_SYMBOLIC_MEMORY.md`.
 
+## Accepted experiment: v68 path-cycle transport
+
+Candidate: `candidate-35de85c4fe395c3a`
+
+Frozen source/candidate commit:
+`59daf6171026b986c1e26aaa5fa1f56e2ef03269`
+
+Mechanism:
+
+- infer exact one-step rotations over bounded contiguous intervals of a
+  uniform degree-at-most-two rectilinear slot path;
+- bind visually identical controllers through local endpoint, straight, or
+  corner topology plus normalized distance context;
+- retain v67's prospective exact-successor confirmation and bounded projected
+  marker transport;
+- expose cumulative observations, predictions, confirmations, conflicts,
+  candidate counts, controller context, and plan-step diagnostics.
+
+Evidence:
+
+- two frozen target runs exactly reproduce
+  `[37,8,54,71,50,180,0,0]`, five `lp85` levels, and
+  `19.624778947802895`;
+- the frozen eleven-game gate changes only `lp85`, rising from
+  `21.16014538889156` to `22.00913528788146`;
+- the 25-game result is `9.684019526667843/100`, 28/183 levels across
+  11 games, two complete games, and 9,486 actions;
+- level 6 reports `domain-unrepresented`: its branching structure is
+  deliberately not forced into the simple-path representation;
+- 339 tests pass with three skipped, Ruff and mypy pass, exact export passes,
+  and both network-disabled smoke paths pass.
+
+V68 replaces v67 as the local task-performance champion. The gain is one
+known-public level and is not hidden-transfer evidence.
+
 ## Immediate continuation toward 20/100
 
 The public-code survey in
@@ -2840,8 +2876,9 @@ as symbolic hypothesis proposal rather than symbolic execution. The next
 offspring should therefore add one compact typed operator family at a time,
 with exact replay and ambiguity abstention:
 
-1. diagnose the accepted v67 `lp85` level-5 stall without weakening the
-   prospective permutation gate;
+1. preserve accepted v68 and keep `lp85` level 6 separate: its branching,
+   multi-scale domain falsifies the simple-path prior and must not be absorbed
+   by route-shaped special cases;
 2. after the standalone K-line retrieval substrate just completed, add the
    frozen `MindConfig` snapshot and grounded cue compiler exact-off, then
    measure held-out recall before allowing it to reorder generators;
@@ -2855,11 +2892,11 @@ with exact replay and ambiguity abstention:
 5. monitor v65b Kaggle submission `55113224` to a terminal result, archive its
    rerun status/logs and returned public score, then complete the
    participant-owned public-repository and public-notebook publication gates;
-6. submit v67 separately only with its exact candidate/notebook identity.
+6. submit v68 separately only with its exact candidate/notebook identity.
 
 Each task mutation remains subject to the full target-repeat, preservation,
 25-game, quality, and exact-export gates below. The `/goal` remains active:
-`9.310463971112286 < 20`.
+`9.684019526667843 < 20`.
 
 ## Promotion gates
 

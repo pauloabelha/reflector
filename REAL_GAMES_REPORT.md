@@ -6,27 +6,47 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 2 of 25 public-development games.**
-> It has solved 27 of 183 levels across 11 games. The suite ran all 25 games,
+> It has solved 28 of 183 levels across 11 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v67 result | Meaning |
+| Outcome metric | Accepted v68 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **2 / 25** | `sb26` and `ft09` were solved through their final levels. |
 | Games with progress | **11 / 25** | At least one level was solved in eleven games. |
-| Levels solved | **27 / 183** | Eight in `sb26`; six in `ft09`; four in `lp85`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **9.3104639711 / 100** | About **9.31%** of the 100-point scale on the known public-development games. |
+| Levels solved | **28 / 183** | Eight in `sb26`; six in `ft09`; five in `lp85`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **9.6840195267 / 100** | About **9.68%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,486** | The budget was 400 actions per game; completed `sb26` and `ft09` stopped after 124 and 162 actions. |
 | Kaggle submissions | **1 pending** | Submission `55113224` remains `PENDING`; no hidden score has returned yet. |
+
+## Game × level completion matrix
+
+![Reflector v68 public game by level completion matrix](reports/v68-game-level-matrix.svg)
+
+[Open the full-resolution PNG](reports/v68-game-level-matrix.png) or
+[open the scalable SVG](reports/v68-game-level-matrix.svg).
+Green cells are completed levels; black cells are known but incomplete
+levels; gray cells are outside that game's level count. The matrix is
+generated directly from the accepted v68 scorecard by
+[`scripts/generate_level_matrix.py`](scripts/generate_level_matrix.py).
+SHA-256 values are
+`a4f4c74f568869f873123ab8a4b3bcacd4195e98a3215d3bb7c23e923a3f2b05`
+for the SVG and
+`0b4086b06ddef95a4c5a53697054ba44c954b262e7f201a8968567fc3a614f56`
+for the PNG.
 
 ## Evaluation surfaces
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v67 accepted | **9.3104639711 / 100** | 2 games beaten; 27/183 levels; 9,486 actions | 25/25 coverage |
-| Process-isolated eleven-game gate | v67 accepted | 21.1601453889 / 100 | 27 levels; every non-`lp85` v66 score, level, action total, and completed-level action vector preserved exactly | passed |
-| Target-only `lp85` reruns | v67 accepted | 10.2858900589 for one game | 4/8 levels; exact `[37,8,54,71,230,0,0,0]` twice | deterministic gain twice |
-| Kaggle notebook artifact | v67 accepted package | — | exact export, both offline smoke paths, and technical prize audit pass | not submitted |
+| Process-isolated official local suite | v68 accepted | **9.6840195267 / 100** | 2 games beaten; 28/183 levels; 9,486 actions | 25/25 coverage |
+| Process-isolated eleven-game gate | v68 accepted | 22.0091352879 / 100 | 28 levels; every non-`lp85` v67 score, level, action total, and completed-level action vector preserved exactly | passed |
+| Target-only `lp85` reruns | v68 accepted | 19.6247789478 for one game | 5/8 levels; exact `[37,8,54,71,50,180,0,0]` twice | deterministic gain twice |
+| Kaggle notebook artifact | v68 accepted package | — | exact export, both network-disabled smoke paths, and technical prize audit pass | not submitted |
+| Process-isolated official local suite | v67 historical accepted | **9.3104639711 / 100** | 2 games beaten; 27/183 levels; 9,486 actions | superseded by v68 |
+| Process-isolated eleven-game gate | v67 historical accepted | 21.1601453889 / 100 | 27 levels; every non-`lp85` v66 score, level, action total, and completed-level action vector preserved exactly | passed |
+| Target-only `lp85` reruns | v67 historical accepted | 10.2858900589 for one game | 4/8 levels; exact `[37,8,54,71,230,0,0,0]` twice | deterministic gain twice |
+| Kaggle notebook artifact | v67 historical accepted package | — | exact export, both offline smoke paths, and technical prize audit pass | not submitted |
 | Process-isolated official local suite | v66 historical accepted | **9.2878934935 / 100** | 2 games beaten; 26/183 levels; 9,486 actions | superseded by v67 |
 | Process-isolated eleven-game gate | v66 historical accepted | 21.1088488488 / 100 | 26 levels; every non-`ft09` v65b score, level, action total, and completed-level action vector preserved exactly | passed |
 | Target-only `ft09` reruns | v66 historical accepted | 99.0037508892 for one game | 6/6 levels in 162 actions; exact `[4,7,14,16,94,27]` twice | deterministic gain twice |
@@ -307,7 +327,8 @@ Raw evidence:
 | v64b | 4.6402744459 | 20 | 11 | 0 | Compressive compact-component vocabulary plus edge-normalized graph frontier | historical accepted |
 | v65b | 7.9736077792 | 25 | 11 | 1 | Unique exhaustive connector-graph synthesis with ambiguity abstention | historical accepted |
 | v66 | 9.2878934935 | 26 | 11 | 2 | Learned relative lattice effects plus exact visible-constraint planning | historical accepted |
-| v67 | **9.3104639711** | **27** | **11** | **2** | Prospectively confirmed segmented permutations plus bounded exact marker transport | **current accepted** |
+| v67 | 9.3104639711 | 27 | 11 | 2 | Prospectively confirmed segmented permutations plus bounded exact marker transport | historical accepted |
+| v68 | **9.6840195267** | **28** | **11** | **2** | Contiguous rectilinear subpath cycles plus topology-grounded controller binding | **current accepted** |
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -318,15 +339,15 @@ The connected teal and orange lines include only accepted lineage checkpoints;
 hollow diamonds retain controls, experiments, and rejected results without
 implying that they were promoted. The milestone panel names the general
 mechanism associated with selected major accepted gains. The dashed 20/100
-line is the active local-development goal. All 24 rows of the canonical
+line is the active local-development goal. All 25 rows of the canonical
 25-game, 400-action score table above are plotted—not every exploratory branch
 ever attempted, and not a Kaggle leaderboard history.
 Regenerate both the SVG and PNG from the table with
 [`scripts/generate_progress_plot.py`](scripts/generate_progress_plot.py).
 Two consecutive renders were byte-identical. Current SHA-256 values are
-`62aa15e647bd384d1f70c091337702bc611c549fb592b70d03eeb4ca3cd61982`
+`b6233b99ecaf7f9440b05284f28ad3e3d39094294ead91e4a39c96e52518db75`
 for the SVG and
-`e97d90b72f7ddb1f52dc1ac5676582cb0f7fe427e4fbe2e36f2b02e0da8c5a39`
+`c9b95e575c117e6d74796a78132d9b39f479033cb589a8121f1740383cc8ae46`
 for the PNG.
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
@@ -341,10 +362,146 @@ candidate space, identify operators or assignments only when the rendered
 evidence makes them unique, then use exact bounded planning and abstain when
 the model is incomplete. V66 uses an exact visible-relation CSP after unique
 lattice grounding. V67 uniquely identifies each observed segmented effect,
-then uses deterministic shortest-path BFS; that execution plan itself is not
-required or claimed to be unique.
+then uses deterministic shortest-path BFS. V68 generalizes that effect
+language to contiguous rectilinear paths and distinguishes otherwise identical
+controllers by their local endpoint/straight/corner topology.
 
-## Accepted v67 result
+## Accepted v68 result
+
+V68 adds a bounded path-cycle generator to the prospectively confirmed
+permutation system. The complete conserved same-form token-centroid domain
+must be one connected, uniform, simple rectilinear path: exactly two endpoints,
+no branch, no closed loop, no disconnected component, and at most 64 slots.
+V68 enumerates bounded contiguous intervals of at least three slots and admits
+an effect only when one cyclic successor step exactly explains every value on
+that interval while every other token centroid is unchanged. Non-token UI
+pixels remain deliberately outside this projected operator. No game
+identifier, color, absolute coordinate, stored route, or controller action ID
+enters the representation.
+
+The watched `lp85` level exposed two nested reversible generators: a five-slot
+subpath cycle and a 21-slot whole-path cycle. Their controller sprites were
+visually identical, so appearance alone was insufficient. V68 augments the
+controller form with coordinate- and color-free local topology: nearest slot
+kind (endpoint, straight, or corner), nearest-count multiplicity, and a
+normalized distance bucket. This is the missing generic prior: bind an
+otherwise identical operator token to its relational position in the
+manipulated structure.
+
+The cognitive stream is cumulative across levels and reports observations,
+predictions, confirmations, conflicts, planned steps, current token/change
+counts, segmented/path candidate counts, and the selected controller context.
+Level 5 contributes 19 exact observations, 17 preregistered predictions, 13
+confirmations, zero conflicts, and 14 planned decisions. Together with v67's
+level-4 mechanism, the cumulative totals are 43 observations, 39 predictions,
+31 confirmations, zero conflicts, and 27 planned decisions.
+
+The two generators are learned in temporal order. Action 200 makes the
+five-slot effect provisional; action 203 confirms its preregistered successor.
+Action 204 proposes the 21-slot effect; action 206 confirms it. Planning starts
+at action 207. Its deterministic bounded BFS initially explores 108 projected
+states and returns the 14-step effect sequence
+`21-slot ×4, 5-slot, 21-slot ×4, 5-slot, 21-slot ×4`; actions 207–220 complete
+the level. This is the first deterministic shortest plan found, not a claim
+that the plan itself is unique.
+
+Two isolated reruns reproduce the exact vector
+`[37,8,54,71,50,180,0,0]`, completing 5/8 levels with game score
+`19.624778947802895`. Their 400-event cognitive streams are byte-identical.
+A v67-config, path-off diagnostic on the frozen v68 source reproduces
+`[37,8,54,71,230,0,0,0]`, 4/8 levels, and score
+`10.285890058914008`.
+
+“Prospective confirmation” here means that the prediction was registered
+before a later action. It is not cross-controller evidence. Both first
+promotions use a different click pixel but the same grounded controller
+centroid as their proposal: `(9,7)` for the five-slot effect and `(11,37)` for
+the 21-slot effect. Each promoted generator therefore has support two but only
+one distinct controller centroid. V68 proves repeatable exact effects on those
+same grounded controllers in later states; structurally held-out controller
+generalization remains unproven.
+
+The eleven-game gate changes only `lp85`, rising from
+`21.16014538889156` to `22.00913528788146`. The full process-isolated suite
+also changes only `lp85`: the official local score rises from
+`9.310463971112286` to `9.684019526667843`, levels from 27 to 28, while games
+with progress remain 11, complete games remain two, and total actions remain
+9,486. The global score gain, subtracting the displayed full-suite values, is
+`+0.373555555555557`.
+
+Frozen source and candidate commit:
+`59daf6171026b986c1e26aaa5fa1f56e2ef03269`
+
+Candidate: `candidate-35de85c4fe395c3a`
+
+Candidate inference fingerprint:
+`eec820706c163e4dc2ae045117ca05f9a7ff9cb75de2f01784744ce60600c8d1`
+
+Candidate SHA-256:
+`032aeab81e10976858e335ba1467240cd241a0a9ed65a2d707841c68950c95e6`
+
+Full report SHA-256:
+`604c195c42b8510fb0390c738dc8cd0bd39bd6a9561df0d195d236c14acbd6ab`
+
+Target report SHA-256 values:
+`9ce0a101b30c01ed1780959cb244a3b1873ba0667df97b20e8a49293300e869b`
+and
+`652ae1a550110cbc036c16ef833f65edf4335a7a021185ad20855715dfcfa018`.
+
+Preservation report SHA-256:
+`4a9bdfc68b6d5b51b36473daf66ae511ee1b8722ed044f8e66c7dd2c61149fd8`.
+
+The repeated raw cognitive stream SHA-256 is
+`60d26a3079607772c6e82bf1024d6f6a3bc269eaf0b63b07237b2206c3467019`;
+the permanent deterministic gzip SHA-256 is
+`a158157fe4f8dc89792a8410a1e1416e49672812f72ab49b151bb674e29e23a2`.
+
+The path-off diagnostic report SHA-256 is
+`6ae01da5cba15597bc4dd816e30d71835a36b4e5a19b0fd375703907d3e2fad2`.
+It is a source-matched causal control, not an accepted-candidate artifact,
+because it intentionally deploys the historical v67 configuration on v68
+source.
+
+Level 6 is deliberately outside the accepted claim. Its visible anchor-token
+form matches 75 slots, exceeding the fixed 64-slot domain bound before any
+path candidate is inferred. V68 reports `domain-unrepresented` and abstains
+rather than expanding a bound to fit the watched trace. The remaining 180
+actions make no further progress.
+
+### Accepted v68 progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ar25` | **2** | 8 | `[17, 17]` | 8.3333333333 | No |
+| `ft09` | **6** | 6 | `[4, 7, 14, 16, 94, 27]` | 99.0037508892 | **Yes** |
+| `g50t` | **1** | 7 | `[27]` | 3.5714285714 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `lp85` | **5** | 8 | `[37, 8, 54, 71, 50]` | 19.6247789478 | No |
+| `m0r0` | **1** | 6 | `[20]` | 4.7619047619 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `sb26` | **8** | 8 | `[9, 15, 15, 15, 17, 19, 17, 17]` | 100.0000000000 | **Yes** |
+| `sp80` | **1** | 6 | `[196]` | 0.1885375141 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| `vc33` | **1** | 7 | `[262]` | 0.0025493852 | No |
+| Remaining 14 games | **0** | 104 | `[]` | 0 | No |
+| **Total** | **28** | **183** | — | **9.6840195267 overall** | **2 / 25** |
+
+Raw evidence:
+
+- [v68 accepted process-isolated 25-game scorecard](reports/official-isolated-v68-frozen-public-400.json)
+- [v68 eleven-game preservation gate](reports/official-isolated-v68-frozen-progress-gate-400.json)
+- [v68 exact `lp85` rerun 1](reports/official-isolated-v68-frozen-lp85-r1-400.json)
+- [v68 exact `lp85` rerun 2](reports/official-isolated-v68-frozen-lp85-r2-400.json)
+- [v68 permanent `lp85` cognitive stream](reports/official-isolated-v68-frozen-lp85-cognitive.jsonl.gz)
+- [v68-source path-off diagnostic](reports/diagnostic-v68-source-v67-config-lp85-400.json)
+- [v68 candidate](candidates/v68-path-cycle-transport-400.json)
+
+The accepted claim is narrow: a generic rectilinear subpath-cycle prior and
+topology-grounded controller identity solve one additional known-public level
+without changing any other game. It is not yet cross-game or hidden-transfer
+evidence.
+
+## Historical accepted v67 result
 
 V67 adds a pure-symbolic segmented-permutation fallback after the established
 cyclic-alignment advisor. It does not begin with a stored track or controller.
@@ -440,7 +597,7 @@ V67 has not been submitted to Kaggle. The exact v65b submission `55113224`
 was checked again on 2026-07-30 and remains `PENDING`; any score it eventually
 returns belongs only to v65b.
 
-### Accepted v67 progress by game
+### Historical v67 progress by game
 
 | Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
 | --- | ---: | ---: | --- | ---: | --- |
@@ -1631,7 +1788,7 @@ Candidate:
 
 ## What our scheme is learning
 
-The real-game evidence currently supports seventeen bounded insights:
+The real-game evidence currently supports eighteen bounded insights:
 
 1. **Exploration needs memory of intervention identity.** Treating every frame
    independently scored zero; an epistemic transition graph produced the first
@@ -1706,6 +1863,14 @@ The real-game evidence currently supports seventeen bounded insights:
     completed-level action vector remained exactly equal. V67 does not require
     the second controller instance to be spatially distinct, so its evidence
     is prospective but not structurally held out.
+18. **Operator identity can depend on relational topology, not appearance.**
+    V68 represented a uniform simple rectilinear path, learned exact cyclic
+    permutations on a five-slot interval and the full 21-slot path, and
+    separated identical-looking controllers by local corner/straight context.
+    Exact bounded planning then added `lp85` level 5 without changing any
+    other game. Both promotions reused their proposing controller centroid,
+    so this supports topology-conditioned control within one observed
+    structure, not held-out controller or cross-game generalization.
 
 These are narrow environment-level results. They do not yet prove general
 Piagetian equilibration, arbitrary schema induction, cross-game transfer, or
@@ -1870,7 +2035,7 @@ hashes are:
 
 V66 is technically ready but has not been submitted. Submission `55113224`
 and any score it eventually returns belong to the exact historical v65b
-artifact above, not to v66 or v67.
+artifact above, not to v66, v67, or v68.
 
 The accepted v67 candidate exports from frozen source and candidate commit
 `509575e88cff60d33368006ca77b6eb30db67a40` and passes both
@@ -1885,6 +2050,25 @@ hashes are:
 V67 is technically ready but has not been submitted. A live Kaggle CLI check
 on 2026-07-30 still returned `SubmissionStatus.PENDING` and no scores for
 submission `55113224`; that submission remains attributable only to v65b.
+
+The accepted v68 candidate exports from frozen source and candidate commit
+`59daf6171026b986c1e26aaa5fa1f56e2ef03269` and passes both
+network-disabled smoke paths without translation. The complete exact
+`MindConfig` is embedded in the notebook, and the technical prize audit
+reports `technical_ready: true`. Its generated artifact hashes are:
+
+- candidate:
+  `032aeab81e10976858e335ba1467240cd241a0a9ed65a2d707841c68950c95e6`
+- overlay:
+  `a3c747d23da9444843df36c7c6057866907befb5ebf6700840e0054314705164`
+- notebook:
+  `f83b6f2ea405f7a196a0084d3a21a34e4fc1f6ba07609cf20b2cd91e8f7ec56e`
+
+V68 is technically ready but has not been submitted. `prize_ready` remains
+false because participant eligibility, a participant-owned public repository,
+the Kaggle committed rerun, exact notebook publication, and Paper Track gates
+require external account actions. Submission `55113224` still belongs only to
+v65b and has returned no public or private score.
 
 ## Reporting protocol
 

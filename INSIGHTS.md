@@ -11,24 +11,55 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v67, frozen source/candidate commit
-  `509575e88cff60d33368006ca77b6eb30db67a40`.
-- Accepted candidate: `candidate-a1ccbdb17d674b78`.
-- Local known-public-development score: **9.310463971112286 / 100**.
-- Progress: **27 / 183 levels across the 25 public-development games**.
+- Accepted agent: v68, frozen source/candidate commit
+  `59daf6171026b986c1e26aaa5fa1f56e2ef03269`.
+- Accepted candidate: `candidate-35de85c4fe395c3a`.
+- Local known-public-development score: **9.684019526667843 / 100**.
+- Progress: **28 / 183 levels across the 25 public-development games**.
 - Fully completed games: **2 / 25**.
 - Total actions: **9,486**.
 - Kaggle submissions: **1 pending** (`55113224`, frozen v65b).
 - Kaggle public score: **pending; not yet returned**.
 - Kaggle private score: **unavailable**.
-- V67 is accepted. It preserves every non-`lp85` v66 outcome exactly and
-  completes `lp85` level 4 in 71 actions.
+- V68 is accepted. It preserves every non-`lp85` v67 outcome exactly and
+  completes `lp85` level 5 in 50 actions.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem
 is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
+
+## 2026-07-30 — v68 accepted path-cycle result
+
+V68 supplies a generic prior absent from v67: a conserved same-form
+token-centroid domain may form one uniform simple rectilinear path, whose
+contiguous intervals can support reversible cyclic transport. An otherwise
+identical controller's identity may be grounded in local path topology rather
+than appearance. On watched `lp85` level 5, this exposes a nested five-slot
+subpath generator and a 21-slot whole-path generator. The controller form uses
+endpoint/straight/corner context and normalized distance, never a game ID,
+color, absolute coordinate, action ID, or stored route.
+
+Two frozen repeats produce `[37,8,54,71,50,180,0,0]`. The eleven-game gate
+and full 25-game suite change only `lp85`; the official local score becomes
+`9.684019526667843`, with 28/183 levels, 11 games showing progress, two
+complete games, and 9,486 actions. Cumulative cognitive diagnostics retain
+31 confirmations and 27 plan steps through level progress. The level-5 delta
+is 19 observations, 17 preregistered predictions, 13 confirmations, zero
+conflicts, and 14 planned actions.
+
+The evidence remains prospective rather than structurally held out. Both
+initial promotions predict a later transition correctly, but each confirmer
+grounds to the same physical controller centroid as its proposal. The gain
+therefore supports topology-conditioned repeated effects and bounded planning
+within one observed structure, not cross-controller or cross-game transfer.
+
+The next frame is an important falsifier. Level 6 exposes 75 matching slots,
+above the fixed 64-slot domain bound, so v68 reports
+`domain-unrepresented`. The correct lesson is not to raise the bound until one
+watched layout fits; any larger or branching transport mechanism must earn
+separate evidence.
 
 ## 2026-07-30 — v67 accepted segmented-permutation result
 
@@ -945,13 +976,14 @@ advisors. It is a **causal graph explorer that learns executable abstractions**.
 
 The external graph baseline, nuisance-reduced component frontier, paired-object
 experiments, connector synthesis, and lattice-effect experiment have now been
-run; v64b through v67 incorporate their accepted consequences. The active
+run; v64b through v68 incorporate their accepted consequences. The active
 priorities are:
 
-1. **Extend or falsify v67 on `lp85` level 5.** Level 4 now passes through
-   prospectively confirmed segmented permutations and bounded exact search.
-   Diagnose why 230 remaining actions make no further progress before adding
-   another transport family.
+1. **Keep `lp85` level 6 as a distinct hypothesis boundary.** Its 75
+   same-form slots exceed v68's fixed 64-slot domain bound. Require new
+   intervention evidence and preservation before changing that bound or
+   introducing a larger/branching transport model; do not encode the watched
+   route.
 2. **Integrate K-line recall exact-off.** The standalone content-addressed
    index is built and adversarially tested. Next bind its immutable index root
    into `MindConfig`, compile cues only from existing symbolic state, and
@@ -975,8 +1007,8 @@ priorities are:
 6. **Use human replays only as development diagnostics, not policies.** The
    public human dataset can reveal what information humans acquire early and
    which actions are wasteful. Do not encode replay routes or public game IDs.
-7. **Monitor v65b and submit v67 deliberately.** Submission `55113224` remains
-   a pending v65b hidden-transfer calibration; v67 is technically ready but
+7. **Monitor v65b and submit v68 deliberately.** Submission `55113224` remains
+   a pending v65b hidden-transfer calibration; v68 is technically ready but
    not submitted. Preserve the exact candidate/notebook mapping described in
    `references/KAGGLE_ARC3_SUBMISSION.md`. Until Kaggle returns a result,
    public and private leaderboard scores remain absent.

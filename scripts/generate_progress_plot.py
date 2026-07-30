@@ -87,6 +87,11 @@ MILESTONES = (
         "Confirmed segmented permutations",
         "bounded exact transport adds lp85 level 4",
     ),
+    (
+        "v68",
+        "Topology-grounded path cycles",
+        "nested rectilinear transport adds lp85 level 5",
+    ),
 )
 
 
@@ -471,13 +476,13 @@ def render(generations: tuple[Generation, ...]) -> None:
         va="bottom",
     )
     columns = (0.005, 0.505)
-    rows = (0.84, 0.64, 0.44, 0.24, 0.04)
+    rows = (0.86, 0.695, 0.53, 0.365, 0.20, 0.035)
     for milestone_number, (version, title, detail) in enumerate(
         MILESTONES,
         start=1,
     ):
-        column = (milestone_number - 1) // 5
-        row = (milestone_number - 1) % 5
+        column = (milestone_number - 1) // 6
+        row = (milestone_number - 1) % 6
         insight_axis.text(
             columns[column],
             rows[row],
