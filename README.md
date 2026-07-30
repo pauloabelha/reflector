@@ -121,6 +121,15 @@ validates transport and operative credit, not learning benefit, so v49b
 remains accepted. See the
 [inherited scheme protocol](references/INHERITED_SCHEME_PROTOCOL.md).
 
+The first cross-offspring common-sense snapshot now extends that substrate
+without changing the accepted policy. A calibrated, observation-only
+repeated-form action-effect definition earned 2,047 confirmations and 20
+counterexamples across three agent provenances. Its immutable cultural root is
+`b342e83f2bb14b134f8febf1b203c208ee74193b0bf0d07bc3796fc8df329a78`.
+Because it has no task-progress credit, it is excluded from action attribution
+and selection. See
+[`reports/common-sense-v1-repeated-form-effect.json`](reports/common-sense-v1-repeated-form-effect.json).
+
 The rejected v55 population made the missing goal layer operative. Two
 offspring competed object contact with a structurally grounded sparse-marker
 coverage relation and correctly reduced its target distance 54 times per

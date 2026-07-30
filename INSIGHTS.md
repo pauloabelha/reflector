@@ -393,6 +393,16 @@ These are narrow earned claims, not claims of general intelligence.
     variations were selected. The correct conclusion is not to lower the
     threshold until something fires; this event family is useful predictive
     common sense but is not the missing procedure for these stalls.
+32. Predictive inheritance and policy inheritance need different gates.
+    Requiring level progress for every definition discards calibrated world
+    knowledge; allowing prediction alone to select actions repeats v57's
+    mistake. The first cross-offspring common-sense snapshot therefore admits
+    `stable-repeated-form-action-effect` as an observation-only definition:
+    2,047 confirmations, 20 counterexamples, 1,713 held-out confirmations,
+    three agent provenances, and 0.9676% prediction error. Its cultural root is
+    `b342e83f2bb14b134f8febf1b203c208ee74193b0bf0d07bc3796fc8df329a78`.
+    It carries zero progress credit and cannot enter action attribution or
+    selection until a separate runtime mutation earns pragmatic evidence.
 
 ## What is still missing
 

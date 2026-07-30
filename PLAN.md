@@ -2355,6 +2355,37 @@ evidence ledger and acceptance gate so predictive definitions can be inherited
 without automatically becoming action advisors. Runtime activation must be a
 separate, credit-bearing mutation.
 
+## Accepted development artifact: common-sense snapshot v1
+
+This is a cultural knowledge artifact, not a promoted task agent.
+
+- Definition: `stable-repeated-form-action-effect`, operator
+  `observe-event`.
+- Confirmations: 2,047.
+- Falsifications/counterexamples: 20.
+- Held-out confirmations: 1,713.
+- Contributing agent provenances: 3.
+- Prediction error: 0.9675858732%.
+- Library root:
+  `64afd8c3e44b1af4fe387fc9f5f04bf8ab95b1229cb3bba51263fa6ca68b62d0`.
+- Evidence-ledger root:
+  `21d454b314d52e6288eef085a364adb526e8a779834e254dbca8bac95a6d88eb`.
+- Combined common-sense root:
+  `b342e83f2bb14b134f8febf1b203c208ee74193b0bf0d07bc3796fc8df329a78`.
+- Evidence report:
+  `reports/common-sense-v1-repeated-form-effect.json`.
+
+The predictive gate requires at least 100 confirmations, 100 held-out
+confirmations, two held-out partitions, two agent contributors, at most 10%
+falsification, and zero regressions. Unlike the pragmatic scheme gate, it does
+not require level progress. Observation-only definitions are excluded from
+runtime action attribution and intervention selection.
+
+Next breed v60 from accepted v49b with this exact immutable library. Its
+source-matched control test must prove that knowledge inheritance alone
+preserves behavior. V60 cannot replace v49b without an independently promoted,
+task-improving runtime use of the definition.
+
 The source-matched population has four frozen modes:
 
 - `off`: accepted behavior;
