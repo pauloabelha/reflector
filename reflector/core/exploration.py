@@ -259,6 +259,7 @@ class EpistemicExplorer:
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
+    paired_contextual_transitions: bool = False
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
@@ -515,6 +516,23 @@ class EpistemicExplorer:
     paired_contact_action: int | None = None
     paired_contact_continuations: int = 0
     paired_latent_contact: bool = False
+    paired_contextual_evidence: dict[
+        tuple[
+            tuple[tuple[int, int], tuple[int, int]],
+            int,
+        ],
+        Counter[tuple[tuple[int, int], tuple[int, int]]],
+    ] = field(default_factory=dict)
+    paired_contextual_quarantined: set[
+        tuple[
+            tuple[tuple[int, int], tuple[int, int]],
+            int,
+        ]
+    ] = field(default_factory=set)
+    paired_contextual_proposals: int = 0
+    paired_contextual_confirmations: int = 0
+    paired_contextual_conflicts: int = 0
+    paired_contextual_planner_uses: int = 0
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -1049,6 +1067,12 @@ class EpistemicExplorer:
         self.paired_contact_action = None
         self.paired_contact_continuations = 0
         self.paired_latent_contact = False
+        self.paired_contextual_evidence.clear()
+        self.paired_contextual_quarantined.clear()
+        self.paired_contextual_proposals = 0
+        self.paired_contextual_confirmations = 0
+        self.paired_contextual_conflicts = 0
+        self.paired_contextual_planner_uses = 0
 
     @staticmethod
     def _paired_signature(
@@ -1236,6 +1260,14 @@ class EpistemicExplorer:
             self.paired_latent_contact = False
             self.paired_diagnostic = "pair-reappeared-after-contact"
             return
+        if kind == "plan" and self.paired_contextual_transitions:
+            if self._observe_paired_contextual_transition(
+                before_frame,
+                before,
+                action_id,
+                anchors,
+            ):
+                return
         if kind != "probe":
             self.paired_diagnostic = "joint-plan-step-observed"
             return
@@ -1260,6 +1292,85 @@ class EpistemicExplorer:
             return
         self.paired_effects[action_id] = effect
         self.paired_diagnostic = "joint-effect-grounded"
+
+    @staticmethod
+    def _paired_geometric_successor(
+        state: tuple[tuple[int, int], tuple[int, int]],
+        effect: tuple[tuple[int, int], tuple[int, int]],
+        nodes: frozenset[tuple[int, int]],
+    ) -> tuple[tuple[int, int], tuple[int, int]]:
+        proposed = (
+            (
+                state[0][0] + effect[0][0],
+                state[0][1] + effect[0][1],
+            ),
+            (
+                state[1][0] + effect[1][0],
+                state[1][1] + effect[1][1],
+            ),
+        )
+        return (
+            proposed[0] if proposed[0] in nodes else state[0],
+            proposed[1] if proposed[1] in nodes else state[1],
+        )
+
+    def _paired_confirmed_contextual_successor(
+        self,
+        state: tuple[tuple[int, int], tuple[int, int]],
+        action_id: int,
+    ) -> tuple[tuple[int, int], tuple[int, int]] | None:
+        key = (state, action_id)
+        if key in self.paired_contextual_quarantined:
+            return None
+        evidence = self.paired_contextual_evidence.get(key)
+        if evidence is None or len(evidence) != 1:
+            return None
+        successor, count = next(iter(evidence.items()))
+        return successor if count >= 2 else None
+
+    def _observe_paired_contextual_transition(
+        self,
+        before_frame: tuple[tuple[int, ...], ...],
+        before: tuple[tuple[int, int], tuple[int, int]],
+        action_id: int,
+        observed: tuple[tuple[int, int], tuple[int, int]],
+    ) -> bool:
+        effect = self.paired_effects.get(action_id)
+        if effect is None:
+            return False
+        nodes = self._paired_topology(before_frame, before)
+        if not nodes:
+            return False
+        expected = self._paired_geometric_successor(before, effect, nodes)
+        if observed == expected:
+            return False
+        key = (before, action_id)
+        if key in self.paired_contextual_quarantined:
+            self.paired_diagnostic = "contextual-transition-quarantined"
+            return True
+        if key not in self.paired_contextual_evidence:
+            if len(self.paired_contextual_evidence) >= 128:
+                self.paired_diagnostic = "contextual-transition-cap"
+                return True
+            self.paired_contextual_evidence[key] = Counter()
+        evidence = self.paired_contextual_evidence[key]
+        if observed not in evidence and evidence:
+            self.paired_contextual_quarantined.add(key)
+            self.paired_contextual_conflicts += 1
+            self.paired_diagnostic = "contextual-transition-conflict"
+            return True
+        prior = evidence[observed]
+        if prior < 3:
+            evidence[observed] += 1
+        if prior == 0:
+            self.paired_contextual_proposals += 1
+            self.paired_diagnostic = "contextual-transition-proposed"
+        elif prior == 1:
+            self.paired_contextual_confirmations += 1
+            self.paired_diagnostic = "contextual-transition-confirmed"
+        else:
+            self.paired_diagnostic = "contextual-transition-reobserved"
+        return True
 
     @staticmethod
     def _paired_masks_contact(
@@ -1354,20 +1465,31 @@ class EpistemicExplorer:
                 ):
                     continue
                 effect = self.paired_effects[action_id]
-                proposed = (
-                    (
-                        state[0][0] + effect[0][0],
-                        state[0][1] + effect[0][1],
-                    ),
-                    (
-                        state[1][0] + effect[1][0],
-                        state[1][1] + effect[1][1],
-                    ),
+                successor = self._paired_geometric_successor(
+                    state,
+                    effect,
+                    nodes,
                 )
-                successor = (
-                    proposed[0] if proposed[0] in nodes else state[0],
-                    proposed[1] if proposed[1] in nodes else state[1],
-                )
+                contextual_key = (state, action_id)
+                if (
+                    self.paired_contextual_transitions
+                    and contextual_key in self.paired_contextual_quarantined
+                ):
+                    successor = state
+                elif self.paired_contextual_transitions:
+                    contextual = (
+                        self._paired_confirmed_contextual_successor(
+                            state,
+                            action_id,
+                        )
+                    )
+                    if (
+                        contextual is not None
+                        and contextual[0] in nodes
+                        and contextual[1] in nodes
+                    ):
+                        successor = contextual
+                        self.paired_contextual_planner_uses += 1
                 expanded_edges += 1
                 if successor == state:
                     continue
@@ -6398,6 +6520,20 @@ class EpistemicExplorer:
             "paired_plan_length": self.paired_plan_length,
             "paired_contact_continuations": self.paired_contact_continuations,
             "paired_latent_contact": int(self.paired_latent_contact),
+            "paired_contextual_proposals": self.paired_contextual_proposals,
+            "paired_contextual_confirmations": (
+                self.paired_contextual_confirmations
+            ),
+            "paired_contextual_conflicts": self.paired_contextual_conflicts,
+            "paired_contextual_edges": sum(
+                1
+                for key in self.paired_contextual_evidence
+                if self._paired_confirmed_contextual_successor(*key)
+                is not None
+            ),
+            "paired_contextual_planner_uses": (
+                self.paired_contextual_planner_uses
+            ),
             "paired_diagnostic": self.paired_diagnostic,
             "trajectory_plan_steps": self.trajectory_plan_steps,
             "trajectory_plan_cap": self._trajectory_plan_cap(),

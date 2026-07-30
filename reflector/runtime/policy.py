@@ -56,6 +56,9 @@ class SymbolicPolicy:
             paired_object_contact_planning=(
                 self.mind.config.enable_paired_object_contact_planning
             ),
+            paired_contextual_transitions=(
+                self.mind.config.enable_paired_contextual_transitions
+            ),
             local_relation_solver=self.mind.config.enable_local_relation_solver,
             constraint_first_role_replay=(
                 self.mind.config.enable_constraint_first_role_replay

@@ -1651,6 +1651,66 @@ V49b accepted result:
 - 209 tests passed with three skipped; Ruff, mypy, generic and exact-candidate
   network-disabled smoke tests, and exact export all passed.
 
+## Active experiment: v50 confirmed contextual pair transitions
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`.
+
+Observed level-2 disequilibrium:
+
+- a fresh recording-enabled v49b run reproduced 1/6 `m0r0` levels at
+  `[20, 380]` and score `4.7619047619`;
+- level 2 again grounded the unique reflected congruent pair, learned four
+  joint effects from five probes, and inferred 118 substrate anchors;
+- at one exact joint anchor, the planner predicted ordinary downward motion,
+  but the rendered successor transported both objects to the upper region and
+  added opposite horizontal displacements while preserving their identities;
+- v49b represents a component as either taking its global learned displacement
+  or remaining blocked. It therefore ignored the unexpected successor,
+  repeatedly planned through the same false geometric edge, and executed five
+  identical 12-action loops before exhausting its 64 paired trials;
+- the mismatch occurs at the same joint anchor under the same action and with
+  the same rendered successor, so it is eligible to become a bounded
+  state-conditioned transition hypothesis. A single occurrence is not enough
+  to attribute an autonomous change to the selected action.
+
+Preregistered v50 mutation:
+
+- add exact-off `enable_paired_contextual_transitions`, dependent on paired
+  object contact planning;
+- after a planned pair action only, compare the observed ordered-anchor
+  successor with the successor predicted by the already grounded global joint
+  effect plus independent obstacle blocking;
+- when identities and shapes remain grounded but the successors differ, retain
+  bounded evidence keyed by `(ordered joint anchors, action role)`; confirm an
+  exact contextual successor only after two matching outcomes and quarantine
+  the key if outcomes conflict;
+- never use the transition that first proposes or confirms an edge to score
+  that same transition; confirmed edges become available only to subsequent
+  planning decisions;
+- in bounded contact search, substitute a confirmed exact successor for the
+  hallucinated geometric successor only at its evidenced joint anchor and
+  action; require both successor anchors to remain in the rendered topology;
+- clear contextual edges on level progress or retry, cap evidence at 128
+  state-action keys and three observations per key, and expose proposal,
+  confirmation, conflict, and planner-use counts in cognitive telemetry;
+- encode no game identifier, coordinate, color, fixed action ID, route, portal
+  label, period, or source import.
+
+Prediction and falsifier:
+
+- synthetic translation/reflection and consistent action-ID permutation
+  fixtures must produce correspondingly transformed/permuted contextual edges;
+- one anomalous outcome must not alter planning, two matching outcomes must
+  replace only the evidenced edge, and a conflicting outcome must quarantine
+  it;
+- on `m0r0`, predict exactly one confirmed contextual edge after the second
+  repeated mismatch and no third traversal of the same 12-action loop;
+- require environment-reported level-2 completion within 220 total actions on
+  two fresh 400-action runs before any preservation gate;
+- reject on premature confirmation, cap/equivariance failure, a third repeated
+  false-edge loop, either target miss, or any later accepted regression. V49b
+  remains accepted unless every promotion gate passes.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural

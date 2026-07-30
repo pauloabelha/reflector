@@ -411,6 +411,116 @@ def test_paired_contact_merge_has_two_evidenced_continuations() -> None:
     assert explorer.paired_diagnostic == "contact-continuation-no-effect"
 
 
+def test_paired_contextual_transition_requires_confirmation_and_is_equivariant() -> None:
+    def frame(
+        anchors: tuple[tuple[int, int], tuple[int, int]],
+    ) -> tuple[tuple[int, ...], ...]:
+        rows = [[1] * 20 for _ in range(20)]
+        for y in range(2, 18):
+            for x in range(2, 18):
+                rows[y][x] = 5
+        for center_x, center_y in anchors:
+            for y in range(center_y - 1, center_y + 2):
+                for x in range(center_x - 1, center_x + 2):
+                    rows[y][x] = 10
+        return tuple(tuple(row) for row in rows)
+
+    def confirmed_plan(
+        *,
+        initial: tuple[tuple[int, int], tuple[int, int]],
+        transported: tuple[tuple[int, int], tuple[int, int]],
+        effect: tuple[tuple[int, int], tuple[int, int]],
+        contextual_action: int,
+        alternate_action: int,
+    ) -> tuple[EpistemicExplorer, tuple[int, int]]:
+        explorer = EpistemicExplorer(
+            paired_object_contact_planning=True,
+            paired_contextual_transitions=True,
+        )
+        grounding = explorer._ground_paired_objects(frame(initial))
+        assert grounding is not None
+        explorer.paired_grounding = grounding
+        explorer.paired_effects = {
+            contextual_action: effect,
+            alternate_action: effect,
+        }
+        represented = frozenset({contextual_action, alternate_action})
+
+        before = explorer._paired_contact_plan(
+            frame(initial),
+            initial,
+            represented,
+        )
+        assert before is not None
+        assert before[0] == contextual_action
+
+        for expected_count in (1, 2):
+            explorer.paired_pending = ("plan", contextual_action, initial)
+            explorer._observe_paired_object_contact(
+                frame(initial),
+                frame(transported),
+                progressed=False,
+            )
+            evidence = explorer.paired_contextual_evidence[
+                (initial, contextual_action)
+            ]
+            assert evidence[transported] == expected_count
+            if expected_count == 1:
+                still_unconfirmed = explorer._paired_contact_plan(
+                    frame(initial),
+                    initial,
+                    represented,
+                )
+                assert still_unconfirmed is not None
+                assert still_unconfirmed[0] == contextual_action
+
+        after = explorer._paired_contact_plan(
+            frame(initial),
+            initial,
+            represented,
+        )
+        assert after is not None
+        assert after[0] == alternate_action
+        assert explorer.paired_contextual_confirmations == 1
+        assert explorer.paired_contextual_planner_uses > 0
+        return explorer, after
+
+    horizontal, horizontal_plan = confirmed_plan(
+        initial=((5, 10), (14, 10)),
+        transported=((4, 10), (15, 10)),
+        effect=((1, 0), (-1, 0)),
+        contextual_action=7,
+        alternate_action=9,
+    )
+    vertical, vertical_plan = confirmed_plan(
+        initial=((10, 5), (10, 14)),
+        transported=((10, 4), (10, 15)),
+        effect=((0, 1), (0, -1)),
+        contextual_action=3,
+        alternate_action=8,
+    )
+    assert horizontal_plan[1] == vertical_plan[1]
+
+    conflict = ((3, 10), (16, 10))
+    horizontal.paired_pending = (
+        "plan",
+        7,
+        ((5, 10), (14, 10)),
+    )
+    horizontal._observe_paired_object_contact(
+        frame(((5, 10), (14, 10))),
+        frame(conflict),
+        progressed=False,
+    )
+    assert (((5, 10), (14, 10)), 7) in (
+        horizontal.paired_contextual_quarantined
+    )
+    assert horizontal.paired_contextual_conflicts == 1
+
+    with pytest.raises(ValueError, match="paired contextual transitions"):
+        MindConfig(enable_paired_contextual_transitions=True)
+
+
 def test_failure_conditioned_fairness_preserves_parent_then_accommodates() -> None:
     observation = Observation.create(
         state="NOT_FINISHED",
