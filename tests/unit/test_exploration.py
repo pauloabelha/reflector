@@ -341,6 +341,107 @@ def test_paired_object_contact_plan_is_structural_and_action_equivariant() -> No
     assert permuted[1] == first[1]
 
 
+def test_paired_marker_relation_is_recolored_action_equivariant_and_credited() -> None:
+    def frame(
+        anchors: tuple[tuple[int, int], tuple[int, int]],
+        *,
+        marker_color: int,
+    ) -> tuple[tuple[int, ...], ...]:
+        rows = [[1] * 20 for _ in range(20)]
+        for y in range(2, 18):
+            for x in range(2, 18):
+                rows[y][x] = 5
+        for center_x in (5, 14):
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    if (dx + dy) % 2 == 0:
+                        rows[14 + dy][center_x + dx] = marker_color
+        for center_x, center_y in anchors:
+            for y in range(center_y - 1, center_y + 2):
+                for x in range(center_x - 1, center_x + 2):
+                    rows[y][x] = 10
+        return tuple(tuple(row) for row in rows)
+
+    initial = ((5, 6), (14, 6))
+    moved = ((5, 7), (14, 7))
+    explorer = EpistemicExplorer(
+        paired_object_contact_planning=True,
+        paired_terminal_relation_mode="marker-first",
+    )
+    initial_frame = frame(initial, marker_color=8)
+    grounding = explorer._ground_paired_objects(initial_frame)
+    assert grounding is not None
+    explorer.paired_grounding = grounding
+    explorer.paired_effects = {
+        2: ((0, 1), (0, 1)),
+        7: ((1, 0), (-1, 0)),
+    }
+    explorer.paired_probes = {2, 7}
+
+    plan = explorer._paired_marker_plan(
+        initial_frame,
+        initial,
+        frozenset({2, 7}),
+    )
+    assert plan is not None
+    assert plan[:2] == (2, 8)
+    assert plan[2] == ((5, 14), (14, 14))
+    assert explorer.paired_marker_support == 10
+
+    selected = explorer._select_paired_object_contact(
+        Observation.create(
+            state="NOT_FINISHED",
+            available_actions=(2, 7),
+            frame=initial_frame,
+        ),
+        (ActionToken(2), ActionToken(7)),
+    )
+    assert selected == ActionToken(2)
+    assert explorer.paired_active_terminal_relation == "paired-marker-coverage"
+    assert explorer.paired_relation_pending == (
+        "paired-marker-coverage",
+        16,
+        14,
+    )
+
+    explorer._observe_paired_object_contact(
+        initial_frame,
+        frame(moved, marker_color=8),
+        progressed=False,
+    )
+    assert explorer.paired_relation_confirmations == 1
+    assert explorer.paired_relation_falsifications == 0
+
+    recolored = EpistemicExplorer(
+        paired_object_contact_planning=True,
+        paired_terminal_relation_mode="marker-first",
+    )
+    recolored_frame = frame(initial, marker_color=12)
+    recolored.paired_grounding = recolored._ground_paired_objects(
+        recolored_frame
+    )
+    assert recolored.paired_grounding is not None
+    recolored.paired_effects = {
+        9: ((0, 1), (0, 1)),
+        3: ((1, 0), (-1, 0)),
+    }
+    recolored_plan = recolored._paired_marker_plan(
+        recolored_frame,
+        initial,
+        frozenset({3, 9}),
+    )
+    assert recolored_plan is not None
+    assert recolored_plan[:3] == (9, 8, ((5, 14), (14, 14)))
+
+    with pytest.raises(ValueError, match="terminal relation hypotheses"):
+        MindConfig(paired_terminal_relation_mode="marker-first")
+    with pytest.raises(ValueError, match="must be contact-only"):
+        MindConfig(
+            enable_paired_object_contact_planning=True,
+            paired_terminal_relation_mode="unknown",
+        )
+
+
 def test_paired_contact_merge_has_two_evidenced_continuations() -> None:
     def frame(merged_width: int = 0):
         rows = [[1] * 20 for _ in range(20)]

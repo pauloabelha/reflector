@@ -263,6 +263,7 @@ class EpistemicExplorer:
     paired_contextual_transitions: bool = False
     paired_transport_family: bool = False
     paired_post_accommodation_plan: bool = False
+    paired_terminal_relation_mode: str = "contact-only"
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
@@ -520,6 +521,19 @@ class EpistemicExplorer:
     paired_contact_action: int | None = None
     paired_contact_continuations: int = 0
     paired_latent_contact: bool = False
+    paired_active_terminal_relation: str = "object-contact"
+    paired_marker_color: int | None = None
+    paired_marker_pixels: frozenset[tuple[int, int]] = frozenset()
+    paired_marker_support: int = 0
+    paired_relation_candidates: int = 1
+    paired_relation_target: (
+        tuple[tuple[int, int], tuple[int, int]] | None
+    ) = None
+    paired_relation_pending: tuple[str, int, int] | None = None
+    paired_relation_confirmations: int = 0
+    paired_relation_falsifications: int = 0
+    paired_relation_plan_length: int = 0
+    paired_relation_search_expansions: int = 0
     paired_contextual_evidence: dict[
         tuple[
             tuple[tuple[int, int], tuple[int, int]],
@@ -1094,6 +1108,17 @@ class EpistemicExplorer:
         self.paired_contact_action = None
         self.paired_contact_continuations = 0
         self.paired_latent_contact = False
+        self.paired_active_terminal_relation = "object-contact"
+        self.paired_marker_color = None
+        self.paired_marker_pixels = frozenset()
+        self.paired_marker_support = 0
+        self.paired_relation_candidates = 1
+        self.paired_relation_target = None
+        self.paired_relation_pending = None
+        self.paired_relation_confirmations = 0
+        self.paired_relation_falsifications = 0
+        self.paired_relation_plan_length = 0
+        self.paired_relation_search_expansions = 0
         self.paired_contextual_evidence.clear()
         self.paired_contextual_quarantined.clear()
         self.paired_contextual_trigger_colors.clear()
@@ -1267,9 +1292,13 @@ class EpistemicExplorer:
             return
         kind, action_id, before = pending
         if progressed:
+            if self.paired_relation_pending is not None:
+                self.paired_relation_confirmations += 1
+                self.paired_relation_pending = None
             self.paired_diagnostic = "level-advanced"
             return
         anchors = self._paired_anchors(after)
+        self._assess_paired_terminal_relation(anchors)
         if anchors is None:
             changed = before_frame != after
             if (
@@ -1567,6 +1596,8 @@ class EpistemicExplorer:
         self,
         frame: tuple[tuple[int, ...], ...],
         anchors: tuple[tuple[int, int], tuple[int, int]],
+        *,
+        extra_admitted_colors: frozenset[int] = frozenset(),
     ) -> frozenset[tuple[int, int]]:
         grounding = self.paired_grounding
         if grounding is None or not frame or not frame[0]:
@@ -1590,6 +1621,7 @@ class EpistemicExplorer:
         admitted_colors = {
             grounding.substrate_color,
             grounding.signature[0],
+            *extra_admitted_colors,
         }
         nodes = {
             (x, y)
@@ -1604,6 +1636,227 @@ class EpistemicExplorer:
         }
         self.paired_topology_nodes = len(nodes)
         return frozenset(nodes)
+
+    @staticmethod
+    def _fragment_count(
+        points: frozenset[tuple[int, int]],
+    ) -> int:
+        unseen = set(points)
+        components = 0
+        while unseen:
+            components += 1
+            frontier = [unseen.pop()]
+            while frontier:
+                x, y = frontier.pop()
+                for neighbor in (
+                    (x - 1, y),
+                    (x + 1, y),
+                    (x, y - 1),
+                    (x, y + 1),
+                ):
+                    if neighbor in unseen:
+                        unseen.remove(neighbor)
+                        frontier.append(neighbor)
+        return components
+
+    def _ground_paired_marker_field(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> bool:
+        """Bind a sparse repeated visual field without retaining its color.
+
+        The definition is structural: a candidate is a bounded color class
+        whose pixels are mostly disconnected and numerous enough to express
+        at least one relation for each member of the controlled pair.  The
+        selected rendered color and coordinates are episode bindings only.
+        """
+
+        grounding = self.paired_grounding
+        if grounding is None or not frame or not frame[0]:
+            return False
+        by_color: dict[int, set[tuple[int, int]]] = {}
+        for y, row in enumerate(frame):
+            for x, color in enumerate(row):
+                if color in {
+                    grounding.signature[0],
+                    grounding.substrate_color,
+                }:
+                    continue
+                by_color.setdefault(color, set()).add((x, y))
+        minimum = max(8, len(grounding.mask_offsets))
+        candidates: list[
+            tuple[float, int, int, frozenset[tuple[int, int]]]
+        ] = []
+        for color, raw_points in by_color.items():
+            points = frozenset(raw_points)
+            if not minimum <= len(points) <= 512:
+                continue
+            fragments = self._fragment_count(points)
+            fragmentation = fragments / len(points)
+            if fragments < 4 or fragmentation < 0.75:
+                continue
+            candidates.append(
+                (fragmentation, len(points), -color, points)
+            )
+        if not candidates:
+            return False
+        fragmentation, support, negative_color, points = max(candidates)
+        del fragmentation
+        self.paired_marker_color = -negative_color
+        self.paired_marker_pixels = points
+        self.paired_marker_support = support
+        self.paired_relation_candidates = 2
+        return True
+
+    def _paired_marker_coverage(
+        self,
+        anchor: tuple[int, int],
+    ) -> int:
+        grounding = self.paired_grounding
+        if grounding is None:
+            return 0
+        return sum(
+            (anchor[0] + dx, anchor[1] + dy)
+            in self.paired_marker_pixels
+            for dx, dy in grounding.mask_offsets
+        )
+
+    @staticmethod
+    def _paired_target_distance(
+        anchors: tuple[tuple[int, int], tuple[int, int]],
+        target: tuple[tuple[int, int], tuple[int, int]],
+    ) -> int:
+        return sum(
+            abs(anchor[0] - destination[0])
+            + abs(anchor[1] - destination[1])
+            for anchor, destination in zip(anchors, target, strict=True)
+        )
+
+    def _assess_paired_terminal_relation(
+        self,
+        observed: tuple[tuple[int, int], tuple[int, int]] | None,
+    ) -> None:
+        pending = self.paired_relation_pending
+        self.paired_relation_pending = None
+        if pending is None:
+            return
+        relation, before, expected = pending
+        target = self.paired_relation_target
+        if (
+            relation != "paired-marker-coverage"
+            or observed is None
+            or target is None
+        ):
+            self.paired_relation_falsifications += 1
+            return
+        actual = self._paired_target_distance(observed, target)
+        if actual == expected and actual < before:
+            self.paired_relation_confirmations += 1
+        elif actual != expected:
+            self.paired_relation_falsifications += 1
+
+    def _paired_marker_plan(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+        anchors: tuple[tuple[int, int], tuple[int, int]],
+        represented: frozenset[int],
+    ) -> (
+        tuple[
+            int,
+            int,
+            tuple[tuple[int, int], tuple[int, int]],
+            int,
+        ]
+        | None
+    ):
+        grounding = self.paired_grounding
+        if grounding is None:
+            return None
+        if not self.paired_marker_pixels and not self._ground_paired_marker_field(
+            frame
+        ):
+            return None
+        assert self.paired_marker_color is not None
+        nodes = self._paired_topology(
+            frame,
+            anchors,
+            extra_admitted_colors=frozenset({self.paired_marker_color}),
+        )
+        if not nodes or len(nodes) > 256:
+            return None
+
+        def score(
+            state: tuple[tuple[int, int], tuple[int, int]],
+        ) -> tuple[int, int]:
+            coverage = tuple(
+                self._paired_marker_coverage(anchor) for anchor in state
+            )
+            return min(coverage), sum(coverage)
+
+        queue: deque[
+            tuple[
+                tuple[tuple[int, int], tuple[int, int]],
+                int,
+                int | None,
+            ]
+        ] = deque([(anchors, 0, None)])
+        visited = {anchors}
+        best_state = anchors
+        best_depth = 0
+        best_action: int | None = None
+        best_score = score(anchors)
+        expanded_edges = 0
+        while queue and len(visited) <= 2048 and expanded_edges < 8192:
+            state, depth, first_action = queue.popleft()
+            state_score = score(state)
+            if (
+                state_score[0],
+                state_score[1],
+                -depth,
+            ) > (
+                best_score[0],
+                best_score[1],
+                -best_depth,
+            ):
+                best_state = state
+                best_depth = depth
+                best_action = first_action
+                best_score = state_score
+            for action_id in sorted(self.paired_effects):
+                if (
+                    action_id not in represented
+                    or action_id in self.paired_invalid_actions
+                ):
+                    continue
+                successor = self._paired_geometric_successor(
+                    state,
+                    self.paired_effects[action_id],
+                    nodes,
+                )
+                expanded_edges += 1
+                if successor == state or successor in visited:
+                    continue
+                visited.add(successor)
+                queue.append(
+                    (
+                        successor,
+                        depth + 1,
+                        action_id if first_action is None else first_action,
+                    )
+                )
+        self.paired_relation_search_expansions = len(visited)
+        if best_action is None or best_score <= score(anchors):
+            return None
+        successor = self._paired_geometric_successor(
+            anchors,
+            self.paired_effects[best_action],
+            nodes,
+        )
+        expected_distance = self._paired_target_distance(
+            successor,
+            best_state,
+        )
+        return best_action, best_depth, best_state, expected_distance
 
     def _paired_contact_plan(
         self,
@@ -1759,14 +2012,44 @@ class EpistemicExplorer:
         if len(self.paired_effects) < 2:
             self.paired_diagnostic = "insufficient-joint-effects"
             return None
-        plan = self._paired_contact_plan(
+        represented = frozenset(token.action_id for token in plain)
+        contact_plan = self._paired_contact_plan(
             observation.frame,
             anchors,
-            frozenset(token.action_id for token in plain),
+            represented,
         )
-        if plan is None:
+        marker_plan = None
+        if self.paired_terminal_relation_mode != "contact-only":
+            marker_plan = self._paired_marker_plan(
+                observation.frame,
+                anchors,
+                represented,
+            )
+        use_marker = marker_plan is not None and (
+            self.paired_terminal_relation_mode == "marker-first"
+            or contact_plan is None
+            or marker_plan[1] < contact_plan[1]
+        )
+        if not use_marker and contact_plan is None:
             return None
-        action_id, length = plan
+        if use_marker:
+            assert marker_plan is not None
+            action_id, length, target, expected_distance = marker_plan
+            self.paired_active_terminal_relation = "paired-marker-coverage"
+            self.paired_relation_target = target
+            before_distance = self._paired_target_distance(anchors, target)
+            self.paired_relation_pending = (
+                "paired-marker-coverage",
+                before_distance,
+                expected_distance,
+            )
+            self.paired_relation_plan_length = length
+            self.paired_diagnostic = "executing-marker-coverage-plan"
+        else:
+            assert contact_plan is not None
+            action_id, length = contact_plan
+            self.paired_active_terminal_relation = "object-contact"
+            self.paired_relation_target = None
         self._earn_paired_post_accommodation_allowance(length)
         token = next(
             item for item in plain if item.action_id == action_id
@@ -1776,7 +2059,8 @@ class EpistemicExplorer:
         self.paired_plan_length = length
         if length == 1:
             self.paired_contact_action = action_id
-        self.paired_diagnostic = "executing-joint-contact-plan"
+        if not use_marker:
+            self.paired_diagnostic = "executing-joint-contact-plan"
         return token
 
     def _reset_committed_trajectory_level(
@@ -3648,7 +3932,7 @@ class EpistemicExplorer:
                 "relation:reflected-congruent-pair",
                 "operator:probe-joint-action-effect",
                 "state:ordered-object-anchor-pair",
-                "goal:object-contact",
+                f"goal:{self.paired_active_terminal_relation}",
                 "operator:bounded-joint-topology-plan",
             )
             return self._issue(
@@ -6824,6 +7108,23 @@ class EpistemicExplorer:
             "paired_plan_length": self.paired_plan_length,
             "paired_contact_continuations": self.paired_contact_continuations,
             "paired_latent_contact": int(self.paired_latent_contact),
+            "paired_active_terminal_relation": (
+                self.paired_active_terminal_relation
+            ),
+            "paired_terminal_relation_candidates": (
+                self.paired_relation_candidates
+            ),
+            "paired_marker_support": self.paired_marker_support,
+            "paired_relation_plan_length": self.paired_relation_plan_length,
+            "paired_relation_search_expansions": (
+                self.paired_relation_search_expansions
+            ),
+            "paired_relation_confirmations": (
+                self.paired_relation_confirmations
+            ),
+            "paired_relation_falsifications": (
+                self.paired_relation_falsifications
+            ),
             "paired_contextual_proposals": self.paired_contextual_proposals,
             "paired_contextual_confirmations": (
                 self.paired_contextual_confirmations
