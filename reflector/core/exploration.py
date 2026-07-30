@@ -623,6 +623,11 @@ class EpistemicExplorer:
     compact_component_frontier_active: bool = False
     compact_component_frontier_selections: int = 0
     compact_component_frontier_candidates: int = 0
+    compact_component_frontier_objects: int = 0
+    compact_component_frontier_diagnostic: str = "exact-off"
+    compact_component_frontier_retry_active: bool | None = None
+    compact_component_frontier_retry_diagnostic: str = "not-evaluated"
+    compact_component_frontier_previous_retry_active: bool | None = None
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -772,6 +777,9 @@ class EpistemicExplorer:
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
+            self._reset_compact_component_frontier_retry(
+                retain_previous=False
+            )
         elif observation.state == "GAME_OVER":
             self.episode_roles.clear()
             self.episode_groundings.clear()
@@ -798,6 +806,9 @@ class EpistemicExplorer:
             if not self.cross_retry_maturity:
                 self.level_interventions = 0
             self.level_failures += 1
+            self._reset_compact_component_frontier_retry(
+                retain_previous=True
+            )
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
         if state not in self.state_status:
@@ -977,6 +988,26 @@ class EpistemicExplorer:
         self.pending_role = None
         self.pending_grounding = None
         self.pending_relational_scheme = None
+
+    def _reset_compact_component_frontier_retry(
+        self,
+        *,
+        retain_previous: bool,
+    ) -> None:
+        if retain_previous and self.compact_component_frontier_retry_active is not None:
+            self.compact_component_frontier_previous_retry_active = (
+                self.compact_component_frontier_retry_active
+            )
+        elif not retain_previous:
+            self.compact_component_frontier_previous_retry_active = None
+        self.compact_component_frontier_retry_active = None
+        self.compact_component_frontier_retry_diagnostic = "not-evaluated"
+        self.compact_component_frontier_active = False
+        self.compact_component_frontier_candidates = 0
+        self.compact_component_frontier_objects = 0
+        self.compact_component_frontier_diagnostic = (
+            "awaiting-retry-evaluation"
+        )
 
     def _reset_shape_translation_level(self) -> None:
         self.shape_translation_probes.clear()
@@ -4262,8 +4293,14 @@ class EpistemicExplorer:
         tokens = self._tokens(observation, scene, legal_actions)
         if not tokens:
             raise ValueError("epistemic explorer has no represented legal action")
-        self.compact_component_frontier_active = (
-            self._uses_compact_component_frontier(observation)
+        (
+            self.compact_component_frontier_active,
+            self.compact_component_frontier_diagnostic,
+            self.compact_component_frontier_candidates,
+            self.compact_component_frontier_objects,
+        ) = self._compact_component_frontier_status(
+            observation,
+            scene,
         )
         self.tokens_by_state[state] = tokens
         self.selection_frame = observation.frame
@@ -5668,20 +5705,17 @@ class EpistemicExplorer:
         reason: str,
         scene: Scene,
     ) -> ExplorationChoice:
-        if self.compact_component_frontier_active and reason in {
-            "epistemic-frontier:hierarchical-action-family",
-            "epistemic-frontier:untried-current-state",
-            "epistemic-frontier:navigate-known-state-graph",
-            "epistemic-frontier:least-repeated-exhausted-state",
-        }:
+        if self.compact_component_frontier_active:
             self.compact_component_frontier_selections += 1
-            if not self.last_scheme_components:
-                self.last_scheme_components = (
-                    "scheme:compact-component-frontier",
-                    "operator:click-compact-monochrome-component",
-                    "state:edge-strip-normalized-frame",
-                    "trigger:failed-coordinate-only-level",
-                )
+            compact_scheme = (
+                "scheme:compact-component-frontier",
+                "operator:click-compact-monochrome-component",
+                "state:edge-strip-normalized-frame",
+                "trigger:failed-coordinate-only-compressive-ontology",
+            )
+            self.last_scheme_components = tuple(
+                dict.fromkeys((*self.last_scheme_components, *compact_scheme))
+            )
         self.level_interventions = min(
             self.min_productive_reuse_interventions,
             self.level_interventions + 1,
@@ -7079,7 +7113,7 @@ class EpistemicExplorer:
     ) -> tuple[tuple[int, int], ...]:
         """Represent object hypotheses first, then a bounded coarse scan."""
 
-        if self._uses_compact_component_frontier(observation):
+        if self._uses_compact_component_frontier(observation, scene):
             compact_candidates = self._compact_component_candidates(
                 observation.frame
             )
@@ -7182,15 +7216,59 @@ class EpistemicExplorer:
     def _uses_compact_component_frontier(
         self,
         observation: Observation,
+        scene: Scene,
     ) -> bool:
-        """Activate a graph-compatible click vocabulary only after failure."""
+        """Use the compact graph only when it compresses current perception."""
 
+        return self._compact_component_frontier_status(observation, scene)[0]
+
+    def _compact_component_frontier_status(
+        self,
+        observation: Observation,
+        scene: Scene,
+    ) -> tuple[bool, str, int, int]:
         available = set(observation.available_actions) - {self.reset_action}
+        object_count = len(scene.objects)
+        if not self.compact_component_frontier:
+            return (False, "exact-off", 0, object_count)
+        if (
+            self.current_level is not None
+            and observation.levels_completed > self.current_level
+        ):
+            return (False, "level-progress", 0, object_count)
+        if self.level_failures <= 0:
+            return (False, "before-first-failure", 0, object_count)
+        if available != {self.complex_action}:
+            return (False, "not-coordinate-only", 0, object_count)
+        if not observation.frame:
+            return (False, "empty-frame", 0, object_count)
+        candidates = self._compact_component_candidates(observation.frame)
+        candidate_count = len(candidates)
+        if not candidates:
+            return (False, "no-compact-components", 0, object_count)
+        if self.compact_component_frontier_retry_active is None:
+            active = candidate_count <= object_count
+            previous = self.compact_component_frontier_previous_retry_active
+            if previous is not None and active != previous:
+                self._reorganize_click_ontology()
+            self.compact_component_frontier_retry_active = active
+            self.compact_component_frontier_retry_diagnostic = (
+                "compressive-component-vocabulary"
+                if active
+                else "expands-perceptual-ontology"
+            )
+        if not self.compact_component_frontier_retry_active:
+            return (
+                False,
+                self.compact_component_frontier_retry_diagnostic,
+                candidate_count,
+                object_count,
+            )
         return (
-            self.compact_component_frontier
-            and self.level_failures > 0
-            and available == {self.complex_action}
-            and bool(observation.frame)
+            True,
+            self.compact_component_frontier_retry_diagnostic,
+            candidate_count,
+            object_count,
         )
 
     @staticmethod
@@ -7593,7 +7671,7 @@ class EpistemicExplorer:
         scene: Scene,
     ) -> StateKey:
         digest = scene.frame_digest
-        if self._uses_compact_component_frontier(observation):
+        if self._uses_compact_component_frontier(observation, scene):
             digest = self._compact_component_state_digest(observation.frame)
         if self.boundary_nuisance_state_key and self.boundary_nuisance_sides:
             normalized = [list(row) for row in observation.frame]
@@ -7872,6 +7950,12 @@ class EpistemicExplorer:
             ),
             "compact_component_frontier_candidates": (
                 self.compact_component_frontier_candidates
+            ),
+            "compact_component_frontier_objects": (
+                self.compact_component_frontier_objects
+            ),
+            "compact_component_frontier_diagnostic": (
+                self.compact_component_frontier_diagnostic
             ),
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),

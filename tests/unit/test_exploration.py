@@ -90,11 +90,12 @@ def test_compact_component_frontier_activates_only_after_click_only_failure() ->
         frame=frame,
     )
     explorer = EpistemicExplorer(compact_component_frontier=True)
+    scene = _scene(click_only)
 
-    assert not explorer._uses_compact_component_frontier(click_only)
+    assert not explorer._uses_compact_component_frontier(click_only, scene)
     explorer.level_failures = 1
-    assert explorer._uses_compact_component_frontier(click_only)
-    assert not explorer._uses_compact_component_frontier(mixed)
+    assert explorer._uses_compact_component_frontier(click_only, scene)
+    assert not explorer._uses_compact_component_frontier(mixed, _scene(mixed))
     assert explorer._compact_component_candidates(frame)[:3] == (
         (2, 2),
         (5, 1),
@@ -136,6 +137,74 @@ def test_compact_component_frontier_masks_only_dominated_edge_strips() -> None:
     assert explorer._state_key(first, _scene(first)) != explorer._state_key(
         changed,
         _scene(changed),
+    )
+
+
+def test_compact_component_frontier_rejects_an_expanding_vocabulary() -> None:
+    frame = tuple(
+        tuple(1 if x in {2, 5} else 0 for x in range(8))
+        for _y in range(8)
+    )
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=frame,
+    )
+    scene = _scene(observation)
+    explorer = EpistemicExplorer(compact_component_frontier=True)
+    explorer.level_failures = 1
+
+    active, diagnostic, candidates, objects = (
+        explorer._compact_component_frontier_status(observation, scene)
+    )
+
+    assert not active
+    assert diagnostic == "expands-perceptual-ontology"
+    assert candidates > objects
+
+
+def test_compact_component_frontier_latches_one_ontology_per_retry() -> None:
+    compact_frame = (
+        (0, 0, 0, 0, 0, 0, 0, 0),
+        (0, 2, 2, 2, 0, 1, 1, 0),
+        (0, 2, 2, 2, 0, 1, 1, 0),
+        (0, 2, 2, 2, 0, 0, 0, 0),
+        (0, 3, 3, 3, 0, 0, 0, 0),
+        (0, 3, 0, 0, 0, 0, 0, 0),
+        (0, 3, 0, 0, 0, 0, 0, 0),
+        (0, 0, 0, 0, 0, 0, 0, 0),
+    )
+    expanding_frame = tuple(
+        tuple(1 if x in {2, 5} else 0 for x in range(8))
+        for _y in range(8)
+    )
+
+    def observation(frame):
+        return Observation.create(
+            state="NOT_FINISHED",
+            available_actions=(6,),
+            frame=frame,
+        )
+
+    compact = observation(compact_frame)
+    expanding = observation(expanding_frame)
+    explorer = EpistemicExplorer(compact_component_frontier=True)
+    explorer.level_failures = 1
+
+    assert explorer._uses_compact_component_frontier(
+        compact,
+        _scene(compact),
+    )
+    assert explorer._uses_compact_component_frontier(
+        expanding,
+        _scene(expanding),
+    )
+
+    explorer._reset_compact_component_frontier_retry(retain_previous=True)
+    explorer.level_failures = 2
+    assert not explorer._uses_compact_component_frontier(
+        expanding,
+        _scene(expanding),
     )
 
 
