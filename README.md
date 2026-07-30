@@ -20,32 +20,39 @@ service, database, or web server.
 Last verified: 2026-07-29
 
 > **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
-> It has solved **16 of 183 levels across 7 games**. All 25 games were
+> It has solved **17 of 183 levels across 8 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v40 result |
+| Metric | Accepted v42 result |
 | --- | ---: |
 | Complete games beaten | **0 / 25** |
-| Games with at least one solved level | **7 / 25** |
-| Levels solved | **16 / 183** |
-| Official local score | **4.2992976365 / 100** |
+| Games with at least one solved level | **8 / 25** |
+| Levels solved | **17 / 183** |
+| Official local score | **4.4421547794 / 100** |
 | Games evaluated | **25 / 25** |
 | Kaggle submissions | **0** |
 
-The score is about **4.30% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. V40 preserves every
-v39 completion at its exact action count and adds `ar25` level 2 in 17 actions.
-It represents a visible phase as rare markers hosted by persistent major
-objects, quarantines action meanings when that relation changes, and re-probes
-the action family in the new phase. This lets one formerly inert action acquire
-the new translation semantics required for the second alignment axis. Two
-intermediate implementations regressed level 1 by interpreting partial
-occlusion as phase evidence; those failures remain archived and caused the
-phase observer to abstain throughout evidenced occlusion. The source-matched
-exact-off control remained at 15 levels. The corrected protocol runs every
-parallel game in a fresh process. The exact package passes 178 tests (3
-skipped), Ruff, mypy, both offline smoke paths, and export. No hidden Kaggle
-score exists.
+The score is about **4.44% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. V42 preserves every
+v40 completion at its exact action count and adds `g50t` level 1 in 29 actions.
+It learns a movement lattice and committed replay macro from rendered
+interventions, infers a bounded graph over the dominant navigable substrate,
+and separates structural background holes from uncertain autonomous gates.
+When one evidenced gate collision disconnects every route, it takes one safe
+information action to advance gate state and replans. Two fresh target runs and
+two eight-game preservation gates were exact. The full suite runs every game
+in a fresh process. The exact package passes 191 tests (3 skipped), Ruff,
+mypy, both offline smoke paths, and export. No hidden Kaggle score exists.
+
+A new paired pure-symbolic control makes the local gain more interpretable.
+Under the same 25 games and 10,000 actions, a deterministic connected-object
+and frame-graph frontier explorer scored **0.0003283918/100** and solved
+**1/183 levels**, versus v40's **4.2992976365/100** and **16/183**. The control
+created 5,130 distinct frame states and 9,185 changing transition targets,
+showing that lightly normalized visual graphs are overwhelmed by nuisance
+dynamics and hidden phase. This is a public-development comparison, not hidden
+generalization evidence. The method, protocol, and full result are in
+[the symbolic comparison](references/SYMBOLIC_ARC3_COMPARISON.md).
 
 The subsequent v38 experiment is rejected and does not change these scores.
 It inferred and executed a 17-action `sb26` level-4 program based on relocating
@@ -54,6 +61,19 @@ change and the level did not advance. Two frozen runs matched the source-matched
 v37 control at `[9, 15, 15, 361]`. This negative result is retained because it
 shows that visual alignment and attribute matching cannot substitute for
 intervention evidence that an object is actually movable.
+
+Two later probes also leave the accepted score unchanged. A research-only
+local Gemma 4 E2B hybrid returned valid structured choices on all 40 `g50t`
+actions but solved no level; its prose hypotheses remained generic, omitted
+the commit action entirely, and sometimes contradicted the selected action.
+It is neither purely symbolic nor Kaggle-compatible and was rejected. The
+symbolic v41 committed-trajectory branch did learn action effects, a latent
+macro, autonomous replay, and up to 21 contextual collision edges across
+retries. After seven trace-driven variants it still solved 0/7 `g50t` levels
+at 400 actions, so its preregistered 30-action target was falsified. These
+negative results motivated v42's substrate topology and uncertain-gate
+information actions. The accepted v42 result and all rejected predecessors are
+documented in the [real-games scorecard](REAL_GAMES_REPORT.md).
 
 The v26 research branch now preregisters intervention hypotheses, keeps
 predictive and pragmatic credit separate, and treats successful action-role

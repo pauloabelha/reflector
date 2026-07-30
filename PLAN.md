@@ -2,6 +2,10 @@
 
 Last updated: 2026-07-29
 
+Conceptual research handoff: read `INSIGHTS.md` after this plan and before
+starting the next experiment. It records the current external ARC-AGI-3
+evidence, the project's earned claims, and the architectural implications.
+
 ## End state
 
 Evolve a purely symbolic, open-source ARC-AGI-3 agent until it scores
@@ -21,14 +25,14 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-76f2aac768d8cdb0`
-- Accepted agent: Reflector v40
-- Accepted frozen inference commit: `5bb1ac6`
+- Accepted candidate: `candidate-8c51fecdfdb99959`
+- Accepted agent: Reflector v42
+- Accepted frozen inference commit: `0bc1c52`
 - Accepted public-development report:
-  `reports/official-isolated-public-v40-relational-phase-candidate-400.json`
-- Accepted score: `4.29929763654639`
+  `reports/official-isolated-v42b-public-400.json`
+- Accepted score: `4.442154779403533`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 16 levels across 7 games
+- Accepted completions: 17 levels across 8 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -52,6 +56,7 @@ generalization.
 | Enclosure-grounded sibling composition | v37 represented same-height sibling containers as separate enclosure objects, preserved every v35 action count, and solved `sb26` L3 in 15 actions. |
 | Evidenced shape-goal translation | v39 learned plain-action translations from rendered effects, matched one mover to a unique stationary shape goal, preserved every v37 action count, and solved `ar25` L1 in 17 actions; its exact-off control remained at zero there. |
 | Relational-phase-conditioned translation | v40 reassigned rare markers between persistent hosts, quarantined phase-A action semantics, re-probed in phase B, preserved every v39 action count, and solved `ar25` L2 in 17 actions. |
+| Substrate-topology belief planning | v42 inferred 28 origin-relative topology nodes and 10 uncertain gates on `g50t`, used two safe information actions to advance a blocking autonomous gate, preserved all 16 v40 levels exactly, and solved `g50t` L1 in 29 actions twice. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -729,7 +734,7 @@ V40 is accepted. The earned claim is limited to conditioning learned action
 semantics on one explicitly rendered marker-host relation while conserving
 the old phase model and abstaining during bounded latent occlusion.
 
-## Active experiment: v41 committed-trajectory causal state
+## Rejected experiment: v41 committed-trajectory causal state
 
 Parent: accepted v40 `candidate-76f2aac768d8cdb0`
 
@@ -825,6 +830,113 @@ Falsifier:
   any invariance gate fails, if `g50t` level 1 does not advance within 30
   actions twice, or if any accepted v40 completion regresses.
 
+Observed result:
+
+- every v41 target run remained at **0/7 `g50t` levels and 0 score** under 400
+  actions;
+- the final v41h run learned all four translation effects, a four-step macro,
+  four autonomous replay validations, and 21 contextual blocked edges;
+- bounded A* and replay timing repairs increased causal-plan execution, but
+  the agent exhausted its 20 planned-action cap or reached no causal plan;
+- same-level memory conserved action semantics and obstacles across deaths,
+  while failure-driven variation alternated the committed axis, but neither
+  produced environment-reported advancement;
+- the preregistered requirement of level 1 within 30 actions twice is
+  falsified. V41 is not promoted and v40 remains accepted.
+
+A separate research-only Gemma 4 E2B hybrid probe also scored zero on 40
+`g50t` actions. It returned parseable choices but failed to ground its verbal
+hypotheses into causal action semantics. It is not symbolic or
+Kaggle-compatible and is rejected as a runtime policy head.
+
+## Accepted experiment: v42 substrate-topology belief planning
+
+Parent: accepted v40 `candidate-76f2aac768d8cdb0`; v41 supplies rejected
+diagnostic code only.
+
+Observed disequilibrium:
+
+- v41 treated every in-bounds lattice coordinate as navigable, although the
+  rendered board distinguishes a dominant connected substrate from background
+  holes;
+- it consequently spent its bounded plan learning point collisions in
+  structurally impossible regions;
+- interior non-substrate overlays can move autonomously, so a no-effect edge
+  against one is not a permanent wall and must not survive a retry as static
+  topology.
+
+Preregistered mutation:
+
+- infer translation step sizes only from intervention-grounded effects;
+- enumerate at most 128 lattice anchors, aligned to the grounded mover origin,
+  whose centers lie inside the dominant interior connected component's bounds;
+- admit anchors rendered with the dominant substrate, the grounded mover or
+  receptacle relation, or a non-background interior overlay;
+- classify non-substrate overlay anchors as uncertain gates and background
+  anchors as structural exclusions;
+- plan with bounded A* only over admitted anchors;
+- retain learned action effects across same-level retries, but clear
+  episode-specific blocked edges and recompute topology from the new frame;
+- retain v41's bounded latent macro and replay state, while making no use of a
+  game identifier, fixed coordinate, concrete color, source code, or recorded
+  route.
+
+Synthetic gates:
+
+- translation and reflection produce correspondingly transformed topology;
+- consistent action-ID permutation produces the correspondingly permuted
+  first plan action;
+- background holes are excluded, while an interior overlay is represented as
+  an uncertain gate;
+- topology and search remain within their declared caps.
+
+Prediction and falsifier:
+
+- predict environment-reported completion of `g50t` level 1 within 40 actions
+  on two fresh exact runs;
+- reject v42 if either target run fails, any synthetic equivariance/cap gate
+  fails, or any implementation embeds public-game-specific information;
+- run accepted-win preservation and full-suite gates only after both target
+  runs pass. V40 remains accepted until every promotion gate passes.
+
+V42a result:
+
+- the first 40-action run solved 0/7 levels;
+- it inferred 28 bounded topology nodes and 10 uncertain overlay gates, then
+  executed five topology-planned actions;
+- after a collision at an uncertain gate, removing that one edge disconnected
+  every geometric route, and the advisor incorrectly disabled itself even
+  though a safe backtrack could advance autonomous gate state;
+- v42a is falsified and not promoted.
+
+Preregistered v42b accommodation:
+
+- when and only when an evidenced uncertain-gate collision cuts every route,
+  select one admitted, currently unblocked topology edge as a bounded
+  information action;
+- prefer a rendered substrate node over another uncertain node, advance the
+  world once, clear transient collision evidence after actual movement, and
+  replan;
+- preserve the same 20 planned-action cap and 40-action target prediction;
+- reject v42b if the information action is chosen without an uncertain gate
+  and a disconnected plan, if equivariance fails, or if level 1 does not
+  advance within 40 actions twice.
+
+V42b result:
+
+- two fresh 40-action `g50t` runs completed level 1 at action 29 with exact
+  allocation `[29, 11]`;
+- both runs used two bounded gate-refresh information actions and validated all
+  four committed replay steps;
+- two process-isolated eight-game gates were identical, preserved every v40
+  completed-level action count, and added only `g50t` level 1;
+- the full 25-game run solved 17/183 levels across eight games, completed 0/25
+  games, used 10,000 actions, and scored `4.442154779403533/100`;
+- 191 tests passed with three skipped; Ruff, mypy, generic smoke,
+  exact-candidate smoke, export, and inference-fingerprint verification passed;
+- frozen inference source is `0bc1c52`; candidate
+  `candidate-8c51fecdfdb99959` is accepted.
+
 ## Rejected experimental branch: v28 object and temporal primitives
 
 V28 implemented content-free persistent components, composite regions,
@@ -848,12 +960,10 @@ genome flags, but none of its active policy traits are inherited by v29.
 
 ## Next actions
 
-1. Preregister the `g50t` committed-trajectory causal-state offspring: exclude
-   independently monotone countdown components, learn maximal translation
-   macros and a rendered commit relation, and carry the committed macro/replay
-   cursor as latent state for bounded planning. A development black-box search
-   solved level 1 twice in 17 actions; the deployed policy has not yet earned
-   that result.
+1. Replace v41's absolute point-collision list with a bounded, object-relative
+   topological belief graph over regions, passages, barriers, control
+   assignment, committed macro, and replay phase. Preregister predictions on
+   synthetic reflected/action-permuted mazes before another `g50t` run.
 2. Treat `m0r0` separately as equivariant multi-object composition; require
    held-out prediction of both congruent objects and obstacle-explained
    one-sided blocking before planning.
@@ -862,7 +972,7 @@ genome flags, but none of its active policy traits are inherited by v29.
 4. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
 5. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v40 accepted otherwise.
+   qualifying offspring; keep v42 accepted otherwise.
 6. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.

@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 16 of 183 levels across 7 games. The suite ran all 25 games,
+> It has solved 17 of 183 levels across 8 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v40 result | Meaning |
+| Outcome metric | Accepted v42 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
-| Games with progress | **7 / 25** | At least one level was solved in seven games. |
-| Levels solved | **16 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; two in `ar25`; one each in `lf52`, `r11l`, and `tn36`. |
-| Official local score | **4.2992976365 / 100** | About **4.30%** of the 100-point scale. |
+| Games with progress | **8 / 25** | At least one level was solved in eight games. |
+| Levels solved | **17 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; two in `ar25`; one each in `g50t`, `lf52`, `r11l`, and `tn36`. |
+| Official local score | **4.4421547794 / 100** | About **4.44%** of the 100-point scale. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,7 +23,13 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
+| Process-isolated official local suite | v42 accepted | **4.4421547794 / 100** | 0 games beaten; 17/183 levels | 25/25 coverage |
+| Process-isolated eight-game gate | v42 accepted | 13.8817336856 / 100 | 17/60 levels; every v40 action count preserved | exact twice |
+| Target-only `g50t` reruns | v42 accepted | 3.5714285714 for one game | 1/7 levels; `[29, 11]` under 40 actions | deterministic gain twice |
 | Process-isolated official local suite | v40 accepted | **4.2992976365 / 100** | 0 games beaten; 16/183 levels | 25/25 coverage |
+| Research symbolic control, same local suite and budget | object/frame graph frontier v1 | **0.0003283918 / 100** | 0 games beaten; 1/183 levels (`vc33`) | 25/25 coverage; not a candidate |
+| Target-only research hybrid | local Gemma 4 E2B + symbolic scene summary | 0.0000000000 for one game | 0/7 `g50t` levels in 40 actions | not symbolic; not Kaggle-compatible; rejected |
+| Target-only symbolic offspring | v41h committed trajectory | 0.0000000000 for one game | 0/7 `g50t` levels in 400 actions | falsified; not promoted |
 | Source-matched process-isolated suite | v40 exact-off / v39 policy | 4.0770754143 / 100 | 0 games beaten; 15/183 levels | exact parent reproduction |
 | Process-isolated seven-game gate | v40 accepted | 15.3546344162 / 100 | 16 levels in the seven affected games | every v39 action count preserved |
 | Process-isolated seven-game gate | v40 exact-off / v39 policy | 14.5609836226 / 100 | 15 levels in the seven affected games | source-matched control |
@@ -50,7 +56,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v40 package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v42 package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -65,6 +71,79 @@ These surfaces must not be combined. The accepted local result uses 25 known
 public-development games. Kaggle evaluates a separate hidden set of 110 games:
 half determine the visible public score and half the private score. Reflector
 has not yet crossed that evaluation boundary.
+
+### Pure symbolic graph control
+
+To separate Reflector's constructive mechanisms from generic symbolic
+exploration, a research-only graph-frontier control was run on the identical
+25-game inventory with the identical 400-action-per-game budget. It proposes
+simple actions and clicks on connected monochrome objects, reduces thin edge
+strips, records an explicit frame-transition graph, and follows shortest known
+paths to untested state-action frontiers. It contains no neural model, LLM,
+game identifier, route, or training data.
+
+The control scored **0.0003283918/100**, completed **1/183 levels** and **0/25
+games**, and used all 10,000 actions. Its single `vc33` level reproduced at the
+same score in a separate exact rerun. Across the suite it constructed **5,130
+distinct frame states**, changed **9,185 recorded transition targets**, and
+used only **203 frontier routes**. The result falsifies raw or lightly
+normalized frame graphs as a sufficient 400-action solution. Animation,
+autonomous dynamics, phase, and hidden commitment cause state explosion or
+nonstationary edges before useful frontier return can dominate.
+
+This does not prove that Reflector generalizes better on hidden games: v40 was
+developed against the public suite, while this control was not. It does show,
+on a paired local budget, that v40's object relations, learned action roles,
+scheme transfer, and targeted structural solvers contribute far more than this
+generic graph baseline. See the
+[comparison protocol](references/SYMBOLIC_ARC3_COMPARISON.md), the
+[full control report](reports/symbolic-object-graph-control-v1-400.json), and
+the [exact `vc33` rerun](reports/symbolic-object-graph-control-v1-vc33-rerun-400.json).
+
+### Runtime-LLM probe and committed-trajectory offspring
+
+A research-only offspring was allowed to consult the locally available
+`google_gemma-4-E2B-it-Q4_K_M.gguf` model through `llama.cpp`. This was Gemma
+4 E2B, not Gemma 3: no Gemma 3 weight was present. The model received a
+symbolic connected-component summary, frame difference, recent action/effect
+history, and grounded legal action candidates. On `g50t` it produced 40/40
+parseable responses with no fallback, but solved **0/7 levels**. It chose
+actions `{1: 25, 2: 4, 3: 5, 4: 6}`, never chose action 5, repeated generic
+exploration claims despite accumulating evidence, and made five cases where
+its stated action semantics disagreed with the candidate it selected. The run
+is useful negative evidence: fluent verbal hypotheses did not provide grounded
+causal credit. It is not symbolic, depends on an external model process, and
+is not a Kaggle-compatible candidate.
+
+The symbolic v41 branch then learned four translation effects, a four-step
+committed macro, autonomous replay, and contextual collision edges from
+rendered interaction alone. Successive trace-driven repairs added bounded A*
+detours, pause-tolerant replay, same-level accommodation across deaths,
+independent first-step planning, synchronous replay-onset recognition, and
+failure-driven variation of the committed axis. These changes were operative:
+the final run validated all four replay steps and accumulated 21 blocked
+state-action edges. Nevertheless every recorded v41 target run completed
+**0/7 `g50t` levels in 400 actions**. V41h spent 45 actions under the causal
+planner, then exhausted its bounded planning or found no plan; it reset three
+times and ended `GAME_OVER`.
+
+V41 is rejected under its preregistered falsifier, which required level 1
+within 30 actions twice. Its failure supplied the disequilibrium for accepted
+v42, but none of v41's zero-score variants is itself promoted. The earned
+insight is narrower than success: hidden phase and replay can be represented
+symbolically, but a list of point collisions plus local A* is not yet a
+reusable topological world model, and accommodation must preserve structural
+knowledge without preserving a failed control scheme.
+
+Raw evidence:
+
+- [Gemma hybrid probe](reports/experimental-gemma4-hybrid-g50t-40.json)
+- [v41 bounded-A* run](reports/experimental-v41c-g50t-astar-r1-400.json)
+- [v41 asynchronous-replay run](reports/experimental-v41d-g50t-asynchronous-replay-r1-400.json)
+- [v41 cross-life accommodation run](reports/experimental-v41e-g50t-cross-life-accommodation-r1-400.json)
+- [v41 independent-replay run](reports/experimental-v41f-g50t-independent-replay-r1-400.json)
+- [v41 replay-onset run](reports/experimental-v41g-g50t-synchronous-replay-onset-r1-400.json)
+- [v41 scheme-variation run](reports/experimental-v41h-g50t-scheme-variation-r1-400.json)
 
 ### Reporting terms
 
@@ -144,14 +223,98 @@ Raw evidence:
 | v35 | 3.6326309699 | 13 | 6 | 0 | Topology-guided recursive container traversal | historical accepted |
 | v37 | 3.9659643032 | 14 | 6 | 0 | Enclosure-grounded sibling container composition | historical accepted |
 | v39 | 4.0770754143 | 15 | 7 | 0 | Evidenced shape-goal translation with bounded occlusion | historical accepted |
-| v40 | **4.2992976365** | **16** | **7** | **0** | Relational-phase-conditioned translation | **current accepted** |
+| v40 | 4.2992976365 | 16 | 7 | 0 | Relational-phase-conditioned translation | historical accepted |
+| v42 | **4.4421547794** | **17** | **8** | **0** | Substrate topology with uncertain-gate information actions | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v40 result
+## Accepted v42 result
+
+V42 inherits the exact accepted v40 genome and activates one bounded
+committed-trajectory advisor. It learns translation actions from interventions,
+grounds a mover and receptacle through enclosure and hosted-marker relations,
+constructs and commits a trajectory macro, and represents autonomous replay as
+private causal state.
+
+The operative change over rejected v41 is a rendered topological belief model.
+After learning the movement lattice, v42 enumerates at most 128
+origin-relative anchors inside the dominant connected substrate. Background
+holes are structural exclusions. Non-background overlays inside that
+substrate are uncertain gates rather than permanent walls. Bounded A* searches
+only admitted anchors. When an evidenced gate collision disconnects every
+current route, the agent performs one safe admitted information action,
+advances the autonomous gate state, clears the transient collision after
+actual motion, and replans.
+
+V42a inferred 28 topology nodes and 10 uncertain gates but solved 0/7 `g50t`
+levels in 40 actions because it disabled planning after the first gate
+collision. That failure preregistered the v42b information-action mutation.
+V42b then completed `g50t` level 1 at action 29 on two fresh 40-action runs.
+In each run it used two gate-refresh actions, validated all four autonomous
+replay steps, entered the newly opened substrate corridor, and reached the
+rendered receptacle. The exact action allocation was `[29, 11]` twice.
+
+Two process-isolated eight-game runs reproduced the same 17 completed levels,
+every per-level action count, and every game score. All 16 inherited v40 levels
+were unchanged; `g50t` level 1 was the sole addition. The full 25-game run
+scored `4.442154779403533/100`, solved 17/183 levels across eight games, used
+10,000 actions, and completed 0/25 games.
+
+Frozen inference commit: `0bc1c52`
+
+Candidate: `candidate-8c51fecdfdb99959`
+
+Candidate inference fingerprint:
+`da08f3a9828ffe16094ea5ea5e6f7d3c121f37f95cb09a532ef0c0b3eaee4043`
+
+Candidate SHA-256:
+`ed4ef6ad56c9507dd67cc7d8c420f3f62d239548ded1d4ff980c068cb0296e0d`
+
+Full report SHA-256:
+`849fd59925bbee6832de492aecef85438d83ca57b6f5802a225c4d4c2298ea05`
+
+Verification: 191 tests passed (3 skipped), Ruff passed, mypy passed, the
+generic and exact-candidate network-disabled smoke paths passed, and the exact
+candidate exported without translation. The overlay SHA-256 is
+`7d0490d74ed0de11cb06b95b381c0b56c76ad53397566efd37815b9ee427f811`;
+the notebook SHA-256 is
+`e66ff2926a79f0867a52aee0b197de90d6f04be1a8e2a95e7b143775c8bdc9b7`.
+
+### Accepted progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ar25` | **2** | 8 | `[17, 17]` | 8.3333333333 | No |
+| `ft09` | **5** | 6 | `[4, 7, 14, 16, 94]` | 66.1466080321 | No |
+| `g50t` | **1** | 7 | `[29]` | 3.5714285714 | No |
+| `lp85` | **3** | 8 | `[37, 8, 54]` | 9.7216281179 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `sb26` | **3** | 8 | `[9, 15, 15]` | 16.6666666667 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| Remaining 17 games | **0** | 123 | `[]` | 0 | No |
+| **Total** | **17** | **183** | — | **4.4421547794 overall** | **0 / 25** |
+
+Raw evidence:
+
+- [v42 accepted process-isolated 25-game scorecard](reports/official-isolated-v42b-public-400.json)
+- [v42 exact eight-game gate 1](reports/official-isolated-v42b-eight-game-r1-400.json)
+- [v42 exact eight-game gate 2](reports/official-isolated-v42b-eight-game-r2-400.json)
+- [v42 exact `g50t` rerun 1](reports/experimental-v42b-g50t-gate-refresh-r1-40.json)
+- [v42 exact `g50t` rerun 2](reports/experimental-v42b-g50t-gate-refresh-r2-40.json)
+- [v42 falsified topology-only predecessor](reports/experimental-v42-g50t-substrate-topology-r1-40.json)
+- [v42 candidate](candidates/v42-substrate-topology-belief-400.json)
+
+The earned claim remains narrow. On one public-development game, a
+coordinate-free substrate graph plus explicit uncertain-gate information
+actions converted a learned replay macro into a successful plan. This is not
+evidence of arbitrary maze solving, hidden-game generalization, or a Kaggle
+score.
+
+## Historical accepted v40 result
 
 V40 conditions v39's learned translations on a bounded rendered phase
 relation. Small rare marker components are assigned to persistent major hosts
@@ -897,7 +1060,7 @@ artifact hashes are:
 These historical artifacts were technically submission-ready but were not
 published or scored on Kaggle.
 
-The accepted v40 candidate exports from the same frozen inference source used
+The historical v40 candidate exports from the same frozen inference source used
 for evaluation and passes both network-disabled smoke paths. Its generated
 artifact hashes are:
 
@@ -905,6 +1068,18 @@ artifact hashes are:
   `08e8c41b99eb45a52511b70e9f9b1441a96dc6edb96a61ba5c7faf3d000a5f2c`
 - notebook:
   `3ed447340d62f398e06bfb67378c10a6294d8ee0d42177191bdc7f8589669457`
+
+These historical artifacts have not
+been published or scored on Kaggle.
+
+The accepted v42 candidate exports from frozen inference source `0bc1c52` and
+passes both network-disabled smoke paths without translation. Its generated
+artifact hashes are:
+
+- overlay:
+  `7d0490d74ed0de11cb06b95b381c0b56c76ad53397566efd37815b9ee427f811`
+- notebook:
+  `e66ff2926a79f0867a52aee0b197de90d6f04be1a8e2a95e7b143775c8bdc9b7`
 
 These are the current technically submission-ready artifacts. They have not
 been published or scored on Kaggle.
