@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass, replace
-from typing import Any, Iterable, Literal, Mapping
+from typing import Any, Iterable, Literal, Mapping, Protocol
 
 from ..core.inheritance import SchemeDefinition, SchemeLibrary
 from ..core.mind import MindConfig
@@ -102,6 +102,12 @@ class SchemeEvidenceLedger:
             event for ledger in (self, *others) for event in ledger.events
         )
 
+    @property
+    def root(self) -> str:
+        """Content hash of the complete immutable evidence history."""
+
+        return _stable_digest([event.evidence_id for event in self.events])
+
     def summary(self, scheme_id: str) -> SchemeEvidenceSummary:
         relevant = tuple(
             event for event in self.events if event.scheme_id == scheme_id
@@ -153,14 +159,105 @@ class SchemePromotionRule:
         )
 
 
+class SchemeAcceptanceRule(Protocol):
+    """Structural interface shared by pragmatic and predictive gates."""
+
+    def accepts(
+        self,
+        scheme_id: str,
+        ledger: SchemeEvidenceLedger,
+    ) -> bool: ...
+
+
+@dataclass(frozen=True, slots=True)
+class PredictivePromotionRule:
+    """Admit calibrated knowledge without pretending it caused progress."""
+
+    minimum_confirmations: int = 100
+    minimum_heldout_confirmations: int = 100
+    minimum_heldout_partitions: int = 2
+    minimum_contributing_candidates: int = 2
+    maximum_falsification_rate: float = 0.1
+
+    def __post_init__(self) -> None:
+        for name in (
+            "minimum_confirmations",
+            "minimum_heldout_confirmations",
+            "minimum_heldout_partitions",
+            "minimum_contributing_candidates",
+        ):
+            if type(getattr(self, name)) is not int or getattr(self, name) < 1:
+                raise ValueError(f"{name} must be a positive integer")
+        if not 0.0 <= self.maximum_falsification_rate < 1.0:
+            raise ValueError(
+                "maximum_falsification_rate must be in [0.0, 1.0)"
+            )
+
+    def accepts(
+        self,
+        scheme_id: str,
+        ledger: SchemeEvidenceLedger,
+    ) -> bool:
+        relevant = tuple(
+            event for event in ledger.events if event.scheme_id == scheme_id
+        )
+        confirmations = tuple(
+            event
+            for event in relevant
+            if event.outcome == "prediction-confirmed"
+        )
+        falsifications = sum(
+            event.outcome == "prediction-falsified" for event in relevant
+        )
+        heldout = tuple(
+            event
+            for event in confirmations
+            if event.partition.startswith("heldout:")
+        )
+        predictions = len(confirmations) + falsifications
+        return (
+            len(confirmations) >= self.minimum_confirmations
+            and len(heldout) >= self.minimum_heldout_confirmations
+            and len({event.partition for event in heldout})
+            >= self.minimum_heldout_partitions
+            and len({event.candidate_id for event in confirmations})
+            >= self.minimum_contributing_candidates
+            and predictions > 0
+            and falsifications / predictions
+            <= self.maximum_falsification_rate
+            and not any(event.outcome == "regression" for event in relevant)
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class CommonSenseSnapshot:
+    """Versioned predictive knowledge plus the evidence that admitted it."""
+
+    library: SchemeLibrary
+    ledger: SchemeEvidenceLedger
+
+    def __post_init__(self) -> None:
+        if not self.library.definitions:
+            raise ValueError("common-sense snapshot requires a definition")
+
+    @property
+    def root(self) -> str:
+        return _stable_digest(
+            {
+                "library_root": self.library.root,
+                "ledger_root": self.ledger.root,
+            }
+        )
+
+
 def promoted_library(
     proposals: SchemeLibrary,
     ledger: SchemeEvidenceLedger,
-    rule: SchemePromotionRule | None = None,
+    rule: SchemeAcceptanceRule | None = None,
 ) -> SchemeLibrary:
     """Select definitions with evidence while retaining dependency closure."""
 
-    promotion_rule = rule or SchemePromotionRule()
+    promotion_rule: SchemeAcceptanceRule = rule or SchemePromotionRule()
     by_id = {item.scheme_id: item for item in proposals.definitions}
     retained = {
         item.scheme_id
@@ -175,6 +272,23 @@ def promoted_library(
                 retained.add(dependency)
                 frontier.append(dependency)
     return SchemeLibrary.create(by_id[item] for item in retained)
+
+
+def predictive_common_sense_snapshot(
+    proposals: SchemeLibrary,
+    ledger: SchemeEvidenceLedger,
+    rule: PredictivePromotionRule | None = None,
+) -> CommonSenseSnapshot:
+    """Freeze cross-agent calibrated definitions into one cultural root."""
+
+    accepted = promoted_library(
+        proposals,
+        ledger,
+        rule or PredictivePromotionRule(),
+    )
+    if not accepted.definitions:
+        raise ValueError("no predictive definition cleared the cultural gate")
+    return CommonSenseSnapshot(accepted, ledger)
 
 
 def accommodate_scheme(
@@ -352,7 +466,7 @@ def breed_inherited_candidate(
     contributor_ids: Iterable[str] = (),
     source_fingerprint: str,
     rationale: str,
-    rule: SchemePromotionRule | None = None,
+    rule: SchemeAcceptanceRule | None = None,
 ) -> InheritedBreedingResult:
     """Breed one exact offspring from evidence-clearing cultural artifacts."""
 

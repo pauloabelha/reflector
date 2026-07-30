@@ -16,8 +16,10 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
+from ..core.inheritance import SchemeDefinition
 from ..core.perception import SceneTracker
 from ..core.symbolic import Event, Observation, Scene
+from ..evolution.inheritance import SchemeEvidence, SchemeEvidenceLedger
 
 _IGNORED_EVENTS = frozenset(
     {
@@ -77,6 +79,32 @@ ACTION_EFFECT_CONTEXT_CHANGE = EventDefinition(
         "only-rendering-metadata-changed",
     ),
     minimum_support=2,
+    complexity_cost=4,
+)
+
+
+STABLE_REPEATED_FORM_ACTION_EFFECT = SchemeDefinition(
+    name="stable-repeated-form-action-effect",
+    operator="observe-event",
+    parameters=(
+        "action-role",
+        "repeated-form-subject",
+        "supported-effect",
+    ),
+    grounding=("action-family", "object"),
+    preconditions=(
+        "same-action-role",
+        "same-level",
+        "stable-prior-structural-effect",
+    ),
+    effects=("prior-structural-effect-repeats",),
+    invariants=(
+        "no-absolute-coordinate",
+        "no-fixed-color",
+        "no-game-identifier",
+    ),
+    falsifiers=("supported-effect-deviates",),
+    resource_cap=1,
     complexity_cost=4,
 )
 
@@ -425,3 +453,50 @@ def audit_partition(
             ),
         },
     }
+
+
+def evidence_from_recording_audits(
+    audits: Iterable[
+        tuple[RecordingEventAudit, str, str]
+    ],
+    *,
+    definition: SchemeDefinition = STABLE_REPEATED_FORM_ACTION_EFFECT,
+) -> SchemeEvidenceLedger:
+    """Compile recording predictions into an append-only cultural ledger.
+
+    Each tuple contains ``(audit, candidate_id, partition)``. Confirmations and
+    deviations remain separate evidence; a predictive gate, rather than this
+    adapter, decides whether the calibrated error rate is acceptable.
+    """
+
+    events: list[SchemeEvidence] = []
+    for audit, candidate_id, partition in audits:
+        for index in range(audit.confirmations):
+            events.append(
+                SchemeEvidence(
+                    scheme_id=definition.scheme_id,
+                    candidate_id=candidate_id,
+                    partition=partition,
+                    episode_digest=audit.recording_sha256,
+                    prediction_digest=_digest(
+                        {
+                            "recording": audit.recording_sha256,
+                            "outcome": "prediction-confirmed",
+                            "index": index,
+                        }
+                    ),
+                    outcome="prediction-confirmed",
+                )
+            )
+        for occurrence in audit.occurrences:
+            events.append(
+                SchemeEvidence(
+                    scheme_id=definition.scheme_id,
+                    candidate_id=candidate_id,
+                    partition=partition,
+                    episode_digest=audit.recording_sha256,
+                    prediction_digest=_digest(occurrence.to_dict()),
+                    outcome="prediction-falsified",
+                )
+            )
+    return SchemeEvidenceLedger.create(events)

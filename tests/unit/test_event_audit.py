@@ -15,7 +15,9 @@ from reflector.core.perception import SceneTracker
 from reflector.core.symbolic import Event, Observation
 from reflector.research.event_audit import (
     ACTION_EFFECT_CONTEXT_CHANGE,
+    STABLE_REPEATED_FORM_ACTION_EFFECT,
     audit_recording,
+    evidence_from_recording_audits,
     structural_effect_signature,
 )
 
@@ -102,6 +104,39 @@ def test_level_boundary_cannot_create_discontinuity(tmp_path: Path) -> None:
     audit = audit_recording(recording)
 
     assert audit.occurrences == ()
+
+
+def test_recording_audit_compiles_separate_cultural_evidence(
+    tmp_path: Path,
+) -> None:
+    recording = tmp_path / "game.agent.guid.recording.jsonl"
+    recording.write_text(
+        "\n".join(
+            (
+                _row(_frame(1), 1),
+                _row(_frame(2), 1),
+                _row(_frame(3), 1),
+                _row(_frame(4), 1),
+                _row(_frame(2), 1),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    audit = audit_recording(recording)
+
+    ledger = evidence_from_recording_audits(
+        ((audit, "candidate-a", "heldout:fold-a"),)
+    )
+
+    assert len(ledger.events) == 2
+    assert {
+        event.outcome for event in ledger.events
+    } == {"prediction-confirmed", "prediction-falsified"}
+    assert all(
+        event.scheme_id == STABLE_REPEATED_FORM_ACTION_EFFECT.scheme_id
+        for event in ledger.events
+    )
 
 
 def test_affordance_event_preregisters_one_exact_confirmation() -> None:

@@ -16,6 +16,8 @@ from reflector.core.perception import SceneTracker
 from reflector.core.symbolic import Observation
 from reflector.evolution.evolver import descendants, root_candidate
 from reflector.evolution.inheritance import (
+    CommonSenseSnapshot,
+    PredictivePromotionRule,
     SchemeEvidence,
     SchemeEvidenceLedger,
     SchemePromotionRule,
@@ -23,6 +25,7 @@ from reflector.evolution.inheritance import (
     breed_inherited_candidate,
     config_with_scheme_library,
     evidence_from_cognitive_events,
+    predictive_common_sense_snapshot,
     promoted_library,
 )
 from reflector.evolution.mutations import (
@@ -175,6 +178,47 @@ def test_evidence_merge_is_idempotent_and_promotion_keeps_dependencies() -> None
         )
     )
     assert not SchemePromotionRule().accepts(child.scheme_id, falsified)
+
+
+def test_predictive_gate_requires_cross_agent_heldout_calibration() -> None:
+    definition = _definition()
+    confirmations = tuple(
+        SchemeEvidence(
+            scheme_id=definition.scheme_id,
+            candidate_id=f"candidate-{index % 2}",
+            partition=f"heldout:fold-{index % 3}",
+            episode_digest=f"episode-{index}",
+            prediction_digest=f"prediction-{index}",
+            outcome="prediction-confirmed",
+        )
+        for index in range(100)
+    )
+    ledger = SchemeEvidenceLedger.create(
+        (
+            *confirmations,
+            SchemeEvidence(
+                scheme_id=definition.scheme_id,
+                candidate_id="candidate-0",
+                partition="development:source",
+                episode_digest="episode-falsified",
+                prediction_digest="prediction-falsified",
+                outcome="prediction-falsified",
+            ),
+        )
+    )
+
+    assert PredictivePromotionRule().accepts(definition.scheme_id, ledger)
+    assert not PredictivePromotionRule(
+        maximum_falsification_rate=0.0
+    ).accepts(definition.scheme_id, ledger)
+    snapshot = predictive_common_sense_snapshot(
+        SchemeLibrary.create((definition,)),
+        ledger,
+    )
+    assert isinstance(snapshot, CommonSenseSnapshot)
+    assert len(snapshot.root) == 64
+    assert snapshot.ledger.root == ledger.root
+    assert snapshot.library.root == SchemeLibrary.create((definition,)).root
 
 
 def test_exact_library_snapshot_round_trips_and_is_inherited_by_offspring() -> None:
