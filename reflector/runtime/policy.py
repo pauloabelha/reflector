@@ -10,7 +10,10 @@ from __future__ import annotations
 from typing import Any
 
 from ..core.exploration import EpistemicExplorer
-from ..core.inheritance import SchemeLibrary
+from ..core.inheritance import (
+    SchemeLibrary,
+    general_reasoning_prior_library,
+)
 from ..core.mind import MindConfig, MindUpdate, SymbolicMind
 from ..core.symbolic import Decision, Observation
 from .trace import EpisodeTrace, TraceStep
@@ -29,6 +32,17 @@ class SymbolicPolicy:
         self.action_counts: dict[int, int] = {}
         self.mind = SymbolicMind(config)
         self.trace = EpisodeTrace(mind_config=self.mind.config.to_dict())
+        inherited_library = (
+            SchemeLibrary.from_json_definitions(
+                self.mind.config.inherited_scheme_definitions
+            )
+            if self.mind.config.enable_inherited_scheme_library
+            else SchemeLibrary()
+        )
+        if self.mind.config.enable_general_reasoning_prior_library:
+            inherited_library = inherited_library.merge(
+                general_reasoning_prior_library()
+            )
         self.explorer = EpistemicExplorer(
             hierarchical_action_fairness=(
                 self.mind.config.enable_hierarchical_action_fairness
@@ -92,13 +106,7 @@ class SymbolicPolicy:
                 self.mind.config.enable_parameterized_scheme_variation
             ),
             starter_schemas=self.mind.config.enable_starter_schemas,
-            inherited_scheme_library=(
-                SchemeLibrary.from_json_definitions(
-                    self.mind.config.inherited_scheme_definitions
-                )
-                if self.mind.config.enable_inherited_scheme_library
-                else SchemeLibrary()
-            ),
+            inherited_scheme_library=inherited_library,
             relational_scheme_binding=(
                 self.mind.config.enable_relational_scheme_binding
             ),

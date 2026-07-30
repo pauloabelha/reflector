@@ -9,6 +9,7 @@ from reflector.core.inheritance import (
     EMPTY_SCHEME_LIBRARY_ROOT,
     SchemeDefinition,
     SchemeLibrary,
+    general_reasoning_prior_library,
     starter_scheme_library,
 )
 from reflector.core.mind import MindConfig
@@ -33,6 +34,7 @@ from reflector.evolution.mutations import (
     DeterministicMutationProvider,
     MutationProposal,
 )
+from reflector.runtime.policy import SymbolicPolicy
 
 
 def _definition(name: str = "transport") -> SchemeDefinition:
@@ -439,3 +441,52 @@ def test_inherited_ranking_definitions_create_bounded_policy_variation() -> None
     assert smallest.inherited_scheme_trials[
         smallest_definition.scheme_id
     ] == 1
+
+
+def test_general_reasoning_priors_are_content_addressed_and_trace_visible() -> None:
+    library = general_reasoning_prior_library()
+    assert len(library.definitions) == 12
+    assert len({item.scheme_id for item in library.definitions}) == 12
+    assert all(
+        {
+            "no-absolute-coordinate",
+            "no-fixed-action-identifier",
+            "no-fixed-color",
+            "no-game-identifier",
+            "prospective-conflict-quarantines-prior",
+        }.issubset(definition.invariants)
+        for definition in library.definitions
+    )
+    config = config_with_scheme_library(MindConfig(), library)
+    assert MindConfig.from_dict(config.to_dict()) == config
+    assert config.inherited_scheme_root == library.root
+
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=((0, 0, 0), (0, 9, 0), (0, 0, 0)),
+    )
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(inherited_scheme_library=library)
+    explorer.observe(observation, scene)
+    choice = explorer.select(observation, scene, (6,))
+    assert choice.token.data == (("x", 1), ("y", 1))
+    assert explorer.last_scheme_components
+    assert all(
+        component.startswith("scheme:inherited:")
+        for component in explorer.last_scheme_components
+    )
+    telemetry = explorer.to_dict()
+    assert telemetry["inherited_scheme_count"] == 12
+    assert telemetry["inherited_scheme_root"] == library.root
+
+    policy = SymbolicPolicy(
+        MindConfig(
+            enable_general_reasoning_prior_library=True,
+            enable_preregistered_structural_credit=True,
+        )
+    )
+    assert (
+        policy.explorer.inherited_scheme_library.root
+        == general_reasoning_prior_library().root
+    )

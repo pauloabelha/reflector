@@ -83,6 +83,7 @@ class MindConfig:
     enable_parameterized_scheme_variation: bool = False
     enable_starter_schemas: bool = False
     enable_inherited_scheme_library: bool = False
+    enable_general_reasoning_prior_library: bool = False
     enable_relational_scheme_binding: bool = False
     enable_visual_primitives: bool = False
     enable_visual_primitive_actions: bool = False
@@ -156,6 +157,7 @@ class MindConfig:
             "enable_parameterized_scheme_variation",
             "enable_starter_schemas",
             "enable_inherited_scheme_library",
+            "enable_general_reasoning_prior_library",
             "enable_relational_scheme_binding",
             "enable_visual_primitives",
             "enable_visual_primitive_actions",
@@ -427,6 +429,14 @@ class MindConfig:
         ):
             raise ValueError(
                 "inherited scheme library requires preregistered "
+                "structural credit"
+            )
+        if (
+            self.enable_general_reasoning_prior_library
+            and not self.enable_preregistered_structural_credit
+        ):
+            raise ValueError(
+                "general reasoning prior library requires preregistered "
                 "structural credit"
             )
         if self.inherited_evidence_root != EMPTY_EVIDENCE_LEDGER_ROOT:
