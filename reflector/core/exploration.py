@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import heapq
+import math
 from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
@@ -166,6 +167,15 @@ class _TrajectoryGrounding:
 
 
 @dataclass(frozen=True, slots=True)
+class _PairedObjectGrounding:
+    signature: tuple[int, int, int, int, tuple[tuple[int, int], ...]]
+    anchors: tuple[tuple[int, int], tuple[int, int]]
+    mask_offsets: tuple[tuple[int, int], ...]
+    substrate_color: int
+    reflection_axis: str
+
+
+@dataclass(frozen=True, slots=True)
 class RoleRelation:
     """Content-free relation supplied by one scheme to another."""
 
@@ -246,6 +256,9 @@ class EpistemicExplorer:
     click_object_accommodation: bool = False
     productive_role_reuse: bool = False
     cross_retry_maturity: bool = False
+    boundary_nuisance_state_key: bool = False
+    boundary_nuisance_fairness: bool = False
+    paired_object_contact_planning: bool = False
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
@@ -470,11 +483,48 @@ class EpistemicExplorer:
     trajectory_boundary_nuisance_evidenced: bool = False
     trajectory_diagnostic: str = "not-attempted"
     trajectory_disabled: bool = False
+    boundary_nuisance_motion: dict[
+        int,
+        list[tuple[int, int, tuple[tuple[int, int], ...]]],
+    ] = field(default_factory=dict)
+    boundary_nuisance_growth: dict[
+        int,
+        list[tuple[int, int, tuple[int, int]]],
+    ] = field(default_factory=dict)
+    boundary_nuisance_sides: set[int] = field(default_factory=set)
+    paired_grounding: _PairedObjectGrounding | None = None
+    paired_effects: dict[
+        int,
+        tuple[tuple[int, int], tuple[int, int]],
+    ] = field(default_factory=dict)
+    paired_probes: set[int] = field(default_factory=set)
+    paired_invalid_actions: set[int] = field(default_factory=set)
+    paired_pending: (
+        tuple[
+            str,
+            int,
+            tuple[tuple[int, int], tuple[int, int]],
+        ]
+        | None
+    ) = None
+    paired_level_trials: int = 0
+    paired_topology_nodes: int = 0
+    paired_search_expansions: int = 0
+    paired_plan_length: int = 0
+    paired_diagnostic: str = "not-attempted"
+    paired_contact_action: int | None = None
+    paired_contact_continuations: int = 0
+    paired_latent_contact: bool = False
 
     @property
     def uses_action_family_schema(self) -> bool:
         fairness_active = self.hierarchical_action_fairness and (
-            not self.failure_conditioned_fairness or self.level_failures >= 2
+            not self.failure_conditioned_fairness
+            or self.level_failures >= 2
+            or (
+                self.boundary_nuisance_fairness
+                and bool(self.boundary_nuisance_sides)
+            )
         )
         return fairness_active or self.starter_schemas
 
@@ -494,6 +544,8 @@ class EpistemicExplorer:
             order.append("parameterized-select-apply-commit")
         if self.cyclic_sequence_alignment:
             order.append("cyclic-sequence-alignment")
+        if self.paired_object_contact_planning:
+            order.append("paired-object-contact-planning")
         if self.committed_trajectory_planning:
             order.append("committed-trajectory-planning")
         if self.shape_goal_translation:
@@ -517,6 +569,8 @@ class EpistemicExplorer:
             if "reuse-productive-action-role" in selected_reason
             else "cyclic-sequence-alignment"
             if "cyclic-sequence-alignment" in selected_reason
+            else "paired-object-contact-planning"
+            if "paired-object-contact-planning" in selected_reason
             else "committed-trajectory-planning"
             if "committed-trajectory-planning" in selected_reason
             else "shape-goal-translation"
@@ -598,6 +652,8 @@ class EpistemicExplorer:
             self.select_apply_diagnostic = "not-attempted"
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level()
+            self._reset_boundary_nuisance_state()
+            self._reset_paired_object_level()
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -621,6 +677,8 @@ class EpistemicExplorer:
             self.select_apply_cursor = 0
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level(retain_accommodation=True)
+            self._reset_boundary_nuisance_state()
+            self._reset_paired_object_level()
             if not self.cross_retry_maturity:
                 self.level_interventions = 0
             self.level_failures += 1
@@ -658,6 +716,24 @@ class EpistemicExplorer:
             self.current_level is not None
             and observation.levels_completed > self.current_level
         )
+        if (
+            self.boundary_nuisance_state_key
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id != self.reset_action
+            and not progressed
+        ):
+            self._observe_boundary_nuisance(
+                before,
+                after,
+                pending_token.action_id,
+            )
+        if self.paired_object_contact_planning and self.paired_pending is not None:
+            self._observe_paired_object_contact(
+                before,
+                after,
+                progressed=progressed,
+            )
         if (
             self.committed_trajectory_planning
             and pending_token is not None
@@ -794,6 +870,608 @@ class EpistemicExplorer:
         self.shape_translation_phase_transitions.clear()
         self.shape_translation_phase_transition_count = 0
         self.shape_translation_phase_blocked = False
+
+    def _reset_boundary_nuisance_state(self) -> None:
+        self.boundary_nuisance_motion.clear()
+        self.boundary_nuisance_growth.clear()
+        self.boundary_nuisance_sides.clear()
+
+    @staticmethod
+    def _boundary_sides(
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[tuple[int, ...], ...]:
+        if not frame or not frame[0]:
+            return ()
+        height = len(frame)
+        width = len(frame[0])
+        if any(len(row) != width for row in frame):
+            return ()
+        return (
+            tuple(frame[0]),
+            tuple(frame[height - 1]),
+            tuple(frame[y][0] for y in range(height)),
+            tuple(frame[y][width - 1] for y in range(height)),
+        )
+
+    @staticmethod
+    def _boundary_pattern(
+        side: tuple[int, ...],
+    ) -> tuple[int, tuple[tuple[int, int], ...]]:
+        counts = Counter(side)
+        background = min(
+            counts,
+            key=lambda color: (-counts[color], color),
+        )
+        return (
+            background,
+            tuple(
+                (index, color)
+                for index, color in enumerate(side)
+                if color != background
+            ),
+        )
+
+    def _observe_boundary_nuisance(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+    ) -> None:
+        """Earn side-only state normalization from autonomous translation."""
+
+        before_sides = self._boundary_sides(before)
+        after_sides = self._boundary_sides(after)
+        if not before_sides or len(before_sides) != len(after_sides):
+            return
+        for side_index, (left, right) in enumerate(
+            zip(before_sides, after_sides)
+        ):
+            if left == right:
+                continue
+            left_background, left_pattern = self._boundary_pattern(left)
+            right_background, right_pattern = self._boundary_pattern(right)
+            history = self.boundary_nuisance_motion.setdefault(side_index, [])
+            growth = self.boundary_nuisance_growth.setdefault(side_index, [])
+            if (
+                left_background != right_background
+                or not left_pattern
+                or not right_pattern
+            ):
+                history.clear()
+                growth.clear()
+                continue
+            translated = False
+            if (
+                len(left_pattern) == len(right_pattern)
+                and tuple(color for _index, color in left_pattern)
+                == tuple(color for _index, color in right_pattern)
+            ):
+                deltas = {
+                    right_item[0] - left_item[0]
+                    for left_item, right_item in zip(
+                        left_pattern,
+                        right_pattern,
+                    )
+                }
+                if len(deltas) == 1 and 0 not in deltas:
+                    delta = next(iter(deltas))
+                    origin = left_pattern[0][0]
+                    shape = tuple(
+                        (index - origin, color)
+                        for index, color in left_pattern
+                    )
+                    if history and (
+                        history[-1][1] != delta
+                        or history[-1][2] != shape
+                    ):
+                        history.clear()
+                    history.append((action_id, delta, shape))
+                    if len(history) > 8:
+                        del history[:-8]
+                    translated = True
+                    if (
+                        len(history) >= 4
+                        and len({item[0] for item in history[-4:]}) >= 3
+                        and len({item[1] for item in history[-4:]}) == 1
+                        and len({item[2] for item in history[-4:]}) == 1
+                    ):
+                        self.boundary_nuisance_sides.add(side_index)
+            if not translated:
+                history.clear()
+
+            grew = self._record_boundary_growth(
+                growth,
+                left_pattern,
+                right_pattern,
+                action_id,
+            )
+            if not grew:
+                growth.clear()
+            elif (
+                len(growth) >= 4
+                and len({item[0] for item in growth[-4:]}) >= 3
+                and len({item[1] for item in growth[-4:]}) == 1
+                and len({item[2] for item in growth[-4:]}) == 1
+            ):
+                self.boundary_nuisance_sides.add(side_index)
+
+    @staticmethod
+    def _record_boundary_growth(
+        history: list[tuple[int, int, tuple[int, int]]],
+        left: tuple[tuple[int, int], ...],
+        right: tuple[tuple[int, int], ...],
+        action_id: int,
+    ) -> bool:
+        if abs(len(right) - len(left)) != 1:
+            return False
+        colors = {color for _index, color in (*left, *right)}
+        if len(colors) != 1:
+            return False
+        left_indices = tuple(index for index, _color in left)
+        right_indices = tuple(index for index, _color in right)
+        if (
+            left_indices != tuple(range(left_indices[0], left_indices[-1] + 1))
+            or right_indices
+            != tuple(range(right_indices[0], right_indices[-1] + 1))
+        ):
+            return False
+        if left_indices[-1] == right_indices[-1]:
+            fixed_endpoint = 1
+            delta = right_indices[0] - left_indices[0]
+        elif left_indices[0] == right_indices[0]:
+            fixed_endpoint = 0
+            delta = right_indices[-1] - left_indices[-1]
+        else:
+            return False
+        if abs(delta) != 1:
+            return False
+        signature = (fixed_endpoint, next(iter(colors)))
+        if history and (
+            history[-1][1] != delta or history[-1][2] != signature
+        ):
+            history.clear()
+        history.append((action_id, delta, signature))
+        if len(history) > 8:
+            del history[:-8]
+        return True
+
+    def _reset_paired_object_level(self) -> None:
+        self.paired_grounding = None
+        self.paired_effects.clear()
+        self.paired_probes.clear()
+        self.paired_invalid_actions.clear()
+        self.paired_pending = None
+        self.paired_level_trials = 0
+        self.paired_topology_nodes = 0
+        self.paired_search_expansions = 0
+        self.paired_plan_length = 0
+        self.paired_diagnostic = "not-attempted"
+        self.paired_contact_action = None
+        self.paired_contact_continuations = 0
+        self.paired_latent_contact = False
+
+    @staticmethod
+    def _paired_signature(
+        item: _FrameObject,
+    ) -> tuple[int, int, int, int, tuple[tuple[int, int], ...]]:
+        return (
+            item.color,
+            item.area,
+            item.bbox[2] - item.bbox[0] + 1,
+            item.bbox[3] - item.bbox[1] + 1,
+            item.shape,
+        )
+
+    @staticmethod
+    def _surrounding_colors(
+        frame: tuple[tuple[int, ...], ...],
+        item: _FrameObject,
+    ) -> Counter[int]:
+        height = len(frame)
+        width = len(frame[0]) if frame else 0
+        output: Counter[int] = Counter()
+        left, top, right, bottom = item.bbox
+        for y in range(max(0, top - 1), min(height, bottom + 2)):
+            for x in range(max(0, left - 1), min(width, right + 2)):
+                if left <= x <= right and top <= y <= bottom:
+                    continue
+                if frame[y][x] != item.color:
+                    output[frame[y][x]] += 1
+        return output
+
+    @classmethod
+    def _ground_paired_objects(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> _PairedObjectGrounding | None:
+        if not frame or not frame[0]:
+            return None
+        height = len(frame)
+        width = len(frame[0])
+        groups: dict[
+            tuple[int, int, int, int, tuple[tuple[int, int], ...]],
+            list[_FrameObject],
+        ] = {}
+        for item in cls._frame_objects(frame):
+            if (
+                not 4 <= item.area <= 64
+                or item.bbox[0] <= 0
+                or item.bbox[1] <= 0
+                or item.bbox[2] >= width - 1
+                or item.bbox[3] >= height - 1
+            ):
+                continue
+            groups.setdefault(cls._paired_signature(item), []).append(item)
+
+        candidates: list[_PairedObjectGrounding] = []
+        for signature, items in groups.items():
+            if len(items) != 2:
+                continue
+            horizontal = (
+                items[0].centroid[1] == items[1].centroid[1]
+                and abs(
+                    items[0].centroid[0]
+                    + items[1].centroid[0]
+                    - (width - 1)
+                )
+                <= 2
+            )
+            vertical = (
+                items[0].centroid[0] == items[1].centroid[0]
+                and abs(
+                    items[0].centroid[1]
+                    + items[1].centroid[1]
+                    - (height - 1)
+                )
+                <= 2
+            )
+            if horizontal == vertical:
+                continue
+            axis = "horizontal" if horizontal else "vertical"
+            ordered = tuple(
+                sorted(
+                    items,
+                    key=lambda item: (
+                        item.centroid[0]
+                        if horizontal
+                        else item.centroid[1]
+                    ),
+                )
+            )
+            surrounding = [
+                cls._surrounding_colors(frame, item) for item in ordered
+            ]
+            shared = {
+                color
+                for color in surrounding[0]
+                if surrounding[0][color] >= 2
+                and surrounding[1][color] >= 2
+            }
+            if len(shared) != 1:
+                continue
+            first = ordered[0]
+            local_centroid = (
+                first.centroid[0] - first.bbox[0],
+                first.centroid[1] - first.bbox[1],
+            )
+            offsets = tuple(
+                sorted(
+                    (
+                        x - local_centroid[0],
+                        y - local_centroid[1],
+                    )
+                    for x, y in first.shape
+                )
+            )
+            candidates.append(
+                _PairedObjectGrounding(
+                    signature=signature,
+                    anchors=(ordered[0].centroid, ordered[1].centroid),
+                    mask_offsets=offsets,
+                    substrate_color=shared.pop(),
+                    reflection_axis=axis,
+                )
+            )
+        return candidates[0] if len(candidates) == 1 else None
+
+    def _paired_anchors(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[tuple[int, int], tuple[int, int]] | None:
+        grounding = self.paired_grounding
+        if grounding is None:
+            return None
+        matches = tuple(
+            item
+            for item in self._frame_objects(frame)
+            if self._paired_signature(item) == grounding.signature
+        )
+        if len(matches) != 2:
+            return None
+        horizontal = grounding.reflection_axis == "horizontal"
+        ordered = sorted(
+            matches,
+            key=lambda item: (
+                item.centroid[0] if horizontal else item.centroid[1]
+            ),
+        )
+        return (ordered[0].centroid, ordered[1].centroid)
+
+    def _observe_paired_object_contact(
+        self,
+        before_frame: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        *,
+        progressed: bool,
+    ) -> None:
+        pending = self.paired_pending
+        self.paired_pending = None
+        if pending is None:
+            return
+        kind, action_id, before = pending
+        if progressed:
+            self.paired_diagnostic = "level-advanced"
+            return
+        anchors = self._paired_anchors(after)
+        if anchors is None:
+            changed = before_frame != after
+            if (
+                changed
+                and action_id == self.paired_contact_action
+                and kind in {"plan", "contact"}
+                and self.paired_contact_continuations < 2
+            ):
+                self.paired_latent_contact = True
+                self.paired_diagnostic = "latent-contact-continuation"
+                return
+            self.paired_latent_contact = False
+            self.paired_invalid_actions.add(action_id)
+            self.paired_diagnostic = (
+                "contact-continuation-no-effect"
+                if kind == "contact"
+                else "paired-identity-lost"
+            )
+            return
+        if kind == "contact":
+            self.paired_latent_contact = False
+            self.paired_diagnostic = "pair-reappeared-after-contact"
+            return
+        if kind != "probe":
+            self.paired_diagnostic = "joint-plan-step-observed"
+            return
+        effect = (
+            (
+                anchors[0][0] - before[0][0],
+                anchors[0][1] - before[0][1],
+            ),
+            (
+                anchors[1][0] - before[1][0],
+                anchors[1][1] - before[1][1],
+            ),
+        )
+        if effect == ((0, 0), (0, 0)):
+            self.paired_diagnostic = "probe-no-joint-effect"
+            return
+        previous = self.paired_effects.get(action_id)
+        if previous is not None and previous != effect:
+            self.paired_effects.pop(action_id, None)
+            self.paired_invalid_actions.add(action_id)
+            self.paired_diagnostic = "inconsistent-joint-effect"
+            return
+        self.paired_effects[action_id] = effect
+        self.paired_diagnostic = "joint-effect-grounded"
+
+    @staticmethod
+    def _paired_masks_contact(
+        left: tuple[int, int],
+        right: tuple[int, int],
+        offsets: tuple[tuple[int, int], ...],
+    ) -> bool:
+        left_mask = {
+            (left[0] + dx, left[1] + dy) for dx, dy in offsets
+        }
+        right_mask = {
+            (right[0] + dx, right[1] + dy) for dx, dy in offsets
+        }
+        if left_mask & right_mask:
+            return True
+        return any(
+            (x + dx, y + dy) in right_mask
+            for x, y in left_mask
+            for dx, dy in ((0, -1), (0, 1), (-1, 0), (1, 0))
+        )
+
+    def _paired_topology(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+        anchors: tuple[tuple[int, int], tuple[int, int]],
+    ) -> frozenset[tuple[int, int]]:
+        grounding = self.paired_grounding
+        if grounding is None or not frame or not frame[0]:
+            return frozenset()
+        magnitudes = [
+            abs(value)
+            for effect in self.paired_effects.values()
+            for displacement in effect
+            for value in displacement
+            if value
+        ]
+        if not magnitudes:
+            return frozenset()
+        step = magnitudes[0]
+        for value in magnitudes[1:]:
+            step = math.gcd(step, value)
+        if step <= 0:
+            return frozenset()
+        height = len(frame)
+        width = len(frame[0])
+        admitted_colors = {
+            grounding.substrate_color,
+            grounding.signature[0],
+        }
+        nodes = {
+            (x, y)
+            for y in range(anchors[0][1] % step, height, step)
+            for x in range(anchors[0][0] % step, width, step)
+            if all(
+                0 <= x + dx < width
+                and 0 <= y + dy < height
+                and frame[y + dy][x + dx] in admitted_colors
+                for dx, dy in grounding.mask_offsets
+            )
+        }
+        self.paired_topology_nodes = len(nodes)
+        return frozenset(nodes)
+
+    def _paired_contact_plan(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+        anchors: tuple[tuple[int, int], tuple[int, int]],
+        represented: frozenset[int],
+    ) -> tuple[int, int] | None:
+        grounding = self.paired_grounding
+        if grounding is None:
+            return None
+        nodes = self._paired_topology(frame, anchors)
+        if not nodes or len(nodes) > 256:
+            self.paired_diagnostic = "paired-topology-cap-or-empty"
+            return None
+        queue: deque[
+            tuple[
+                tuple[tuple[int, int], tuple[int, int]],
+                int,
+                int | None,
+            ]
+        ] = deque([(anchors, 0, None)])
+        visited = {anchors}
+        expanded_edges = 0
+        while queue and len(visited) <= 2048 and expanded_edges < 8192:
+            state, depth, first_action = queue.popleft()
+            for action_id in sorted(self.paired_effects):
+                if (
+                    action_id not in represented
+                    or action_id in self.paired_invalid_actions
+                ):
+                    continue
+                effect = self.paired_effects[action_id]
+                proposed = (
+                    (
+                        state[0][0] + effect[0][0],
+                        state[0][1] + effect[0][1],
+                    ),
+                    (
+                        state[1][0] + effect[1][0],
+                        state[1][1] + effect[1][1],
+                    ),
+                )
+                successor = (
+                    proposed[0] if proposed[0] in nodes else state[0],
+                    proposed[1] if proposed[1] in nodes else state[1],
+                )
+                expanded_edges += 1
+                if successor == state:
+                    continue
+                selected = action_id if first_action is None else first_action
+                if self._paired_masks_contact(
+                    successor[0],
+                    successor[1],
+                    grounding.mask_offsets,
+                ):
+                    self.paired_search_expansions = len(visited)
+                    return selected, depth + 1
+                if successor not in visited:
+                    visited.add(successor)
+                    queue.append((successor, depth + 1, selected))
+        self.paired_search_expansions = len(visited)
+        self.paired_diagnostic = "no-bounded-contact-plan"
+        return None
+
+    def _select_paired_object_contact(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        if (
+            not self.paired_object_contact_planning
+            or self.paired_level_trials >= 64
+        ):
+            return None
+        if self.paired_grounding is None:
+            self.paired_grounding = self._ground_paired_objects(
+                observation.frame
+            )
+            if self.paired_grounding is None:
+                self.paired_diagnostic = "no-unique-reflected-pair"
+                return None
+            self.paired_diagnostic = "paired-objects-grounded"
+        plain = tuple(
+            token
+            for token in tokens
+            if not token.data
+            and token.action_id
+            not in {self.reset_action, self.complex_action}
+        )
+        if (
+            self.paired_latent_contact
+            and self.paired_contact_action is not None
+            and self.paired_contact_continuations < 2
+        ):
+            continuation = next(
+                (
+                    token
+                    for token in plain
+                    if token.action_id == self.paired_contact_action
+                ),
+                None,
+            )
+            if continuation is not None:
+                grounding = self.paired_grounding
+                assert grounding is not None
+                self.paired_contact_continuations += 1
+                self.paired_level_trials += 1
+                self.paired_pending = (
+                    "contact",
+                    continuation.action_id,
+                    grounding.anchors,
+                )
+                self.paired_diagnostic = "executing-contact-continuation"
+                return continuation
+        anchors = self._paired_anchors(observation.frame)
+        if anchors is None:
+            self.paired_diagnostic = "paired-identity-unavailable"
+            return None
+        for token in plain:
+            if token.action_id not in self.paired_probes:
+                self.paired_probes.add(token.action_id)
+                self.paired_pending = (
+                    "probe",
+                    token.action_id,
+                    anchors,
+                )
+                self.paired_level_trials += 1
+                self.paired_diagnostic = "probing-joint-effect"
+                return token
+        if len(self.paired_effects) < 2:
+            self.paired_diagnostic = "insufficient-joint-effects"
+            return None
+        plan = self._paired_contact_plan(
+            observation.frame,
+            anchors,
+            frozenset(token.action_id for token in plain),
+        )
+        if plan is None:
+            return None
+        action_id, length = plan
+        token = next(
+            item for item in plain if item.action_id == action_id
+        )
+        self.paired_pending = ("plan", action_id, anchors)
+        self.paired_level_trials += 1
+        self.paired_plan_length = length
+        if length == 1:
+            self.paired_contact_action = action_id
+        self.paired_diagnostic = "executing-joint-contact-plan"
+        return token
 
     def _reset_committed_trajectory_level(
         self,
@@ -2651,6 +3329,26 @@ class EpistemicExplorer:
                 state,
                 cyclic,
                 "epistemic-frontier:cyclic-sequence-alignment",
+                scene,
+            )
+
+        paired = self._select_paired_object_contact(
+            observation,
+            tokens,
+        )
+        if paired is not None:
+            self.last_scheme_components = (
+                "scheme:paired-object-contact",
+                "relation:reflected-congruent-pair",
+                "operator:probe-joint-action-effect",
+                "state:ordered-object-anchor-pair",
+                "goal:object-contact",
+                "operator:bounded-joint-topology-plan",
+            )
+            return self._issue(
+                state,
+                paired,
+                "epistemic-frontier:paired-object-contact-planning",
                 scene,
             )
 
@@ -5539,15 +6237,34 @@ class EpistemicExplorer:
             )
         return tuple(output)
 
-    @staticmethod
     def _state_key(
+        self,
         observation: Observation,
         scene: Scene,
     ) -> StateKey:
+        digest = scene.frame_digest
+        if self.boundary_nuisance_state_key and self.boundary_nuisance_sides:
+            normalized = [list(row) for row in observation.frame]
+            if normalized and normalized[0]:
+                height = len(normalized)
+                width = len(normalized[0])
+                if 0 in self.boundary_nuisance_sides:
+                    normalized[0] = [-1] * width
+                if 1 in self.boundary_nuisance_sides:
+                    normalized[height - 1] = [-1] * width
+                if 2 in self.boundary_nuisance_sides:
+                    for row in normalized:
+                        row[0] = -1
+                if 3 in self.boundary_nuisance_sides:
+                    for row in normalized:
+                        row[width - 1] = -1
+                digest = "boundary-normalized-" + hashlib.sha256(
+                    repr(tuple(tuple(row) for row in normalized)).encode()
+                ).hexdigest()
         return (
             observation.levels_completed,
             observation.state,
-            scene.frame_digest,
+            digest,
         )
 
     def _forget_oldest_state(self) -> None:
@@ -5665,6 +6382,23 @@ class EpistemicExplorer:
             "trajectory_boundary_nuisance_evidenced": int(
                 self.trajectory_boundary_nuisance_evidenced
             ),
+            "boundary_nuisance_evidence": sum(
+                len(items) for items in self.boundary_nuisance_motion.values()
+            )
+            + sum(
+                len(items) for items in self.boundary_nuisance_growth.values()
+            ),
+            "boundary_nuisance_sides": sorted(self.boundary_nuisance_sides),
+            "paired_object_grounded": int(self.paired_grounding is not None),
+            "paired_joint_effects": len(self.paired_effects),
+            "paired_probes": len(self.paired_probes),
+            "paired_level_trials": self.paired_level_trials,
+            "paired_topology_nodes": self.paired_topology_nodes,
+            "paired_search_expansions": self.paired_search_expansions,
+            "paired_plan_length": self.paired_plan_length,
+            "paired_contact_continuations": self.paired_contact_continuations,
+            "paired_latent_contact": int(self.paired_latent_contact),
+            "paired_diagnostic": self.paired_diagnostic,
             "trajectory_plan_steps": self.trajectory_plan_steps,
             "trajectory_plan_cap": self._trajectory_plan_cap(),
             "trajectory_settle_steps": self.trajectory_settle_steps,

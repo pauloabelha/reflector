@@ -160,6 +160,257 @@ def test_flat_exploration_preserves_coordinate_level_ablation() -> None:
     assert choices == [1, 2, 6, 6, 6, 6]
 
 
+def test_boundary_nuisance_state_key_requires_action_independent_motion() -> None:
+    def frame(position: int, *, interior: int = 0):
+        rows = [[5] * 6 for _ in range(6)]
+        rows[0][position] = 0
+        rows[3][3] = interior
+        return tuple(tuple(row) for row in rows)
+
+    enabled = EpistemicExplorer(boundary_nuisance_state_key=True)
+    positions = (5, 4, 3, 2, 1)
+    for left, right, action_id in zip(
+        positions,
+        positions[1:],
+        (1, 2, 3, 1),
+    ):
+        enabled._observe_boundary_nuisance(
+            frame(left),
+            frame(right),
+            action_id,
+        )
+
+    assert enabled.boundary_nuisance_sides == {0}
+    first = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2, 3),
+        frame=frame(1),
+    )
+    shifted = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2, 3),
+        frame=frame(0),
+    )
+    changed_interior = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 2, 3),
+        frame=frame(0, interior=9),
+    )
+
+    assert enabled._state_key(first, _scene(first)) == enabled._state_key(
+        shifted,
+        _scene(shifted),
+    )
+    assert enabled._state_key(first, _scene(first)) != enabled._state_key(
+        changed_interior,
+        _scene(changed_interior),
+    )
+
+    one_action = EpistemicExplorer(boundary_nuisance_state_key=True)
+    for left, right in zip(positions, positions[1:]):
+        one_action._observe_boundary_nuisance(frame(left), frame(right), 1)
+    assert one_action.boundary_nuisance_sides == set()
+
+    inconsistent = EpistemicExplorer(boundary_nuisance_state_key=True)
+    for left, right, action_id in zip(
+        (5, 4, 3, 4, 3),
+        (4, 3, 4, 3, 2),
+        (1, 2, 3, 1, 2),
+    ):
+        inconsistent._observe_boundary_nuisance(
+            frame(left),
+            frame(right),
+            action_id,
+        )
+    assert inconsistent.boundary_nuisance_sides == set()
+
+
+def test_boundary_nuisance_state_key_accepts_fixed_endpoint_monotone_strip() -> None:
+    def frame(length: int, *, color: int = 0):
+        rows = [[5] * 16 for _ in range(8)]
+        for index in range(16 - length, 16):
+            rows[0][index] = color
+        return tuple(tuple(row) for row in rows)
+
+    enabled = EpistemicExplorer(boundary_nuisance_state_key=True)
+    for left, right, action_id in zip(
+        range(1, 5),
+        range(2, 6),
+        (1, 2, 3, 1),
+    ):
+        enabled._observe_boundary_nuisance(
+            frame(left),
+            frame(right),
+            action_id,
+        )
+
+    assert enabled.boundary_nuisance_sides == {0}
+    assert enabled.to_dict()["boundary_nuisance_evidence"] == 4
+
+    one_action = EpistemicExplorer(boundary_nuisance_state_key=True)
+    for left, right in zip(range(1, 5), range(2, 6)):
+        one_action._observe_boundary_nuisance(
+            frame(left),
+            frame(right),
+            1,
+        )
+    assert one_action.boundary_nuisance_sides == set()
+
+    color_changed = EpistemicExplorer(boundary_nuisance_state_key=True)
+    color_changed._observe_boundary_nuisance(frame(1), frame(2), 1)
+    color_changed._observe_boundary_nuisance(frame(2), frame(3), 2)
+    color_changed._observe_boundary_nuisance(
+        frame(3),
+        frame(4, color=9),
+        3,
+    )
+    color_changed._observe_boundary_nuisance(
+        frame(4, color=9),
+        frame(5, color=9),
+        1,
+    )
+    assert color_changed.boundary_nuisance_sides == set()
+
+
+def test_boundary_nuisance_fairness_activates_only_after_evidence() -> None:
+    explorer = EpistemicExplorer(
+        hierarchical_action_fairness=True,
+        failure_conditioned_fairness=True,
+        boundary_nuisance_state_key=True,
+        boundary_nuisance_fairness=True,
+    )
+
+    assert not explorer.uses_action_family_schema
+
+    explorer.boundary_nuisance_sides.add(0)
+    assert explorer.uses_action_family_schema
+
+    explorer._reset_boundary_nuisance_state()
+    assert not explorer.uses_action_family_schema
+
+    with pytest.raises(ValueError, match="boundary-nuisance fairness"):
+        MindConfig(enable_boundary_nuisance_fairness=True)
+
+
+def test_paired_object_contact_plan_is_structural_and_action_equivariant() -> None:
+    def frame(extra_pair_member: bool = False):
+        rows = [[1] * 20 for _ in range(20)]
+        for y in range(5, 15):
+            for x in range(2, 18):
+                rows[y][x] = 5
+        for center_x in ((5, 14, 10) if extra_pair_member else (5, 14)):
+            for y in range(9, 12):
+                for x in range(center_x - 1, center_x + 2):
+                    rows[y][x] = 10
+        return tuple(tuple(row) for row in rows)
+
+    explorer = EpistemicExplorer(paired_object_contact_planning=True)
+    grounding = explorer._ground_paired_objects(frame())
+
+    assert grounding is not None
+    assert grounding.reflection_axis == "horizontal"
+    assert grounding.anchors == ((5, 10), (14, 10))
+    assert grounding.substrate_color == 5
+    assert explorer._ground_paired_objects(frame(extra_pair_member=True)) is None
+
+    explorer.paired_grounding = grounding
+    explorer.paired_effects = {
+        7: ((1, 0), (-1, 0)),
+        2: ((0, -1), (0, -1)),
+    }
+    first = explorer._paired_contact_plan(
+        frame(),
+        grounding.anchors,
+        frozenset({2, 7}),
+    )
+    assert first is not None
+    assert first[0] == 7
+    assert first[1] == 3
+
+    explorer.paired_effects = {
+        3: ((1, 0), (-1, 0)),
+        6: ((0, -1), (0, -1)),
+    }
+    permuted = explorer._paired_contact_plan(
+        frame(),
+        grounding.anchors,
+        frozenset({3, 6}),
+    )
+    assert permuted is not None
+    assert permuted[0] == 3
+    assert permuted[1] == first[1]
+
+
+def test_paired_contact_merge_has_two_evidenced_continuations() -> None:
+    def frame(merged_width: int = 0):
+        rows = [[1] * 20 for _ in range(20)]
+        for y in range(5, 15):
+            for x in range(2, 18):
+                rows[y][x] = 5
+        if merged_width:
+            for y in range(9, 12):
+                for x in range(10 - merged_width // 2, 10 + merged_width // 2):
+                    rows[y][x] = 10
+        else:
+            for center_x in (5, 14):
+                for y in range(9, 12):
+                    for x in range(center_x - 1, center_x + 2):
+                        rows[y][x] = 10
+        return tuple(tuple(row) for row in rows)
+
+    explorer = EpistemicExplorer(paired_object_contact_planning=True)
+    grounding = explorer._ground_paired_objects(frame())
+    assert grounding is not None
+    explorer.paired_grounding = grounding
+    explorer.paired_contact_action = 7
+    explorer.paired_pending = ("plan", 7, grounding.anchors)
+
+    merged = frame(merged_width=6)
+    explorer._observe_paired_object_contact(
+        frame(),
+        merged,
+        progressed=False,
+    )
+    assert explorer.paired_latent_contact
+
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(2, 7),
+        frame=merged,
+    )
+    first = explorer._select_paired_object_contact(
+        observation,
+        (ActionToken(2), ActionToken(7)),
+    )
+    assert first == ActionToken(7)
+    assert explorer.paired_contact_continuations == 1
+
+    narrower = frame(merged_width=4)
+    explorer._observe_paired_object_contact(
+        merged,
+        narrower,
+        progressed=False,
+    )
+    second = explorer._select_paired_object_contact(
+        Observation.create(
+            state="NOT_FINISHED",
+            available_actions=(2, 7),
+            frame=narrower,
+        ),
+        (ActionToken(2), ActionToken(7)),
+    )
+    assert second == ActionToken(7)
+    assert explorer.paired_contact_continuations == 2
+
+    explorer._observe_paired_object_contact(
+        narrower,
+        narrower,
+        progressed=False,
+    )
+    assert not explorer.paired_latent_contact
+    assert explorer.paired_diagnostic == "contact-continuation-no-effect"
+
+
 def test_failure_conditioned_fairness_preserves_parent_then_accommodates() -> None:
     observation = Observation.create(
         state="NOT_FINISHED",

@@ -1414,6 +1414,223 @@ V47b result:
 - candidate `candidate-4c7168f7ad208c65` is accepted from frozen inference
   source `b9412202c3fd6a5c3f31e68d62127c00a0090fb6`.
 
+## Active experiment: v48 action-independent boundary nuisance state
+
+Parent: accepted v47b `candidate-4c7168f7ad208c65`.
+
+Transfer audit:
+
+- an unchanged v47b five-game audit targeted unsolved games with five to seven
+  repeated same-level failures: `bp35`, `cn04`, `s5i5`, `tu93`, and `vc33`;
+- the agent scored zero across 2,000 actions and 34 total levels;
+- failure-conditioned fairness was selected 226, 213, 245, 245, and 245 times
+  respectively, while bounded productive-role reuse was selected 48, 40, 56,
+  56, and 56 times;
+- four games changed all 399 observed transitions and `cn04` changed 333,
+  showing that generic rendered responsiveness is too weak to identify a
+  goal-relevant action under pervasive animation;
+- this falsifies broad transfer from additional fairness/reuse pressure.
+
+Observed `m0r0` disequilibrium:
+
+- the first four plain interventions ground a symmetric two-object control
+  algebra: common vertical translations and mirrored horizontal translations;
+- a small outer-boundary signal then advances autonomously, including under
+  three distinct plain actions;
+- because the epistemic graph keys nodes by the complete frame digest, every
+  boundary phase is a new state;
+- the accepted agent consequently selects the same wait-like action in each
+  nominally novel state instead of compiling the already observed paired
+  controls or exploring the joint maze.
+
+Preregistered v48 mutation:
+
+- add exact-off `enable_boundary_nuisance_state_key`;
+- observe only one-cell outer-boundary changes from actual interventions;
+- identify a nuisance side only after at least four conserved pure translations
+  of the same minority boundary pattern spanning at least three distinct
+  action IDs with one consistent displacement;
+- after that evidence, canonicalize only the evidenced side when constructing
+  epistemic graph keys; preserve every interior pixel and every other side;
+- clear nuisance evidence on actual level progress and retry, retain bounded
+  transition evidence, and expose it in cognitive telemetry;
+- encode no game identifier, coordinate, color, action ID, route, or known
+  environment rule.
+
+Prediction and falsifier:
+
+- synthetic tests must reject action-dependent, shape-changing, inconsistent,
+  interior, or fewer-than-three-action boundary motion and must alias only the
+  evidenced side after the fourth qualifying transition;
+- predict fewer than 60 distinct epistemic states and fewer than 40 selections
+  of any wait-like self-loop on `m0r0` under 400 actions;
+- require environment-reported `m0r0` level-1 completion within 400 actions
+  before any preservation gate;
+- reject if canonicalization activates without the preregistered evidence,
+  erases interior structure, misses the diagnostic reductions, or does not add
+  a real level. V47b remains accepted otherwise.
+
+V48 result:
+
+- the target remained at 0/6 levels after 400 actions;
+- the preregistered conserved-translation detector never activated, the graph
+  retained 147 states, and the wait-loop diagnostic was not reduced;
+- direct frame inspection showed why: the boundary signal is a fixed-endpoint
+  monochrome strip that grows by one cell every few interventions, not a
+  fixed-shape translating pattern;
+- v48 is rejected without preservation or full-suite gates.
+
+Preregistered v48b monotone-strip accommodation:
+
+- retain v48's pure-translation detector unchanged;
+- additionally recognize a contiguous, single-color minority pattern only
+  when one endpoint stays fixed and the other grows or shrinks by exactly one
+  cell on each qualifying boundary transition;
+- require four consistent qualifying changes spanning at least three distinct
+  action IDs; unchanged frames neither count nor falsify the candidate;
+- reject color, fixed endpoint, direction, contiguity, side, or step-size
+  changes and preserve the same side-only canonicalization and reset rules;
+- retain the original target requirement: `m0r0` level 1 within 400 actions,
+  fewer than 60 graph states, and fewer than 40 wait-like self-loop choices.
+
+V48b result:
+
+- the monotone detector activated on the top and bottom sides and held the
+  canonical graph at 25 states for the remainder of the first life;
+- total state count still reached 89 across retries, and the agent remained at
+  0/6 levels after 400 actions;
+- after normalization, it issued distinct coordinate-bearing action-6 tokens
+  such as boundary and object clicks from the same canonical state, so 294
+  decisions were still classified as untried-state interventions;
+- v48b is rejected: normalizing state without normalizing intervention
+  allocation did not satisfy either the behavioral diagnostic or task target.
+
+Preregistered v48c nuisance-conditioned action-family fairness:
+
+- add exact-off `enable_boundary_nuisance_fairness`, dependent on boundary
+  nuisance state keys and hierarchical action-family fairness;
+- preserve v47b's flat parent policy before nuisance evidence;
+- once any boundary side satisfies v48b's action-independent evidence, activate
+  the existing bounded family ranking immediately, without waiting for two
+  failed lives;
+- retain concrete coordinate tokens inside the complex-action family; the
+  mutation changes allocation across finite legal families, not click
+  semantics or candidates;
+- reset the evidence and its fairness trigger on retry or progress;
+- predict fewer than 100 complex-action selections, fewer than 60 graph states,
+  and `m0r0` level-1 completion within 400 actions;
+- reject on pre-evidence fairness, missing trigger, cap/structural test failure,
+  diagnostic failure, or no real level. V47b remains accepted otherwise.
+
+V48c result:
+
+- nuisance evidence activated family fairness at action 40, after which plain
+  action counts balanced at 48 or 49 each;
+- the target still remained at 0/6 levels, with 156 complex actions and 81
+  graph states, violating both diagnostic predictions;
+- normalization and fair allocation therefore removed two exploration
+  pathologies but did not represent the coupled control problem;
+- v48c is rejected without preservation or full-suite gates.
+
+## Active experiment: v49 paired-object contact planning
+
+Parent: accepted v47b `candidate-4c7168f7ad208c65`. V48-v48c supply rejected
+diagnostic code only.
+
+Observed disequilibrium:
+
+- `m0r0` contains exactly two congruent small interior objects in a shared
+  connected substrate, initially related by horizontal reflection;
+- rendered interventions ground common vertical actions and mirrored
+  horizontal actions; obstacles can block either object independently, so the
+  operative state is a pair of anchors rather than one mover or full frame;
+- v48c visited only 12 distinct pair positions in its first life despite
+  balancing action families, because it had no joint operator or goal;
+- a development-only black-box path was derived from the rendered substrate,
+  not environment source: it navigated the two objects through different
+  blocked passages and then reduced their separation on a shared corridor;
+- the environment reported level-1 progress within 16 actions. This is
+  feasibility evidence only; the concrete action sequence is forbidden from
+  inference code and candidates.
+
+Preregistered v49 mutation:
+
+- add exact-off `enable_paired_object_contact_planning`;
+- ground a pair only when exactly one interior object-signature class contains
+  two same-color, same-area, same-shape objects related by horizontal or
+  vertical reflection and surrounded by one shared substrate color;
+- probe represented non-reset, non-coordinate actions once and learn an
+  ordered pair of displacements from rendered object motion, including
+  independently blocked components;
+- require at least two consistent nonzero joint effects and reject identity,
+  shape, color, or substrate ambiguity;
+- infer a bounded lattice from learned displacement magnitudes and admit an
+  anchor only when the translated object mask lies entirely on the shared
+  substrate or either current mover mask;
+- search at most 2,048 joint states and 8,192 edges for a plan that brings the
+  two translated masks into contact, applying each learned joint action with
+  independent obstacle blocking;
+- replan after every transition, cap probing plus planned applications at 64,
+  and clear the model on retry or level progress;
+- expose grounding, learned effects, topology size, search expansions, plan
+  length, and falsification in cognitive telemetry;
+- encode no game ID, action ID, coordinate, color, route, source import, or
+  target action sequence.
+
+Prediction and falsifier:
+
+- synthetic original/reflected fixtures and consistent action-ID permutations
+  must ground correspondingly reflected/permuted joint effects and plans;
+- the advisor must abstain on a third congruent object, unequal shapes,
+  different substrates, inconsistent effects, non-contact topology, or any
+  search/cap overflow;
+- predict `m0r0` level 1 within 30 actions twice, matching the human-baseline
+  scale while learning controls online;
+- reject on either target failure, embedded route information, invariant/cap
+  failure, or any later accepted regression. V47b remains accepted until every
+  promotion gate passes.
+
+V49 result:
+
+- the first target grounded the pair immediately, learned four joint effects
+  from five probes, inferred 55 substrate anchors, and replanned a 14-step
+  contact path online;
+- the two masks reached contact at action 19 and became one connected rendered
+  component, after which the advisor reported `paired-identity-unavailable`;
+- generic exploration eventually issued two further inward actions and the
+  environment reported level-1 progress at action 34;
+- the run scored `3.7073652991` for `m0r0` and proves the joint operator is
+  task-relevant, but it violates the preregistered 30-action bound, so v49 is
+  not yet eligible for preservation or promotion.
+
+Preregistered v49b latent-contact continuation:
+
+- retain the exact learned pair grounding, joint effects, topology, and plan;
+- when and only when the final predicted contact action changes two separately
+  tracked congruent objects into one connected component, retain that action
+  as a latent contact-continuation operator instead of declaring identity loss;
+- repeat only that evidenced final contact action at most twice, require a
+  rendered change on each nonterminal continuation, and stop immediately on
+  progress, pair reappearance, no effect, or cap;
+- never enter continuation after ambiguous identity loss away from the planned
+  contact edge or after an unplanned action;
+- synthetic tests must distinguish planned contact merge from arbitrary object
+  disappearance and enforce the two-action cap;
+- predict level 1 within 24 actions twice; reject on either miss, invalid latent
+  continuation, or any later accepted regression.
+
+V49b target result:
+
+- two fresh isolated runs matched exactly at 1/6 levels, action allocation
+  `[20, 380]`, and score `4.7619047619`;
+- each run used five online probes, inferred 55 level-1 substrate anchors,
+  executed the same 14-step recomputed contact plan, and used one bounded
+  latent-contact continuation;
+- both full 400-action traces matched in action counts, advisor counts, and
+  final structural telemetry;
+- the target qualifies for a ten-game preservation gate covering all nine
+  accepted v47b progress games plus `m0r0`.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural

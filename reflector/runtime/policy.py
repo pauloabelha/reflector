@@ -47,6 +47,15 @@ class SymbolicPolicy:
             cross_retry_maturity=(
                 self.mind.config.enable_cross_retry_maturity
             ),
+            boundary_nuisance_state_key=(
+                self.mind.config.enable_boundary_nuisance_state_key
+            ),
+            boundary_nuisance_fairness=(
+                self.mind.config.enable_boundary_nuisance_fairness
+            ),
+            paired_object_contact_planning=(
+                self.mind.config.enable_paired_object_contact_planning
+            ),
             local_relation_solver=self.mind.config.enable_local_relation_solver,
             constraint_first_role_replay=(
                 self.mind.config.enable_constraint_first_role_replay

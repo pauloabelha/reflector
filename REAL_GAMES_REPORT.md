@@ -39,6 +39,12 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Target-only symbolic offspring | v46 cross-retry maturity | 0.0473757834 for one game | 1/6 `sp80` levels at action 391 | real progress, but rejected: reuse began after one failure and breached preregistration |
 | Target-only symbolic offspring | v46b non-bypass cross-retry maturity | 0.0673228096 for one game | 1/6 `sp80` levels at action 328, exact twice | target passed; rejected after losing `lf52` and `lp85` in preservation |
 | Target-only symbolic offspring | v47 failure-conditioned fairness | 0.1885375141 for one game | 1/6 `sp80` levels at action 196, exact twice | target passed; rejected after losing `lp85` in preservation |
+| Five-game transfer audit | v47b accepted | 0.0000000000 across five games | 0/34 levels in 2,000 actions | fairness and bounded reuse operative; broad transfer falsified |
+| Target-only symbolic offspring | v48 boundary translation normalization | 0.0000000000 for one game | 0/6 `m0r0` levels; 147 graph states | detector correctly stayed off on growing strip; rejected |
+| Target-only symbolic offspring | v48b monotone boundary normalization | 0.0000000000 for one game | 0/6 `m0r0` levels; normalization activated, 89 graph states | state normalized but coordinate-token crowding remained; rejected |
+| Target-only symbolic offspring | v48c nuisance-conditioned fairness | 0.0000000000 for one game | 0/6 `m0r0` levels; 156 complex actions, 81 graph states | family balance operative; missing joint operator; rejected |
+| Target-only symbolic offspring | v49 paired-object contact planning | 3.7073652991 for one game | 1/6 `m0r0` levels at action 34 | real joint-plan progress; rejected for missing ≤30 action prediction |
+| Target-only symbolic offspring | v49b latent paired contact | 4.7619047619 for one game | 1/6 `m0r0` levels at action 20, exact twice | target qualified; preservation pending |
 | Target-only symbolic offspring | v41h committed trajectory | 0.0000000000 for one game | 0/7 `g50t` levels in 400 actions | falsified; not promoted |
 | Source-matched process-isolated suite | v40 exact-off / v39 policy | 4.0770754143 / 100 | 0 games beaten; 15/183 levels | exact parent reproduction |
 | Process-isolated seven-game gate | v40 accepted | 15.3546344162 / 100 | 16 levels in the seven affected games | every v39 action count preserved |

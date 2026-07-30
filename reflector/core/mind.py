@@ -60,6 +60,9 @@ class MindConfig:
     enable_click_object_accommodation: bool = False
     enable_productive_role_reuse: bool = False
     enable_cross_retry_maturity: bool = False
+    enable_boundary_nuisance_state_key: bool = False
+    enable_boundary_nuisance_fairness: bool = False
+    enable_paired_object_contact_planning: bool = False
     enable_local_relation_solver: bool = False
     enable_constraint_first_role_replay: bool = False
     enable_global_relation_constraint_solver: bool = False
@@ -113,6 +116,9 @@ class MindConfig:
             "enable_click_object_accommodation",
             "enable_productive_role_reuse",
             "enable_cross_retry_maturity",
+            "enable_boundary_nuisance_state_key",
+            "enable_boundary_nuisance_fairness",
+            "enable_paired_object_contact_planning",
             "enable_local_relation_solver",
             "enable_constraint_first_role_replay",
             "enable_global_relation_constraint_solver",
@@ -155,6 +161,14 @@ class MindConfig:
         ):
             raise ValueError(
                 "cross-retry maturity requires productive role reuse"
+            )
+        if self.enable_boundary_nuisance_fairness and not (
+            self.enable_boundary_nuisance_state_key
+            and self.enable_hierarchical_action_fairness
+        ):
+            raise ValueError(
+                "boundary-nuisance fairness requires boundary state keys "
+                "and hierarchical fairness"
             )
         if (
             self.enable_graph_cycle_transport
