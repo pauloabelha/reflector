@@ -10,7 +10,13 @@ from .abstraction import AbstractionStore
 from .causal import Experiment, HypothesisStore
 from .comparisons import ComparisonTransferSystem
 from .graph import DependencyGraph
-from .inheritance import EMPTY_SCHEME_LIBRARY_ROOT, SchemeLibrary
+from .inheritance import (
+    EMPTY_COMMON_SENSE_ROOT,
+    EMPTY_EVIDENCE_LEDGER_ROOT,
+    EMPTY_SCHEME_LIBRARY_ROOT,
+    SchemeLibrary,
+    common_sense_root,
+)
 from .perception import SceneTracker
 from .planning import Goal, Plan, SymbolicPlanner
 from .reinforcement import StructuralCreditLedger
@@ -102,6 +108,8 @@ class MindConfig:
     hierarchy_complexity_pressure: float = 1.0
     inherited_scheme_definitions: tuple[str, ...] = ()
     inherited_scheme_root: str = EMPTY_SCHEME_LIBRARY_ROOT
+    inherited_evidence_root: str = EMPTY_EVIDENCE_LEDGER_ROOT
+    inherited_common_sense_root: str = EMPTY_COMMON_SENSE_ROOT
 
     def __post_init__(self) -> None:
         for name in (
@@ -340,6 +348,17 @@ class MindConfig:
             )
         if type(self.inherited_scheme_root) is not str:
             raise ValueError("inherited_scheme_root must be a string")
+        for name in (
+            "inherited_evidence_root",
+            "inherited_common_sense_root",
+        ):
+            value = getattr(self, name)
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(character not in "0123456789abcdef" for character in value)
+            ):
+                raise ValueError(f"{name} must be a SHA-256 hash")
         library = SchemeLibrary.from_json_definitions(
             self.inherited_scheme_definitions
         )
@@ -363,6 +382,23 @@ class MindConfig:
                 "inherited scheme library requires preregistered "
                 "structural credit"
             )
+        if self.inherited_evidence_root != EMPTY_EVIDENCE_LEDGER_ROOT:
+            if not self.enable_inherited_scheme_library:
+                raise ValueError(
+                    "inherited evidence requires an enabled scheme library"
+                )
+            expected_common_sense_root = common_sense_root(
+                self.inherited_scheme_root,
+                self.inherited_evidence_root,
+            )
+            if (
+                self.inherited_common_sense_root
+                != expected_common_sense_root
+            ):
+                raise ValueError(
+                    "inherited_common_sense_root does not bind library and "
+                    "evidence roots"
+                )
 
     def to_dict(self) -> dict[str, Any]:
         value = asdict(self)

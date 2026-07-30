@@ -7,7 +7,11 @@ import json
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Iterable, Literal, Mapping, Protocol
 
-from ..core.inheritance import SchemeDefinition, SchemeLibrary
+from ..core.inheritance import (
+    SchemeDefinition,
+    SchemeLibrary,
+    common_sense_root,
+)
 from ..core.mind import MindConfig
 from .population import Candidate
 
@@ -242,12 +246,7 @@ class CommonSenseSnapshot:
 
     @property
     def root(self) -> str:
-        return _stable_digest(
-            {
-                "library_root": self.library.root,
-                "ledger_root": self.ledger.root,
-            }
-        )
+        return common_sense_root(self.library.root, self.ledger.root)
 
 
 def promoted_library(
@@ -322,6 +321,20 @@ def config_with_scheme_library(
         ),
         inherited_scheme_definitions=library.json_definitions(),
         inherited_scheme_root=library.root,
+    )
+
+
+def config_with_common_sense_snapshot(
+    config: MindConfig,
+    snapshot: CommonSenseSnapshot,
+) -> MindConfig:
+    """Embed exact definitions and both cultural evidence roots in a genome."""
+
+    configured = config_with_scheme_library(config, snapshot.library)
+    return replace(
+        configured,
+        inherited_evidence_root=snapshot.ledger.root,
+        inherited_common_sense_root=snapshot.root,
     )
 
 

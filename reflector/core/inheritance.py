@@ -10,6 +10,10 @@ from typing import Any, Iterable
 EMPTY_SCHEME_LIBRARY_ROOT = (
     "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
 )
+EMPTY_EVIDENCE_LEDGER_ROOT = EMPTY_SCHEME_LIBRARY_ROOT
+EMPTY_COMMON_SENSE_ROOT = (
+    "9b720358c129ec040f946ceff6d9bf8e5ee8bd233f1d25824b8aa3d0e19d2611"
+)
 GROUNDING_KINDS = frozenset(
     {"action-family", "object", "region", "relation", "procedure"}
 )
@@ -23,6 +27,17 @@ def _canonical_json(value: Any) -> str:
 
 def _digest(value: Any) -> str:
     return hashlib.sha256(_canonical_json(value).encode()).hexdigest()
+
+
+def common_sense_root(library_root: str, evidence_root: str) -> str:
+    """Bind deployable definitions to the evidence snapshot that admitted them."""
+
+    return _digest(
+        {
+            "library_root": library_root,
+            "ledger_root": evidence_root,
+        }
+    )
 
 
 @dataclass(frozen=True, slots=True)

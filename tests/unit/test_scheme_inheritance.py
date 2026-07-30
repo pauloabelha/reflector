@@ -23,6 +23,7 @@ from reflector.evolution.inheritance import (
     SchemePromotionRule,
     accommodate_scheme,
     breed_inherited_candidate,
+    config_with_common_sense_snapshot,
     config_with_scheme_library,
     evidence_from_cognitive_events,
     predictive_common_sense_snapshot,
@@ -219,6 +220,10 @@ def test_predictive_gate_requires_cross_agent_heldout_calibration() -> None:
     assert len(snapshot.root) == 64
     assert snapshot.ledger.root == ledger.root
     assert snapshot.library.root == SchemeLibrary.create((definition,)).root
+    config = config_with_common_sense_snapshot(MindConfig(), snapshot)
+    assert config.inherited_evidence_root == snapshot.ledger.root
+    assert config.inherited_common_sense_root == snapshot.root
+    assert MindConfig.from_dict(config.to_dict()) == config
 
 
 def test_exact_library_snapshot_round_trips_and_is_inherited_by_offspring() -> None:
