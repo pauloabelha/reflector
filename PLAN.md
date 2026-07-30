@@ -2260,6 +2260,41 @@ correction, five independent held-out recordings yield 913/913 confirmations
 and zero deviations. The previously reported ten `lp85` action-6 deviations
 disappear; they were artifacts of action-ID conflation.
 
+V57a real result:
+
+- exact-off: 4 levels, score 6.6465283447;
+- confirm-affordance: 4 levels, score 4.0072549883; `lp85` level 2 slowed from
+  8 to 85 actions;
+- confirm-discontinuity: 2 levels, score 0.3302558292; lost `g50t` level 1 and
+  one `lp85` level;
+- phase-segment: 4 levels, score 6.6465283447, exactly matching control despite
+  14 maximum in-level detections on `g50t` and 22 on `lp85`.
+
+All v57a variants are rejected. Exact replay is not a safe generic
+confirmation for toggling or consumptive actions, and a phase suffix adds
+nothing when the raw frame key already distinguishes the states.
+
+## Preregistered experiment: v58 parameterized affordance propagation
+
+Parent: accepted v49b. Donor insight: rejected role-grounded v57a.
+
+When a supported no-effect structural action role produces a nonzero repeated-
+form effect, preserve that newly evidenced role but do not repeat the concrete
+action. Instead, allow exactly one untried concrete token with the same
+object-relative `ActionRole` in the current state. This is a bounded
+select/parameterize/apply variation:
+
+`newly effective role(target₁) -> try same role(target₂), target₂ untried`
+
+The operator must abstain if the action has no structural grounding or no
+distinct equivalent token. It must never select the triggering token as its
+variation.
+
+Falsifier: reject if the advisor is inert, if it merely reproduces an already
+selected base action, if it loses any control level, or if it does not add a
+level or materially improve action efficiency. Develop first on the identical
+`lp85`/`g50t` pair, with exact-off and v57a phase-segment controls.
+
 The source-matched population has four frozen modes:
 
 - `off`: accepted behavior;
@@ -2274,9 +2309,8 @@ Falsifier: a mode is rejected if its detector remains inert, if it adds
 replays without a new level or material efficiency gain, or if it regresses an
 accepted level. Recording prediction accuracy alone cannot promote it.
 
-V57a must rerun the same `lp85` and `g50t` development pair. Only a qualifying
-variant proceeds to `ar25`, `m0r0`, `sb26`, deterministic rerun, and the full
-suite.
+Only a qualifying v58 variant proceeds to `ar25`, `m0r0`, `sb26`,
+deterministic rerun, and the full suite.
 
 ## Promotion gates
 

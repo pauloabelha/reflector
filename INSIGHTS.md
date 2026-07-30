@@ -352,6 +352,16 @@ These are narrow earned claims, not claims of general intelligence.
     coordinate-action conflation and a confirmation result being treated as a
     fresh surprise. The corrected mechanism structurally binds clicks and
     suppresses a second confirmation from the immediate contrastive replay.
+27. Exact repetition is not a neutral confirmation when actions can toggle or
+    consume state. V57a removed the recursive loop and restored all four
+    control levels under `confirm-affordance`, but it delayed `lp85` level 2
+    from 8 actions to 85. `confirm-discontinuity` still lost `g50t` level 1
+    and one `lp85` level. The role-grounded `phase-segment` detector was
+    operative but exactly matched control because raw frame digests already
+    separated the affected states. A better accommodation is parameterized
+    variation: after one member of a structural action role becomes newly
+    effective, try an untested equivalent member rather than immediately
+    repeating the same potentially reversible intervention.
 
 ## What is still missing
 
