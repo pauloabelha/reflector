@@ -271,6 +271,8 @@ Official competition links:
 Candidate: `candidate-2336bc12a0bc28de`
 Frozen inference/candidate commit:
 `2f3020804baf7578ff691ace2fa556783eb3735a`
+Full-suite report source commit:
+`fb942c55c9aa337573cb540c099e3a327a0fd3ff`
 Candidate inference fingerprint:
 `82a5cb4ae5d5f6a6a813ec3a9b6bef4c609152a02358ba787d9c3aab4e3b893c`
 

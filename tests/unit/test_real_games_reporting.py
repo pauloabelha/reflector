@@ -7,31 +7,21 @@ ROOT = Path(__file__).resolve().parents[2]
 ACCEPTED_REPORT = (
     ROOT
     / "reports"
-    / "official-isolated-v68-frozen-public-400.json"
+    / "official-isolated-v69-public-400.json"
 )
 ACCEPTED_CANDIDATE = (
     ROOT
     / "candidates"
-    / "v68-path-cycle-transport-400.json"
+    / "v69-colored-stencil-primary-400.json"
 )
 TARGET_REPORTS = (
-    ROOT / "reports" / "official-isolated-v68-frozen-lp85-r1-400.json",
-    ROOT / "reports" / "official-isolated-v68-frozen-lp85-r2-400.json",
+    ROOT / "reports" / "official-isolated-v69-cd82-r3-400.json",
+    ROOT / "reports" / "official-isolated-v69-cd82-r4-400.json",
 )
 PRESERVATION_REPORT = (
     ROOT
     / "reports"
-    / "official-isolated-v68-frozen-progress-gate-400.json"
-)
-COGNITIVE_ARCHIVE = (
-    ROOT
-    / "reports"
-    / "official-isolated-v68-frozen-lp85-cognitive.jsonl.gz"
-)
-PATH_OFF_DIAGNOSTIC = (
-    ROOT
-    / "reports"
-    / "diagnostic-v68-source-v67-config-lp85-400.json"
+    / "official-isolated-v69-progress-gate-400.json"
 )
 
 
@@ -69,7 +59,7 @@ def test_human_reports_match_accepted_scorecard() -> None:
     assert f"**{score} / 100**" in readme
 
 
-def test_canonical_report_binds_the_frozen_v68_evidence() -> None:
+def test_canonical_report_binds_the_frozen_v69_evidence() -> None:
     canonical = (ROOT / "REAL_GAMES_REPORT.md").read_text(encoding="utf-8")
     scorecard = json.loads(ACCEPTED_REPORT.read_text(encoding="utf-8"))
     candidate = json.loads(ACCEPTED_CANDIDATE.read_text(encoding="utf-8"))
@@ -77,14 +67,12 @@ def test_canonical_report_binds_the_frozen_v68_evidence() -> None:
     assert scorecard["source_commit"] in canonical
     assert candidate["candidate_id"] in canonical
     assert candidate["inference_fingerprint"] in canonical
-    assert candidate["parent_id"] == "candidate-a1ccbdb17d674b78"
+    assert candidate["parent_id"] == "candidate-35de85c4fe395c3a"
     for artifact in (
         ACCEPTED_CANDIDATE,
         ACCEPTED_REPORT,
         *TARGET_REPORTS,
         PRESERVATION_REPORT,
-        COGNITIVE_ARCHIVE,
-        PATH_OFF_DIAGNOSTIC,
     ):
         digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
         assert digest in canonical

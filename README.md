@@ -20,32 +20,31 @@ service, database, or web server.
 Last verified: 2026-07-30
 
 > **Plain-language result:** Reflector has fully beaten **2 of 25 games**.
-> It has solved **28 of 183 levels across 11 games**. All 25 games were
+> It has solved **30 of 183 levels across 12 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v68 result |
+| Metric | Accepted v69 result |
 | --- | ---: |
 | Complete games beaten | **2 / 25** |
-| Games with at least one solved level | **11 / 25** |
-| Levels solved | **28 / 183** |
-| Official local score | **9.684019526667843 / 100** |
+| Games with at least one solved level | **12 / 25** |
+| Levels solved | **30 / 183** |
+| Official local score | **10.255448098096416 / 100** |
 | Games evaluated | **25 / 25** |
 | Total actions | **9,486** |
-| Frozen source/candidate commit | `59daf6171026b986c1e26aaa5fa1f56e2ef03269` |
-| Candidate | `candidate-35de85c4fe395c3a` |
+| Frozen source/candidate commit | `2f3020804baf7578ff691ace2fa556783eb3735a` |
+| Candidate | `candidate-2336bc12a0bc28de` |
 | Kaggle submissions | **1 pending** (`55113224`) |
 | Kaggle public score | **pending; not yet returned** |
 | Kaggle private score | **unavailable** |
 
-The score is about **9.68% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. V68 preserves v67
-on all 24 unaffected games and solves `lp85` level 5 by learning nested
-rectilinear subpath cycles and binding otherwise identical controllers by
-their local endpoint/straight/corner topology. Both target runs reproduce
-`[37, 8, 54, 71, 50, 180, 0, 0]`; every other public-development result
-remains exact. The shared artifact passes pytest, Ruff, mypy, both
-network-disabled smoke paths, and exact export. The permanent result is in
-[the v68 public-development report](reports/official-isolated-v68-frozen-public-400.json).
+The score is about **10.26% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. V69 preserves v68
+on all 24 unaffected games and solves `cd82` levels 1–2 by uniquely grounding
+a reference/construction pair, visible palette roles, and an outlined pose
+template, then searching exact primary last-write-wins stencil programs. Both
+frozen target runs reproduce `[12, 6, 382, 0, 0, 0]`; every other
+public-development trajectory remains exact. The permanent result is in
+[the v69 public-development report](reports/official-isolated-v69-public-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -56,15 +55,15 @@ every canonical score-table checkpoint and is generated from
 [the real-games scorecard](REAL_GAMES_REPORT.md), and it is explicitly not a
 Kaggle leaderboard series.
 
-**Kaggle submission:** frozen v65b—not v68—was submitted for hidden-transfer
+**Kaggle submission:** frozen v65b—not v69—was submitted for hidden-transfer
 calibration as submission `55113224` from the private, internet-disabled
 notebook `pauloabelha/reflector-arc-agi-3-v65b` version 1. The hidden rerun is
-still `PENDING`, so neither leaderboard regime has returned a score. V68 is
-technically ready but has not been submitted. Eligibility confirmation and
+still `PENDING`, so neither leaderboard regime has returned a score. V69 has
+not been submitted. Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
-do not report the local 9.68 score as a Kaggle public or private score.
+do not report the local 10.26 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object
@@ -84,7 +83,7 @@ The next-stage associative prior system is specified in
 [K-line symbolic memory](references/KLINE_SYMBOLIC_MEMORY.md): partial
 invariant cues retrieve mid-level symbolic generator dispositions through an
 exact sparse index, followed by bounded structural verification. It is
-exact-off research work and is not enabled in accepted v68. Its standalone
+exact-off research work and is not enabled in accepted v69. Its standalone
 content-addressed retrieval core is implemented and tested; runtime cue
 compilation, structural grounding, scheduling, and Kaggle packaging remain
 deliberately disconnected until they earn a preserved gain.
@@ -107,7 +106,7 @@ macro, autonomous replay, and up to 21 contextual collision edges across
 retries. After seven trace-driven variants it still solved 0/7 `g50t` levels
 at 400 actions, so its preregistered 30-action target was falsified. These
 negative results motivated v42's substrate topology and uncertain-gate
-information actions. The current v68 result and all rejected predecessors are
+information actions. The current v69 result and all rejected predecessors are
 documented in the [real-games scorecard](REAL_GAMES_REPORT.md).
 
 A second hybrid tests the stronger architecture: the symbolic agent remains
@@ -249,10 +248,10 @@ An accepted population descendant is exported without policy translation:
 
 ```bash
 .venv/bin/reflector-kaggle export \
-  --config candidates/v68-path-cycle-transport-400.json \
+  --config candidates/v69-colored-stencil-primary-400.json \
   --output dist
 .venv/bin/reflector-kaggle smoke-test \
-  --config candidates/v68-path-cycle-transport-400.json
+  --config candidates/v69-colored-stencil-primary-400.json
 ```
 
 Run the current competition-readiness audit:
@@ -303,9 +302,9 @@ The complete score history is recorded in
 zero-level result to v21's five levels across four public-development games.
 V25 reached five `ft09` levels; v64b reached 20 levels; v65b reached 25 and
 the first complete game; v66 reached 26 levels and two complete games; v67
-reached 27; and accepted v68 reaches 28 levels while passing the
-source-matched non-regression gate. Kaggle compatibility is proven locally;
-competitive hidden performance is not.
+reached 27; v68 reached 28; and accepted v69 reaches 30 levels while passing
+the source-matched non-regression gate. Kaggle compatibility is proven
+locally; competitive hidden performance is not.
 
 Generate, replay, evaluate, and compare deterministic traces:
 
@@ -451,6 +450,11 @@ path topology. Its first confirmations repeat the same grounded controller
 centroids in later states, so the evidence is prospective but still not
 cross-controller. Domains above the fixed 64-slot bound remain unrepresented
 rather than being forced into the path model.
+The accepted v69 path adds a separate constructive family: it uniquely grounds
+rendered reference, construction, palette, and pose roles, learns controller
+directions from observed translations, and executes only bounded exact
+primary-stencil programs. Secondary edge stencils remain an independently
+gated offspring and are not part of the accepted score.
 Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained
