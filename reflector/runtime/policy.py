@@ -131,6 +131,9 @@ class SymbolicPolicy:
             constructive_connector_placement=(
                 self.mind.config.enable_constructive_connector_placement
             ),
+            connector_graph_synthesis=(
+                self.mind.config.enable_connector_graph_synthesis
+            ),
             shape_goal_translation=(
                 self.mind.config.enable_shape_goal_translation
             ),

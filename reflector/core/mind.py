@@ -97,6 +97,7 @@ class MindConfig:
     enable_enclosure_target_traversal: bool = False
     enable_connector_relocation: bool = False
     enable_constructive_connector_placement: bool = False
+    enable_connector_graph_synthesis: bool = False
     enable_shape_goal_translation: bool = False
     enable_relational_phase_translation: bool = False
     enable_committed_trajectory_planning: bool = False
@@ -165,6 +166,7 @@ class MindConfig:
             "enable_enclosure_target_traversal",
             "enable_connector_relocation",
             "enable_constructive_connector_placement",
+            "enable_connector_graph_synthesis",
             "enable_shape_goal_translation",
             "enable_relational_phase_translation",
             "enable_committed_trajectory_planning",
@@ -324,6 +326,13 @@ class MindConfig:
             raise ValueError(
                 "constructive connector placement requires enclosure target "
                 "traversal"
+            )
+        if (
+            self.enable_connector_graph_synthesis
+            and not self.enable_enclosure_target_traversal
+        ):
+            raise ValueError(
+                "connector graph synthesis requires enclosure target traversal"
             )
         if (
             self.enable_relational_phase_translation

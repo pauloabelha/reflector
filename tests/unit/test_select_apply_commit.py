@@ -1,6 +1,11 @@
 import pytest
 
 from reflector import MindConfig, SymbolicPolicy
+from reflector.core.connector_synthesis import (
+    ConnectorGraphProgram,
+    ConnectorSynthesisResult,
+    ConnectorSynthesisStatus,
+)
 from reflector.exploration import ActionToken, EpistemicExplorer
 from reflector.perception import SceneTracker
 from reflector.symbolic import Observation
@@ -54,6 +59,67 @@ def _mapping_frame(
             color=color,
             size=2,
         )
+    return tuple(tuple(row) for row in pixels)
+
+
+def _cyclic_reference_shadow_frame() -> tuple[tuple[int, ...], ...]:
+    colors = (8, 11, 12, 9, 14, 15)
+    pixels = [[4 for _x in range(64)] for _y in range(64)]
+    for top in (0, 7):
+        for index, color in enumerate(colors):
+            left = 10 + index * 7
+            _paint(
+                pixels,
+                left=left,
+                top=top,
+                color=color,
+                size=6,
+                outline=True,
+            )
+            _paint(
+                pixels,
+                left=left + 1,
+                top=top + 1,
+                color=5,
+                size=4,
+            )
+    for color, top in ((8, 21), (9, 35)):
+        left = 18
+        right = 45
+        bottom = top + 9
+        for x in range(left, right + 1):
+            pixels[top][x] = color
+            pixels[bottom][x] = color
+        for y in range(top, bottom + 1):
+            pixels[y][left] = color
+            pixels[y][right] = color
+        for index in range(4):
+            _paint(
+                pixels,
+                left=22 + index * 6,
+                top=top + 4,
+                color=2,
+                size=2,
+            )
+    for left, top, horizontal_y, vertical_x in (
+        (15, 18, 0, 0),
+        (46, 18, 0, 2),
+        (15, 31, 2, 0),
+        (46, 31, 2, 2),
+    ):
+        for offset in range(3):
+            pixels[top + horizontal_y][left + offset] = 0
+            pixels[top + offset][left + vertical_x] = 0
+    for index, color in enumerate(colors):
+        _paint(
+            pixels,
+            left=4 + index * 7,
+            top=56,
+            color=color,
+            size=4,
+        )
+    _paint(pixels, left=47, top=56, color=8, size=4, outline=True)
+    _paint(pixels, left=54, top=56, color=9, size=4, outline=True)
     return tuple(tuple(row) for row in pixels)
 
 
@@ -229,6 +295,7 @@ def _relocatable_connector_mapping_frame(
     marker_left: int = 22,
     fixed_payload_color: int = 14,
     connector_outline: bool = True,
+    root_cursor: bool = False,
 ) -> tuple[tuple[int, ...], ...]:
     reference = (11, 8, 14, 9, 6, 12, 15)
     selectors = (11, 6, 12, 8, 15, 9, 14)
@@ -269,6 +336,16 @@ def _relocatable_connector_mapping_frame(
         color=fixed_payload_color,
         size=2,
     )
+    if root_cursor:
+        for left, top, horizontal_y, vertical_x in (
+            (10, 4, 0, 0),
+            (45, 4, 0, 2),
+            (10, 12, 2, 0),
+            (45, 12, 2, 2),
+        ):
+            for offset in range(3):
+                pixels[top + horizontal_y][left + offset] = 3
+                pixels[top + offset][left + vertical_x] = 3
     for index, color in enumerate(selectors):
         _paint(
             pixels,
@@ -655,12 +732,300 @@ def test_constructive_connector_requires_an_external_outline() -> None:
     assert not explorer.constructive_connector_plan_active
 
 
+def test_connector_graph_synthesizes_unique_parent_child_program() -> None:
+    observation = _observation(
+        _relocatable_connector_mapping_frame(root_cursor=True)
+    )
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        connector_graph_synthesis=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token
+        for _step in range(15)
+    )
+    target_clicks = tuple(
+        dict(token.data)
+        for token in choices
+        if token.action_id == 6 and dict(token.data).get("y") in {8, 16}
+    )
+
+    assert target_clicks == (
+        {"x": 16, "y": 8},
+        {"x": 22, "y": 8},
+        {"x": 28, "y": 8},
+        {"x": 34, "y": 8},
+        {"x": 40, "y": 8},
+        {"x": 28, "y": 16},
+        {"x": 34, "y": 16},
+    )
+    assert choices[-1] == ActionToken(5)
+    assert explorer.connector_graph_plan_active
+    assert explorer.select_apply_diagnostic == "connector-graph-selected"
+    assert explorer.connector_graph_diagnostic.startswith("unique:")
+    assert explorer.connector_graph_explored_assignments == 5_040
+    assert explorer.connector_graph_unused_payloads == 0
+    assert "operator:synthesize-connector-graph" in explorer.last_scheme_components
+    assert "state:finite-reference-horizon" in explorer.last_scheme_components
+
+
+def test_connector_graph_strictly_dominates_a_reference_interior_shadow() -> None:
+    observation = _observation(_cyclic_reference_shadow_frame())
+    scene, _events = SceneTracker().perceive(observation)
+    graph = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        connector_graph_synthesis=True,
+    )
+    flat = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+    )
+    graph.observe(observation, scene)
+    flat.observe(observation, scene)
+
+    graph_choices = tuple(
+        graph.select(observation, scene, (5, 6, 7)).token
+        for _step in range(17)
+    )
+    flat_choices = tuple(
+        flat.select(observation, scene, (5, 6, 7)).token
+        for _step in range(13)
+    )
+
+    assert graph_choices[-1] == ActionToken(5)
+    assert graph.connector_graph_plan_active
+    assert graph.select_apply_diagnostic == (
+        "connector-graph-dominates-reference-interior-flat"
+    )
+    assert graph.connector_graph_grounding is not None
+    assert len(graph.connector_graph_grounding.destinations) == 8
+    assert flat_choices[-1] == ActionToken(5)
+    assert not flat.connector_graph_plan_active
+    assert flat.select_apply_diagnostic == "select-apply-selected"
+
+
+def test_connector_graph_does_not_challenge_an_ordinary_flat_mapping() -> None:
+    observation = _observation(_mapping_frame())
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        connector_graph_synthesis=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token
+        for _step in range(7)
+    )
+
+    assert choices[-1] == ActionToken(5)
+    assert explorer.select_apply_diagnostic == "select-apply-selected"
+    assert explorer.connector_graph_grounding is None
+    assert not explorer.connector_graph_plan_active
+
+
+def test_connector_graph_preserves_flat_mapping_when_shadow_colors_differ() -> None:
+    frame = [list(row) for row in _cyclic_reference_shadow_frame()]
+    _paint(
+        frame,
+        left=45,
+        top=7,
+        color=13,
+        size=6,
+        outline=True,
+    )
+    observation = _observation(tuple(tuple(row) for row in frame))
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        connector_graph_synthesis=True,
+    )
+    flat = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+    )
+    explorer.observe(observation, scene)
+    flat.observe(observation, scene)
+
+    choice = explorer.select(observation, scene, (5, 6, 7))
+    flat_choice = flat.select(observation, scene, (5, 6, 7))
+
+    assert choice.reason == "epistemic-frontier:parameterized-select-apply-commit"
+    assert choice == flat_choice
+    assert explorer.select_apply_program
+    assert explorer.select_apply_program == flat.select_apply_program
+    assert explorer.select_apply_diagnostic == "select-apply-selected"
+    assert explorer.connector_graph_grounding is None
+    assert not explorer.connector_graph_plan_active
+
+
+def test_connector_graph_preserves_flat_mapping_when_shadow_forms_differ() -> None:
+    frame = [list(row) for row in _cyclic_reference_shadow_frame()]
+    for y in range(7, 13):
+        for x in range(44, 52):
+            frame[y][x] = 4
+    _paint(frame, left=46, top=8, color=5, size=4)
+    for x in range(44, 52):
+        frame[7][x] = 15
+        frame[12][x] = 15
+    for y in range(7, 13):
+        frame[y][44] = 15
+        frame[y][51] = 15
+    observation = _observation(tuple(tuple(row) for row in frame))
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        connector_graph_synthesis=True,
+    )
+    flat = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+    )
+    explorer.observe(observation, scene)
+    flat.observe(observation, scene)
+
+    choice = explorer.select(observation, scene, (5, 6, 7))
+    flat_choice = flat.select(observation, scene, (5, 6, 7))
+
+    assert choice.reason == "epistemic-frontier:parameterized-select-apply-commit"
+    assert choice == flat_choice
+    assert explorer.select_apply_program
+    assert explorer.select_apply_program == flat.select_apply_program
+    assert explorer.select_apply_diagnostic == "select-apply-selected"
+    assert explorer.connector_graph_grounding is None
+    assert not explorer.connector_graph_plan_active
+
+
+def test_connector_graph_preserves_flat_mapping_when_graph_root_is_ambiguous() -> None:
+    frame = tuple(
+        tuple(4 if cell == 0 else cell for cell in row)
+        for row in _cyclic_reference_shadow_frame()
+    )
+    observation = _observation(frame)
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        connector_graph_synthesis=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token
+        for _step in range(13)
+    )
+
+    assert choices[-1] == ActionToken(5)
+    assert explorer.select_apply_diagnostic == "select-apply-selected"
+    assert explorer.connector_graph_diagnostic == "ambiguous-root"
+    assert explorer.connector_graph_grounding is None
+    assert not explorer.connector_graph_plan_active
+
+
+def test_connector_graph_rejects_unique_root_with_an_ambiguous_alternative(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    frame = tuple(
+        tuple(4 if cell == 0 else cell for cell in row)
+        for row in _cyclic_reference_shadow_frame()
+    )
+    unique_plan = ConnectorGraphProgram(
+        root="placeholder",
+        reference=(),
+        containers=(),
+        bindings=(),
+        unused_payloads=(),
+        emissions=(),
+        connector_trace=(),
+        visited_containers=(),
+    )
+    outcomes = iter(
+        (
+            ConnectorSynthesisResult(
+                status=ConnectorSynthesisStatus.UNIQUE,
+                plan=unique_plan,
+                explored_assignments=1,
+                semantic_solutions=1,
+                diagnostic="synthetic-unique",
+            ),
+            ConnectorSynthesisResult(
+                status=ConnectorSynthesisStatus.AMBIGUOUS,
+                plan=None,
+                explored_assignments=1,
+                semantic_solutions=2,
+                diagnostic="synthetic-ambiguous",
+            ),
+        )
+    )
+    monkeypatch.setattr(
+        "reflector.core.exploration.synthesize_connector_program",
+        lambda _problem: next(outcomes),
+    )
+    observation = _observation(frame)
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        connector_graph_synthesis=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token
+        for _step in range(13)
+    )
+
+    assert choices[-1] == ActionToken(5)
+    assert explorer.select_apply_diagnostic == "select-apply-selected"
+    assert explorer.connector_graph_diagnostic == (
+        "root-uncertainty:ambiguous=1,unique=1"
+    )
+    assert explorer.connector_graph_grounding is None
+    assert not explorer.connector_graph_plan_active
+
+
 def test_constructive_connector_config_requires_enclosure_traversal() -> None:
     with pytest.raises(
         ValueError,
         match="constructive connector placement requires enclosure",
     ):
         MindConfig(enable_constructive_connector_placement=True)
+
+
+def test_connector_graph_config_requires_enclosure_traversal() -> None:
+    with pytest.raises(
+        ValueError,
+        match="connector graph synthesis requires enclosure",
+    ):
+        MindConfig(enable_connector_graph_synthesis=True)
 
 
 def test_constructive_connector_config_reaches_runtime_explorer() -> None:
@@ -678,6 +1043,21 @@ def test_constructive_connector_config_reaches_runtime_explorer() -> None:
     assert policy.trace.mind_config[
         "enable_constructive_connector_placement"
     ]
+
+
+def test_connector_graph_config_reaches_runtime_explorer() -> None:
+    config = MindConfig(
+        enable_parameterized_select_apply_commit=True,
+        enable_multiline_target_binding=True,
+        enable_nested_target_traversal=True,
+        enable_enclosure_target_traversal=True,
+        enable_connector_graph_synthesis=True,
+    )
+
+    policy = SymbolicPolicy(config)
+
+    assert policy.explorer.connector_graph_synthesis
+    assert policy.trace.mind_config["enable_connector_graph_synthesis"]
 
 
 def test_multiline_accommodation_is_silent_without_exact_cardinality() -> None:
@@ -739,3 +1119,4 @@ def test_select_apply_commit_is_exactly_off_by_default() -> None:
     assert MindConfig() == MindConfig(
         enable_constructive_connector_placement=False
     )
+    assert MindConfig() == MindConfig(enable_connector_graph_synthesis=False)

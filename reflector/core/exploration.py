@@ -9,6 +9,16 @@ from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
 
+from .connector_synthesis import (
+    Connector,
+    ConnectorSynthesisProblem,
+    ConnectorSynthesisStatus,
+    ContainerSpec,
+    FixedColorSlot,
+    Payload,
+    VariableSlot,
+    synthesize_connector_program,
+)
 from .inheritance import SchemeLibrary
 from .symbolic import ObjectState, Observation, Scene
 
@@ -140,6 +150,28 @@ class _FrameObject:
     bbox: tuple[int, int, int, int]
     centroid: tuple[int, int]
     shape: tuple[tuple[int, int], ...]
+
+
+@dataclass(frozen=True, slots=True)
+class _SelectApplyCandidate:
+    rank: tuple[int, int, int, tuple[int, ...]]
+    program: tuple[ActionToken, ...]
+    reference: tuple[_FrameObject, ...]
+    targets: tuple[_FrameObject, ...]
+    program_count: int
+    nested_target: bool
+    nested_source: bool
+    connector_relocation: bool
+    constructive_connector: bool
+
+
+@dataclass(frozen=True, slots=True)
+class _ConnectorGraphGrounding:
+    reference: tuple[int, ...]
+    reference_objects: tuple[_FrameObject, ...]
+    program: tuple[ActionToken, ...]
+    destinations: tuple[_FrameObject, ...]
+    neutral_slots: tuple[_FrameObject, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -286,6 +318,7 @@ class EpistemicExplorer:
     enclosure_target_traversal: bool = False
     connector_relocation: bool = False
     constructive_connector_placement: bool = False
+    connector_graph_synthesis: bool = False
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
     committed_trajectory_planning: bool = False
@@ -369,6 +402,14 @@ class EpistemicExplorer:
     nested_source_plan_active: bool = False
     connector_relocation_plan_active: bool = False
     constructive_connector_plan_active: bool = False
+    connector_graph_plan_active: bool = False
+    connector_graph_explored_assignments: int = 0
+    connector_graph_unused_payloads: int = 0
+    connector_graph_diagnostic: str = "exact-off"
+    connector_graph_grounding: _ConnectorGraphGrounding | None = field(
+        default=None,
+        repr=False,
+    )
     select_apply_diagnostic: str = "not-attempted"
     shape_translation_probes: set[int] = field(default_factory=set)
     shape_translation_effects: dict[int, tuple[int, int]] = field(
@@ -769,6 +810,13 @@ class EpistemicExplorer:
             self.nested_source_plan_active = False
             self.connector_relocation_plan_active = False
             self.constructive_connector_plan_active = False
+            self.connector_graph_plan_active = False
+            self.connector_graph_explored_assignments = 0
+            self.connector_graph_unused_payloads = 0
+            self.connector_graph_grounding = None
+            self.connector_graph_diagnostic = (
+                "not-attempted" if self.connector_graph_synthesis else "exact-off"
+            )
             self.select_apply_diagnostic = "not-attempted"
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level()
@@ -4453,6 +4501,13 @@ class EpistemicExplorer:
                 ("operator:construct-connector-from-fixed-payload",)
                 if self.constructive_connector_plan_active
                 else ()
+            ) + (
+                (
+                    "operator:synthesize-connector-graph",
+                    "state:finite-reference-horizon",
+                )
+                if self.connector_graph_plan_active
+                else ()
             )
             return self._issue(
                 state,
@@ -4832,16 +4887,7 @@ class EpistemicExplorer:
             and len({item.centroid[0] for item in items}) == len(items)
         )
         represented = set(tokens)
-        candidates: list[
-            tuple[
-                tuple[int, int, int, tuple[int, ...]],
-                tuple[ActionToken, ...],
-                bool,
-                bool,
-                bool,
-                bool,
-            ]
-        ] = []
+        candidates: list[_SelectApplyCandidate] = []
         for reference in rows:
             size = len(reference)
             reference_colors = tuple(item.color for item in reference)
@@ -5017,18 +5063,21 @@ class EpistemicExplorer:
                         - selectors[0].centroid[1]
                     )
                     candidates.append(
-                        (
-                            (
+                        _SelectApplyCandidate(
+                            rank=(
                                 -size,
                                 midpoint_error,
                                 vertical_span,
                                 reference_colors,
                             ),
-                            tuple(combined),
-                            nested_plan,
-                            False,
-                            connector_plan,
-                            constructive_connector_plan,
+                            program=tuple(combined),
+                            reference=reference,
+                            targets=targets,
+                            program_count=len(programs),
+                            nested_target=nested_plan,
+                            nested_source=False,
+                            connector_relocation=connector_plan,
+                            constructive_connector=constructive_connector_plan,
                         )
                     )
             if self.nested_source_traversal:
@@ -5109,8 +5158,8 @@ class EpistemicExplorer:
                             item.centroid[1] for item in sources
                         ) // len(sources)
                         candidates.append(
-                            (
-                                (
+                            _SelectApplyCandidate(
+                                rank=(
                                     -size,
                                     abs(
                                         2 * source_y
@@ -5120,33 +5169,195 @@ class EpistemicExplorer:
                                     output_y - reference[0].centroid[1],
                                     reference_colors,
                                 ),
-                                tuple(actions),
-                                False,
-                                True,
-                                False,
-                                False,
+                                program=tuple(actions),
+                                reference=reference,
+                                targets=outputs,
+                                program_count=1,
+                                nested_target=False,
+                                nested_source=True,
+                                connector_relocation=False,
+                                constructive_connector=False,
                             )
                         )
                         self.select_apply_diagnostic = "nested-source-program"
         if not candidates:
+            connector_program = self._infer_connector_graph_program(
+                observation,
+                tokens,
+                objects,
+            )
+            if connector_program:
+                self.nested_target_plan_active = True
+                self.connector_graph_plan_active = True
+                self.select_apply_diagnostic = "connector-graph-selected"
+                return connector_program
             return ()
-        winner = min(candidates, key=lambda item: item[0])
-        self.nested_target_plan_active = winner[2]
-        self.nested_source_plan_active = winner[3]
-        self.connector_relocation_plan_active = winner[4]
-        self.constructive_connector_plan_active = winner[5]
+        winner = min(candidates, key=lambda item: item.rank)
+        wrappers = self._reference_interior_shadow_wrappers(
+            winner,
+            objects,
+        )
+        if wrappers is not None:
+            connector_program = self._infer_connector_graph_program(
+                observation,
+                tokens,
+                objects,
+            )
+            grounding = self.connector_graph_grounding
+            if (
+                connector_program
+                and grounding is not None
+                and self._connector_graph_dominates_reference_shadow(
+                    winner,
+                    wrappers,
+                    grounding,
+                )
+            ):
+                self.nested_target_plan_active = True
+                self.connector_graph_plan_active = True
+                self.select_apply_diagnostic = (
+                    "connector-graph-dominates-reference-interior-flat"
+                )
+                return connector_program
+        self.nested_target_plan_active = winner.nested_target
+        self.nested_source_plan_active = winner.nested_source
+        self.connector_relocation_plan_active = winner.connector_relocation
+        self.constructive_connector_plan_active = winner.constructive_connector
         self.select_apply_diagnostic = (
             "nested-source-selected"
-            if winner[3]
+            if winner.nested_source
             else "constructive-connector-selected"
-            if winner[5]
+            if winner.constructive_connector
             else "connector-relocation-selected"
-            if winner[4]
+            if winner.connector_relocation
             else "nested-target-selected"
-            if winner[2]
+            if winner.nested_target
             else "select-apply-selected"
         )
-        return winner[1]
+        return winner.program
+
+    @staticmethod
+    def _reference_interior_shadow_wrappers(
+        candidate: _SelectApplyCandidate,
+        objects: tuple[_FrameObject, ...],
+    ) -> tuple[_FrameObject, ...] | None:
+        """Identify a flat destination row that is another reference layer."""
+
+        if (
+            candidate.nested_target
+            or candidate.nested_source
+            or candidate.connector_relocation
+            or candidate.constructive_connector
+            or candidate.program_count != 1
+            or len(candidate.program) != 2 * len(candidate.reference) + 1
+            or len({item.centroid[1] for item in candidate.targets}) != 1
+            or not candidate.reference
+            or len(candidate.targets) != len(candidate.reference)
+        ):
+            return None
+
+        def is_outline_rectangle(item: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = item.bbox
+            width = max_x - min_x + 1
+            height = max_y - min_y + 1
+            if width < 3 or height < 3:
+                return False
+            perimeter = {
+                (x, y)
+                for y in range(height)
+                for x in range(width)
+                if x in {0, width - 1} or y in {0, height - 1}
+            }
+            return item.area == len(perimeter) and set(item.shape) == perimeter
+
+        pairs: list[tuple[_FrameObject, _FrameObject]] = []
+        reference_set = set(candidate.reference)
+        for target in candidate.targets:
+            target_min_x, target_min_y, target_max_x, target_max_y = target.bbox
+            enclosing = tuple(
+                item
+                for item in objects
+                if item != target
+                and item.centroid == target.centroid
+                and is_outline_rectangle(item)
+                and item.bbox[0] < target_min_x
+                and item.bbox[1] < target_min_y
+                and item.bbox[2] > target_max_x
+                and item.bbox[3] > target_max_y
+            )
+            if len(enclosing) != 1:
+                return None
+            pairs.append((target, enclosing[0]))
+        pairs.sort(key=lambda pair: pair[0].centroid)
+        wrappers = tuple(wrapper for _target, wrapper in pairs)
+
+        def form(item: _FrameObject) -> tuple[
+            int,
+            tuple[tuple[int, int], ...],
+            int,
+            int,
+        ]:
+            return (
+                item.area,
+                item.shape,
+                item.bbox[2] - item.bbox[0] + 1,
+                item.bbox[3] - item.bbox[1] + 1,
+            )
+
+        if (
+            len(set(wrappers)) != len(wrappers)
+            or not set(wrappers).isdisjoint(reference_set)
+            or tuple(item.color for item in wrappers)
+            != tuple(item.color for item in candidate.reference)
+            or tuple(form(item) for item in wrappers)
+            != tuple(form(item) for item in candidate.reference)
+        ):
+            return None
+        return wrappers
+
+    @staticmethod
+    def _connector_graph_dominates_reference_shadow(
+        candidate: _SelectApplyCandidate,
+        wrappers: tuple[_FrameObject, ...],
+        grounding: _ConnectorGraphGrounding,
+    ) -> bool:
+        """Prefer only a strictly more complete graph explanation."""
+
+        reference_colors = tuple(item.color for item in candidate.reference)
+        segment_size = len(reference_colors)
+        if (
+            not reference_colors
+            or len(grounding.reference_objects) != len(grounding.reference)
+            or len(grounding.reference_objects) % segment_size
+        ):
+            return False
+        reference_object_segments = tuple(
+            grounding.reference_objects[index : index + segment_size]
+            for index in range(0, len(grounding.reference_objects), segment_size)
+        )
+        try:
+            candidate_segment = reference_object_segments.index(candidate.reference)
+            wrapper_segment = reference_object_segments.index(wrappers)
+        except ValueError:
+            return False
+        if (
+            len(grounding.reference) % len(reference_colors)
+            or len(grounding.reference) // len(reference_colors) < 2
+            or grounding.reference
+            != reference_colors
+            * (len(grounding.reference) // len(reference_colors))
+            or len(grounding.destinations) <= len(candidate.targets)
+            or len(set(grounding.destinations)) != len(grounding.destinations)
+            or set(grounding.destinations) != set(grounding.neutral_slots)
+            or wrapper_segment != candidate_segment + 1
+        ):
+            return False
+        reserved = {
+            *candidate.reference,
+            *candidate.targets,
+            *wrappers,
+        }
+        return set(grounding.destinations).isdisjoint(reserved)
 
     @staticmethod
     def _nested_enclosure_order(
@@ -5366,6 +5577,564 @@ class EpistemicExplorer:
             if all(item.area in {full_area, outline_area} for item in items):
                 variants.append(tuple(sorted(items, key=lambda item: item.centroid)))
         return tuple(variants)
+
+    def _infer_connector_graph_program(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+        objects: tuple[_FrameObject, ...],
+    ) -> tuple[ActionToken, ...]:
+        """Synthesize a bounded nested traversal from visible containers.
+
+        The visual adapter grounds only ordered slots, fixed payloads, movable
+        payload inventory, and connector-to-container color matches.  The
+        imported solver then searches the finite connector grammar against the
+        rendered reference.  It may represent repeated children, sibling
+        composition, chains, or a bounded cycle, but it acts only when the
+        complete minimum-cost visually grounded assignment is unique.
+        """
+
+        if not self.connector_graph_synthesis:
+            self.connector_graph_diagnostic = "exact-off"
+            return ()
+        self.connector_graph_plan_active = False
+        self.connector_graph_explored_assignments = 0
+        self.connector_graph_unused_payloads = 0
+        self.connector_graph_grounding = None
+        if (
+            self.complex_action not in observation.available_actions
+            or not observation.frame
+            or not observation.frame[0]
+        ):
+            self.connector_graph_diagnostic = "complex-action-or-frame-unavailable"
+            return ()
+
+        def dimensions(item: _FrameObject) -> tuple[int, int]:
+            return (
+                item.bbox[2] - item.bbox[0] + 1,
+                item.bbox[3] - item.bbox[1] + 1,
+            )
+
+        def is_filled_rectangle(item: _FrameObject) -> bool:
+            width, height = dimensions(item)
+            return (
+                2 <= width <= 8
+                and 2 <= height <= 8
+                and item.area == width * height
+            )
+
+        def is_outline_rectangle(item: _FrameObject) -> bool:
+            width, height = dimensions(item)
+            if width < 3 or height < 3:
+                return False
+            perimeter = {
+                (x, y)
+                for y in range(height)
+                for x in range(width)
+                if x in {0, width - 1} or y in {0, height - 1}
+            }
+            return item.area == len(perimeter) and set(item.shape) == perimeter
+
+        def encloses(container: _FrameObject, item: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = container.bbox
+            x, y = item.centroid
+            return min_x < x < max_x and min_y < y < max_y
+
+        filled_groups: dict[
+            tuple[int, int, tuple[tuple[int, int], ...]],
+            list[_FrameObject],
+        ] = {}
+        for item in objects:
+            width, height = dimensions(item)
+            if is_filled_rectangle(item) and width == height:
+                filled_groups.setdefault(
+                    (item.color, item.area, item.shape),
+                    [],
+                ).append(item)
+
+        target_candidates: list[
+            tuple[
+                tuple[int, int, int],
+                tuple[_FrameObject, ...],
+                tuple[_FrameObject, ...],
+                dict[_FrameObject, tuple[_FrameObject, ...]],
+            ]
+        ] = []
+        for grouped in filled_groups.values():
+            targets = tuple(grouped)
+            if not 4 <= len(targets) <= 12:
+                continue
+            containers = tuple(
+                item
+                for item in objects
+                if is_outline_rectangle(item)
+                and max(dimensions(item)) >= 8
+                and sum(encloses(item, target) for target in targets) >= 2
+            )
+            if not 2 <= len(containers) <= 4:
+                continue
+            assigned: dict[_FrameObject, list[_FrameObject]] = {
+                container: [] for container in containers
+            }
+            valid = True
+            for target in targets:
+                enclosing = tuple(
+                    container
+                    for container in containers
+                    if encloses(container, target)
+                )
+                if not enclosing:
+                    valid = False
+                    break
+                smallest_area = min(item.area for item in enclosing)
+                smallest = tuple(
+                    item for item in enclosing if item.area == smallest_area
+                )
+                if len(smallest) != 1:
+                    valid = False
+                    break
+                assigned[smallest[0]].append(target)
+            if not valid or any(len(items) < 2 for items in assigned.values()):
+                continue
+            canonical_assigned = {
+                container: tuple(
+                    sorted(items, key=lambda item: item.centroid)
+                )
+                for container, items in assigned.items()
+            }
+            target_candidates.append(
+                (
+                    (-len(targets), targets[0].area, targets[0].color),
+                    tuple(
+                        sorted(
+                            targets,
+                            key=lambda item: (
+                                item.centroid[1],
+                                item.centroid[0],
+                            ),
+                        )
+                    ),
+                    tuple(
+                        sorted(
+                            containers,
+                            key=lambda item: (
+                                item.bbox[1],
+                                item.bbox[0],
+                                item.area,
+                                item.color,
+                            ),
+                        )
+                    ),
+                    canonical_assigned,
+                )
+            )
+        if not target_candidates:
+            self.connector_graph_diagnostic = "no-enclosed-neutral-slot-family"
+            return ()
+        target_candidates.sort(key=lambda item: item[0])
+        if (
+            len(target_candidates) > 1
+            and target_candidates[0][0][:2] == target_candidates[1][0][:2]
+        ):
+            self.connector_graph_diagnostic = "ambiguous-neutral-slot-family"
+            return ()
+        _rank, targets, containers, assigned_targets = target_candidates[0]
+        target_set = set(targets)
+        container_set = set(containers)
+        container_top = min(item.bbox[1] for item in containers)
+        container_bottom = max(item.bbox[3] for item in containers)
+
+        payloads = tuple(
+            sorted(
+                (
+                    item
+                    for item in objects
+                    if item not in target_set
+                    and item not in container_set
+                    and item.centroid[1] > container_bottom
+                    and is_filled_rectangle(item)
+                    and dimensions(item)[0] == dimensions(item)[1]
+                    and 3 <= dimensions(item)[0] <= 6
+                ),
+                key=lambda item: (
+                    item.centroid[1],
+                    item.centroid[0],
+                    item.color,
+                ),
+            )
+        )
+        if not payloads:
+            self.connector_graph_diagnostic = "no-external-payload-inventory"
+            return ()
+        target_dimensions = dimensions(targets[0])
+        fixed_slot_dimensions = {
+            target_dimensions,
+            *(dimensions(item) for item in payloads),
+        }
+
+        fixed_by_container: dict[_FrameObject, list[_FrameObject]] = {
+            container: [] for container in containers
+        }
+        for item in objects:
+            if (
+                item in target_set
+                or item in container_set
+                or not is_filled_rectangle(item)
+                or dimensions(item) not in fixed_slot_dimensions
+            ):
+                continue
+            enclosing = tuple(
+                container for container in containers if encloses(container, item)
+            )
+            if not enclosing:
+                continue
+            smallest_area = min(container.area for container in enclosing)
+            smallest = tuple(
+                container
+                for container in enclosing
+                if container.area == smallest_area
+            )
+            if len(smallest) != 1:
+                self.connector_graph_diagnostic = "ambiguous-fixed-payload-host"
+                return ()
+            fixed_by_container[smallest[0]].append(item)
+
+        container_ids = {
+            container: f"container-{index}"
+            for index, container in enumerate(containers)
+        }
+        corner_shapes = {
+            frozenset(
+                {(x, 0) for x in range(3)}
+                | {(0, y) for y in range(3)}
+            ),
+            frozenset(
+                {(x, 0) for x in range(3)}
+                | {(2, y) for y in range(3)}
+            ),
+            frozenset(
+                {(x, 2) for x in range(3)}
+                | {(0, y) for y in range(3)}
+            ),
+            frozenset(
+                {(x, 2) for x in range(3)}
+                | {(2, y) for y in range(3)}
+            ),
+        }
+        corners_by_color: dict[int, list[_FrameObject]] = {}
+        for item in objects:
+            if (
+                dimensions(item) == (3, 3)
+                and item.area == 5
+                and frozenset(item.shape) in corner_shapes
+            ):
+                corners_by_color.setdefault(item.color, []).append(item)
+        bracketed_roots: set[_FrameObject] = set()
+        for corners in corners_by_color.values():
+            if (
+                len(corners) != 4
+                or {frozenset(item.shape) for item in corners} != corner_shapes
+            ):
+                continue
+            corner_x = {item.centroid[0] for item in corners}
+            corner_y = {item.centroid[1] for item in corners}
+            if (
+                len(corner_x) != 2
+                or len(corner_y) != 2
+                or {
+                    item.centroid for item in corners
+                }
+                != {(x, y) for x in corner_x for y in corner_y}
+            ):
+                continue
+            left = min(item.bbox[0] for item in corners)
+            top = min(item.bbox[1] for item in corners)
+            right = max(item.bbox[2] for item in corners)
+            bottom = max(item.bbox[3] for item in corners)
+            for container in containers:
+                min_x, min_y, max_x, max_y = container.bbox
+                if (
+                    left <= min_x <= left + 5
+                    and top <= min_y <= top + 5
+                    and right - 5 <= max_x <= right
+                    and bottom - 5 <= max_y <= bottom
+                ):
+                    bracketed_roots.add(container)
+        root_candidates = (
+            tuple(bracketed_roots)
+            if len(bracketed_roots) == 1
+            else containers
+        )
+        containers_by_color: dict[int, list[_FrameObject]] = {}
+        for container in containers:
+            containers_by_color.setdefault(container.color, []).append(container)
+        external_connectors: list[tuple[_FrameObject, str]] = []
+        for item in objects:
+            width, height = dimensions(item)
+            if (
+                item.centroid[1] <= container_bottom
+                or width != height
+                or not 3 <= width <= 6
+                or not is_outline_rectangle(item)
+            ):
+                continue
+            matches = containers_by_color.get(item.color, [])
+            if len(matches) == 1:
+                external_connectors.append(
+                    (item, container_ids[matches[0]])
+                )
+        external_connectors.sort(
+            key=lambda item: (
+                item[0].centroid[1],
+                item[0].centroid[0],
+                item[0].color,
+            )
+        )
+        if not external_connectors:
+            self.connector_graph_diagnostic = "no-external-container-connectors"
+            return ()
+
+        reference_groups: dict[
+            tuple[int, tuple[tuple[int, int], ...], int, int],
+            list[_FrameObject],
+        ] = {}
+        for item in objects:
+            width, height = dimensions(item)
+            if (
+                item.bbox[3] < container_top
+                and width == height
+                and 3 <= width <= 8
+                and is_outline_rectangle(item)
+            ):
+                reference_groups.setdefault(
+                    (item.area, item.shape, width, height),
+                    [],
+                ).append(item)
+        reference_candidates: list[
+            tuple[
+                tuple[int, int, int],
+                tuple[int, ...],
+                tuple[_FrameObject, ...],
+            ]
+        ] = []
+        for grouped in reference_groups.values():
+            rows: dict[int, list[_FrameObject]] = {}
+            for item in grouped:
+                rows.setdefault(item.centroid[1], []).append(item)
+            if any(
+                not 2 <= len(row) <= 12
+                or len({item.centroid[0] for item in row}) != len(row)
+                for row in rows.values()
+            ):
+                continue
+            ordered_rows = tuple(
+                tuple(sorted(rows[y], key=lambda item: item.centroid[0]))
+                for y in sorted(rows)
+            )
+            reference = tuple(
+                item.color for row in ordered_rows for item in row
+            )
+            reference_objects = tuple(
+                item for row in ordered_rows for item in row
+            )
+            if not 3 <= len(reference) <= 32:
+                continue
+            reference_candidates.append(
+                (
+                    (-len(reference), -len(ordered_rows), grouped[0].area),
+                    reference,
+                    reference_objects,
+                )
+            )
+        if not reference_candidates:
+            self.connector_graph_diagnostic = "no-ordered-reference"
+            return ()
+        reference_candidates.sort(key=lambda item: item[0])
+        if (
+            len(reference_candidates) > 1
+            and reference_candidates[0][0] == reference_candidates[1][0]
+        ):
+            self.connector_graph_diagnostic = "ambiguous-ordered-reference"
+            return ()
+        _reference_rank, reference, reference_objects = reference_candidates[0]
+
+        slot_objects: dict[
+            tuple[str, int],
+            _FrameObject,
+        ] = {}
+        container_specs: list[ContainerSpec] = []
+        pitches: list[int] = []
+        for container in containers:
+            container_id = container_ids[container]
+            fixed = tuple(
+                sorted(
+                    fixed_by_container[container],
+                    key=lambda item: item.centroid,
+                )
+            )
+            members = tuple(
+                sorted(
+                    (*assigned_targets[container], *fixed),
+                    key=lambda item: item.centroid,
+                )
+            )
+            if (
+                not 2 <= len(members) <= 8
+                or len({item.centroid[1] for item in members}) != 1
+                or len({item.centroid[0] for item in members}) != len(members)
+            ):
+                self.connector_graph_diagnostic = "invalid-container-slot-row"
+                return ()
+            differences = tuple(
+                right.centroid[0] - left.centroid[0]
+                for left, right in zip(members, members[1:])
+            )
+            if any(difference <= 0 for difference in differences):
+                self.connector_graph_diagnostic = "invalid-container-slot-pitch"
+                return ()
+            pitches.extend(differences)
+            fixed_set = set(fixed)
+            specs: list[FixedColorSlot | VariableSlot] = []
+            for index, member in enumerate(members):
+                if member in fixed_set:
+                    specs.append(FixedColorSlot(member.color))
+                else:
+                    specs.append(
+                        VariableSlot(
+                            connector_cost=abs(
+                                2 * member.centroid[0]
+                                - container.bbox[0]
+                                - container.bbox[2]
+                            )
+                        )
+                    )
+                    slot_objects[(container_id, index)] = member
+            container_specs.append(
+                ContainerSpec(container_id, tuple(specs))
+            )
+        if not pitches:
+            self.connector_graph_diagnostic = "slot-pitch-unobserved"
+            return ()
+        pitch = math.gcd(*pitches)
+        if pitch <= 0 or any(difference != pitch for difference in pitches):
+            self.connector_graph_diagnostic = "inconsistent-container-slot-pitch"
+            return ()
+
+        results = tuple(
+            synthesize_connector_program(
+                ConnectorSynthesisProblem(
+                    reference=reference,
+                    containers=tuple(container_specs),
+                    root=container_ids[root],
+                    payloads=tuple(item.color for item in payloads),
+                    connectors=tuple(
+                        Connector(target)
+                        for _item, target in external_connectors
+                    ),
+                )
+            )
+            for root in root_candidates
+        )
+        self.connector_graph_explored_assignments = sum(
+            result.explored_assignments for result in results
+        )
+        unique_results = tuple(
+            result
+            for result in results
+            if result.status is ConnectorSynthesisStatus.UNIQUE
+            and result.plan is not None
+        )
+        unsafe_root_results = tuple(
+            result
+            for result in results
+            if result not in unique_results
+            and result.status is not ConnectorSynthesisStatus.NO_SOLUTION
+        )
+        if len(unique_results) != 1 or unsafe_root_results:
+            statuses = Counter(result.status.value for result in results)
+            if len(unique_results) > 1:
+                self.connector_graph_diagnostic = "ambiguous-root"
+            else:
+                prefix = (
+                    "root-uncertainty:"
+                    if len(unique_results) == 1
+                    else "no-root-solution:"
+                )
+                self.connector_graph_diagnostic = prefix + ",".join(
+                    f"{status}={statuses[status]}" for status in sorted(statuses)
+                )
+            return ()
+        result = unique_results[0]
+        self.connector_graph_diagnostic = (
+            f"{result.status.value}:{result.diagnostic}"
+        )
+        assert result.plan is not None
+        self.connector_graph_unused_payloads = len(
+            result.plan.unused_payloads
+        )
+
+        payload_pool: dict[int, list[_FrameObject]] = {}
+        for item in payloads:
+            payload_pool.setdefault(item.color, []).append(item)
+        connector_pool: dict[str, list[_FrameObject]] = {}
+        for connector_object, target_id in external_connectors:
+            connector_pool.setdefault(target_id, []).append(connector_object)
+        actions: list[ActionToken] = []
+        for binding in result.plan.bindings:
+            destination = slot_objects.get(
+                (binding.container_id, binding.slot_index)
+            )
+            if destination is None:
+                self.connector_graph_diagnostic = "binding-target-unrepresented"
+                return ()
+            if isinstance(binding.item, Payload):
+                sources = payload_pool.get(binding.item.color, [])
+            else:
+                sources = connector_pool.get(binding.item.target, [])
+            if not sources:
+                self.connector_graph_diagnostic = "binding-source-unrepresented"
+                return ()
+            source = sources.pop(0)
+            source_x, source_y = self._object_click_point(source)
+            actions.extend(
+                (
+                    ActionToken(
+                        self.complex_action,
+                        (("x", source_x), ("y", source_y)),
+                    ),
+                    ActionToken(
+                        self.complex_action,
+                        (
+                            ("x", destination.centroid[0]),
+                            ("y", destination.centroid[1]),
+                        ),
+                    ),
+                )
+            )
+        commit_actions = sorted(
+            action
+            for action in observation.available_actions
+            if action not in {self.reset_action, self.complex_action}
+        )
+        if not commit_actions:
+            self.connector_graph_diagnostic = "commit-action-unavailable"
+            return ()
+        program = tuple((*actions, ActionToken(commit_actions[0])))
+        represented = set(tokens)
+        if any(token not in represented for token in program):
+            self.connector_graph_diagnostic = "program-action-unrepresented"
+            return ()
+        self.connector_graph_grounding = _ConnectorGraphGrounding(
+            reference=reference,
+            reference_objects=reference_objects,
+            program=program,
+            destinations=tuple(
+                slot_objects[(binding.container_id, binding.slot_index)]
+                for binding in result.plan.bindings
+            ),
+            neutral_slots=targets,
+        )
+        return program
 
     @staticmethod
     def _constructive_connector_order(
@@ -7962,6 +8731,16 @@ class EpistemicExplorer:
             "select_apply_cursor": self.select_apply_cursor,
             "select_apply_level_trials": self.select_apply_level_trials,
             "select_apply_diagnostic": self.select_apply_diagnostic,
+            "connector_graph_plan_active": int(
+                self.connector_graph_plan_active
+            ),
+            "connector_graph_explored_assignments": (
+                self.connector_graph_explored_assignments
+            ),
+            "connector_graph_unused_payloads": (
+                self.connector_graph_unused_payloads
+            ),
+            "connector_graph_diagnostic": self.connector_graph_diagnostic,
             "shape_translation_effects": len(self.shape_translation_effects),
             "shape_translation_effect_evidence": sum(
                 self.shape_translation_effect_evidence.values()
