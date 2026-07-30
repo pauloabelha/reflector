@@ -551,6 +551,9 @@ class EpistemicExplorer:
     paired_transport_inductions: int = 0
     paired_transport_planner_uses: int = 0
     paired_post_accommodation_allowance: int = 0
+    inherited_scheme_trials: Counter[str] = field(default_factory=Counter)
+    inherited_scheme_selections: int = 0
+    inherited_scheme_diagnostic: str = "not-attempted"
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -590,6 +593,8 @@ class EpistemicExplorer:
             order.append("productive-role-reuse")
         if self.parameterized_scheme_variation:
             order.append("parameterized-scheme-variation")
+        if self.inherited_scheme_library.definitions:
+            order.append("inherited-scheme-intervention")
         if self.uses_action_family_schema:
             order.append("hierarchical-action-fairness")
         order.extend(("untried-state-intervention", "known-frontier-navigation"))
@@ -617,6 +622,8 @@ class EpistemicExplorer:
             if "repair-local-relation" in selected_reason
             else "parameterized-scheme-variation"
             if "parameterized-scheme-variation" in selected_reason
+            else "inherited-scheme-intervention"
+            if "inherited-scheme-intervention" in selected_reason
             else "hierarchical-action-fairness"
             if "hierarchical-action-family" in selected_reason
             else "untried-state-intervention"
@@ -690,6 +697,8 @@ class EpistemicExplorer:
             self._reset_committed_trajectory_level()
             self._reset_boundary_nuisance_state()
             self._reset_paired_object_level()
+            self.inherited_scheme_trials.clear()
+            self.inherited_scheme_diagnostic = "not-attempted"
             self.level_interventions = 0
             self.current_level = observation.levels_completed
             self.level_failures = 0
@@ -715,6 +724,8 @@ class EpistemicExplorer:
             self._reset_committed_trajectory_level(retain_accommodation=True)
             self._reset_boundary_nuisance_state()
             self._reset_paired_object_level()
+            self.inherited_scheme_trials.clear()
+            self.inherited_scheme_diagnostic = "not-attempted"
             if not self.cross_retry_maturity:
                 self.level_interventions = 0
             self.level_failures += 1
@@ -3738,6 +3749,25 @@ class EpistemicExplorer:
                 scene,
             )
 
+        inherited = self._select_inherited_scheme_intervention(
+            state,
+            tokens,
+            scene,
+            structure_scores=structure_scores or {},
+        )
+        if inherited is not None:
+            token, scheme_id = inherited
+            self.last_scheme_components = (
+                f"scheme:inherited:{scheme_id}",
+            )
+            return self._issue(
+                state,
+                token,
+                "epistemic-frontier:inherited-scheme-intervention:"
+                f"{scheme_id}",
+                scene,
+            )
+
         if self.uses_action_family_schema:
             _index, balanced = min(
                 enumerate(tokens),
@@ -3819,6 +3849,94 @@ class EpistemicExplorer:
             if token in represented and self.attempts[(state, token)] == 0:
                 return token
         return None
+
+    def _select_inherited_scheme_intervention(
+        self,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+        *,
+        structure_scores: dict[str, int],
+    ) -> tuple[ActionToken, str] | None:
+        """Apply one promoted, relative object-ranking intervention."""
+
+        supported_ranks = {
+            "rank:largest-area",
+            "rank:most-repeated-shape",
+            "rank:rarest-shape",
+            "rank:smallest-area",
+        }
+        definitions = tuple(
+            definition
+            for definition in self.inherited_scheme_library.definitions
+            if definition.operator == "prioritize-intervention"
+            and len(set(definition.composition) & supported_ranks) == 1
+            and "object" in definition.grounding
+            and (definition.effects or definition.goal_contract)
+            and self.inherited_scheme_trials[definition.scheme_id]
+            < definition.resource_cap
+            and structure_scores.get(
+                f"scheme:inherited:{definition.scheme_id}",
+                0,
+            )
+            >= 0
+        )
+        if not definitions:
+            self.inherited_scheme_diagnostic = "no-applicable-definition"
+            return None
+        shape_counts = Counter(item.shape for item in scene.objects)
+        represented = tuple(
+            (token, self._grounding(token, scene))
+            for token in tokens
+            if self.attempts[(state, token)] == 0
+        )
+        object_tokens = tuple(
+            (token, grounding)
+            for token, grounding in represented
+            if grounding.centroid is not None
+            and grounding.role.area is not None
+            and grounding.role.shape
+        )
+        if not object_tokens:
+            self.inherited_scheme_diagnostic = "no-untried-object-binding"
+            return None
+        definition = min(
+            definitions,
+            key=lambda item: (
+                -structure_scores.get(
+                    f"scheme:inherited:{item.scheme_id}",
+                    0,
+                ),
+                self.inherited_scheme_trials[item.scheme_id],
+                item.complexity_cost,
+                item.scheme_id,
+            ),
+        )
+        rank = next(item for item in definition.composition if item in supported_ranks)
+
+        def ranking(
+            item: tuple[ActionToken, GroundedRole],
+        ) -> tuple[Any, ...]:
+            token, grounding = item
+            area = grounding.role.area or 0
+            shape_count = shape_counts[grounding.role.shape]
+            relative = {
+                "rank:largest-area": (-area,),
+                "rank:most-repeated-shape": (-shape_count, area),
+                "rank:rarest-shape": (shape_count, area),
+                "rank:smallest-area": (area,),
+            }[rank]
+            return (
+                *relative,
+                self.global_attempts[token],
+                token,
+            )
+
+        token, _grounding = min(object_tokens, key=ranking)
+        self.inherited_scheme_trials[definition.scheme_id] += 1
+        self.inherited_scheme_selections += 1
+        self.inherited_scheme_diagnostic = rank
+        return token, definition.scheme_id
 
     def _select_parameterized_select_apply_commit(
         self,
@@ -6759,6 +6877,11 @@ class EpistemicExplorer:
                 item.scheme_id
                 for item in self.inherited_scheme_library.definitions
             ],
+            "inherited_scheme_selections": self.inherited_scheme_selections,
+            "inherited_scheme_trials": dict(
+                sorted(self.inherited_scheme_trials.items())
+            ),
+            "inherited_scheme_diagnostic": self.inherited_scheme_diagnostic,
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),
             "relational_scheme_trials": sum(self.relational_trials.values()),

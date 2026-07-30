@@ -47,6 +47,20 @@ def _definition(name: str = "transport") -> SchemeDefinition:
     )
 
 
+def _ranking_definition(rank: str) -> SchemeDefinition:
+    return SchemeDefinition(
+        name=f"prioritize-{rank.removeprefix('rank:')}",
+        operator="prioritize-intervention",
+        parameters=("object",),
+        grounding=("action-family", "object"),
+        effects=("frame_changed",),
+        composition=(rank,),
+        falsifiers=("frame-unchanged",),
+        resource_cap=1,
+        complexity_cost=3,
+    )
+
+
 def _evidence(
     definition: SchemeDefinition,
     outcome: str,
@@ -326,3 +340,41 @@ def test_evidence_gated_breeding_embeds_only_promoted_definitions() -> None:
     assert result.candidate.contributor_ids == tuple(
         sorted((parent.candidate_id, "candidate-donor"))
     )
+
+
+def test_inherited_ranking_definitions_create_bounded_policy_variation() -> None:
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=(
+            (0, 0, 0, 0, 0, 0),
+            (0, 7, 0, 8, 8, 0),
+            (0, 0, 0, 8, 8, 0),
+            (0, 0, 0, 0, 0, 0),
+        ),
+    )
+    scene, _events = SceneTracker().perceive(observation)
+    smallest_definition = _ranking_definition("rank:smallest-area")
+    smallest = EpistemicExplorer(
+        inherited_scheme_library=SchemeLibrary.create(
+            (smallest_definition,)
+        )
+    )
+    smallest.observe(observation, scene)
+    first = smallest.select(observation, scene, (6,))
+    second = smallest.select(observation, scene, (6,))
+
+    largest_definition = _ranking_definition("rank:largest-area")
+    largest = EpistemicExplorer(
+        inherited_scheme_library=SchemeLibrary.create((largest_definition,))
+    )
+    largest.observe(observation, scene)
+    other = largest.select(observation, scene, (6,))
+
+    assert first.token.data == (("x", 1), ("y", 1))
+    assert other.token.data == (("x", 3), ("y", 1))
+    assert "inherited-scheme-intervention" in first.reason
+    assert "inherited-scheme-intervention" not in second.reason
+    assert smallest.inherited_scheme_trials[
+        smallest_definition.scheme_id
+    ] == 1

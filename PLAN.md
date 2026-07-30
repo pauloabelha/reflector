@@ -1974,6 +1974,60 @@ effect/goal definition from a trace diagnosis and test it on separated
 development and held-out games. Do not award evidence from the source episode
 used to formulate its contract.
 
+## Active experiment: v54 relative object-ranking population
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`.
+
+Disequilibrium:
+
+- v53a proves inherited hashes can receive credit, but its definitions do not
+  differentiate legal actions;
+- only locally constructed parameterized and relational schemes currently
+  consume structural scores, so cultural inheritance remains bookkeeping
+  unless a definition can select a bounded intervention;
+- absolute colors, coordinates, routes, and game identities are forbidden and
+  would not constitute common sense.
+
+Preregistered code mutation:
+
+- permit an inherited definition with operator
+  `prioritize-intervention`, object grounding, a non-empty effect/goal
+  contract, and exactly one supported relative ranking to select an untried
+  object intervention;
+- support only `smallest-area`, `largest-area`, `rarest-shape`, and
+  `most-repeated-shape` rankings, computed within the current perceived scene;
+- cap each definition by its immutable `resource_cap`, reject negatively
+  credited definitions, retain all higher-priority independently grounded
+  advisors, and expose selections, trials, and the selected rank in telemetry;
+- place only the selected inherited hash on the causal hypothesis, rather than
+  crediting every definition in the library.
+
+Population and partition:
+
+- freeze the code before candidate generation;
+- create three otherwise identical v49b descendants carrying one definition
+  each: smallest-area control, rarest-shape variation, and largest-area
+  variation;
+- use `r11l` as the development game because accepted v49b's generic object
+  ordering already solves its first level at action 18;
+- preregister `s5i5`, `tn36`, and `vc33` as held-out click-game probes before
+  running any variant;
+- allocate 400 actions per game in isolated processes. No variant may adapt
+  its library between games.
+
+Prediction and falsifier:
+
+- smallest-area should reproduce `r11l` level 1 at action 18, demonstrating
+  that the inherited advisor can express the existing relative prior;
+- the rarest/largest variants must produce distinct first interventions and
+  nonzero inherited selections, or the policy mutation is inoperative;
+- a scheme qualifies for further inheritance evidence only if it preserves
+  `r11l`, adds a held-out level or materially improves accepted held-out action
+  efficiency, and yields definition-specific preregistered evidence;
+- reject any game-specific payload, cap breach, missing trace attribution,
+  accepted regression, or purely internal improvement. V49b remains accepted
+  unless a descendant later passes the full promotion protocol.
+
 Protocol: `references/INHERITED_SCHEME_PROTOCOL.md`.
 
 ## Completed experimental branch: v26
