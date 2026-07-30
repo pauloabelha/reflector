@@ -121,6 +121,14 @@ validates transport and operative credit, not learning benefit, so v49b
 remains accepted. See the
 [inherited scheme protocol](references/INHERITED_SCHEME_PROTOCOL.md).
 
+The rejected v55 population made the missing goal layer operative. Two
+offspring competed object contact with a structurally grounded sparse-marker
+coverage relation and correctly reduced its target distance 54 times per
+same-level retry. Both still matched the contact-only control at 1/6 `m0r0`
+levels: the final coverage step transported the pair rather than advancing the
+level. This is direct evidence that predictive causal intermediates and
+terminal goals require separate credit and accommodation.
+
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction
 between local and Kaggle scores. This table and that report must be updated

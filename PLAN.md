@@ -2078,6 +2078,41 @@ Do not rerun these ranks: the held-out pragmatic falsifier already failed.
 
 Protocol: `references/INHERITED_SCHEME_PROTOCOL.md`.
 
+## Rejected experiment: v55 competing paired terminal relations
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`.
+
+Preregistered hypothesis:
+
+- a sparse, highly fragmented visual field can ground a content-free
+  `paired-marker-coverage` terminal relation for an evidenced controlled pair;
+- search the learned joint topology for a state maximizing coverage for both
+  members and compete that plan with object contact through either
+  shortest-grounded or marker-first arbitration;
+- every selected step must predict and then reduce distance to its grounded
+  target. Recoloring and action permutation must preserve the structural plan;
+- advance `m0r0` beyond level 1 within 400 actions, or reject the relation as a
+  goal even if its transition predictions pass.
+
+Result:
+
+- the exact-off contact-only control reproduced accepted v49b at 1/6 levels
+  and `[20, 380]`;
+- shortest-grounded and marker-first both grounded two terminal candidates,
+  selected the 208-cell sparse field, and repeatedly executed the same
+  ten-step plan;
+- in each same-level retry, the operative stream recorded 54 exact distance
+  reductions and five terminal-step prediction failures, but neither
+  descendant advanced beyond 1/6 levels or improved score;
+- the plan length decreased from ten to one and then reset to ten. Thus sparse
+  marker coverage was a predictable intermediate trigger that displaced the
+  pair, not a terminal goal.
+
+V55 is rejected. The next accommodation must preserve the learned marker
+transport while falsifying that particular grounded target as terminal, then
+seek a different relation or phase. Do not grant more plan depth and do not
+credit the 54 intermediate predictions as pragmatic goal evidence.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural
@@ -2092,9 +2127,10 @@ Protocol: `references/INHERITED_SCHEME_PROTOCOL.md`.
 
 ## Next actions
 
-1. Preserve accepted v49b. Stop the bespoke `m0r0` v50-v52 chain: it has
-   isolated a missing goal/phase abstraction rather than a planning-budget
-   defect.
+1. Preserve accepted v49b. V50-v52 isolated missing goal/phase; v55 then
+   showed that a correctly reached sparse marker relation is an intermediate
+   transport, not a terminal goal. Accommodate the terminal classification
+   while conserving its predictive transition.
 2. Build a content-addressed inherited scheme substrate. Keep immutable typed
    scheme definitions separate from an append-only evidence ledger; offspring
    inherit only hashes whose predictive, information-efficiency, and pragmatic

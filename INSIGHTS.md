@@ -281,6 +281,14 @@ These are narrow earned claims, not claims of general intelligence.
     preregistered held-out click games, smallest and rarest exactly matched
     v49b and added nothing. A source-game efficiency gain is mutation evidence,
     not inheritance evidence.
+21. A visually salient relation can be a reliable causal intermediate without
+    being a goal. V55 grounded a sparse repeated field, planned both controlled
+    objects onto it, and earned 54 exact distance reductions per retry. The
+    last predicted step displaced the pair instead of advancing the level,
+    producing five repeated falsifications and no task gain. Structural
+    prediction credit and pragmatic goal credit must remain separate; the
+    correct accommodation is to preserve the marker-triggered transport while
+    retiring that grounded target from the terminal set.
 
 ## What is still missing
 
