@@ -1,5 +1,5 @@
 {
-  "candidate_id": "candidate-8db012e123d4b862",
+  "candidate_id": "candidate-28eb58ccdbfb9571",
   "config": {
     "enable_concepts": true,
     "enable_counterfactual_pressure": true,
@@ -84,5 +84,5 @@
   "generation": 35,
   "rationale": "Filter prospectively evidenced edge feedback from the compact click vocabulary and prioritize interiors of repeated geometric enclosures as bounded affordances; retain exact state-graph exploration, trace filtered/control counts, and preserve all behavior unless the coordinate-only compact frontier is active after failure.",
   "mutation_source": "symbolic-strategy:causal-scene-enclosure-affordance",
-  "inference_fingerprint": "a204491a26f2f65a3b7b901f14792453af99383c0cc23540934fe6ae9629f22a"
+  "inference_fingerprint": "451c956180578bbf67f6f531947bb8a7f2851e12d45c3404a6cab26caed06b6b"
 }

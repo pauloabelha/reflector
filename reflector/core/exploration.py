@@ -9087,6 +9087,8 @@ class EpistemicExplorer:
         nuisance_rows: set[int] = set()
         nuisance_columns: set[int] = set()
         if self.compact_component_nuisance_filter and height and width:
+            nuisance_rows.update((0, height - 1))
+            nuisance_columns.update((0, width - 1))
             edge = max(1, min(4, min(height, width) // 8))
             for y in (*range(edge), *range(max(edge, height - edge), height)):
                 if max(Counter(frame[y]).values()) * 5 >= width * 4:
