@@ -20,28 +20,28 @@ service, database, or web server.
 Last verified: 2026-07-30
 
 > **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
-> It has solved **19 of 183 levels across 10 games**. All 25 games were
+> It has solved **20 of 183 levels across 11 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v49b result |
+| Metric | Accepted v64b result |
 | --- | ---: |
 | Complete games beaten | **0 / 25** |
-| Games with at least one solved level | **10 / 25** |
-| Levels solved | **19 / 183** |
-| Official local score | **4.6401724704 / 100** |
+| Games with at least one solved level | **11 / 25** |
+| Levels solved | **20 / 183** |
+| Official local score | **4.6402744459 / 100** |
 | Games evaluated | **25 / 25** |
 | Kaggle submissions | **0** |
 
 The score is about **4.64% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. V49b preserves all
-18 accepted v47b levels exactly and adds `m0r0` level 1 in 20 actions. It
-grounds a reflected congruent object pair, learns the joint displacement
-caused by each plain action, plans over an independently blocked substrate
-topology, and permits at most two evidenced continuation actions when contact
-temporarily merges the pair. Two target runs and two ten-game preservation
-gates were exact. The full suite runs every game in a fresh process. The exact
-package passes 209 tests (3 skipped), Ruff, mypy, both offline smoke paths, and
-export. No hidden Kaggle score exists.
+public-development result, not a Kaggle leaderboard score. V64b preserves all
+19 accepted v49b levels at the same completed-level action boundaries and adds
+`vc33` level 1 at action 262. After failure it admits a compact connected-
+component action vocabulary only when that vocabulary does not expand the
+current perceptual object ontology, then explores an edge-normalized state
+graph. Two paired target/preservation runs were exact, and the 25-game suite
+runs every game in a fresh process. The exact package passes 240 tests
+(3 skipped), Ruff, mypy, the offline smoke path, and export. No hidden Kaggle
+score exists.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object

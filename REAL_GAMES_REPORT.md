@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 19 of 183 levels across 10 games. The suite ran all 25 games,
+> It has solved 20 of 183 levels across 11 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v49b result | Meaning |
+| Outcome metric | Accepted v64b result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
-| Games with progress | **10 / 25** | At least one level was solved in ten games. |
-| Levels solved | **19 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, and `tn36`. |
-| Official local score | **4.6401724704 / 100** | About **4.64%** of the 100-point scale. |
+| Games with progress | **11 / 25** | At least one level was solved in eleven games. |
+| Levels solved | **20 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **4.6402744459 / 100** | About **4.64%** of the 100-point scale. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,7 +23,10 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v49b accepted | **4.6401724704 / 100** | 0 games beaten; 19/183 levels | 25/25 coverage |
+| Process-isolated official local suite | v64b accepted | **4.6402744459 / 100** | 0 games beaten; 20/183 levels | 25/25 coverage |
+| Process-isolated eleven-game gate | v64b accepted | 10.5460782860 / 100 | 20 levels; every v49b completed-level action vector preserved; `vc33` added | passed |
+| Paired target/preservation reruns | v64b accepted | 0.1221400128 across `tn36`, `vc33` | exact `[tn36:123,277; vc33:262,138]` twice; expansion gate off/on respectively | deterministic twice |
+| Process-isolated official local suite | v49b historical accepted | **4.6401724704 / 100** | 0 games beaten; 19/183 levels | superseded by v64b |
 | Process-isolated ten-game gate | v49b accepted | 11.6004311761 / 100 | 19 levels; every v47b level and action count preserved | exact twice |
 | Target-only `m0r0` reruns | v49b accepted | 4.7619047619 for one game | 1/6 levels; `[20, 380]` under 400 actions | deterministic gain twice |
 | Recording-enabled level-2 audit | v49b accepted | 4.7619047619 for one game | 1/6 `m0r0` levels; five repeated 12-action false-edge loops | exact accepted result reproduced; v50 diagnosis |
@@ -99,7 +102,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v49b package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v64b package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -289,14 +292,92 @@ Raw evidence:
 | v40 | 4.2992976365 | 16 | 7 | 0 | Relational-phase-conditioned translation | historical accepted |
 | v42 | 4.4421547794 | 17 | 8 | 0 | Substrate topology with uncertain-gate information actions | historical accepted |
 | v47b | 4.4496962800 | 18 | 9 | 0 | Failure-conditioned fairness and cross-retry maturity | historical accepted |
-| v49b | **4.6401724704** | **19** | **10** | **0** | Learned paired-object effects, contact planning, and bounded latent continuation | **current accepted** |
+| v49b | 4.6401724704 | 19 | 10 | 0 | Learned paired-object effects, contact planning, and bounded latent continuation | historical accepted |
+| v64b | **4.6402744459** | **20** | **11** | **0** | Compressive compact-component vocabulary plus edge-normalized graph frontier | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v49b result
+## Accepted v64b result
+
+V64b transfers the independently successful pure-symbolic object/frame graph
+control into the shared runtime and Kaggle inference path. After a failed
+coordinate-only retry, it may replace the click ontology with connected
+monochrome component actions and normalize dominated edge strips in graph
+state. The replacement is allowed only when its nonempty proposal set is no
+larger than the current perceptual object set, and the choice is latched for
+the retry.
+
+That non-expansion gate is causal. Ungated v64 generated 87-88 proposals for
+roughly 42-48 `tn36` objects, displaced its accepted post-failure vocabulary,
+and lost level 1. V64b diagnosed the same structure as
+`expands-perceptual-ontology`, issued zero compact selections, and restored
+`tn36 [123,277]`. On `vc33`, 10-15 proposals represented 10-15 objects, the
+gate admitted the compact graph, and level 1 completed at action 262. Both
+paired reruns were exact.
+
+The eleven-game gate preserved every v49b completed-level action vector and
+added `vc33`. The frozen 25-game run scored
+`4.640274445854323/100`, solved 20/183 levels across eleven games, used 10,000
+actions, covered 25/25 games, and completed 0/25 games. The only
+completed-level delta from v49b is the new `vc33` level.
+
+Frozen inference commit:
+`f19624c63e303292ab1691e2e2cb66689922a61e`
+
+Candidate: `candidate-fdd57b632dca6219`
+
+Candidate inference fingerprint:
+`198544527a6a56f95fd2f112c3a9327ecbf4e0e13eacefbda89b50a7b84836dc`
+
+Candidate SHA-256:
+`3584b72aac89d51ac29bfe7e0084f77ef4a58f649c098bd1d7e13b31cd43e218`
+
+Full report SHA-256:
+`3a33e4b6322230964357a9889d31e42c2acb507189ae69ac10c9e6ebf8aa7fe3`
+
+Verification: 240 tests passed (3 skipped), Ruff passed, mypy passed, the
+exact candidate exported without translation, and the network-disabled Kaggle
+smoke passed. The export overlay SHA-256 is
+`3c38a46492c1322372c0b972a266c0585772891185295e1b9fb883d2554c0f51`;
+the notebook SHA-256 is
+`db385cdb59258497efda2ff844be0388535a881833b9564f0b41c7c468c30371`.
+
+### Accepted v64b progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ar25` | **2** | 8 | `[17, 17]` | 8.3333333333 | No |
+| `ft09` | **5** | 6 | `[4, 7, 14, 16, 94]` | 66.1466080321 | No |
+| `g50t` | **1** | 7 | `[27]` | 3.5714285714 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `lp85` | **3** | 8 | `[37, 8, 54]` | 9.7216281179 | No |
+| `m0r0` | **1** | 6 | `[20]` | 4.7619047619 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `sb26` | **3** | 8 | `[9, 15, 15]` | 16.6666666667 | No |
+| `sp80` | **1** | 6 | `[196]` | 0.1885375141 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| `vc33` | **1** | 7 | `[262]` | 0.0025493852 | No |
+| Remaining 14 games | **0** | 104 | `[]` | 0 | No |
+| **Total** | **20** | **183** | — | **4.6402744459 overall** | **0 / 25** |
+
+Raw evidence:
+
+- [v64b accepted process-isolated 25-game scorecard](reports/official-isolated-v64b-public-400.json)
+- [v64b eleven-game preservation gate](reports/official-isolated-v64b-progress-gate-400.json)
+- [v64b paired deterministic run 1](reports/experimental-v64b-tn36-vc33-r1-400.json)
+- [v64b paired deterministic run 2](reports/experimental-v64b-tn36-vc33-r2-400.json)
+- [v64b candidate](candidates/v64b-compressive-compact-component-frontier-400.json)
+- [v64 ungated regression gate](reports/official-isolated-v64-progress-gate-400.json)
+
+The earned claim remains narrow: a purely symbolic object/frame graph can
+transfer into the accepted agent when its proposal language is constrained to
+be a true abstraction. This is not a completed game, a hidden-game result, or
+evidence that the local score is near the 20/100 goal.
+
+## Historical accepted v49b result
 
 V49b inherits v47b unchanged outside one exact-off advisor. It grounds exactly
 one reflected pair of congruent objects sharing a substrate, learns the ordered
@@ -1334,7 +1415,7 @@ hashes are:
 These historical artifacts have not
 been published or scored on Kaggle.
 
-The accepted v49b candidate exports from frozen inference source
+The historical v49b candidate exports from frozen inference source
 `83287a7c2e508313fbb52b1982a921159823895e` and passes both
 network-disabled smoke paths without translation. Its generated artifact
 hashes are:
@@ -1343,6 +1424,18 @@ hashes are:
   `b2b8c81d1e1f731b2848a6739ad73685385a15fd2d5c39d7f9d8fa15e37476b2`
 - notebook:
   `98c65734a317e3ae506abfdaaa435e5a14818755e68280e77b9e9010f13a72f1`
+
+These historical artifacts have not been published or scored on Kaggle.
+
+The accepted v64b candidate exports from frozen inference source
+`f19624c63e303292ab1691e2e2cb66689922a61e` and passes the
+network-disabled smoke path without translation. Its generated artifact
+hashes are:
+
+- overlay:
+  `3c38a46492c1322372c0b972a266c0585772891185295e1b9fb883d2554c0f51`
+- notebook:
+  `db385cdb59258497efda2ff844be0388535a881833b9564f0b41c7c468c30371`
 
 These are the current technically submission-ready artifacts. They have not
 been published or scored on Kaggle.

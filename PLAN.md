@@ -25,15 +25,15 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-6ee87ced5a667cae`
-- Accepted agent: Reflector v49b
+- Accepted candidate: `candidate-fdd57b632dca6219`
+- Accepted agent: Reflector v64b
 - Accepted frozen inference commit:
-  `83287a7c2e508313fbb52b1982a921159823895e`
+  `f19624c63e303292ab1691e2e2cb66689922a61e`
 - Accepted public-development report:
-  `reports/official-isolated-v49b-public-400.json`
-- Accepted score: `4.6401724704449645`
+  `reports/official-isolated-v64b-public-400.json`
+- Accepted score: `4.640274445854323`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 19 levels across 10 games
+- Accepted completions: 20 levels across 11 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -60,6 +60,7 @@ generalization.
 | Substrate-topology belief planning | v42 inferred 28 origin-relative topology nodes and 10 uncertain gates on `g50t`, used two safe information actions to advance a blocking autonomous gate, preserved all 16 v40 levels exactly, and solved `g50t` L1 in 29 actions twice. |
 | Failure-conditioned cross-retry accommodation | v47b preserved the accepted zero-failure mature-stall path, suppressed reuse after one ambiguous failure, and conserved capped maturity plus action-family fairness only after two failures; it preserved all 17 v42 levels exactly and solved `sp80` L1 at action 196 twice. |
 | Paired-object contact planning | v49b learned ordered joint effects for one reflected congruent pair, planned over independently blocked anchors, and treated planned contact as a bounded latent intermediate; it preserved all 18 v47b levels exactly and solved `m0r0` L1 at action 20 twice. |
+| Compressive compact-component frontier | v64b admitted an object-graph vocabulary only when it did not expand the current perceptual ontology, preserved all 19 v49b level/action vectors, suppressed the 87-for-47 expansion that had regressed `tn36`, and solved `vc33` L1 at action 262 twice. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -2474,6 +2475,77 @@ Evidence:
 - `reports/experimental-v64-vc33-compact-frontier-r1-400.json`;
 - `reports/experimental-v64-vc33-compact-frontier-r2-400.json`;
 - `reports/official-isolated-v64-progress-gate-400.json`.
+
+## Accepted experiment: v64b compressive component frontier
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`. Donor evidence:
+rejected v64 `candidate-51cd888f4c2b9a6e`.
+
+Preregistered repair:
+
+- retain the failed-coordinate-only trigger;
+- derive connected monochrome component clicks and an edge-strip-normalized
+  frame state without game identifiers or fixed coordinates;
+- activate that ontology for one retry only when it is nonempty and has no
+  more proposals than the current `SceneTracker` object set;
+- latch the ontology for the retry so action tokens and graph state cannot
+  flicker, and clear graph bookkeeping if the latched mode changes between
+  retries;
+- retain higher-priority grounded advisors, including productive-role reuse.
+
+Falsifying comparison:
+
+- ungated v64 produced 87-88 compact candidates for roughly 42-48 perceived
+  `tn36` objects, replaced the accepted post-failure vocabulary, and lost its
+  level-1 completion;
+- v64b diagnosed that vocabulary as
+  `expands-perceptual-ontology`, selected it zero times, and restored the exact
+  accepted `[123,277]` vector twice;
+- `vc33` produced 10-15 compact candidates for 10-15 perceived objects,
+  diagnosed `compressive-component-vocabulary`, and retained `[262,138]`
+  exactly twice.
+
+Promotion evidence:
+
+- candidate `candidate-fdd57b632dca6219`;
+- paired deterministic runs: two levels total, exact `tn36 [123,277]` and
+  `vc33 [262,138]`;
+- eleven-game gate: 20 levels, every v49b completed-level action vector
+  preserved, and `vc33` added;
+- process-isolated 25-game score:
+  `4.640274445854323/100`, 20/183 levels across 11 games, 0/25 complete games,
+  25/25 coverage, and 10,000 actions;
+- the only completed-level delta from v49b is `vc33` level 1 at action 262;
+- 240 tests passed and 3 skipped; Ruff and mypy passed;
+- the exact candidate exported without translation and the network-disabled
+  Kaggle smoke passed.
+
+Frozen evidence:
+
+- inference commit:
+  `f19624c63e303292ab1691e2e2cb66689922a61e`;
+- candidate inference fingerprint:
+  `198544527a6a56f95fd2f112c3a9327ecbf4e0e13eacefbda89b50a7b84836dc`;
+- candidate SHA-256:
+  `3584b72aac89d51ac29bfe7e0084f77ef4a58f649c098bd1d7e13b31cd43e218`;
+- full report SHA-256:
+  `3a33e4b6322230964357a9889d31e42c2acb507189ae69ac10c9e6ebf8aa7fe3`;
+- export overlay SHA-256:
+  `3c38a46492c1322372c0b972a266c0585772891185295e1b9fb883d2554c0f51`;
+- export notebook SHA-256:
+  `db385cdb59258497efda2ff844be0388535a881833b9564f0b41c7c468c30371`.
+
+Reports:
+
+- `reports/experimental-v64b-tn36-vc33-r1-400.json`;
+- `reports/experimental-v64b-tn36-vc33-r2-400.json`;
+- `reports/official-isolated-v64b-progress-gate-400.json`;
+- `reports/official-isolated-v64b-public-400.json`.
+
+V64b replaces v49b as the task-performance champion. The gain is narrow but
+causal: a graph-control result transferred into the shared runtime only after
+its proposal language was constrained to be an actual abstraction rather than
+an expansion.
 
 ## Promotion gates
 
