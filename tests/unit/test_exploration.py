@@ -619,6 +619,36 @@ def test_paired_transport_family_requires_two_convergent_trigger_edges() -> None
         MindConfig(enable_paired_transport_family=True)
 
 
+def test_paired_post_accommodation_plan_allowance_is_earned_once() -> None:
+    explorer = EpistemicExplorer(
+        paired_object_contact_planning=True,
+        paired_contextual_transitions=True,
+        paired_transport_family=True,
+        paired_post_accommodation_plan=True,
+    )
+    assert explorer._paired_trial_cap() == 64
+
+    explorer._earn_paired_post_accommodation_allowance(19)
+    assert explorer._paired_trial_cap() == 64
+
+    explorer.paired_transport_trigger_color = 8
+    explorer.paired_transport_successor = ((5, 5), (14, 5))
+    explorer._earn_paired_post_accommodation_allowance(19)
+    assert explorer.paired_post_accommodation_allowance == 19
+    assert explorer._paired_trial_cap() == 83
+
+    explorer._earn_paired_post_accommodation_allowance(32)
+    assert explorer.paired_post_accommodation_allowance == 19
+    assert explorer._paired_trial_cap() == 83
+
+    explorer._reset_paired_object_level()
+    assert explorer.paired_post_accommodation_allowance == 0
+    assert explorer._paired_trial_cap() == 64
+
+    with pytest.raises(ValueError, match="post-accommodation plan"):
+        MindConfig(enable_paired_post_accommodation_plan=True)
+
+
 def test_failure_conditioned_fairness_preserves_parent_then_accommodates() -> None:
     observation = Observation.create(
         state="NOT_FINISHED",

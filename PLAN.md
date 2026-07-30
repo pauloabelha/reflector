@@ -1784,6 +1784,56 @@ Prediction and falsifier:
   state-specific proposal, either target miss, or any accepted regression.
   V49b remains accepted otherwise.
 
+V51 result:
+
+- the first frozen-source target again scored `4.7619047619`, solved only
+  level 1, and allocated `[20, 380]`;
+- exactly two state-specific edges were proposed and confirmed, one convergent
+  transport family was induced, and bounded search used it 846 times without
+  proposing the previously observed third edge;
+- the internal structural predictions therefore passed, but environment-
+  reported level 2 did not advance within 220 or 400 actions, so v51 is
+  rejected without preservation or full-suite gates;
+- importantly, after family induction the selected contact-plan length fell
+  monotonically from 19 to 11 across the remaining nine paired decisions.
+  The 64-trial cap then preempted the advisor; this is evidence of a truncated
+  newly valid plan, not evidence for an arbitrary global cap increase.
+
+## Active experiment: v52 one post-accommodation plan allowance
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`; rejected v50-v51 supply
+contextual transition and transport-family evidence.
+
+Preregistered mutation:
+
+- add exact-off `enable_paired_post_accommodation_plan`, dependent on the v51
+  transport family;
+- preserve the base 64 paired trials until one convergent transport family is
+  grounded;
+- on the first subsequent bounded search that returns a contact plan of length
+  `L`, retain a one-time allowance of exactly `min(L, 32)` additional paired
+  trials;
+- never renew, enlarge, or reset that allowance after replanning within the
+  episode; clear it on environment-reported retry or level progress;
+- require every executed step to remain selected by a freshly recomputed
+  bounded plan, retaining all identity, topology, search, contextual-edge,
+  family, and latent-contact guards;
+- expose the earned allowance and effective cap in telemetry and encode no
+  game ID, action ID, coordinate, color, route, expected level, or fixed
+  solution length.
+
+Prediction and falsifier:
+
+- synthetic tests must show cap 64 before family grounding, cap
+  `64 + min(L, 32)` after the first family-grounded plan, no renewal from a
+  later longer plan, and reset to 64 at the next level/episode;
+- on `m0r0`, predict the already evidenced 19-step allowance, continued
+  monotone plan execution, and environment-reported level-2 completion within
+  120 total actions on two fresh 400-action runs;
+- reject on an allowance without family evidence, renewal, cap overflow,
+  non-plan execution, either target miss, or any accepted regression. V49b
+  remains accepted otherwise.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural

@@ -28,6 +28,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Target-only `m0r0` reruns | v49b accepted | 4.7619047619 for one game | 1/6 levels; `[20, 380]` under 400 actions | deterministic gain twice |
 | Recording-enabled level-2 audit | v49b accepted | 4.7619047619 for one game | 1/6 `m0r0` levels; five repeated 12-action false-edge loops | exact accepted result reproduced; v50 diagnosis |
 | Target-only symbolic offspring | v50 confirmed contextual pair transitions | 4.7619047619 for one game | 1/6 `m0r0` levels; two exact edges confirmed, third family member exposed | task and one-edge predictions falsified; rejected |
+| Target-only symbolic offspring | v51 induced convergent transport family | 4.7619047619 for one game | 1/6 `m0r0` levels; family prediction passed, task prediction failed | rejected; post-family plan was cut off by base cap |
 | Process-isolated official local suite | v47b accepted | **4.4496962800 / 100** | 0 games beaten; 18/183 levels | 25/25 coverage |
 | Process-isolated nine-game gate | v47b accepted | 12.3602674444 / 100 | 18 levels; every v42 level preserved | exact twice |
 | Target-only `sp80` reruns | v47b accepted | 0.1885375141 for one game | 1/6 levels; `[196, 204]` under 400 actions | deterministic gain twice |

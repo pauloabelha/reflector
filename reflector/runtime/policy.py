@@ -62,6 +62,9 @@ class SymbolicPolicy:
             paired_transport_family=(
                 self.mind.config.enable_paired_transport_family
             ),
+            paired_post_accommodation_plan=(
+                self.mind.config.enable_paired_post_accommodation_plan
+            ),
             local_relation_solver=self.mind.config.enable_local_relation_solver,
             constraint_first_role_replay=(
                 self.mind.config.enable_constraint_first_role_replay

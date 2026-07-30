@@ -261,6 +261,7 @@ class EpistemicExplorer:
     paired_object_contact_planning: bool = False
     paired_contextual_transitions: bool = False
     paired_transport_family: bool = False
+    paired_post_accommodation_plan: bool = False
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
@@ -547,6 +548,7 @@ class EpistemicExplorer:
     ) = None
     paired_transport_inductions: int = 0
     paired_transport_planner_uses: int = 0
+    paired_post_accommodation_allowance: int = 0
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -1092,6 +1094,7 @@ class EpistemicExplorer:
         self.paired_transport_successor = None
         self.paired_transport_inductions = 0
         self.paired_transport_planner_uses = 0
+        self.paired_post_accommodation_allowance = 0
 
     @staticmethod
     def _paired_signature(
@@ -1460,6 +1463,23 @@ class EpistemicExplorer:
             return None
         return successor
 
+    def _paired_trial_cap(self) -> int:
+        return 64 + self.paired_post_accommodation_allowance
+
+    def _earn_paired_post_accommodation_allowance(
+        self,
+        plan_length: int,
+    ) -> None:
+        if (
+            self.paired_post_accommodation_plan
+            and self.paired_transport_successor is not None
+            and self.paired_post_accommodation_allowance == 0
+        ):
+            self.paired_post_accommodation_allowance = min(
+                max(plan_length, 0),
+                32,
+            )
+
     def _observe_paired_contextual_transition(
         self,
         before_frame: tuple[tuple[int, ...], ...],
@@ -1667,7 +1687,7 @@ class EpistemicExplorer:
     ) -> ActionToken | None:
         if (
             not self.paired_object_contact_planning
-            or self.paired_level_trials >= 64
+            or self.paired_level_trials >= self._paired_trial_cap()
         ):
             return None
         if self.paired_grounding is None:
@@ -1736,6 +1756,7 @@ class EpistemicExplorer:
         if plan is None:
             return None
         action_id, length = plan
+        self._earn_paired_post_accommodation_allowance(length)
         token = next(
             item for item in plain if item.action_id == action_id
         )
@@ -6693,6 +6714,10 @@ class EpistemicExplorer:
             "paired_transport_planner_uses": (
                 self.paired_transport_planner_uses
             ),
+            "paired_post_accommodation_allowance": (
+                self.paired_post_accommodation_allowance
+            ),
+            "paired_effective_trial_cap": self._paired_trial_cap(),
             "paired_diagnostic": self.paired_diagnostic,
             "trajectory_plan_steps": self.trajectory_plan_steps,
             "trajectory_plan_cap": self._trajectory_plan_cap(),

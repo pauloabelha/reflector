@@ -65,6 +65,7 @@ class MindConfig:
     enable_paired_object_contact_planning: bool = False
     enable_paired_contextual_transitions: bool = False
     enable_paired_transport_family: bool = False
+    enable_paired_post_accommodation_plan: bool = False
     enable_local_relation_solver: bool = False
     enable_constraint_first_role_replay: bool = False
     enable_global_relation_constraint_solver: bool = False
@@ -123,6 +124,7 @@ class MindConfig:
             "enable_paired_object_contact_planning",
             "enable_paired_contextual_transitions",
             "enable_paired_transport_family",
+            "enable_paired_post_accommodation_plan",
             "enable_local_relation_solver",
             "enable_constraint_first_role_replay",
             "enable_global_relation_constraint_solver",
@@ -189,6 +191,14 @@ class MindConfig:
             raise ValueError(
                 "paired transport family requires paired contextual "
                 "transitions"
+            )
+        if (
+            self.enable_paired_post_accommodation_plan
+            and not self.enable_paired_transport_family
+        ):
+            raise ValueError(
+                "paired post-accommodation plan requires paired transport "
+                "family"
             )
         if (
             self.enable_graph_cycle_transport
