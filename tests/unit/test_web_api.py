@@ -149,7 +149,7 @@ def test_live_snapshot_discovers_best_games_and_latest_candidate(tmp_path) -> No
     candidates = tmp_path / "candidates"
     reports.mkdir()
     candidates.mkdir()
-    cognitive = reports / "live-cognitive" / "cognitive"
+    cognitive = reports / "live-cognitive"
     recordings = reports / "live-recordings" / "demo"
     cognitive.mkdir(parents=True)
     recordings.mkdir(parents=True)

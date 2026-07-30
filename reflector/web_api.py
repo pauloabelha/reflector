@@ -363,7 +363,7 @@ def live_snapshot(workspace: Path) -> dict[str, Any]:
                 games[game] = item
 
     streams = sorted(
-        (workspace / "reports").glob("**/cognitive/*.jsonl"),
+        (workspace / "reports").glob("**/*.cognitive.jsonl"),
         key=lambda path: path.stat().st_mtime,
         reverse=True,
     ) if (workspace / "reports").is_dir() else []
