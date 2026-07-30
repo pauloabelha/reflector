@@ -70,6 +70,17 @@ class Agent(ABC):
     def main(self) -> None:
         """The main agent loop. Play the game_id until finished, then exits."""
         self.timer = time.time()
+        try:
+            live_delay = min(
+                2.0,
+                max(
+                    0.0,
+                    float(os.getenv("REFLECTOR_LIVE_ACTION_DELAY_MS", "0"))
+                    / 1000.0,
+                ),
+            )
+        except ValueError:
+            live_delay = 0.0
         while (
             not self.is_done(self.frames, self.frames[-1])
             and self.action_counter <= self.MAX_ACTIONS
@@ -85,6 +96,8 @@ class Agent(ABC):
                 logger.info(
                     f"{self.game_id} - {action.name}: count {self.action_counter}, levels completed {frame.levels_completed}, avg fps {self.fps})"
                 )
+            if live_delay:
+                time.sleep(live_delay)
             self.action_counter += 1
 
         self.cleanup()

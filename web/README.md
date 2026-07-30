@@ -18,6 +18,14 @@ second over a server-sent event stream. It auto-discovers cognitive JSONL
 streams, candidate lineage, official scorecards, per-game bests, the
 Games × Levels matrix, and recent report artifacts under the workspace.
 
+For a browser-paced official run, set `REFLECTOR_LIVE_ACTION_DELAY_MS` on the
+local harness command. This development-only delay is capped at two seconds,
+defaults to zero, and does not alter the symbolic inference configuration:
+
+```bash
+REFLECTOR_LIVE_ACTION_DELAY_MS=500 .venv/bin/reflector official-isolated-run …
+```
+
 Use `--workspace`, `--host`, or `--port` to override their local defaults.
 The monitor is read-only and does not import or alter game implementations.
 
