@@ -2113,6 +2113,25 @@ transport while falsifying that particular grounded target as terminal, then
 seek a different relation or phase. Do not grant more plan depth and do not
 credit the 54 intermediate predictions as pragmatic goal evidence.
 
+V55a accommodation result:
+
+- on the first terminal-step displacement, the offspring retained the sparse
+  marker relation but retired the exact ordered target binding;
+- it then generated a distinct assignment with an eleven-step plan, proving
+  that accommodation changed the grounded structure rather than merely
+  restarting the same target;
+- the alternative route necessarily crossed the first transport trigger. It
+  therefore reset before reaching the new target, repeated the eleven-step
+  route, and again finished at 1/6 levels with `[20, 380]`;
+- only one target was correctly retired; the later four prediction failures
+  occurred before the alternative terminal state and therefore did not
+  license retiring it.
+
+V55a is rejected. Its failure preregisters the next recombination: the marker
+goal planner must consume confirmed v50 context-dependent transitions so that
+the trigger is represented as a portal edge during search. Compare that
+offspring with source-matched contact-only and contextual-contact controls.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural

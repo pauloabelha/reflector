@@ -289,6 +289,12 @@ These are narrow earned claims, not claims of general intelligence.
     prediction credit and pragmatic goal credit must remain separate; the
     correct accommodation is to preserve the marker-triggered transport while
     retiring that grounded target from the terminal set.
+22. Structural accommodation is useless if the planner cannot compose the
+    conserved causal fact. V55a retired the first falsified marker binding and
+    generated a different eleven-step assignment, but that route crossed the
+    already observed transport trigger and reset. Goal search and transition
+    learning cannot remain separate advisors: confirmed context-dependent
+    edges must alter the successor function used to evaluate new goals.
 
 ## What is still missing
 

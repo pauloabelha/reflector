@@ -129,6 +129,12 @@ levels: the final coverage step transported the pair rather than advancing the
 level. This is direct evidence that predictive causal intermediates and
 terminal goals require separate credit and accommodation.
 
+V55a retired the falsified grounded target and generated a different
+assignment, but its route crossed the same transport trigger because the goal
+planner did not consume the contextual transition model. This narrows the next
+experiment to composition—planning terminal relations over learned portal
+edges—rather than additional vocabulary or search depth.
+
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction
 between local and Kaggle scores. This table and that report must be updated
