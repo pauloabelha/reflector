@@ -264,6 +264,7 @@ class EpistemicExplorer:
     paired_transport_family: bool = False
     paired_post_accommodation_plan: bool = False
     paired_terminal_relation_mode: str = "contact-only"
+    paired_occlusion_procedure_mode: str = "off"
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
@@ -537,6 +538,35 @@ class EpistemicExplorer:
     paired_relation_falsifications: int = 0
     paired_relation_plan_length: int = 0
     paired_relation_search_expansions: int = 0
+    paired_progress_action: int | None = None
+    paired_occlusion_active: bool = False
+    paired_occlusion_entry: (
+        tuple[tuple[int, int], tuple[int, int]] | None
+    ) = None
+    paired_occlusion_entry_action: int | None = None
+    paired_occlusion_actions: list[int] = field(default_factory=list)
+    paired_occlusion_evidence: dict[
+        tuple[
+            tuple[tuple[int, int], tuple[int, int]],
+            int,
+        ],
+        Counter[
+            tuple[
+                tuple[int, ...],
+                tuple[tuple[int, int], tuple[int, int]],
+            ]
+        ],
+    ] = field(default_factory=dict)
+    paired_occlusion_quarantined: set[
+        tuple[
+            tuple[tuple[int, int], tuple[int, int]],
+            int,
+        ]
+    ] = field(default_factory=set)
+    paired_occlusion_proposals: int = 0
+    paired_occlusion_confirmations: int = 0
+    paired_occlusion_conflicts: int = 0
+    paired_occlusion_planner_uses: int = 0
     paired_contextual_evidence: dict[
         tuple[
             tuple[tuple[int, int], tuple[int, int]],
@@ -1123,6 +1153,16 @@ class EpistemicExplorer:
         self.paired_relation_falsifications = 0
         self.paired_relation_plan_length = 0
         self.paired_relation_search_expansions = 0
+        self.paired_occlusion_active = False
+        self.paired_occlusion_entry = None
+        self.paired_occlusion_entry_action = None
+        self.paired_occlusion_actions.clear()
+        self.paired_occlusion_evidence.clear()
+        self.paired_occlusion_quarantined.clear()
+        self.paired_occlusion_proposals = 0
+        self.paired_occlusion_confirmations = 0
+        self.paired_occlusion_conflicts = 0
+        self.paired_occlusion_planner_uses = 0
         self.paired_contextual_evidence.clear()
         self.paired_contextual_quarantined.clear()
         self.paired_contextual_trigger_colors.clear()
@@ -1296,6 +1336,7 @@ class EpistemicExplorer:
             return
         kind, action_id, before = pending
         if progressed:
+            self.paired_progress_action = action_id
             if self.paired_relation_pending is not None:
                 self.paired_relation_confirmations += 1
                 self.paired_relation_pending = None
@@ -1303,6 +1344,9 @@ class EpistemicExplorer:
             return
         anchors = self._paired_anchors(after)
         self._assess_paired_terminal_relation(anchors)
+        if kind == "occlusion":
+            self._observe_paired_occlusion(anchors)
+            return
         if anchors is None:
             changed = before_frame != after
             if (
@@ -1313,6 +1357,17 @@ class EpistemicExplorer:
             ):
                 self.paired_latent_contact = True
                 self.paired_diagnostic = "latent-contact-continuation"
+                return
+            if (
+                changed
+                and kind == "plan"
+                and self.paired_occlusion_procedure_mode != "off"
+            ):
+                self.paired_occlusion_active = True
+                self.paired_occlusion_entry = before
+                self.paired_occlusion_entry_action = action_id
+                self.paired_occlusion_actions.clear()
+                self.paired_diagnostic = "paired-occlusion-entered"
                 return
             self.paired_latent_contact = False
             self.paired_invalid_actions.add(action_id)
@@ -1358,6 +1413,69 @@ class EpistemicExplorer:
             return
         self.paired_effects[action_id] = effect
         self.paired_diagnostic = "joint-effect-grounded"
+
+    def _observe_paired_occlusion(
+        self,
+        anchors: tuple[tuple[int, int], tuple[int, int]] | None,
+    ) -> None:
+        entry = self.paired_occlusion_entry
+        entry_action = self.paired_occlusion_entry_action
+        if entry is None or entry_action is None:
+            self.paired_occlusion_active = False
+            self.paired_diagnostic = "occlusion-context-missing"
+            return
+        if anchors is None:
+            if len(self.paired_occlusion_actions) >= 4:
+                self.paired_occlusion_active = False
+                self.paired_diagnostic = "occlusion-procedure-unresolved"
+            else:
+                self.paired_diagnostic = "occlusion-procedure-continuing"
+            return
+        key = (entry, entry_action)
+        outcome = (tuple(self.paired_occlusion_actions), anchors)
+        evidence = self.paired_occlusion_evidence.setdefault(key, Counter())
+        if evidence and outcome not in evidence:
+            self.paired_occlusion_quarantined.add(key)
+            self.paired_occlusion_conflicts += 1
+            self.paired_diagnostic = "occlusion-procedure-conflict"
+        else:
+            prior = evidence[outcome]
+            if prior < 3:
+                evidence[outcome] += 1
+            if prior == 0:
+                self.paired_occlusion_proposals += 1
+                self.paired_diagnostic = "occlusion-procedure-proposed"
+            elif prior == 1:
+                self.paired_occlusion_confirmations += 1
+                self.paired_diagnostic = "occlusion-procedure-confirmed"
+            else:
+                self.paired_diagnostic = "occlusion-procedure-reobserved"
+        self.paired_occlusion_active = False
+        self.paired_occlusion_entry = None
+        self.paired_occlusion_entry_action = None
+        self.paired_occlusion_actions.clear()
+
+    def _confirmed_paired_occlusion_macro(
+        self,
+        state: tuple[tuple[int, int], tuple[int, int]],
+        action_id: int,
+    ) -> (
+        tuple[
+            tuple[int, ...],
+            tuple[tuple[int, int], tuple[int, int]],
+        ]
+        | None
+    ):
+        key = (state, action_id)
+        if key in self.paired_occlusion_quarantined:
+            return None
+        evidence = self.paired_occlusion_evidence.get(key)
+        if not evidence:
+            return None
+        confirmed = [
+            outcome for outcome, count in evidence.items() if count >= 2
+        ]
+        return confirmed[0] if len(confirmed) == 1 else None
 
     @staticmethod
     def _paired_geometric_successor(
@@ -1837,43 +1955,54 @@ class EpistemicExplorer:
                     or action_id in self.paired_invalid_actions
                 ):
                     continue
-                successor = self._paired_geometric_successor(
+                edge_cost = 1
+                macro = self._confirmed_paired_occlusion_macro(
                     state,
-                    self.paired_effects[action_id],
-                    nodes,
+                    action_id,
                 )
-                contextual_key = (state, action_id)
-                if (
-                    self.paired_contextual_transitions
-                    and contextual_key in self.paired_contextual_quarantined
-                ):
-                    successor = state
-                elif self.paired_contextual_transitions:
-                    contextual = (
-                        self._paired_confirmed_contextual_successor(
-                            state,
-                            action_id,
-                        )
+                if macro is not None:
+                    continuation, successor = macro
+                    edge_cost += len(continuation)
+                    self.paired_occlusion_planner_uses += 1
+                else:
+                    successor = self._paired_geometric_successor(
+                        state,
+                        self.paired_effects[action_id],
+                        nodes,
                     )
+                    contextual_key = (state, action_id)
                     if (
-                        contextual is not None
-                        and contextual[0] in nodes
-                        and contextual[1] in nodes
+                        self.paired_contextual_transitions
+                        and contextual_key
+                        in self.paired_contextual_quarantined
                     ):
-                        successor = contextual
-                        self.paired_contextual_planner_uses += 1
-                    elif self.paired_transport_family:
-                        family_successor = (
-                            self._paired_transport_family_successor(
-                                frame,
+                        successor = state
+                    elif self.paired_contextual_transitions:
+                        contextual = (
+                            self._paired_confirmed_contextual_successor(
                                 state,
-                                self.paired_effects[action_id],
-                                nodes,
+                                action_id,
                             )
                         )
-                        if family_successor is not None:
-                            successor = family_successor
-                            self.paired_transport_planner_uses += 1
+                        if (
+                            contextual is not None
+                            and contextual[0] in nodes
+                            and contextual[1] in nodes
+                        ):
+                            successor = contextual
+                            self.paired_contextual_planner_uses += 1
+                        elif self.paired_transport_family:
+                            family_successor = (
+                                self._paired_transport_family_successor(
+                                    frame,
+                                    state,
+                                    self.paired_effects[action_id],
+                                    nodes,
+                                )
+                            )
+                            if family_successor is not None:
+                                successor = family_successor
+                                self.paired_transport_planner_uses += 1
                 expanded_edges += 1
                 if successor == state or successor in visited:
                     continue
@@ -1881,7 +2010,7 @@ class EpistemicExplorer:
                 queue.append(
                     (
                         successor,
-                        depth + 1,
+                        depth + edge_cost,
                         action_id if first_action is None else first_action,
                     )
                 )
@@ -1930,43 +2059,54 @@ class EpistemicExplorer:
                 ):
                     continue
                 effect = self.paired_effects[action_id]
-                successor = self._paired_geometric_successor(
+                edge_cost = 1
+                macro = self._confirmed_paired_occlusion_macro(
                     state,
-                    effect,
-                    nodes,
+                    action_id,
                 )
-                contextual_key = (state, action_id)
-                if (
-                    self.paired_contextual_transitions
-                    and contextual_key in self.paired_contextual_quarantined
-                ):
-                    successor = state
-                elif self.paired_contextual_transitions:
-                    contextual = (
-                        self._paired_confirmed_contextual_successor(
-                            state,
-                            action_id,
-                        )
+                if macro is not None:
+                    continuation, successor = macro
+                    edge_cost += len(continuation)
+                    self.paired_occlusion_planner_uses += 1
+                else:
+                    successor = self._paired_geometric_successor(
+                        state,
+                        effect,
+                        nodes,
                     )
+                    contextual_key = (state, action_id)
                     if (
-                        contextual is not None
-                        and contextual[0] in nodes
-                        and contextual[1] in nodes
+                        self.paired_contextual_transitions
+                        and contextual_key
+                        in self.paired_contextual_quarantined
                     ):
-                        successor = contextual
-                        self.paired_contextual_planner_uses += 1
-                    elif self.paired_transport_family:
-                        family_successor = (
-                            self._paired_transport_family_successor(
-                                frame,
+                        successor = state
+                    elif self.paired_contextual_transitions:
+                        contextual = (
+                            self._paired_confirmed_contextual_successor(
                                 state,
-                                effect,
-                                nodes,
+                                action_id,
                             )
                         )
-                        if family_successor is not None:
-                            successor = family_successor
-                            self.paired_transport_planner_uses += 1
+                        if (
+                            contextual is not None
+                            and contextual[0] in nodes
+                            and contextual[1] in nodes
+                        ):
+                            successor = contextual
+                            self.paired_contextual_planner_uses += 1
+                        elif self.paired_transport_family:
+                            family_successor = (
+                                self._paired_transport_family_successor(
+                                    frame,
+                                    state,
+                                    effect,
+                                    nodes,
+                                )
+                            )
+                            if family_successor is not None:
+                                successor = family_successor
+                                self.paired_transport_planner_uses += 1
                 expanded_edges += 1
                 if successor == state:
                     continue
@@ -1977,10 +2117,10 @@ class EpistemicExplorer:
                     grounding.mask_offsets,
                 ):
                     self.paired_search_expansions = len(visited)
-                    return selected, depth + 1
+                    return selected, depth + edge_cost
                 if successor not in visited:
                     visited.add(successor)
-                    queue.append((successor, depth + 1, selected))
+                    queue.append((successor, depth + edge_cost, selected))
         self.paired_search_expansions = len(visited)
         self.paired_diagnostic = "no-bounded-contact-plan"
         return None
@@ -2010,6 +2150,49 @@ class EpistemicExplorer:
             and token.action_id
             not in {self.reset_action, self.complex_action}
         )
+        if self.paired_occlusion_active:
+            if len(self.paired_occlusion_actions) >= 4:
+                self.paired_occlusion_active = False
+                self.paired_diagnostic = "occlusion-procedure-cap"
+            else:
+                entry = self.paired_occlusion_entry
+                entry_action = self.paired_occlusion_entry_action
+                if entry is not None and entry_action is not None and plain:
+                    if self.paired_occlusion_procedure_mode == "reuse-progress":
+                        selected_action = (
+                            self.paired_progress_action
+                            if self.paired_progress_action is not None
+                            else entry_action
+                        )
+                    elif (
+                        self.paired_occlusion_procedure_mode == "canonical-probe"
+                    ):
+                        selected_action = plain[
+                            len(self.paired_occlusion_actions) % len(plain)
+                        ].action_id
+                    else:
+                        selected_action = entry_action
+                    occlusion_token = next(
+                        (
+                            token
+                            for token in plain
+                            if token.action_id == selected_action
+                        ),
+                        plain[0],
+                    )
+                    self.paired_occlusion_actions.append(
+                        occlusion_token.action_id
+                    )
+                    self.paired_pending = (
+                        "occlusion",
+                        occlusion_token.action_id,
+                        entry,
+                    )
+                    self.paired_level_trials += 1
+                    self.paired_diagnostic = (
+                        "executing-occlusion-procedure"
+                    )
+                    return occlusion_token
         if (
             self.paired_latent_contact
             and self.paired_contact_action is not None
@@ -7168,6 +7351,22 @@ class EpistemicExplorer:
             ),
             "paired_rejected_relation_targets": len(
                 self.paired_rejected_relation_targets
+            ),
+            "paired_progress_action_grounded": int(
+                self.paired_progress_action is not None
+            ),
+            "paired_occlusion_active": int(self.paired_occlusion_active),
+            "paired_occlusion_proposals": self.paired_occlusion_proposals,
+            "paired_occlusion_confirmations": (
+                self.paired_occlusion_confirmations
+            ),
+            "paired_occlusion_conflicts": self.paired_occlusion_conflicts,
+            "paired_occlusion_macros": sum(
+                self._confirmed_paired_occlusion_macro(*key) is not None
+                for key in self.paired_occlusion_evidence
+            ),
+            "paired_occlusion_planner_uses": (
+                self.paired_occlusion_planner_uses
             ),
             "paired_contextual_proposals": self.paired_contextual_proposals,
             "paired_contextual_confirmations": (

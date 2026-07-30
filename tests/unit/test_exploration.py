@@ -481,6 +481,96 @@ def test_paired_marker_relation_is_recolored_action_equivariant_and_credited() -
         )
 
 
+def test_paired_occlusion_procedure_reuses_progress_and_confirms_macro() -> None:
+    def frame(
+        anchors: tuple[tuple[int, int], tuple[int, int]] | None,
+    ) -> tuple[tuple[int, ...], ...]:
+        rows = [[1] * 20 for _ in range(20)]
+        for y in range(2, 18):
+            for x in range(2, 18):
+                rows[y][x] = 5
+        if anchors is not None:
+            for center_x, center_y in anchors:
+                for y in range(center_y - 1, center_y + 2):
+                    for x in range(center_x - 1, center_x + 2):
+                        rows[y][x] = 10
+        return tuple(tuple(row) for row in rows)
+
+    initial = ((5, 6), (14, 6))
+    exit_anchors = ((6, 12), (13, 12))
+    initial_frame = frame(initial)
+    hidden_frame = frame(None)
+    exit_frame = frame(exit_anchors)
+    explorer = EpistemicExplorer(
+        paired_object_contact_planning=True,
+        paired_occlusion_procedure_mode="reuse-progress",
+    )
+    explorer.paired_grounding = explorer._ground_paired_objects(initial_frame)
+    assert explorer.paired_grounding is not None
+
+    explorer.paired_pending = ("contact", 7, initial)
+    explorer._observe_paired_object_contact(
+        initial_frame,
+        initial_frame,
+        progressed=True,
+    )
+    assert explorer.paired_progress_action == 7
+
+    def observe_macro_once() -> None:
+        explorer.paired_pending = ("plan", 2, initial)
+        explorer._observe_paired_object_contact(
+            initial_frame,
+            hidden_frame,
+            progressed=False,
+        )
+        assert explorer.paired_occlusion_active
+        observation = Observation.create(
+            state="NOT_FINISHED",
+            available_actions=(2, 7),
+            frame=hidden_frame,
+        )
+        first = explorer._select_paired_object_contact(
+            observation,
+            (ActionToken(2), ActionToken(7)),
+        )
+        assert first == ActionToken(7)
+        explorer._observe_paired_object_contact(
+            hidden_frame,
+            hidden_frame,
+            progressed=False,
+        )
+        second = explorer._select_paired_object_contact(
+            observation,
+            (ActionToken(2), ActionToken(7)),
+        )
+        assert second == ActionToken(7)
+        explorer._observe_paired_object_contact(
+            hidden_frame,
+            exit_frame,
+            progressed=False,
+        )
+
+    observe_macro_once()
+    assert explorer.paired_occlusion_proposals == 1
+    assert (
+        explorer._confirmed_paired_occlusion_macro(initial, 2) is None
+    )
+    observe_macro_once()
+    assert explorer.paired_occlusion_confirmations == 1
+    assert explorer._confirmed_paired_occlusion_macro(initial, 2) == (
+        (7, 7),
+        exit_anchors,
+    )
+
+    with pytest.raises(ValueError, match="occlusion procedures"):
+        MindConfig(paired_occlusion_procedure_mode="reuse-progress")
+    with pytest.raises(ValueError, match="must be off"):
+        MindConfig(
+            enable_paired_object_contact_planning=True,
+            paired_occlusion_procedure_mode="unknown",
+        )
+
+
 def test_paired_contact_merge_has_two_evidenced_continuations() -> None:
     def frame(merged_width: int = 0):
         rows = [[1] * 20 for _ in range(20)]

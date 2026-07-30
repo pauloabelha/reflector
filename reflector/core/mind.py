@@ -68,6 +68,7 @@ class MindConfig:
     enable_paired_transport_family: bool = False
     enable_paired_post_accommodation_plan: bool = False
     paired_terminal_relation_mode: str = "contact-only"
+    paired_occlusion_procedure_mode: str = "off"
     enable_local_relation_solver: bool = False
     enable_constraint_first_role_replay: bool = False
     enable_global_relation_constraint_solver: bool = False
@@ -222,6 +223,23 @@ class MindConfig:
             raise ValueError(
                 "paired terminal relation hypotheses require paired object "
                 "planning"
+            )
+        if self.paired_occlusion_procedure_mode not in {
+            "off",
+            "repeat-entry",
+            "reuse-progress",
+            "canonical-probe",
+        }:
+            raise ValueError(
+                "paired_occlusion_procedure_mode must be off, repeat-entry, "
+                "reuse-progress, or canonical-probe"
+            )
+        if (
+            self.paired_occlusion_procedure_mode != "off"
+            and not self.enable_paired_object_contact_planning
+        ):
+            raise ValueError(
+                "paired occlusion procedures require paired object planning"
             )
         if (
             self.enable_graph_cycle_transport
