@@ -29,6 +29,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Recording-enabled level-2 audit | v49b accepted | 4.7619047619 for one game | 1/6 `m0r0` levels; five repeated 12-action false-edge loops | exact accepted result reproduced; v50 diagnosis |
 | Target-only symbolic offspring | v50 confirmed contextual pair transitions | 4.7619047619 for one game | 1/6 `m0r0` levels; two exact edges confirmed, third family member exposed | task and one-edge predictions falsified; rejected |
 | Target-only symbolic offspring | v51 induced convergent transport family | 4.7619047619 for one game | 1/6 `m0r0` levels; family prediction passed, task prediction failed | rejected; post-family plan was cut off by base cap |
+| Target-only symbolic offspring | v52 one post-accommodation plan | 4.7619047619 for one game | 1/6 `m0r0` levels; `[20, 380]`; allowance 19, effective cap 83 | rejected; extra grounded planning did not supply the missing goal/phase model |
 | Process-isolated official local suite | v47b accepted | **4.4496962800 / 100** | 0 games beaten; 18/183 levels | 25/25 coverage |
 | Process-isolated nine-game gate | v47b accepted | 12.3602674444 / 100 | 18 levels; every v42 level preserved | exact twice |
 | Target-only `sp80` reruns | v47b accepted | 0.1885375141 for one game | 1/6 levels; `[196, 204]` under 400 actions | deterministic gain twice |
@@ -344,12 +345,22 @@ Raw evidence:
 - [v49b exact ten-game gate 2](reports/official-isolated-v49b-ten-game-preservation-r2-400.json)
 - [v49b exact `m0r0` rerun 1](reports/experimental-v49b-m0r0-latent-contact-r1-400.json)
 - [v49b exact `m0r0` rerun 2](reports/experimental-v49b-m0r0-latent-contact-r2-400.json)
+- [v52 rejected `m0r0` target](reports/experimental-v52-m0r0-post-accommodation-plan-r1-400.json)
 - [v49b candidate](candidates/v49b-latent-paired-contact-400.json)
 
 The earned claim is narrow: a learned joint causal state and operator can solve
 one coupled-object level that state normalization and fair exploration could
 not, and rendered contact may be an intermediate state rather than completion.
 This is not evidence of broad transfer, a completed game, or a Kaggle score.
+
+The rejected v50-v52 descendants sharpen the limit. V50 learned exact
+state-specific pair transitions; v51 compressed two convergent transitions
+into a transport family; v52 earned and consumed a one-time 19-step planning
+allowance after that accommodation. V52 still ended at `[20, 380]`. The
+operative local model and added depth were insufficient because the agent did
+not represent the level's terminal relation or relevant latent phase. The
+report SHA-256 is
+`4712a8881d5937211c7ba3540fc21bb6ac44e4d4ef94b155037176ff893c4f4f`.
 
 ## Historical accepted v47b result
 

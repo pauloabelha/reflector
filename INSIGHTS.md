@@ -263,6 +263,12 @@ These are narrow earned claims, not claims of general intelligence.
     preserve causal credit through temporary identity loss.
 17. A local score, export, fixture, smoke test, and target-only run are all
     distinct from a Kaggle score.
+18. Better local dynamics and deeper execution do not imply task
+    understanding. V50 learned contextual pair transitions, v51 compressed
+    them into a convergent transport family, and v52 granted exactly the
+    preregistered post-accommodation plan depth. All three remained at one
+    `m0r0` level. The missing variable was a terminal-relation/phase model, not
+    another cap increase.
 
 ## What is still missing
 
@@ -390,6 +396,61 @@ Breed offspring by recombining typed operators and mutation policies. Select on
 held-out games, full-game depth, RHAE, and non-regression—not on whether a
 specialist learned one public game. Keep one untouched validation partition and
 rotate which public games are used for mutation pressure.
+
+### A growing common-sense hash
+
+The transferable unit should be an immutable, content-addressed
+`SchemeDefinition`, not a mutable bag of confidence values and not an action
+trace. Its canonical payload should contain:
+
+- typed parameters and roles;
+- preconditions over causal/belief state;
+- predicted effects and invariants;
+- a goal-potential contract, if the scheme claims pragmatic direction;
+- dependencies on lower-level schemes by content hash;
+- composition operators and bounded resource requirements;
+- and explicit falsifiers.
+
+Hash only that definition. Store support, counterexamples, calibration,
+development partitions, action cost, and provenance in a separate append-only
+evidence ledger keyed by the definition hash. This separation matters: two
+agents can recognize that they mean the same operation even when they learned
+it from different episodes, while bad evidence can be retracted without
+silently changing the concept's identity.
+
+The library root should be a Merkle hash over retained definitions and their
+dependencies. An offspring inherits that exact root plus a mutation policy.
+It may:
+
+1. assimilate a definition unchanged;
+2. accommodate the smallest falsified dependency, producing a new hash while
+   preserving the parent and counterexample;
+3. reflect a reliably coordinated subgraph into a higher-order definition;
+4. compose definitions through typed role binding or procedure parameters;
+5. retire a definition from selection without deleting its evidence.
+
+There are three distinct inheritance channels:
+
+- **ontogenetic:** within one episode, temporary beliefs and grounded bindings;
+- **cultural:** evidence-bearing scheme definitions shared after isolated
+  runs;
+- **phylogenetic:** the offspring's exploration, representation, composition,
+  and credit-update policies.
+
+Conflating these channels creates leakage and brittle specialists. The
+runtime candidate should contain the selected immutable library snapshot and
+perform all episode grounding offline. Development may breed and select the
+snapshot, but the exact accepted snapshot must be the Kaggle-exported one.
+
+Promotion should use a structural return such as:
+
+`predictive_gain + information_saved + pragmatic_return`
+`- description_cost - regression_cost - calibration_error`
+
+Credit lands on the smallest changed dependency subgraph. A definition that
+only explains familiar public-game coordinates or routes receives no
+inheritance credit. A definition that predicts a held-out transition family,
+reduces interventions, or advances a held-out level does.
 
 ## Streaming agent “thoughts”
 

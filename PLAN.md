@@ -1799,7 +1799,7 @@ V51 result:
   The 64-trial cap then preempted the advisor; this is evidence of a truncated
   newly valid plan, not evidence for an arbitrary global cap increase.
 
-## Active experiment: v52 one post-accommodation plan allowance
+## Rejected experiment: v52 one post-accommodation plan allowance
 
 Parent: accepted v49b `candidate-6ee87ced5a667cae`; rejected v50-v51 supply
 contextual transition and transport-family evidence.
@@ -1834,6 +1834,26 @@ Prediction and falsifier:
   non-plan execution, either target miss, or any accepted regression. V49b
   remains accepted otherwise.
 
+Observed result:
+
+- candidate `candidate-dd6d643b11ef01a9`, frozen source `c6800d8`, earned the
+  preregistered allowance of 19 and exposed the expected effective cap of 83;
+- it grounded one convergent transport family, used that family 1,202 times
+  in bounded search, and continued selecting freshly recomputed contact plans;
+- nevertheless it reproduced only 1/6 `m0r0` levels at `[20, 380]`, scoring
+  `4.7619047619` for the target and missing the required level 2 within 120
+  total actions;
+- the first target miss activates the preregistered falsifier, so no second
+  run, preservation gate, or full-suite run is justified. V52 is rejected and
+  v49b remains accepted.
+
+The v50-v52 sequence separates three claims that must not be conflated:
+state-specific transition prediction improved; a convergent local transport
+family was genuinely induced; and extra planning depth executed that family.
+None supplied a model of the task's terminal relation or latent phase.
+Continuing to lengthen this advisor would therefore overfit search around a
+missing goal abstraction.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural
@@ -1848,20 +1868,27 @@ Prediction and falsifier:
 
 ## Next actions
 
-1. Preserve accepted v49b. Test whether its paired-object representation
-   predicts joint effects on later `m0r0` levels or another structurally
-   qualifying game; do not widen its grounding conditions without a held-out
-   prediction.
-2. For `g50t`, learn an explicit gate-phase experiment or switch targets; the
+1. Preserve accepted v49b. Stop the bespoke `m0r0` v50-v52 chain: it has
+   isolated a missing goal/phase abstraction rather than a planning-budget
+   defect.
+2. Build a content-addressed inherited scheme substrate. Keep immutable typed
+   scheme definitions separate from an append-only evidence ledger; offspring
+   inherit only hashes whose predictive, information-efficiency, and pragmatic
+   evidence clears preregistered thresholds.
+3. Train that substrate with isolated multi-game curricula and rotating
+   held-out folds. Share definitions, counterexamples, transition-equivalence
+   classes, and calibration—not action routes, coordinates, colors, or game
+   identifiers.
+4. For `g50t`, learn an explicit gate-phase experiment or switch targets; the
    v43c-v43f and integrated-Gemma runs all preserved level 1 but added no level
    2.
-3. Route qualitative frame difference and flow into causal policy only through
+5. Route qualitative frame difference and flow into causal policy only through
    typed, bounded advisors; passive perception alone is not task credit.
-4. Evaluate diverse operators in isolated populations across games; require a
+6. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
-5. Run source-matched target ablations and the full 25-game gate only for a
+7. Run source-matched target ablations and the full 25-game gate only for a
    qualifying offspring; keep v49b accepted otherwise.
-6. Prepare the first real Kaggle notebook submission as an explicit external
+8. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.
 
