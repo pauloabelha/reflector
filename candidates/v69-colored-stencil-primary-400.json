@@ -1,5 +1,5 @@
 {
-  "candidate_id": "candidate-78821150346139c5",
+  "candidate_id": "candidate-2336bc12a0bc28de",
   "config": {
     "enable_concepts": true,
     "enable_counterfactual_pressure": true,
@@ -80,7 +80,7 @@
     "candidate-35de85c4fe395c3a"
   ],
   "generation": 33,
-  "rationale": "Ground congruent reference and construction grids, palette roles, and an outlined prospective layer; learn controller directions from rendered pose changes; then search exact coordinate-free primary half-plane compositions with palette commits and prospective submit semantics.",
-  "mutation_source": "symbolic-strategy:colored-stencil-primary-composition",
-  "inference_fingerprint": "7d87135bcdf240aa617625d0bfed8b1cfb52e094866e68e891c6efb5a1b8c6cc"
+  "rationale": "Ground congruent reference and construction grids, palette roles, and an outlined prospective layer; learn controller directions from rendered pose changes; then search exact coordinate-free programs over attribute selection, pose navigation, and repeated primary half-plane apply transitions.",
+  "mutation_source": "symbolic-strategy:colored-stencil-constructive-program",
+  "inference_fingerprint": "82a5cb4ae5d5f6a6a813ec3a9b6bef4c609152a02358ba787d9c3aab4e3b893c"
 }
