@@ -447,8 +447,10 @@ instance to be spatially distinct, so the evidence is prospective rather than
 structurally held out.
 The accepted v68 path generalizes the same evidence discipline to contiguous
 rectilinear subpath cycles and grounds identical-looking controllers by local
-path topology. Branching domains remain unrepresented rather than being
-forced into the path model.
+path topology. Its first confirmations repeat the same grounded controller
+centroids in later states, so the evidence is prospective but still not
+cross-controller. Domains above the fixed 64-slot bound remain unrepresented
+rather than being forced into the path model.
 Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained

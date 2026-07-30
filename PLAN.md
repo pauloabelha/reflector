@@ -65,7 +65,7 @@ generalization.
 | Bounded connector-graph synthesis | v65b selected a unique minimum-cost assignment over visible ordered references, nested containers, fixed payloads, and connector inventory only as a legacy fallback or under a strict repeated-reference dominance proof; it preserved every non-target trajectory and completed all eight `sb26` levels in 124 actions twice. |
 | Learned lattice effects plus exact CSP | v66 grounded one regular repeated-actuator lattice, induced a relative binary click-effect law from two structurally distinct interventions, prospectively quarantined mismatches, and solved visible relation constraints exactly; it preserved every non-`ft09` trajectory and completed all six `ft09` levels in 162 actions twice. |
 | Confirmed segmented permutations plus exact transport | v67 proposed a unique equal-pitch permutation from one rendered transition, preregistered its full-domain successor before a subsequent same-form action, promoted only after an exact match, and searched a bounded projected marker state; it preserved every non-`lp85` outcome and solved `lp85` L4 at action 71 twice. The confirmer need not yet be a spatially distinct controller. |
-| Contiguous path cycles plus topology-grounded controllers | v68 inferred nested one-step rotations over a uniform degree-at-most-two rectilinear slot path and distinguished identical controller sprites by endpoint/straight/corner context; it preserved every non-`lp85` trajectory and solved `lp85` L5 at action 50 twice. Branching level-6 structure remains explicitly unrepresented. |
+| Contiguous path cycles plus topology-grounded controllers | v68 inferred nested one-step rotations over a conserved uniform simple rectilinear slot path and distinguished identical controller sprites by endpoint/straight/corner context; it preserved every non-`lp85` score, level count, action total, reset count, and reported distribution while solving `lp85` L5 at action 50 twice. Level 6 exceeds the fixed slot bound and remains explicitly unrepresented. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -2842,8 +2842,8 @@ Frozen source/candidate commit:
 
 Mechanism:
 
-- infer exact one-step rotations over bounded contiguous intervals of a
-  uniform degree-at-most-two rectilinear slot path;
+- infer exact one-step rotations over bounded contiguous intervals of one
+  conserved uniform simple rectilinear slot path;
 - bind visually identical controllers through local endpoint, straight, or
   corner topology plus normalized distance context;
 - retain v67's prospective exact-successor confirmation and bounded projected
@@ -2860,9 +2860,9 @@ Evidence:
   `21.16014538889156` to `22.00913528788146`;
 - the 25-game result is `9.684019526667843/100`, 28/183 levels across
   11 games, two complete games, and 9,486 actions;
-- level 6 reports `domain-unrepresented`: its branching structure is
-  deliberately not forced into the simple-path representation;
-- 339 tests pass with three skipped, Ruff and mypy pass, exact export passes,
+- level 6 reports `domain-unrepresented`: its 75 matching slots exceed the
+  fixed 64-slot bound and are deliberately not forced into the representation;
+- 341 tests pass with three skipped, Ruff and mypy pass, exact export passes,
   and both network-disabled smoke paths pass.
 
 V68 replaces v67 as the local task-performance champion. The gain is one
@@ -2876,9 +2876,9 @@ as symbolic hypothesis proposal rather than symbolic execution. The next
 offspring should therefore add one compact typed operator family at a time,
 with exact replay and ambiguity abstention:
 
-1. preserve accepted v68 and keep `lp85` level 6 separate: its branching,
-   multi-scale domain falsifies the simple-path prior and must not be absorbed
-   by route-shaped special cases;
+1. preserve accepted v68 and keep `lp85` level 6 separate: its 75 matching
+   slots exceed the fixed 64-slot domain bound and must not be absorbed by
+   a watched-game bound increase or route-shaped special case;
 2. after the standalone K-line retrieval substrate just completed, add the
    frozen `MindConfig` snapshot and grounded cue compiler exact-off, then
    measure held-out recall before allowing it to reorder generators;

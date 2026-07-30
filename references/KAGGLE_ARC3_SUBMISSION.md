@@ -10,7 +10,7 @@ submission.
 
 ## Decision
 
-Submit Reflector after the exact v67 source, candidate, and permanent local
+Submit Reflector after the exact v68 source, candidate, and permanent local
 reports have been frozen and verified. A Kaggle submission is valuable because
 it tests transfer to hidden games; the score on the 25 downloadable
 public-development games cannot answer that question.
@@ -29,7 +29,7 @@ that predates the accepted source commit.
 
 Never infer either Kaggle score from a local report. Submission `55113224`
 contains frozen v65b and is pending; record its public score as **pending; not
-yet returned**. V67 has not been submitted. Until Kaggle releases or verifies
+yet returned**. V68 has not been submitted. Until Kaggle releases or verifies
 the final result, record the private score as **unavailable**.
 
 `REAL_GAMES_REPORT.md` is the canonical root-level score report. Raw local
@@ -96,8 +96,12 @@ Primary sources:
 The intended candidate is:
 
 ```text
-candidates/v67-segmented-permutation-transport-400.json
+candidates/v68-path-cycle-transport-400.json
 ```
+
+Its frozen identity is `candidate-35de85c4fe395c3a`, generation 32, parent
+`candidate-a1ccbdb17d674b78`, with inference fingerprint
+`eec820706c163e4dc2ae045117ca05f9a7ff9cb75de2f01784744ce60600c8d1`.
 
 First confirm that the implementation and candidate are in one frozen source
 commit and that the worktree contains no uncommitted inference-path changes:
@@ -105,7 +109,7 @@ commit and that the worktree contains no uncommitted inference-path changes:
 ```bash
 git status --short
 git rev-parse HEAD
-git show HEAD:candidates/v67-segmented-permutation-transport-400.json
+git show 59daf6171026b986c1e26aaa5fa1f56e2ef03269:candidates/v68-path-cycle-transport-400.json
 ```
 
 The permanent target, preservation, and full 25-game reports must all name that
@@ -122,10 +126,10 @@ Run the local quality and exact-candidate gates:
 .venv/bin/mypy reflector
 
 .venv/bin/reflector-kaggle smoke-test \
-  --config candidates/v67-segmented-permutation-transport-400.json
+  --config candidates/v68-path-cycle-transport-400.json
 
 .venv/bin/reflector-kaggle export \
-  --config candidates/v67-segmented-permutation-transport-400.json \
+  --config candidates/v68-path-cycle-transport-400.json \
   --output dist
 
 .venv/bin/kaggle_smoke_test
@@ -139,7 +143,7 @@ dist/reflector-kaggle-overlay.zip
 dist/reflector-kaggle-submission.ipynb
 ```
 
-The notebook embeds both the exact inference overlay and the serialized v67
+The notebook embeds both the exact inference overlay and the serialized v68
 `MindConfig`; it is the artifact to upload. The ZIP is an auditable copy of the
 inference overlay and does not need to be attached as a separate Kaggle
 dataset.
@@ -148,10 +152,22 @@ Record the final artifact hashes only after the last export:
 
 ```bash
 sha256sum \
-  candidates/v67-segmented-permutation-transport-400.json \
+  candidates/v68-path-cycle-transport-400.json \
   dist/reflector-kaggle-overlay.zip \
   dist/reflector-kaggle-submission.ipynb
 ```
+
+The verified 2026-07-30 hashes are:
+
+```text
+032aeab81e10976858e335ba1467240cd241a0a9ed65a2d707841c68950c95e6  candidate
+a3c747d23da9444843df36c7c6057866907befb5ebf6700840e0054314705164  overlay
+f83b6f2ea405f7a196a0084d3a21a34e4fc1f6ba07609cf20b2cd91e8f7ec56e  notebook
+```
+
+The accepted local public-development result bound to that inference source is
+`9.684019526667843/100`, 28/183 levels, 2/25 complete games, and 25/25
+coverage. It is not a Kaggle score.
 
 ## Browser submission workflow
 
@@ -303,12 +319,12 @@ private code sharing outside the registered team is prohibited.
 
 At the 2026-07-30 audit:
 
-- v67 is frozen at source/candidate commit
-  `509575e88cff60d33368006ca77b6eb30db67a40`; its candidate fingerprint,
+- v68 is frozen at source/candidate commit
+  `59daf6171026b986c1e26aaa5fa1f56e2ef03269`; its candidate fingerprint,
   two target repeats, preservation gate, full 25-game report, exact export,
   both network-disabled smoke paths, and technical prize checks pass;
 - frozen v65b submission `55113224` is pending and has returned no Kaggle
-  public or private score; v67 has not been submitted;
+  public or private score; v68 has not been submitted;
 - the project virtual environment has a working authenticated Kaggle CLI; a
   live read-only check still reports submission `55113224` as `PENDING`;
 - rule acceptance, identity verification, eligibility confirmation, team

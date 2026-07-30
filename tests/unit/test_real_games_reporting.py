@@ -23,6 +23,16 @@ PRESERVATION_REPORT = (
     / "reports"
     / "official-isolated-v68-frozen-progress-gate-400.json"
 )
+COGNITIVE_ARCHIVE = (
+    ROOT
+    / "reports"
+    / "official-isolated-v68-frozen-lp85-cognitive.jsonl.gz"
+)
+PATH_OFF_DIAGNOSTIC = (
+    ROOT
+    / "reports"
+    / "diagnostic-v68-source-v67-config-lp85-400.json"
+)
 
 
 def test_human_reports_match_accepted_scorecard() -> None:
@@ -73,6 +83,8 @@ def test_canonical_report_binds_the_frozen_v68_evidence() -> None:
         ACCEPTED_REPORT,
         *TARGET_REPORTS,
         PRESERVATION_REPORT,
+        COGNITIVE_ARCHIVE,
+        PATH_OFF_DIAGNOSTIC,
     ):
         digest = hashlib.sha256(artifact.read_bytes()).hexdigest()
         assert digest in canonical

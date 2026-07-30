@@ -1,28 +1,54 @@
 # Validation results
 
-Run date: 2026-07-27.
+Last updated: 2026-07-30.
 
-## Official public-game conclusion
+## Current official public-game conclusion
+
+The accepted pure-symbolic v68 agent is frozen at source/candidate commit
+`59daf6171026b986c1e26aaa5fa1f56e2ef03269`, candidate
+`candidate-35de85c4fe395c3a`, and inference fingerprint
+`eec820706c163e4dc2ae045117ca05f9a7ff9cb75de2f01784744ce60600c8d1`.
+The process-isolated official offline `Swarm` evaluated all 25 known
+public-development games at 400 actions per unfinished game.
+
+| Metric | Accepted v68 result |
+| --- | ---: |
+| Official local score | **9.684019526667843 / 100** |
+| Games fully completed | **2 / 25** |
+| Games with progress | **11 / 25** |
+| Levels completed | **28 / 183** |
+| Evaluation coverage | **25 / 25 games** |
+| Actions | **9,486** |
+
+V68 changes only `lp85` relative to accepted v67: 4/8 becomes 5/8, with
+`[37,8,54,71,50,180,0,0]` reproduced twice. Every non-`lp85` score, level
+count, action total, reset count, completed-level vector, action-count
+distribution, and detailed reason distribution is preserved. The eleven-game
+gate scores `22.00913528788146`; the two target repeats each score
+`19.624778947802895`.
+
+The accepted raw report is
+[`reports/official-isolated-v68-frozen-public-400.json`](reports/official-isolated-v68-frozen-public-400.json),
+SHA-256
+`604c195c42b8510fb0390c738dc8cd0bd39bd6a9561df0d195d236c14acbd6ab`.
+The complete interpretation, target/gate provenance, cognitive evidence,
+charts, candidate identity, and claim boundaries are maintained in
+[`REAL_GAMES_REPORT.md`](REAL_GAMES_REPORT.md).
+
+This is known-public local-development evidence. It is not a Kaggle public or
+private leaderboard score, and it does not override the need for hidden-game
+validation.
+
+## Historical zero-score public baseline
 
 On 2026-07-28, the frozen `reflector-symbolic-v13` agent at commit `1cd73e2`
-ran through all 25 official API public games using the official offline
-`Swarm`. Coverage was complete, but the agent scored `0.0`, completed zero
-levels, and consumed 2,025 actions. One official random-starter reference run
-also scored zero.
-
-The public result overrides any performance implication one might draw from
-the synthetic validations below. Across the real games, Reflector constructed
-1,794 schemas and 479 concepts but produced no learned procedures, no accepted
-language operators, and no level advances. The current abstractions therefore
-do not yet connect sensorimotor prediction to goal discovery and control.
-
-The raw report is
+ran through all 25 official API public games using the same offline `Swarm`.
+Coverage was complete, but it scored `0.0`, completed zero levels, and used
+2,025 actions. One official random-starter reference run also scored zero.
+That historical report is
 [`reports/official-public-evaluation-v8.json`](reports/official-public-evaluation-v8.json),
 SHA-256
 `cca07a3f571697ceea4b93d1cb308a5f1700bee47de83a769f537bc45a52f3d9`.
-The interpretation, provenance, random reference, artifact hashes, and a
-recording-fidelity defect are documented in
-[`REAL_GAMES_REPORT.md`](REAL_GAMES_REPORT.md).
 
 ## V8 conclusion
 
@@ -393,8 +419,22 @@ test it. Neither result establishes ARC generalization.
 
 ## Remaining external validation
 
-The official deterministic `bt11` fixture remains a five-level compatibility
-test. The required 25-public-game evaluation cannot run anonymously: the
-official API returns HTTP 401, and this checkout has no accepted-data
-credential or `ARC_API_KEY`. A Kaggle score, public-game completion/RHAE table,
-and competition-grade generalization claim therefore remain outstanding.
+The deterministic `bt11` fixture remains only a compatibility test. The full
+25-game known-public evaluation is now complete and reported above, but it was
+used for development and is not a hidden confirmation set.
+
+Frozen v65b Kaggle submission `55113224` is still `PENDING`; it has returned
+neither a public nor private score. V68 has not been submitted. The remaining
+external validation is therefore:
+
+- a terminal Kaggle result with exact candidate/notebook attribution;
+- a separate v68 submission if the participant chooses to spend the daily
+  submission;
+- hidden-game or genuinely held-out environment evidence;
+- publication of the exact submitted notebook and source from a
+  participant-owned public repository;
+- participant eligibility, identity, team, and Paper Track account actions.
+
+Until those occur, the correct strongest claim is a deterministic
+`9.684019526667843/100` local result on the 25 known public-development games,
+not competition-grade generalization.

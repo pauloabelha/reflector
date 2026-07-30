@@ -1,7 +1,9 @@
 # ARC Prize 2026 readiness
 
-Audit date: 2026-07-27. This is an engineering compliance review, not legal
-advice. The binding source is the current
+Engineering audit updated: 2026-07-30. The machine-readable rules snapshot is
+dated 2026-07-27 and remains within its 14-day freshness gate. This is an
+engineering compliance review, not legal advice. The binding source is the
+current
 [Kaggle competition rules](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/rules);
 the host may change dates or requirements.
 
@@ -16,6 +18,12 @@ progress, theory, completeness, and novelty equally. Reflector already has a
 distinct symbolic thesis, an operative implementation, deterministic traces,
 ablation machinery, and explicit approximations. It does **not** yet have
 enough multi-game evidence for a prize-quality paper.
+
+The current accepted v68 public-development result is
+`9.684019526667843/100`: 28/183 levels across 11/25 games, with `sb26` and
+`ft09` fully completed. This is materially stronger than fixture-only
+compatibility but remains known-public development evidence, not a Kaggle
+leaderboard result or a competitive hidden-game claim.
 
 The same entry is formally eligible for these ARC-AGI-3 awards if it places:
 
@@ -71,6 +79,25 @@ Reflector:
 - separates third-party MIT starter code from dual-licensed contributions;
 - discloses that the symbolic model has parameters but no weights.
 
+The accepted package is frozen at source/candidate commit
+`59daf6171026b986c1e26aaa5fa1f56e2ef03269`, candidate
+`candidate-35de85c4fe395c3a`. Its exact 25-game scorecard has complete 25/25
+coverage; its target repeats, eleven-game preservation gate, full suite,
+pytest, Ruff, mypy, direct export, both network-disabled smoke paths, and
+technical prize audit pass. Exact current artifact hashes are:
+
+- candidate:
+  `032aeab81e10976858e335ba1467240cd241a0a9ed65a2d707841c68950c95e6`;
+- Kaggle overlay:
+  `a3c747d23da9444843df36c7c6057866907befb5ebf6700840e0054314705164`;
+- Kaggle notebook:
+  `f83b6f2ea405f7a196a0084d3a21a34e4fc1f6ba07609cf20b2cd91e8f7ec56e`;
+- accepted 25-game report:
+  `604c195c42b8510fb0390c738dc8cd0bd39bd6a9561df0d195d236c14acbd6ab`.
+
+`technical_ready` is true. `prize_ready` remains false because the account,
+publication, and committed Kaggle-rerun gates below are manual.
+
 ## Required account and publication actions
 
 These cannot be completed from a local checkout:
@@ -102,12 +129,13 @@ These cannot be completed from a local checkout:
 
 ## Research gates before a credible paper
 
-- Run the official agent on all 25 public environments after accepting the
-  data rules and obtaining an ARC API key; report completion and RHAE, not
-  only `bt11`. Anonymous API access currently returns HTTP 401.
-- Use `reflector official-public-run --environments-dir ... --recordings-dir
-  ... --output official-public-evaluation.json`; it fails before execution
-  unless the accepted metadata inventory contains exactly 25 unique games.
+- Preserve the completed 25-game public evaluation as the known-public
+  development baseline: 25/25 coverage, 28/183 levels, 2/25 games complete,
+  9,486 actions, and `9.684019526667843/100`. Do not relabel it as held-out or
+  leaderboard evidence.
+- Obtain a terminal result for pending v65b Kaggle submission `55113224`, then
+  submit v68 only as a separately identified exact notebook/candidate. Never
+  attribute a returned v65b score to v68.
 - Replace transformed-trace “holdouts” with held-out environments for the main
   generalization claim.
 - Compare the symbolic system against random, rare-color, schema-disabled,
