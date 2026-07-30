@@ -1842,6 +1842,38 @@ class EpistemicExplorer:
                     self.paired_effects[action_id],
                     nodes,
                 )
+                contextual_key = (state, action_id)
+                if (
+                    self.paired_contextual_transitions
+                    and contextual_key in self.paired_contextual_quarantined
+                ):
+                    successor = state
+                elif self.paired_contextual_transitions:
+                    contextual = (
+                        self._paired_confirmed_contextual_successor(
+                            state,
+                            action_id,
+                        )
+                    )
+                    if (
+                        contextual is not None
+                        and contextual[0] in nodes
+                        and contextual[1] in nodes
+                    ):
+                        successor = contextual
+                        self.paired_contextual_planner_uses += 1
+                    elif self.paired_transport_family:
+                        family_successor = (
+                            self._paired_transport_family_successor(
+                                frame,
+                                state,
+                                self.paired_effects[action_id],
+                                nodes,
+                            )
+                        )
+                        if family_successor is not None:
+                            successor = family_successor
+                            self.paired_transport_planner_uses += 1
                 expanded_edges += 1
                 if successor == state or successor in visited:
                     continue

@@ -431,6 +431,26 @@ def test_paired_marker_relation_is_recolored_action_equivariant_and_credited() -
     assert accommodated is not None
     assert accommodated[2] != ((5, 14), (14, 14))
 
+    composed = EpistemicExplorer(
+        paired_object_contact_planning=True,
+        paired_contextual_transitions=True,
+        paired_terminal_relation_mode="marker-first",
+    )
+    composed.paired_grounding = composed._ground_paired_objects(initial_frame)
+    assert composed.paired_grounding is not None
+    composed.paired_effects = explorer.paired_effects
+    composed.paired_contextual_evidence = {
+        (((5, 13), (14, 13)), 2): Counter({initial: 2})
+    }
+    composed_plan = composed._paired_marker_plan(
+        initial_frame,
+        initial,
+        frozenset({2, 7}),
+    )
+    assert composed_plan is not None
+    assert composed_plan[2] == ((14, 14), (5, 14))
+    assert composed.paired_contextual_planner_uses > 0
+
     recolored = EpistemicExplorer(
         paired_object_contact_planning=True,
         paired_terminal_relation_mode="marker-first",
