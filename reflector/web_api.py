@@ -192,6 +192,74 @@ def _tail_jsonl(path: Path, count: int = 40) -> list[dict[str, Any]]:
     return output
 
 
+def _latest_recording(workspace: Path, game: str) -> Path | None:
+    """Find the freshest official recording for one active cognitive stream."""
+
+    candidates: list[Path] = []
+    for root in (workspace / "reports", workspace / "recordings"):
+        if not root.is_dir():
+            continue
+        for path in root.rglob("*.jsonl"):
+            if not any("recording" in part.lower() for part in path.parts):
+                continue
+            file_game = path.name.split(".", 1)[0]
+            if file_game == game or path.parent.name == game:
+                candidates.append(path)
+    return max(candidates, key=lambda path: path.stat().st_mtime, default=None)
+
+
+def _recording_snapshot(path: Path, workspace: Path) -> dict[str, Any] | None:
+    """Return the last bounded raster state from an official recording."""
+
+    rows = _tail_jsonl(path, count=1)
+    if not rows:
+        return None
+    data = rows[-1].get("data")
+    if not isinstance(data, dict):
+        return None
+    raw_frame = data.get("frame")
+    if (
+        not isinstance(raw_frame, list)
+        or len(raw_frame) != 1
+        or not isinstance(raw_frame[0], list)
+    ):
+        return None
+    grid = raw_frame[0]
+    if (
+        not grid
+        or len(grid) > 256
+        or not all(isinstance(row, list) for row in grid)
+    ):
+        return None
+    width = len(grid[0])
+    if (
+        not 0 < width <= 256
+        or len(grid) * width > 65_536
+        or any(
+            len(row) != width
+            or any(type(value) is not int for value in row)
+            for row in grid
+        )
+    ):
+        return None
+    action_input = data.get("action_input")
+    return {
+        "frame": grid,
+        "frame_width": width,
+        "frame_height": len(grid),
+        "recording": str(path.relative_to(workspace)),
+        "recording_modified": path.stat().st_mtime,
+        "available_actions": (
+            data.get("available_actions")
+            if isinstance(data.get("available_actions"), list)
+            else []
+        ),
+        "levels_completed": int(data.get("levels_completed", 0)),
+        "levels_total": int(data.get("win_levels", 0)),
+        "recorded_action": action_input if isinstance(action_input, dict) else None,
+    }
+
+
 def _scorecards(workspace: Path) -> list[tuple[Path, dict[str, Any]]]:
     reports = workspace / "reports"
     output: list[tuple[Path, dict[str, Any]]] = []
@@ -329,7 +397,7 @@ def live_snapshot(workspace: Path) -> dict[str, Any]:
                 and value not in (0, None, "", "not-attempted", "exact-off")
             }
             current = {
-                "active": now - stream.stat().st_mtime < 8,
+                "active": now - stream.stat().st_mtime < 15,
                 "game": deployment.get("game_id", stream.stem),
                 "candidate_id": deployment.get("candidate_id"),
                 "agent_version": deployment.get("agent_version"),
@@ -343,6 +411,25 @@ def live_snapshot(workspace: Path) -> dict[str, Any]:
                 "modified": stream.stat().st_mtime,
                 "diagnostics": diagnostics,
             }
+            recording_path = _latest_recording(
+                workspace,
+                _game_name(str(current["game"])),
+            )
+            if recording_path is not None:
+                raster = _recording_snapshot(recording_path, workspace)
+                if raster is not None:
+                    current.update(raster)
+                    current["modified"] = max(
+                        float(current["modified"]),
+                        float(raster["recording_modified"]),
+                    )
+                    current["active"] = (
+                        now - float(current["modified"]) < 15
+                    )
+                    current["level"] = max(
+                        int(current["level"]),
+                        int(raster["levels_completed"]),
+                    )
             for item in events:
                 transition = item.get("transition") or {}
                 logs.append(
@@ -366,9 +453,14 @@ def live_snapshot(workspace: Path) -> dict[str, Any]:
         reverse=True,
     ) if (workspace / "candidates").is_dir() else []
     offspring = None
-    if candidates:
+    for index, path in enumerate(candidates):
         try:
-            value = json.loads(candidates[0].read_text(encoding="utf-8"))
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(value, dict):
+            continue
+        if index == 0:
             offspring = {
                 key: value.get(key)
                 for key in (
@@ -380,9 +472,18 @@ def live_snapshot(workspace: Path) -> dict[str, Any]:
                     "inference_fingerprint",
                 )
             }
-            offspring["path"] = str(candidates[0].relative_to(workspace))
-        except (OSError, json.JSONDecodeError):
-            pass
+            offspring["path"] = str(path.relative_to(workspace))
+        if (
+            current is not None
+            and value.get("candidate_id") == current.get("candidate_id")
+            and isinstance(value.get("config"), dict)
+            and type(value["config"].get("action_budget")) is int
+        ):
+            current["action_budget"] = value["config"]["action_budget"]
+        if offspring is not None and (
+            current is None or "action_budget" in current
+        ):
+            break
 
     artifacts = sorted(
         (

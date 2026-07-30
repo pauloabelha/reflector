@@ -21,6 +21,10 @@ interface Snapshot {
     objects: number; stream: string; modified: number;
     action: { action_id: number; data: Record<string, number>; reason: string };
     diagnostics: Record<string, Json>;
+    frame?: number[][]; frame_width?: number; frame_height?: number;
+    recording?: string; recording_modified?: number;
+    recorded_action?: { id: number; data: Record<string, number> };
+    available_actions?: number[]; levels_total?: number; action_budget?: number;
   };
   offspring: null | Record<string, Json>;
   best_full: Run | null; latest_run: Run | null; runs: Run[];
@@ -48,6 +52,52 @@ const ago = (timestamp: number) => {
   return `${Math.floor(seconds / 3600)}h ago`;
 };
 const pct = (a: number, b: number) => b ? Math.round(a / b * 100) : 0;
+const colors = [
+  "#05070a", "#2f80ed", "#ff4d5a", "#36c96b",
+  "#ffd447", "#aab4bd", "#cf5cff", "#ff9f43",
+  "#64d8ff", "#8b1e3f", "#f8f9fa", "#3d5a80",
+  "#f72585", "#4cc9f0", "#b8f2e6", "#ece9df",
+];
+const pixelColor = (value: number) =>
+  colors[value] ?? `hsl(${Math.abs(value * 47) % 360} 70% 58%)`;
+
+function frameLegend(frame: number[][] | undefined): string {
+  if (!frame) return "";
+  const values = [...new Set(frame.flat())].sort((a, b) => a - b);
+  return values.map((value) =>
+    `<span title="Rendered value ${value}"><i style="background:${pixelColor(value)}"></i>${value}</span>`
+  ).join("");
+}
+
+function drawFrame(current: Snapshot["current"]): void {
+  if (!current?.frame?.length) return;
+  const canvas = document.querySelector<HTMLCanvasElement>("#live-frame");
+  if (!canvas) return;
+  const height = current.frame.length;
+  const width = current.frame[0]?.length ?? 0;
+  if (!width) return;
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.aspectRatio = `${width} / ${height}`;
+  const context = canvas.getContext("2d");
+  if (!context) return;
+  context.imageSmoothingEnabled = false;
+  current.frame.forEach((row, y) => row.forEach((value, x) => {
+    context.fillStyle = pixelColor(value);
+    context.fillRect(x, y, 1, 1);
+  }));
+  const x = current.action?.data?.x;
+  const y = current.action?.data?.y;
+  if (
+    typeof x === "number" && typeof y === "number"
+    && Number.isFinite(x) && Number.isFinite(y)
+    && x >= 0 && y >= 0 && x < width && y < height
+  ) {
+    context.strokeStyle = "#ff6b57";
+    context.lineWidth = Math.max(.16, Math.min(width, height) / 180);
+    context.strokeRect(x + .08, y + .08, .84, .84);
+  }
+}
 
 function levelMatrix(games: Game[]): string {
   const max = Math.max(1, ...games.map((game) => game.levels_total));
@@ -81,6 +131,10 @@ function render(data: Snapshot): void {
   const completed = data.games.reduce((sum, game) => sum + game.levels_completed, 0);
   const total = data.games.reduce((sum, game) => sum + game.levels_total, 0);
   const game = data.games.find((item) => item.game === selectedGame);
+  const actionNumber = current ? Number(current.sequence ?? -1) + 1 : 0;
+  const actionBudget = current?.action_budget ?? 0;
+  const levelTotal = current?.levels_total ?? data.games.find((item) => item.game === current?.game)?.levels_total ?? 0;
+  const levelNumber = current ? Math.min(levelTotal || current.level + 1, current.level + 1) : 0;
   app.innerHTML = `
     <header>
       <a class="brand" href="/monitor.html"><span>R</span><div><strong>REFLECTOR</strong><small>LIVE MISSION CONTROL</small></div></a>
@@ -111,16 +165,33 @@ function render(data: Snapshot): void {
 
       <section class="live-grid">
         <article class="panel current-panel">
-          <div class="panel-title"><div><span class="eyebrow">NOW / COGNITIVE STREAM</span><h2>${current ? esc(current.game) : "No active game"}</h2></div><span class="level-badge">LEVEL ${current?.level ?? "—"}</span></div>
+          <div class="panel-title"><div><span class="eyebrow">NOW / LIVE ENVIRONMENT + COGNITIVE STREAM</span><h2>${current ? esc(current.game) : "No active game"}</h2></div><span class="level-badge">LEVEL ${levelNumber || "—"}${levelTotal ? ` / ${levelTotal}` : ""}</span></div>
           ${current ? `
-            <div class="action">
-              <span>${esc(current.action?.action_id ?? "—")}</span>
-              <div><small>ACTION ${esc(current.sequence)}</small><strong>${esc(current.action?.reason ?? "Waiting for decision")}</strong></div>
-              <code>${esc(JSON.stringify(current.action?.data ?? {}))}</code>
+            <div class="current-body ${current.frame ? "has-frame" : ""}">
+              ${current.frame ? `
+                <div class="frame-panel">
+                  <div class="frame-toolbar"><span>LIVE RASTER</span><b>${esc(current.frame_width)} × ${esc(current.frame_height)}</b><i class="${current.active ? "hot" : ""}">${current.active ? "LIVE" : "LAST FRAME"}</i></div>
+                  <div class="frame-screen"><canvas id="live-frame" aria-label="Current ${esc(current.game)} frame"></canvas></div>
+                  <div class="frame-legend">${frameLegend(current.frame)}</div>
+                </div>
+              ` : ""}
+              <div class="current-side">
+                <div class="action">
+                  <span>${esc(current.action?.action_id ?? "—")}</span>
+                  <div><small>NEXT ACTION ${esc(actionNumber)}</small><strong>${esc(current.action?.reason ?? "Waiting for decision")}</strong></div>
+                  <code>${esc(JSON.stringify(current.action?.data ?? {}))}</code>
+                </div>
+                <div class="progress-stack">
+                  <div><span>RUN ACTIONS</span><b>${actionNumber}${actionBudget ? ` / ${actionBudget}` : ""}</b></div>
+                  <div class="progress-track"><i style="width:${actionBudget ? Math.min(100, pct(actionNumber, actionBudget)) : 0}%"></i></div>
+                  <div><span>LEVEL PROGRESS</span><b>${current.level}${levelTotal ? ` / ${levelTotal}` : ""} complete</b></div>
+                  <div class="progress-track level"><i style="width:${levelTotal ? Math.min(100, pct(current.level, levelTotal)) : 0}%"></i></div>
+                </div>
+                <div class="current-meta"><span>STATE <b>${esc(current.state)}</b></span><span>OBJECTS <b>${esc(current.objects)}</b></span><span>LEGAL <b>${esc(current.available_actions?.join(", ") ?? "—")}</b></span><span>POLICY <b>${esc(current.agent_version)}</b></span></div>
+                <details open><summary>Main mechanism outputs</summary>${diagnostics(current.diagnostics)}</details>
+              </div>
             </div>
-            <div class="current-meta"><span>STATE <b>${esc(current.state)}</b></span><span>OBJECTS <b>${esc(current.objects)}</b></span><span>POLICY <b>${esc(current.agent_version)}</b></span></div>
-            <details open><summary>Main mechanism outputs</summary>${diagnostics(current.diagnostics)}</details>
-            <p class="source">${esc(current.stream)}</p>
+            <p class="source">${esc(current.recording ?? "No paired recording")} · ${esc(current.stream)}</p>
           ` : `<div class="waiting"><span>◌</span><strong>Ready for the next offspring</strong><p>The stream connects automatically when a cognitive JSONL file starts changing.</p></div>`}
         </article>
         <article class="panel offspring-panel">
@@ -164,6 +235,7 @@ function render(data: Snapshot): void {
     </main>
     <footer><span>Read-only local monitor · ${esc(data.workspace)}</span><span>Updated ${new Date(data.generated_at).toLocaleTimeString()}</span></footer>
   `;
+  drawFrame(current);
   document.querySelectorAll<HTMLElement>("[data-game]").forEach((button) => {
     button.addEventListener("click", () => {
       selectedGame = button.dataset.game ?? "";

@@ -149,6 +149,10 @@ def test_live_snapshot_discovers_best_games_and_latest_candidate(tmp_path) -> No
     candidates = tmp_path / "candidates"
     reports.mkdir()
     candidates.mkdir()
+    cognitive = reports / "live-cognitive" / "cognitive"
+    recordings = reports / "live-recordings" / "demo"
+    cognitive.mkdir(parents=True)
+    recordings.mkdir(parents=True)
     (reports / "official.json").write_text(
         json.dumps(
             {
@@ -184,8 +188,53 @@ def test_live_snapshot_discovers_best_games_and_latest_candidate(tmp_path) -> No
                 "rationale": "test",
                 "mutation_source": "unit",
                 "inference_fingerprint": "a" * 64,
+                "config": {"action_budget": 400},
             }
         ),
+        encoding="utf-8",
+    )
+    (cognitive / "demo.cognitive.jsonl").write_text(
+        json.dumps(
+            {
+                "sequence": 17,
+                "deployment": {
+                    "game_id": "demo",
+                    "candidate_id": "candidate-new",
+                    "agent_version": "reflector-test",
+                    "inference_fingerprint": "a" * 64,
+                },
+                "observation": {
+                    "levels_completed": 1,
+                    "state": "NOT_FINISHED",
+                    "object_count": 4,
+                },
+                "decision": {
+                    "action_id": 6,
+                    "data": {"x": 2, "y": 1},
+                    "reason": "unit-live-action",
+                },
+                "operative_state": {
+                    "exploration": {"planner_expansions": 9}
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (recordings / "demo.reflectoragent.recording.jsonl").write_text(
+        json.dumps(
+            {
+                "data": {
+                    "frame": [[[0, 1, 2], [3, 4, 5]]],
+                    "levels_completed": 1,
+                    "win_levels": 4,
+                    "state": "NOT_FINISHED",
+                    "available_actions": [1, 6],
+                    "action_input": {"id": 6, "data": {"x": 1, "y": 1}},
+                }
+            }
+        )
+        + "\n",
         encoding="utf-8",
     )
     snapshot = live_snapshot(tmp_path)
@@ -193,3 +242,8 @@ def test_live_snapshot_discovers_best_games_and_latest_candidate(tmp_path) -> No
     assert snapshot["games"][0]["game"] == "demo"
     assert snapshot["games"][0]["level_actions"] == [10, 30, 0, 0]
     assert snapshot["offspring"]["candidate_id"] == "candidate-new"
+    assert snapshot["status"] == "running"
+    assert snapshot["current"]["frame"] == [[0, 1, 2], [3, 4, 5]]
+    assert snapshot["current"]["frame_width"] == 3
+    assert snapshot["current"]["levels_total"] == 4
+    assert snapshot["current"]["action_budget"] == 400
