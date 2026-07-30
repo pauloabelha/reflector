@@ -11,16 +11,19 @@ before acting.
 
 Reflector is an interesting but currently weak ARC-AGI-3 agent.
 
-- Accepted agent: v42, frozen inference commit `0bc1c52`.
-- Local public-development score: **4.4421547794 / 100**.
-- Progress: **17 / 183 levels across 8 / 25 games**.
+- Accepted agent: v47b, frozen inference commit
+  `b9412202c3fd6a5c3f31e68d62127c00a0090fb6`.
+- Local public-development score: **4.4496962800 / 100**.
+- Progress: **18 / 183 levels across 9 / 25 games**.
 - Fully completed games: **0 / 25**.
 - Kaggle submissions: **0**.
 - Kaggle public score: **not submitted**.
 - Kaggle private score: **unavailable**.
-- V41 is rejected. V42 conserves its earned trajectory/replay representation,
-  replaces point collisions with substrate topology and uncertain gates, and
-  is accepted after target, preservation, full-suite, and Kaggle export gates.
+- V47b is accepted. It conserves v42's earned trajectory/topology machinery
+  and distinguishes episode-local stall from same-level experience across
+  retries. It preserves parent behavior before failure, suppresses ambiguous
+  reuse after one failure, and activates bounded cross-retry maturity plus
+  action-family fairness only after two failures.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem
@@ -109,12 +112,18 @@ Reflector has observed both failure modes:
   changes.
 - On `sb26`, a transient post-win frame looked like a new structural puzzle
   and generated a false hypothesis.
+- On `sp80`, each life ended before a 32-intervention abstraction could mature.
+  Resetting all epistemic state on `GAME_OVER` made the mechanism unreachable;
+  conserving bounded same-level experience across retries recovered progress,
+  while preserving the zero-failure parent path prevented regressions.
 
 The needed representation is a bounded **belief/causal state**:
 
 `objects + relations + phase + controllability + committed procedures + uncertainty`
 
-It must be updated by interventions, not inferred from appearance alone.
+It must be updated by interventions, not inferred from appearance alone. An
+environment episode boundary is therefore not automatically an epistemic level
+boundary.
 
 ### 2. Productive abstraction is executable compression with counterfactual credit
 
@@ -483,12 +492,12 @@ advisors. It is a **causal graph explorer that learns executable abstractions**.
 
 ## Immediate experimental priorities
 
-1. **Test whether v42's topology transfers beyond one level.** V42 converted
-   the rejected v41 machinery into `g50t` level-1 success by inferring 28
-   substrate nodes, 10 uncertain gates, and two safe gate-refresh actions.
-   Diagnose level 2 without embedding its route. Mutate region, passage,
-   control-assignment, and gate-phase representations only when they predict
-   held-out reflected/action-permuted fixtures before another real run.
+1. **Test whether failure-conditioned accommodation transfers beyond
+   `sp80`.** V47b recovered one level by conserving bounded maturity across
+   failed episodes while preserving the parent's zero-failure path. Audit
+   games with short lives and repeated same-level resets, preregister which
+   learned scheme should become reachable, and reject any mutation that merely
+   increases generic reuse.
 2. **Reproduce an external graph baseline locally.** Port or adapt the
    open-source graph explorer as a separately configurable control. Compare at
    Reflector's exact 400-action budget and process isolation. This establishes
@@ -507,7 +516,7 @@ advisors. It is a **causal graph explorer that learns executable abstractions**.
    which actions are wasteful. Do not encode replay routes or public game IDs.
 7. **Make a real Kaggle submission.** Until Reflector crosses the hidden
    boundary, claims of generalization are speculation. Submit the exact
-   accepted v42 export first as a baseline, if the user authorizes the external
+   accepted v47b export first as a baseline, if the user authorizes the external
    action and all live rules are satisfied.
 
 ## What the runtime-LLM probe actually established

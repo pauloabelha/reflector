@@ -25,14 +25,15 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-8c51fecdfdb99959`
-- Accepted agent: Reflector v42
-- Accepted frozen inference commit: `0bc1c52`
+- Accepted candidate: `candidate-4c7168f7ad208c65`
+- Accepted agent: Reflector v47b
+- Accepted frozen inference commit:
+  `b9412202c3fd6a5c3f31e68d62127c00a0090fb6`
 - Accepted public-development report:
-  `reports/official-isolated-v42b-public-400.json`
-- Accepted score: `4.442154779403533`
+  `reports/official-isolated-v47b-public-400.json`
+- Accepted score: `4.449696279968774`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 17 levels across 8 games
+- Accepted completions: 18 levels across 9 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -57,6 +58,7 @@ generalization.
 | Evidenced shape-goal translation | v39 learned plain-action translations from rendered effects, matched one mover to a unique stationary shape goal, preserved every v37 action count, and solved `ar25` L1 in 17 actions; its exact-off control remained at zero there. |
 | Relational-phase-conditioned translation | v40 reassigned rare markers between persistent hosts, quarantined phase-A action semantics, re-probed in phase B, preserved every v39 action count, and solved `ar25` L2 in 17 actions. |
 | Substrate-topology belief planning | v42 inferred 28 origin-relative topology nodes and 10 uncertain gates on `g50t`, used two safe information actions to advance a blocking autonomous gate, preserved all 16 v40 levels exactly, and solved `g50t` L1 in 29 actions twice. |
+| Failure-conditioned cross-retry accommodation | v47b preserved the accepted zero-failure mature-stall path, suppressed reuse after one ambiguous failure, and conserved capped maturity plus action-family fairness only after two failures; it preserved all 17 v42 levels exactly and solved `sp80` L1 at action 196 twice. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -1335,7 +1337,7 @@ V46b result:
 - it regressed `lf52` from one level to zero and `lp85` from three levels to
   zero, so v46b is rejected and v42 remains accepted.
 
-## Active experiment: v47 failure-conditioned fairness
+## Accepted experiment: v47b failure-conditioned fairness
 
 Parent: rejected v46b diagnostic; accepted parent remains v42.
 
@@ -1399,6 +1401,19 @@ Preregistered v47b zero-failure non-interference amendment:
   family-balanced afterward;
 - require exact target reproduction and no lost level in the nine-game gate.
 
+V47b result:
+
+- two exact target runs completed `sp80` level 1 at action 196 with allocation
+  `[196, 204]`;
+- two exact nine-game gates preserved every v42 level and action count, improved
+  `g50t` level 1 from 29 to 27 actions, and added `sp80`;
+- the frozen-source full suite scored `4.449696279968774/100`, solved 18/183
+  levels across nine games, used all 10,000 actions, and completed 0/25 games;
+- 204 tests passed with three skipped; Ruff, mypy, generic and exact-candidate
+  network-disabled smoke tests, and exact export all passed;
+- candidate `candidate-4c7168f7ad208c65` is accepted from frozen inference
+  source `b9412202c3fd6a5c3f31e68d62127c00a0090fb6`.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural
@@ -1413,7 +1428,7 @@ Preregistered v47b zero-failure non-interference amendment:
 
 ## Next actions
 
-1. Preserve accepted v42 and stop extending the `g50t` plan cap. Learn an
+1. Preserve accepted v47b and stop extending the `g50t` plan cap. Learn an
    explicit gate-phase experiment or switch target games; the v43c-v43f and
    integrated-Gemma runs all preserved level 1 but added no level 2.
 2. Treat `m0r0` separately as equivariant multi-object composition; require
@@ -1424,7 +1439,7 @@ Preregistered v47b zero-failure non-interference amendment:
 4. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
 5. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v42 accepted otherwise.
+   qualifying offspring; keep v47b accepted otherwise.
 6. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.

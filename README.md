@@ -20,29 +20,29 @@ service, database, or web server.
 Last verified: 2026-07-29
 
 > **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
-> It has solved **17 of 183 levels across 8 games**. All 25 games were
+> It has solved **18 of 183 levels across 9 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v42 result |
+| Metric | Accepted v47b result |
 | --- | ---: |
 | Complete games beaten | **0 / 25** |
-| Games with at least one solved level | **8 / 25** |
-| Levels solved | **17 / 183** |
-| Official local score | **4.4421547794 / 100** |
+| Games with at least one solved level | **9 / 25** |
+| Levels solved | **18 / 183** |
+| Official local score | **4.4496962800 / 100** |
 | Games evaluated | **25 / 25** |
 | Kaggle submissions | **0** |
 
-The score is about **4.44% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. V42 preserves every
-v40 completion at its exact action count and adds `g50t` level 1 in 29 actions.
-It learns a movement lattice and committed replay macro from rendered
-interventions, infers a bounded graph over the dominant navigable substrate,
-and separates structural background holes from uncertain autonomous gates.
-When one evidenced gate collision disconnects every route, it takes one safe
-information action to advance gate state and replans. Two fresh target runs and
-two eight-game preservation gates were exact. The full suite runs every game
-in a fresh process. The exact package passes 191 tests (3 skipped), Ruff,
-mypy, both offline smoke paths, and export. No hidden Kaggle score exists.
+The score is about **4.45% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. V47b preserves all
+17 accepted v42 levels, improves `g50t` level 1 from 29 to 27 actions, and adds
+`sp80` level 1 in 196 actions. Its operative change distinguishes episode-local
+stall from accumulated same-level experience: parent behavior is preserved
+before any failure, reuse is suppressed after one ambiguous failure, and
+bounded cross-retry maturity plus action-family fairness activates only after
+two failures. Two target runs and two nine-game preservation gates were exact.
+The full suite runs every game in a fresh process. The exact package passes 204
+tests (3 skipped), Ruff, mypy, both offline smoke paths, and export. No hidden
+Kaggle score exists.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object
@@ -72,7 +72,7 @@ macro, autonomous replay, and up to 21 contextual collision edges across
 retries. After seven trace-driven variants it still solved 0/7 `g50t` levels
 at 400 actions, so its preregistered 30-action target was falsified. These
 negative results motivated v42's substrate topology and uncertain-gate
-information actions. The accepted v42 result and all rejected predecessors are
+information actions. The accepted v47b result and all rejected predecessors are
 documented in the [real-games scorecard](REAL_GAMES_REPORT.md).
 
 A second hybrid tests the stronger architecture: the symbolic agent remains
@@ -83,7 +83,8 @@ matched the v43f symbolic control exactly at **1/7 levels and `[27, 53]`**.
 Gemma was consulted 27 times, accepted 22 symbolic proposals, made five
 overrides, and produced six invalid responses that safely fell back. It added
 no level and still sometimes named a different action in prose than its chosen
-candidate denoted. The hybrid is therefore rejected; v42 remains accepted.
+candidate denoted. The hybrid is therefore rejected; it is not part of the
+accepted v47b runtime.
 
 The v26 research branch now preregisters intervention hypotheses, keeps
 predictive and pragmatic credit separate, and treats successful action-role

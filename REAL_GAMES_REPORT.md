@@ -6,15 +6,15 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 17 of 183 levels across 8 games. The suite ran all 25 games,
+> It has solved 18 of 183 levels across 9 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v42 result | Meaning |
+| Outcome metric | Accepted v47b result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **0 / 25** | No game was solved through its final level. |
-| Games with progress | **8 / 25** | At least one level was solved in eight games. |
-| Levels solved | **17 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; two in `ar25`; one each in `g50t`, `lf52`, `r11l`, and `tn36`. |
-| Official local score | **4.4421547794 / 100** | About **4.44%** of the 100-point scale. |
+| Games with progress | **9 / 25** | At least one level was solved in nine games. |
+| Levels solved | **18 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; two in `ar25`; one each in `g50t`, `lf52`, `r11l`, `sp80`, and `tn36`. |
+| Official local score | **4.4496962800 / 100** | About **4.45%** of the 100-point scale. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Action budget used | **10,000** | 400 actions were allocated to each game. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
@@ -23,6 +23,9 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
+| Process-isolated official local suite | v47b accepted | **4.4496962800 / 100** | 0 games beaten; 18/183 levels | 25/25 coverage |
+| Process-isolated nine-game gate | v47b accepted | 12.3602674444 / 100 | 18 levels; every v42 level preserved | exact twice |
+| Target-only `sp80` reruns | v47b accepted | 0.1885375141 for one game | 1/6 levels; `[196, 204]` under 400 actions | deterministic gain twice |
 | Process-isolated official local suite | v42 accepted | **4.4421547794 / 100** | 0 games beaten; 17/183 levels | 25/25 coverage |
 | Process-isolated eight-game gate | v42 accepted | 13.8817336856 / 100 | 17/60 levels; every v40 action count preserved | exact twice |
 | Target-only `g50t` reruns | v42 accepted | 3.5714285714 for one game | 1/7 levels; `[29, 11]` under 40 actions | deterministic gain twice |
@@ -63,7 +66,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v42 package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v47b package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -251,14 +254,94 @@ Raw evidence:
 | v37 | 3.9659643032 | 14 | 6 | 0 | Enclosure-grounded sibling container composition | historical accepted |
 | v39 | 4.0770754143 | 15 | 7 | 0 | Evidenced shape-goal translation with bounded occlusion | historical accepted |
 | v40 | 4.2992976365 | 16 | 7 | 0 | Relational-phase-conditioned translation | historical accepted |
-| v42 | **4.4421547794** | **17** | **8** | **0** | Substrate topology with uncertain-gate information actions | **current accepted** |
+| v42 | 4.4421547794 | 17 | 8 | 0 | Substrate topology with uncertain-gate information actions | historical accepted |
+| v47b | **4.4496962800** | **18** | **9** | **0** | Failure-conditioned fairness and cross-retry maturity | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v42 result
+## Accepted v47b result
+
+V47b inherits the complete accepted v42 policy. Its one operative
+accommodation separates within-episode stall from evidence accumulated across
+retries of the same level. With zero failures it preserves v42's mature-stall
+productive-role reuse exactly. After one failure it suppresses ambiguous
+reuse. After two failures it conserves a capped maturity counter across
+retries, activates bounded productive reuse, and balances finite legal action
+families. Actual level progress clears the failure-conditioned state.
+
+This distinction came from a source-matched falsification. The historical v28
+genome no longer reproduced its `sp80` level on current source because a later
+32-intervention maturity gate was reset on every `GAME_OVER`; each life ended
+before the mechanism became reachable. V46 made maturity reachable but
+violated its preregistered two-failure guard. V46b passed the target but
+regressed `lf52` and `lp85`. V47 delayed fairness until two failures and
+restored `lf52`, but still blocked the zero-failure parent path on `lp85`.
+V47b's three-state compatibility rule was the smallest mutation that preserved
+both kinds of evidence.
+
+Two fresh target runs completed `sp80` level 1 at action 196 with allocation
+`[196, 204]`. Two process-isolated nine-game gates were exact: all 17 v42
+levels and their action counts were preserved, `g50t` improved from 29 to 27
+actions, and `sp80` was added. The frozen-source 25-game run scored
+`4.449696279968774/100`, solved 18/183 levels across nine games, used 10,000
+actions, and completed 0/25 games.
+
+Frozen inference commit:
+`b9412202c3fd6a5c3f31e68d62127c00a0090fb6`
+
+Candidate: `candidate-4c7168f7ad208c65`
+
+Candidate inference fingerprint:
+`a554f604299421357eecf6813e1d86940f6fd0b7084fbf2425ec1bfee6277879`
+
+Candidate SHA-256:
+`932d1edf8ff09b242c9c56598964fa0f579b4509d51a1b4daa925911f11ac2cf`
+
+Full report SHA-256:
+`cad20e9edb510e879a18512b2cd17a15f1fb9527355c38c890c515e494126180`
+
+Verification: 204 tests passed (3 skipped), Ruff passed, mypy passed, the
+generic and exact-candidate network-disabled smoke paths passed, and the exact
+candidate exported without translation. The overlay SHA-256 is
+`c906d8363360f1c45862992f8fad70d6d2a1b5a62114ba2ac635ac16ba4e5abe`;
+the notebook SHA-256 is
+`fc5bb2adee8353cfaec112af74976ea830f4381d0e11babf74c15764f4d9f676`.
+
+### Accepted v47b progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ar25` | **2** | 8 | `[17, 17]` | 8.3333333333 | No |
+| `ft09` | **5** | 6 | `[4, 7, 14, 16, 94]` | 66.1466080321 | No |
+| `g50t` | **1** | 7 | `[27]` | 3.5714285714 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `lp85` | **3** | 8 | `[37, 8, 54]` | 9.7216281179 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `sb26` | **3** | 8 | `[9, 15, 15]` | 16.6666666667 | No |
+| `sp80` | **1** | 6 | `[196]` | 0.1885375141 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| Remaining 16 games | **0** | 117 | `[]` | 0 | No |
+| **Total** | **18** | **183** | — | **4.4496962800 overall** | **0 / 25** |
+
+Raw evidence:
+
+- [v47b accepted process-isolated 25-game scorecard](reports/official-isolated-v47b-public-400.json)
+- [v47b exact nine-game gate 1](reports/official-isolated-v47b-nine-game-preservation-r1-400.json)
+- [v47b exact nine-game gate 2](reports/official-isolated-v47b-nine-game-preservation-r2-400.json)
+- [v47b exact `sp80` rerun 1](reports/experimental-v47b-sp80-parent-compatible-fairness-r1-400.json)
+- [v47b exact `sp80` rerun 2](reports/experimental-v47b-sp80-parent-compatible-fairness-r2-400.json)
+- [v47b candidate](candidates/v47b-parent-compatible-fairness-400.json)
+
+The earned claim is narrow but structural: for one public-development game,
+preserving bounded level experience across failed episodes made an already
+learned productive abstraction reachable, while conditioning exploration
+fairness on repeated failure avoided interfering with fast parent solutions.
+This is not evidence of hidden-game generalization or a Kaggle score.
+
+## Historical accepted v42 result
 
 V42 inherits the exact accepted v40 genome and activates one bounded
 committed-trajectory advisor. It learns translation actions from interventions,
@@ -1099,14 +1182,26 @@ artifact hashes are:
 These historical artifacts have not
 been published or scored on Kaggle.
 
-The accepted v42 candidate exports from frozen inference source `0bc1c52` and
-passes both network-disabled smoke paths without translation. Its generated
+The historical v42 candidate exports from frozen inference source `0bc1c52`
+and passes both network-disabled smoke paths without translation. Its generated
 artifact hashes are:
 
 - overlay:
   `7d0490d74ed0de11cb06b95b381c0b56c76ad53397566efd37815b9ee427f811`
 - notebook:
   `e66ff2926a79f0867a52aee0b197de90d6f04be1a8e2a95e7b143775c8bdc9b7`
+
+These historical artifacts have not been published or scored on Kaggle.
+
+The accepted v47b candidate exports from frozen inference source
+`b9412202c3fd6a5c3f31e68d62127c00a0090fb6` and passes both
+network-disabled smoke paths without translation. Its generated artifact
+hashes are:
+
+- overlay:
+  `c906d8363360f1c45862992f8fad70d6d2a1b5a62114ba2ac635ac16ba4e5abe`
+- notebook:
+  `fc5bb2adee8353cfaec112af74976ea830f4381d0e11babf74c15764f4d9f676`
 
 These are the current technically submission-ready artifacts. They have not
 been published or scored on Kaggle.
