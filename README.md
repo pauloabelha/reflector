@@ -144,10 +144,11 @@ dynamics feature, target prior, or larger search allowance.
 V56 then tested that hypothesis with three bounded procedure continuations
 against an exact-off control. All four runs again ended at 1/6 and
 `[20, 380]`, and every procedure-specific counter remained zero. The offspring
-did not actually recognize the audited object–substrate occlusion because its
-trigger required total loss of the pair representation. V56 is rejected; the
-next general step is a cross-game event vocabulary with measured
-false-activation rates, not another `m0r0`-specific continuation.
+targeted the wrong event: direct recording parse showed that both exact objects
+remain visible through a one-step discontinuous portal transition already
+modeled by v50. V56 is rejected; future procedure hypotheses must be
+programmatically grounded in recorded event indices before another policy
+mutation is built.
 
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction

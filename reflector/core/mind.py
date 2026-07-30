@@ -69,6 +69,7 @@ class MindConfig:
     enable_paired_post_accommodation_plan: bool = False
     paired_terminal_relation_mode: str = "contact-only"
     paired_occlusion_procedure_mode: str = "off"
+    repeated_form_event_mode: str = "off"
     enable_local_relation_solver: bool = False
     enable_constraint_first_role_replay: bool = False
     enable_global_relation_constraint_solver: bool = False
@@ -240,6 +241,16 @@ class MindConfig:
         ):
             raise ValueError(
                 "paired occlusion procedures require paired object planning"
+            )
+        if self.repeated_form_event_mode not in {
+            "off",
+            "confirm-affordance",
+            "confirm-discontinuity",
+            "phase-segment",
+        }:
+            raise ValueError(
+                "repeated_form_event_mode must be off, confirm-affordance, "
+                "confirm-discontinuity, or phase-segment"
             )
         if (
             self.enable_graph_cycle_transport

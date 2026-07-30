@@ -72,6 +72,9 @@ class SymbolicPolicy:
             paired_occlusion_procedure_mode=(
                 self.mind.config.paired_occlusion_procedure_mode
             ),
+            repeated_form_event_mode=(
+                self.mind.config.repeated_form_event_mode
+            ),
             local_relation_solver=self.mind.config.enable_local_relation_solver,
             constraint_first_role_replay=(
                 self.mind.config.enable_constraint_first_role_replay

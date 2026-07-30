@@ -265,6 +265,7 @@ class EpistemicExplorer:
     paired_post_accommodation_plan: bool = False
     paired_terminal_relation_mode: str = "contact-only"
     paired_occlusion_procedure_mode: str = "off"
+    repeated_form_event_mode: str = "off"
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
@@ -311,6 +312,17 @@ class EpistemicExplorer:
     role_trials: Counter[ActionRole] = field(default_factory=Counter)
     role_responses: Counter[ActionRole] = field(default_factory=Counter)
     productive_reuse_level_trials: int = 0
+    repeated_form_effect_history: dict[
+        tuple[str, int, int],
+        Counter[tuple[tuple[int, int], ...]],
+    ] = field(default_factory=dict)
+    repeated_form_confirmation_token: ActionToken | None = None
+    repeated_form_event_predictions: int = 0
+    repeated_form_event_confirmations: int = 0
+    repeated_form_event_detections: int = 0
+    repeated_form_event_replays: int = 0
+    repeated_form_event_phase: int = 0
+    repeated_form_event_diagnostic: str = "not-attempted"
     level_interventions: int = 0
     learned_local_relation: dict[int, bool] = field(default_factory=dict)
     successful_schemes: dict[str, tuple[ActionRole, ...]] = field(default_factory=dict)
@@ -744,6 +756,7 @@ class EpistemicExplorer:
             self._reset_committed_trajectory_level()
             self._reset_boundary_nuisance_state()
             self._reset_paired_object_level()
+            self._reset_repeated_form_events()
             self.inherited_scheme_trials.clear()
             self.inherited_scheme_diagnostic = "not-attempted"
             self.level_interventions = 0
@@ -771,6 +784,7 @@ class EpistemicExplorer:
             self._reset_committed_trajectory_level(retain_accommodation=True)
             self._reset_boundary_nuisance_state()
             self._reset_paired_object_level()
+            self._reset_repeated_form_events()
             if not self.cross_retry_maturity:
                 self.level_interventions = 0
             self.level_failures += 1
@@ -862,6 +876,17 @@ class EpistemicExplorer:
             return
         if any(len(left) != len(right) for left, right in zip(before, after)):
             return
+        if (
+            self.repeated_form_event_mode != "off"
+            and pending_token is not None
+            and pending_token.action_id != self.reset_action
+            and not progressed
+        ):
+            self._observe_repeated_form_effect_event(
+                before,
+                after,
+                pending_token,
+            )
         if (
             self.shape_goal_translation
             and pending_token is not None
@@ -967,6 +992,140 @@ class EpistemicExplorer:
         self.boundary_nuisance_motion.clear()
         self.boundary_nuisance_growth.clear()
         self.boundary_nuisance_sides.clear()
+
+    def _reset_repeated_form_events(self) -> None:
+        self.repeated_form_effect_history.clear()
+        self.repeated_form_confirmation_token = None
+        self.repeated_form_event_predictions = 0
+        self.repeated_form_event_confirmations = 0
+        self.repeated_form_event_detections = 0
+        self.repeated_form_event_replays = 0
+        self.repeated_form_event_phase = 0
+        self.repeated_form_event_diagnostic = "not-attempted"
+
+    @classmethod
+    def _repeated_form_groups(
+        cls,
+        frame: tuple[tuple[int, ...], ...],
+    ) -> dict[
+        tuple[int, int, tuple[tuple[int, int], ...]],
+        tuple[tuple[int, int], ...],
+    ]:
+        groups: dict[
+            tuple[int, int, tuple[tuple[int, int], ...]],
+            list[tuple[int, int]],
+        ] = {}
+        for item in cls._frame_objects(frame):
+            groups.setdefault(
+                (item.color, item.area, item.shape),
+                [],
+            ).append(item.centroid)
+        return {
+            key: tuple(
+                sorted(anchors, key=lambda point: (point[1], point[0]))
+            )
+            for key, anchors in groups.items()
+            if 2 <= len(anchors) <= 8
+        }
+
+    @classmethod
+    def _repeated_form_effects(
+        cls,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+    ) -> tuple[
+        tuple[str, int, tuple[tuple[int, int], ...]],
+        ...,
+    ]:
+        old = cls._repeated_form_groups(before)
+        new = cls._repeated_form_groups(after)
+        output = []
+        for form in sorted(old.keys() & new.keys(), key=repr):
+            left, right = old[form], new[form]
+            if len(left) != len(right):
+                continue
+            motions = tuple(
+                (after_x - before_x, after_y - before_y)
+                for (before_x, before_y), (after_x, after_y) in zip(
+                    left,
+                    right,
+                )
+            )
+            divisor = 0
+            for dx, dy in motions:
+                divisor = math.gcd(divisor, abs(dx))
+                divisor = math.gcd(divisor, abs(dy))
+            divisor = divisor or 1
+            normalized = tuple(
+                sorted((dx // divisor, dy // divisor) for dx, dy in motions)
+            )
+            subject = hashlib.sha256(
+                repr((form[1], form[2], form[0])).encode()
+            ).hexdigest()
+            output.append((subject, len(left), normalized))
+        return tuple(output)
+
+    def _observe_repeated_form_effect_event(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        token: ActionToken,
+    ) -> None:
+        detected = False
+        actionable = False
+        for subject, arity, effect in self._repeated_form_effects(
+            before,
+            after,
+        ):
+            history = self.repeated_form_effect_history.setdefault(
+                (subject, arity, token.action_id),
+                Counter(),
+            )
+            if history:
+                expected, support = max(
+                    history.items(),
+                    key=lambda item: (item[1], item[0]),
+                )
+                if support >= 2:
+                    self.repeated_form_event_predictions += 1
+                    if effect == expected:
+                        self.repeated_form_event_confirmations += 1
+                    else:
+                        detected = True
+                        self.repeated_form_event_detections += 1
+                        observed_nonzero = any(
+                            dx != 0 or dy != 0 for dx, dy in effect
+                        )
+                        expected_zero = all(
+                            dx == 0 and dy == 0 for dx, dy in expected
+                        )
+                        actionable = actionable or (
+                            observed_nonzero
+                            and (
+                                self.repeated_form_event_mode
+                                == "confirm-discontinuity"
+                                or (
+                                    self.repeated_form_event_mode
+                                    == "confirm-affordance"
+                                    and expected_zero
+                                )
+                            )
+                        )
+            history[effect] += 1
+        if detected and self.repeated_form_event_mode == "phase-segment":
+            self.repeated_form_event_phase += 1
+            self.repeated_form_event_diagnostic = "phase-segmented"
+        elif actionable:
+            self.repeated_form_confirmation_token = token
+            self.repeated_form_event_diagnostic = (
+                "confirmation-preregistered"
+            )
+        elif detected:
+            self.repeated_form_event_diagnostic = (
+                "context-change-observed"
+            )
+        elif self.repeated_form_effect_history:
+            self.repeated_form_event_diagnostic = "effect-model-updated"
 
     @staticmethod
     def _boundary_sides(
@@ -4052,6 +4211,34 @@ class EpistemicExplorer:
         self.selection_frame = observation.frame
         self.last_scheme_components = ()
         self.last_relational_binding = {}
+
+        if self.repeated_form_confirmation_token is not None:
+            pending_confirmation = self.repeated_form_confirmation_token
+            self.repeated_form_confirmation_token = None
+            confirmation = next(
+                (
+                    token
+                    for token in tokens
+                    if token == pending_confirmation
+                ),
+                None,
+            )
+            if confirmation is not None:
+                self.repeated_form_event_replays += 1
+                self.repeated_form_event_diagnostic = (
+                    "executing-event-confirmation"
+                )
+                self.last_scheme_components = (
+                    "scheme:action-effect-context-change",
+                    "operator:confirm-unexpected-structural-effect",
+                    "state:repeated-form-effect-model",
+                )
+                return self._issue(
+                    state,
+                    confirmation,
+                    "epistemic-frontier:confirm-repeated-form-event",
+                    scene,
+                )
 
         local_repair = None
         if self.constraint_first_role_replay:
@@ -7195,6 +7382,11 @@ class EpistemicExplorer:
                 digest = "boundary-normalized-" + hashlib.sha256(
                     repr(tuple(tuple(row) for row in normalized)).encode()
                 ).hexdigest()
+        if (
+            self.repeated_form_event_mode == "phase-segment"
+            and self.repeated_form_event_phase
+        ):
+            digest = f"{digest}:event-phase:{self.repeated_form_event_phase}"
         return (
             observation.levels_completed,
             observation.state,
@@ -7323,6 +7515,20 @@ class EpistemicExplorer:
                 len(items) for items in self.boundary_nuisance_growth.values()
             ),
             "boundary_nuisance_sides": sorted(self.boundary_nuisance_sides),
+            "repeated_form_event_predictions": (
+                self.repeated_form_event_predictions
+            ),
+            "repeated_form_event_confirmations": (
+                self.repeated_form_event_confirmations
+            ),
+            "repeated_form_event_detections": (
+                self.repeated_form_event_detections
+            ),
+            "repeated_form_event_replays": self.repeated_form_event_replays,
+            "repeated_form_event_phase": self.repeated_form_event_phase,
+            "repeated_form_event_diagnostic": (
+                self.repeated_form_event_diagnostic
+            ),
             "paired_object_grounded": int(self.paired_grounding is not None),
             "paired_joint_effects": len(self.paired_effects),
             "paired_probes": len(self.paired_probes),

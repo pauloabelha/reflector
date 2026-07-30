@@ -2180,14 +2180,15 @@ Result:
   ended with `joint-plan-step-observed`.
 
 V56 is rejected. This is not evidence against temporally extended options.
-It is evidence that the trigger was defined at the wrong perceptual boundary:
-the diagnostic recording showed the pair becoming visually inseparable from
-same-color structure, while the runtime identity extractor continued to return
-a pair representation. A future procedure learner must be triggered by
-uncertainty or a discontinuity in object-to-substrate binding, not only by
-total pair absence. Do not widen the trigger on `m0r0` alone; first build a
-cross-game event vocabulary and measure its false-positive rate on a frozen
-fold.
+More importantly, a direct parse of the immutable recording corrected the
+visual diagnosis that motivated it. Across the relevant transition, both
+members remain exact 4-by-4 objects with the grounded signature; one action
+maps the pair discontinuously from lower anchors back to the upper region.
+V50's contextual portal edge already represented that transition. V56
+therefore tested an event that does not occur, rather than exposing a missing
+occlusion detector. Do not widen its trigger. Future event hypotheses must be
+derived programmatically from recordings and preregister their expected event
+indices before a policy mutation is implemented.
 
 ## Completed experimental branch: v26
 
@@ -2205,9 +2206,9 @@ fold.
 
 1. Preserve accepted v49b. V50-v56 now show that dynamics, portal
    accommodation, terminal variation, actual planner composition, and a
-   too-narrow pair-absence procedure trigger are insufficient on `m0r0` level
-   2. Pause that chain until a cross-game progress-grounded event and procedure
-   learner exists.
+   nonexistent pair-absence procedure hypothesis are insufficient on `m0r0`
+   level 2. Pause that chain until a cross-game progress-grounded event and
+   procedure learner exists.
 2. Build a content-addressed inherited scheme substrate. Keep immutable typed
    scheme definitions separate from an append-only evidence ledger; offspring
    inherit only hashes whose predictive, information-efficiency, and pragmatic
@@ -2228,6 +2229,42 @@ fold.
 8. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.
+
+## Preregistered experiment: v57 repeated-form effect events
+
+Status: implementation and structural tests complete; no task result yet.
+
+The development-only recording audit defines a content-addressed event without
+game identity, color, absolute position, or action constants:
+
+`same repeated-form subject + same action + supported prior effect -> different effect`
+
+It normalizes exact repeated objects by shape and arity and their member
+displacements by common scale. An expectation becomes eligible only after two
+matching prior effects. The accepted `m0r0` recording yielded 354 supported
+predictions, 334 confirmations, and 20 deviations. Five independent held-out
+recordings yielded 987/987 confirmations and zero deviations. A separate
+`lp85` recording yielded ten rare deviations at two action-6 interventions
+after long no-effect histories.
+
+The source-matched population has four frozen modes:
+
+- `off`: accepted behavior;
+- `confirm-affordance`: replay once only when supported no-effect becomes
+  nonzero;
+- `confirm-discontinuity`: replay once after any supported nonzero contextual
+  change;
+- `phase-segment`: do not replay; split the causal-state key after a supported
+  deviation.
+
+Falsifier: a mode is rejected if its detector remains inert, if it adds
+replays without a new level or material efficiency gain, or if it regresses an
+accepted level. Recording prediction accuracy alone cannot promote it.
+
+When experimentation resumes, start with source-matched development runs on
+`lp85` and `g50t`, because the former contains a rare affordance change and the
+latter has an accepted later-level stall. Only a qualifying variant proceeds
+to `ar25`, `m0r0`, `sb26`, deterministic rerun, and the full suite.
 
 ## Promotion gates
 

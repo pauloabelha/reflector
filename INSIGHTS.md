@@ -321,12 +321,25 @@ These are narrow earned claims, not claims of general intelligence.
 24. A plausible procedure is not tested unless its event detector fires. V56
     represented pair disappearance and recovery as a confirmable option and
     compared three continuation policies, but all variants exactly matched the
-    control and recorded zero procedure proposals. The visual audit had
-    described object–substrate inseparability; the implementation required
-    total pair identity loss. Event abstraction therefore belongs below option
-    learning: learn and validate typed discontinuities such as identity
-    uncertainty, merge, split, occlusion, binding change, control change, and
-    phase change before breeding policies over them.
+    control and recorded zero procedure proposals. Direct parsing then showed
+    that the visual diagnosis itself was wrong: both exact objects persist
+    through a one-step discontinuous portal transition already represented by
+    v50. Event abstraction therefore belongs below option learning, and event
+    hypotheses must be extracted and preregistered from machine-readable
+    recordings rather than inferred from a montage alone.
+25. Cross-game common sense should begin with calibrated event prediction,
+    not inherited goal stories. A content-free recording audit grouped exact
+    repeated forms by shape and arity, conditioned their normalized effects on
+    the selected action, and preregistered an expectation only after two
+    matching observations. On the accepted `m0r0` recording it made 354
+    supported predictions, confirmed 334, and exposed 20 real context changes,
+    including the portal transitions that v56 had misdescribed. On five
+    independently recorded held-out games it confirmed 987 of 987 supported
+    predictions with zero deviations. A separate `lp85` trace exposed ten rare
+    action-6 affordance changes after long histories of no effect. This is
+    evidence for a reusable structural event vocabulary. It is not yet evidence
+    of improved play: the runtime descendants must still show that confirming
+    or phase-segmenting such events advances a level or saves actions.
 
 ## What is still missing
 
