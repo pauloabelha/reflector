@@ -135,6 +135,12 @@ planner did not consume the contextual transition model. This narrows the next
 experiment to composition—planning terminal relations over learned portal
 edges—rather than additional vocabulary or search depth.
 
+V55b performed that composition. It confirmed and consumed contextual portal
+edges, retired three distinct marker targets, and tested a sibling carrying
+the induced transport family. Every variant still ended at 1/6 `m0r0` levels.
+The remaining hypothesis is a learned multi-phase procedure, not another local
+dynamics feature, target prior, or larger search allowance.
+
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction
 between local and Kaggle scores. This table and that report must be updated

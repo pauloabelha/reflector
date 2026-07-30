@@ -2132,6 +2132,28 @@ goal planner must consume confirmed v50 context-dependent transitions so that
 the trigger is represented as a portal edge during search. Compare that
 offspring with source-matched contact-only and contextual-contact controls.
 
+V55b recombination result:
+
+- four source-matched offspring tested contact-only, contextual-contact,
+  contextual-marker, and contextual-plus-transport marker planning;
+- all four remained at 1/6 `m0r0` levels and `[20, 380]`;
+- contextual-marker confirmed two context-dependent edges, consumed them in
+  90 bounded successor evaluations, retired three distinct marker bindings,
+  and still produced no progress;
+- the transport variant additionally induced the convergent transport family
+  and invoked it 5,436 times across internal search expansions before falling
+  back to contact planning. This count is a search diagnostic, not an
+  environment-action or intelligence metric;
+- exact-off and contextual-contact controls reproduced their prior outcomes.
+
+V55b is rejected. This closes the local “unconnected modules” explanation:
+goal search did consume the learned transition model and generated structural
+variation. Marker activation remains an intermediate operation in a missing
+multi-phase procedure, not a sufficient goal. Stop adding `m0r0` planning
+depth or isolated terminal predicates. A future return must preregister a
+phase/procedure discriminator learned from progress, not another target
+ranking.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural
@@ -2146,10 +2168,10 @@ offspring with source-matched contact-only and contextual-contact controls.
 
 ## Next actions
 
-1. Preserve accepted v49b. V50-v52 isolated missing goal/phase; v55 then
-   showed that a correctly reached sparse marker relation is an intermediate
-   transport, not a terminal goal. Accommodate the terminal classification
-   while conserving its predictive transition.
+1. Preserve accepted v49b. V50-v55b now show that dynamics, portal
+   accommodation, terminal variation, and their actual planner composition
+   are insufficient on `m0r0` level 2. Pause that chain until a general
+   progress-grounded phase/procedure learner exists.
 2. Build a content-addressed inherited scheme substrate. Keep immutable typed
    scheme definitions separate from an append-only evidence ledger; offspring
    inherit only hashes whose predictive, information-efficiency, and pragmatic

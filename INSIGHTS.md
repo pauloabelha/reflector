@@ -295,6 +295,13 @@ These are narrow earned claims, not claims of general intelligence.
     already observed transport trigger and reset. Goal search and transition
     learning cannot remain separate advisors: confirmed context-dependent
     edges must alter the successor function used to evaluate new goals.
+23. Composing the right local models does not manufacture the missing
+    objective. V55b made that integration operative: two portal edges were
+    confirmed and consumed by marker-goal search, three distinct targets were
+    falsified, and a sibling used the induced transport family throughout its
+    search. Neither advanced. The next abstraction must explain progress over
+    a sequence of phases or operations; accumulating locally correct
+    transitions and trying more terminal bindings is not enough.
 
 ## What is still missing
 
