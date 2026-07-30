@@ -351,6 +351,7 @@ class EpistemicExplorer:
     cross_retry_maturity: bool = False
     deep_failure_productive_reuse: bool = False
     compact_component_frontier: bool = False
+    compact_component_nuisance_filter: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -735,6 +736,8 @@ class EpistemicExplorer:
     compact_component_frontier_selections: int = 0
     compact_component_frontier_candidates: int = 0
     compact_component_frontier_objects: int = 0
+    compact_component_nuisance_filtered: int = 0
+    compact_component_enclosure_candidates: int = 0
     compact_component_frontier_diagnostic: str = "exact-off"
     compact_component_frontier_retry_active: bool | None = None
     compact_component_frontier_retry_diagnostic: str = "not-evaluated"
@@ -1215,6 +1218,8 @@ class EpistemicExplorer:
         self.compact_component_frontier_active = False
         self.compact_component_frontier_candidates = 0
         self.compact_component_frontier_objects = 0
+        self.compact_component_nuisance_filtered = 0
+        self.compact_component_enclosure_candidates = 0
         self.compact_component_frontier_diagnostic = (
             "awaiting-retry-evaluation"
         )
@@ -9071,16 +9076,29 @@ class EpistemicExplorer:
             object_count,
         )
 
-    @staticmethod
     def _compact_component_candidates(
+        self,
         frame: tuple[tuple[int, ...], ...],
     ) -> tuple[tuple[int, int], ...]:
-        """Rank grounded monochrome components by compactness and support."""
+        """Rank enclosure interiors and causal components, excluding edge UI."""
 
         height = len(frame)
         width = len(frame[0]) if height else 0
+        nuisance_rows: set[int] = set()
+        nuisance_columns: set[int] = set()
+        if self.compact_component_nuisance_filter and height and width:
+            edge = max(1, min(4, min(height, width) // 8))
+            for y in (*range(edge), *range(max(edge, height - edge), height)):
+                if max(Counter(frame[y]).values()) * 5 >= width * 4:
+                    nuisance_rows.add(y)
+            for x in (*range(edge), *range(max(edge, width - edge), width)):
+                counts = Counter(frame[y][x] for y in range(height))
+                if max(counts.values()) * 5 >= height * 4:
+                    nuisance_columns.add(x)
         seen: set[tuple[int, int]] = set()
         ranked: list[tuple[int, int, int, int, int]] = []
+        enclosures: list[tuple[int, int, int, int, int, int, int]] = []
+        filtered = 0
         for y0 in range(height):
             for x0 in range(width):
                 if (x0, y0) in seen:
@@ -9105,11 +9123,19 @@ class EpistemicExplorer:
                 area = len(region)
                 if area < 2 or area * 4 > max(1, height * width):
                     continue
+                if self.compact_component_nuisance_filter and all(
+                    y in nuisance_rows or x in nuisance_columns
+                    for x, y in region
+                ):
+                    filtered += 1
+                    continue
                 xs = tuple(point[0] for point in region)
                 ys = tuple(point[1] for point in region)
+                min_x, max_x = min(xs), max(xs)
+                min_y, max_y = min(ys), max(ys)
                 box_area = (
-                    (max(xs) - min(xs) + 1)
-                    * (max(ys) - min(ys) + 1)
+                    (max_x - min_x + 1)
+                    * (max_y - min_y + 1)
                 )
                 regularity = area * 1000 // box_area
                 centroid = (sum(xs) // area, sum(ys) // area)
@@ -9125,10 +9151,55 @@ class EpistemicExplorer:
                 ranked.append(
                     (regularity, area, color, target[1], target[0])
                 )
+                if (
+                    self.compact_component_nuisance_filter
+                    and max_x - min_x >= 2
+                    and max_y - min_y >= 2
+                    and all((x, min_y) in region for x in range(min_x, max_x + 1))
+                    and all((x, max_y) in region for x in range(min_x, max_x + 1))
+                    and all((min_x, y) in region for y in range(min_y, max_y + 1))
+                    and all((max_x, y) in region for y in range(min_y, max_y + 1))
+                ):
+                    center = ((min_x + max_x) // 2, (min_y + max_y) // 2)
+                    enclosures.append(
+                        (
+                            max_x - min_x + 1,
+                            max_y - min_y + 1,
+                            box_area,
+                            area,
+                            color,
+                            center[1],
+                            center[0],
+                        )
+                    )
         ranked.sort(
             key=lambda item: (-item[0], -item[1], -item[2], item[3], item[4])
         )
-        return tuple((x, y) for _regularity, _area, _color, y, x in ranked)
+        enclosure_forms = Counter(
+            (width, height, area)
+            for width, height, _box, area, _color, _y, _x in enclosures
+        )
+        enclosures.sort(
+            key=lambda item: (
+                -enclosure_forms[(item[0], item[1], item[3])],
+                item[2],
+                item[3],
+                -item[4],
+                item[5],
+                item[6],
+            )
+        )
+        self.compact_component_nuisance_filtered = filtered
+        self.compact_component_enclosure_candidates = len(enclosures)
+        ordered = (
+            *(
+                (x, y)
+                for _width, _height, _box, _area, _color, y, x
+                in enclosures
+            ),
+            *((x, y) for _regularity, _area, _color, y, x in ranked),
+        )
+        return tuple(dict.fromkeys(ordered))
 
     @staticmethod
     def _compact_component_state_digest(
@@ -10271,6 +10342,12 @@ class EpistemicExplorer:
             ),
             "compact_component_frontier_objects": (
                 self.compact_component_frontier_objects
+            ),
+            "compact_component_nuisance_filtered": (
+                self.compact_component_nuisance_filtered
+            ),
+            "compact_component_enclosure_candidates": (
+                self.compact_component_enclosure_candidates
             ),
             "compact_component_frontier_diagnostic": (
                 self.compact_component_frontier_diagnostic

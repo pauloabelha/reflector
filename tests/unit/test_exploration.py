@@ -140,6 +140,37 @@ def test_compact_component_frontier_masks_only_dominated_edge_strips() -> None:
     )
 
 
+def test_compact_frontier_prefers_repeated_enclosure_interiors_over_edge_ui() -> None:
+    rows = [[0] * 16 for _ in range(12)]
+    rows[-1] = [7] * 16
+    rows[-1][-2] = 4
+    for left in (2, 9):
+        for x in range(left, left + 5):
+            rows[3][x] = 2
+            rows[7][x] = 2
+        for y in range(3, 8):
+            rows[y][left] = 2
+            rows[y][left + 4] = 2
+        rows[5][left + 2] = 3
+    frame = tuple(tuple(row) for row in rows)
+    explorer = EpistemicExplorer(
+        compact_component_frontier=True,
+        compact_component_nuisance_filter=True,
+    )
+
+    assert explorer._compact_component_candidates(frame)[:2] == (
+        (4, 5),
+        (11, 5),
+    )
+    assert explorer.compact_component_nuisance_filtered == 1
+    assert explorer.compact_component_enclosure_candidates >= 2
+
+
+def test_compact_component_nuisance_filter_requires_frontier() -> None:
+    with pytest.raises(ValueError, match="requires the compact component frontier"):
+        MindConfig(enable_compact_component_nuisance_filter=True)
+
+
 def test_compact_component_frontier_rejects_an_expanding_vocabulary() -> None:
     frame = tuple(
         tuple(1 if x in {2, 5} else 0 for x in range(8))
