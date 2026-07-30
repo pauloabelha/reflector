@@ -384,6 +384,15 @@ These are narrow earned claims, not claims of general intelligence.
     scheme while it progresses, then permit a bounded structural mutation only
     under pragmatic disequilibrium. This is closer to Piagetian accommodation
     than either unconditional preemption or permanent subordination.
+31. Disequilibrium gating can correctly reject an abstraction. In v59 the
+    three newly-affordant `lp85` events occurred at only 4–6 consecutive
+    no-progress steps while cyclic alignment was still working. The level
+    advanced before the eight-step disequilibrium threshold, clearing the
+    pending variations. No corresponding event appeared on the genuinely
+    stalled later level. Exact control behavior was preserved, but zero
+    variations were selected. The correct conclusion is not to lower the
+    threshold until something fires; this event family is useful predictive
+    common sense but is not the missing procedure for these stalls.
 
 ## What is still missing
 
