@@ -79,6 +79,7 @@ class PrimaryStencilPlanner:
     palette_predictions: int = 0
     palette_confirmations: int = 0
     palette_conflicts: int = 0
+    latent_commits: int = 0
     plan_steps: int = 0
     search_states: int = 0
     submit_action: int | None = None
@@ -88,6 +89,7 @@ class PrimaryStencilPlanner:
     last_plan_length: int = 0
     last_target_pose: Pose | None = None
     last_reference_mismatches: int = 0
+    latent_construction: Grid | None = None
 
     def observe(self, frame: Frame, levels_completed: int) -> StencilScene | None:
         """Ground the current scene and validate the previously issued action."""
@@ -99,6 +101,8 @@ class PrimaryStencilPlanner:
             return scene
         if self.current_level is None:
             self.current_level = levels_completed
+            if scene is not None:
+                self.latent_construction = scene.construction
         elif levels_completed > self.current_level:
             self.current_level = levels_completed
             self.pending_token = None
@@ -106,6 +110,9 @@ class PrimaryStencilPlanner:
             self.no_effect_poses.clear()
             self.submit_action = None
             self.quarantined = False
+            self.latent_construction = (
+                scene.construction if scene is not None else None
+            )
             self.diagnostic = "level-advanced"
         if (
             self.pending_token is not None
@@ -203,7 +210,11 @@ class PrimaryStencilPlanner:
 
     def _plan(self, scene: StencilScene) -> tuple[StencilToken, ...]:
         assert self.submit_action is not None
-        start = (scene.construction, scene.selected_color, scene.pose)
+        start = (
+            self.latent_construction or scene.construction,
+            scene.selected_color,
+            scene.pose,
+        )
         queue: deque[
             tuple[tuple[Grid, int, Pose], tuple[StencilToken, ...]]
         ] = deque(((start, ()),))
@@ -286,13 +297,18 @@ class PrimaryStencilPlanner:
                 return
             self.palette_predictions += 1
             expected = apply_primary_stencil(
-                before.construction,
+                self.latent_construction or before.construction,
                 before.pose,
                 before.selected_color,
             )
-            if after.construction == expected and after.selected_color == selected:
+            if (
+                after.construction == before.construction
+                and after.selected_color == selected
+            ):
+                self.latent_construction = expected
+                self.latent_commits += 1
                 self.palette_confirmations += 1
-                self.diagnostic = "palette-commit-confirmed"
+                self.diagnostic = "latent-palette-commit-confirmed"
             else:
                 self.quarantined = True
                 self.palette_conflicts += 1
@@ -344,6 +360,7 @@ class PrimaryStencilPlanner:
             "palette_predictions": self.palette_predictions,
             "palette_confirmations": self.palette_confirmations,
             "palette_conflicts": self.palette_conflicts,
+            "latent_commits": self.latent_commits,
             "search_states": self.search_states,
             "last_plan_length": self.last_plan_length,
             "plan_steps": self.plan_steps,

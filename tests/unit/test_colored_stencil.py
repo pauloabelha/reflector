@@ -145,6 +145,45 @@ def test_exact_planner_composes_committed_and_prospective_layers() -> None:
     assert planner.search_states > 0
 
 
+def test_palette_selection_confirms_an_invisible_latent_commit() -> None:
+    base = _solid(10, 7)
+    before = StencilScene(
+        reference=base,
+        construction=base,
+        reference_bbox=(0, 0, 9, 9),
+        construction_bbox=(20, 0, 29, 9),
+        palette=(
+            (2, StencilToken(6, (("x", 2), ("y", 2)))),
+            (3, StencilToken(6, (("x", 10), ("y", 2)))),
+        ),
+        selected_color=2,
+        pose="n",
+    )
+    after = StencilScene(
+        reference=base,
+        construction=base,
+        reference_bbox=before.reference_bbox,
+        construction_bbox=before.construction_bbox,
+        palette=before.palette,
+        selected_color=3,
+        pose="n",
+    )
+    clicked = before.palette[1][1]
+    planner = PrimaryStencilPlanner(
+        enabled=True,
+        current_level=0,
+        latent_construction=base,
+        pending_token=clicked,
+        pending_scene=before,
+    )
+    planner._validate_pending(before, after, clicked)
+    assert planner.palette_confirmations == 1
+    assert planner.palette_conflicts == 0
+    assert planner.latent_commits == 1
+    assert planner.latent_construction == apply_primary_stencil(base, "n", 2)
+    assert not planner.quarantined
+
+
 def test_feature_is_off_by_default_and_exported_when_enabled() -> None:
     assert MindConfig() == MindConfig(
         enable_colored_stencil_primary_planning=False
