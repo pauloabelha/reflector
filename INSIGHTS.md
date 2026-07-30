@@ -11,19 +11,18 @@ before acting.
 
 Reflector is an interesting but currently weak ARC-AGI-3 agent.
 
-- Accepted agent: v47b, frozen inference commit
-  `b9412202c3fd6a5c3f31e68d62127c00a0090fb6`.
-- Local public-development score: **4.4496962800 / 100**.
-- Progress: **18 / 183 levels across 9 / 25 games**.
+- Accepted agent: v49b, frozen inference commit
+  `83287a7c2e508313fbb52b1982a921159823895e`.
+- Local public-development score: **4.6401724704 / 100**.
+- Progress: **19 / 183 levels across 10 / 25 games**.
 - Fully completed games: **0 / 25**.
 - Kaggle submissions: **0**.
 - Kaggle public score: **not submitted**.
 - Kaggle private score: **unavailable**.
-- V47b is accepted. It conserves v42's earned trajectory/topology machinery
-  and distinguishes episode-local stall from same-level experience across
-  retries. It preserves parent behavior before failure, suppresses ambiguous
-  reuse after one failure, and activates bounded cross-retry maturity plus
-  action-family fairness only after two failures.
+- V49b is accepted. It conserves every v47b result and adds a learned
+  higher-order operator over a reflected congruent object pair: ordered joint
+  action effects, independently blocked topology planning, and a bounded
+  continuation when planned contact temporarily merges the rendered objects.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem
@@ -256,7 +255,13 @@ These are narrow earned claims, not claims of general intelligence.
     lower-level, independently evidenced operator is active.
 14. Parallel game evaluation must isolate processes; shared mutable state can
     invalidate scores.
-15. A local score, export, fixture, smoke test, and target-only run are all
+15. Some controls are irreducibly joint: the correct causal state can be an
+    ordered object pair, and one action can have coupled but independently
+    blocked effects on its members.
+16. Rendered object contact need not terminate a scheme. When contact was
+    predicted by a grounded plan, a tightly capped latent continuation can
+    preserve causal credit through temporary identity loss.
+17. A local score, export, fixture, smoke test, and target-only run are all
     distinct from a Kaggle score.
 
 ## What is still missing
@@ -492,12 +497,10 @@ advisors. It is a **causal graph explorer that learns executable abstractions**.
 
 ## Immediate experimental priorities
 
-1. **Test whether failure-conditioned accommodation transfers beyond
-   `sp80`.** V47b recovered one level by conserving bounded maturity across
-   failed episodes while preserving the parent's zero-failure path. Audit
-   games with short lives and repeated same-level resets, preregister which
-   learned scheme should become reachable, and reject any mutation that merely
-   increases generic reuse.
+1. **Test whether paired-object abstraction transfers beyond `m0r0` level
+   1.** Require the v49b grounding predicate to identify a qualifying pair and
+   preregister joint-effect predictions before planning. Reject any widening
+   that merely recognizes more pairs without improving prediction or progress.
 2. **Reproduce an external graph baseline locally.** Port or adapt the
    open-source graph explorer as a separately configurable control. Compare at
    Reflector's exact 400-action budget and process isolation. This establishes
@@ -516,7 +519,7 @@ advisors. It is a **causal graph explorer that learns executable abstractions**.
    which actions are wasteful. Do not encode replay routes or public game IDs.
 7. **Make a real Kaggle submission.** Until Reflector crosses the hidden
    boundary, claims of generalization are speculation. Submit the exact
-   accepted v47b export first as a baseline, if the user authorizes the external
+   accepted v49b export first as a baseline, if the user authorizes the external
    action and all live rules are satisfied.
 
 ## What the runtime-LLM probe actually established

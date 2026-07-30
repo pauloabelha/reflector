@@ -25,15 +25,15 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-4c7168f7ad208c65`
-- Accepted agent: Reflector v47b
+- Accepted candidate: `candidate-6ee87ced5a667cae`
+- Accepted agent: Reflector v49b
 - Accepted frozen inference commit:
-  `b9412202c3fd6a5c3f31e68d62127c00a0090fb6`
+  `83287a7c2e508313fbb52b1982a921159823895e`
 - Accepted public-development report:
-  `reports/official-isolated-v47b-public-400.json`
-- Accepted score: `4.449696279968774`
+  `reports/official-isolated-v49b-public-400.json`
+- Accepted score: `4.6401724704449645`
 - Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 18 levels across 9 games
+- Accepted completions: 19 levels across 10 games
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -59,6 +59,7 @@ generalization.
 | Relational-phase-conditioned translation | v40 reassigned rare markers between persistent hosts, quarantined phase-A action semantics, re-probed in phase B, preserved every v39 action count, and solved `ar25` L2 in 17 actions. |
 | Substrate-topology belief planning | v42 inferred 28 origin-relative topology nodes and 10 uncertain gates on `g50t`, used two safe information actions to advance a blocking autonomous gate, preserved all 16 v40 levels exactly, and solved `g50t` L1 in 29 actions twice. |
 | Failure-conditioned cross-retry accommodation | v47b preserved the accepted zero-failure mature-stall path, suppressed reuse after one ambiguous failure, and conserved capped maturity plus action-family fairness only after two failures; it preserved all 17 v42 levels exactly and solved `sp80` L1 at action 196 twice. |
+| Paired-object contact planning | v49b learned ordered joint effects for one reflected congruent pair, planned over independently blocked anchors, and treated planned contact as a bounded latent intermediate; it preserved all 18 v47b levels exactly and solved `m0r0` L1 at action 20 twice. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -1532,7 +1533,7 @@ V48c result:
   pathologies but did not represent the coupled control problem;
 - v48c is rejected without preservation or full-suite gates.
 
-## Active experiment: v49 paired-object contact planning
+## Accepted experiment: v49b paired-object contact planning
 
 Parent: accepted v47b `candidate-4c7168f7ad208c65`. V48-v48c supply rejected
 diagnostic code only.
@@ -1628,8 +1629,27 @@ V49b target result:
   latent-contact continuation;
 - both full 400-action traces matched in action counts, advisor counts, and
   final structural telemetry;
-- the target qualifies for a ten-game preservation gate covering all nine
+- the target qualified for a ten-game preservation gate covering all nine
   accepted v47b progress games plus `m0r0`.
+
+V49b accepted result:
+
+- two fresh process-isolated ten-game gates matched exactly at
+  `11.600431176112412/100` and 19 levels;
+- every inherited v47b game preserved its score, completed-level action
+  allocation, and structural telemetry exactly; `m0r0` added level 1 at action
+  20;
+- the frozen-source 25-game suite scored `4.6401724704449645/100`, solved
+  19/183 levels across ten games, used all 10,000 actions, and completed 0/25
+  games;
+- candidate `candidate-6ee87ced5a667cae` is accepted from frozen inference
+  source `83287a7c2e508313fbb52b1982a921159823895e`;
+- the full report SHA-256 is
+  `a21f30f0d082617d0bc042966495b208244e4e2ddae0e64c034ad67b9f84d17d`
+  and candidate SHA-256 is
+  `9a1ef98881ea39943162c67fcfb83cff551eef022da38c4229a9b93d5e0b841c`;
+- 209 tests passed with three skipped; Ruff, mypy, generic and exact-candidate
+  network-disabled smoke tests, and exact export all passed.
 
 ## Completed experimental branch: v26
 
@@ -1645,18 +1665,19 @@ V49b target result:
 
 ## Next actions
 
-1. Preserve accepted v47b and stop extending the `g50t` plan cap. Learn an
-   explicit gate-phase experiment or switch target games; the v43c-v43f and
-   integrated-Gemma runs all preserved level 1 but added no level 2.
-2. Treat `m0r0` separately as equivariant multi-object composition; require
-   held-out prediction of both congruent objects and obstacle-explained
-   one-sided blocking before planning.
+1. Preserve accepted v49b. Test whether its paired-object representation
+   predicts joint effects on later `m0r0` levels or another structurally
+   qualifying game; do not widen its grounding conditions without a held-out
+   prediction.
+2. For `g50t`, learn an explicit gate-phase experiment or switch targets; the
+   v43c-v43f and integrated-Gemma runs all preserved level 1 but added no level
+   2.
 3. Route qualitative frame difference and flow into causal policy only through
    typed, bounded advisors; passive perception alone is not task credit.
 4. Evaluate diverse operators in isolated populations across games; require a
    new level or material efficiency gain from each operative trait.
 5. Run source-matched target ablations and the full 25-game gate only for a
-   qualifying offspring; keep v47b accepted otherwise.
+   qualifying offspring; keep v49b accepted otherwise.
 6. Prepare the first real Kaggle notebook submission as an explicit external
    action. Report its public score and submission status separately; private
    score remains unavailable until Kaggle exposes it.
