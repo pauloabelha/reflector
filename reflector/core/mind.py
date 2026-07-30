@@ -64,6 +64,7 @@ class MindConfig:
     enable_boundary_nuisance_fairness: bool = False
     enable_paired_object_contact_planning: bool = False
     enable_paired_contextual_transitions: bool = False
+    enable_paired_transport_family: bool = False
     enable_local_relation_solver: bool = False
     enable_constraint_first_role_replay: bool = False
     enable_global_relation_constraint_solver: bool = False
@@ -121,6 +122,7 @@ class MindConfig:
             "enable_boundary_nuisance_fairness",
             "enable_paired_object_contact_planning",
             "enable_paired_contextual_transitions",
+            "enable_paired_transport_family",
             "enable_local_relation_solver",
             "enable_constraint_first_role_replay",
             "enable_global_relation_constraint_solver",
@@ -179,6 +181,14 @@ class MindConfig:
             raise ValueError(
                 "paired contextual transitions require paired object "
                 "contact planning"
+            )
+        if (
+            self.enable_paired_transport_family
+            and not self.enable_paired_contextual_transitions
+        ):
+            raise ValueError(
+                "paired transport family requires paired contextual "
+                "transitions"
             )
         if (
             self.enable_graph_cycle_transport

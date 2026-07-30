@@ -521,6 +521,104 @@ def test_paired_contextual_transition_requires_confirmation_and_is_equivariant()
         MindConfig(enable_paired_contextual_transitions=True)
 
 
+def test_paired_transport_family_requires_two_convergent_trigger_edges() -> None:
+    def frame(
+        anchors: tuple[tuple[int, int], tuple[int, int]],
+        *,
+        trigger: tuple[int, int] | None = None,
+        trigger_color: int = 8,
+    ) -> tuple[tuple[int, ...], ...]:
+        rows = [[1] * 20 for _ in range(20)]
+        for y in range(2, 18):
+            for x in range(2, 18):
+                rows[y][x] = 5
+        if trigger is not None:
+            rows[trigger[1]][trigger[0]] = trigger_color
+        for center_x, center_y in anchors:
+            for y in range(center_y - 1, center_y + 2):
+                for x in range(center_x - 1, center_x + 2):
+                    rows[y][x] = 10
+        return tuple(tuple(row) for row in rows)
+
+    initial = ((5, 8), (14, 8))
+    second = ((5, 11), (14, 11))
+    destination = ((5, 5), (14, 5))
+    explorer = EpistemicExplorer(
+        paired_object_contact_planning=True,
+        paired_contextual_transitions=True,
+        paired_transport_family=True,
+    )
+    grounding = explorer._ground_paired_objects(frame(initial))
+    assert grounding is not None
+    explorer.paired_grounding = grounding
+    explorer.paired_effects = {
+        2: ((0, 1), (0, 1)),
+        4: ((1, 0), (-1, 0)),
+    }
+
+    first_frame = frame(initial, trigger=(14, 10))
+    for _ in range(2):
+        explorer.paired_pending = ("plan", 2, initial)
+        explorer._observe_paired_object_contact(
+            first_frame,
+            frame(destination),
+            progressed=False,
+        )
+    assert explorer.paired_transport_successor is None
+
+    second_frame = frame(second, trigger=(7, 11))
+    for _ in range(2):
+        explorer.paired_pending = ("plan", 4, second)
+        explorer._observe_paired_object_contact(
+            second_frame,
+            frame(destination),
+            progressed=False,
+        )
+    assert explorer.paired_transport_trigger_color == 8
+    assert explorer.paired_transport_successor == destination
+    assert explorer.paired_transport_inductions == 1
+
+    third = ((5, 14), (14, 14))
+    third_frame = frame(third, trigger=(14, 16))
+    nodes = explorer._paired_topology(third_frame, third)
+    assert explorer._paired_transport_family_successor(
+        third_frame,
+        third,
+        ((0, 1), (0, 1)),
+        nodes,
+    ) == destination
+
+    recolored = EpistemicExplorer(
+        paired_object_contact_planning=True,
+        paired_contextual_transitions=True,
+        paired_transport_family=True,
+    )
+    recolored.paired_contextual_evidence = {
+        (initial, 7): Counter({destination: 2}),
+        (second, 3): Counter({destination: 2}),
+    }
+    recolored.paired_contextual_trigger_colors = {
+        (initial, 7): frozenset({12}),
+        (second, 3): frozenset({12}),
+    }
+    recolored._induce_paired_transport_family()
+    assert recolored.paired_transport_trigger_color == 12
+    assert recolored.paired_transport_successor == destination
+
+    divergent = ((5, 6), (14, 6))
+    recolored.paired_contextual_evidence[(third, 9)] = Counter(
+        {divergent: 2}
+    )
+    recolored.paired_contextual_trigger_colors[(third, 9)] = frozenset(
+        {12}
+    )
+    recolored._induce_paired_transport_family()
+    assert recolored.paired_transport_successor is None
+
+    with pytest.raises(ValueError, match="paired transport family"):
+        MindConfig(enable_paired_transport_family=True)
+
+
 def test_failure_conditioned_fairness_preserves_parent_then_accommodates() -> None:
     observation = Observation.create(
         state="NOT_FINISHED",

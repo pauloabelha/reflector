@@ -59,6 +59,9 @@ class SymbolicPolicy:
             paired_contextual_transitions=(
                 self.mind.config.enable_paired_contextual_transitions
             ),
+            paired_transport_family=(
+                self.mind.config.enable_paired_transport_family
+            ),
             local_relation_solver=self.mind.config.enable_local_relation_solver,
             constraint_first_role_replay=(
                 self.mind.config.enable_constraint_first_role_replay

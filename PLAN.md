@@ -1711,6 +1711,79 @@ Prediction and falsifier:
   false-edge loop, either target miss, or any later accepted regression. V49b
   remains accepted unless every promotion gate passes.
 
+V50 result:
+
+- the first frozen-source target reproduced v49b exactly at 1/6 levels,
+  `[20, 380]`, and score `4.7619047619`;
+- two distinct state-action edges were each proposed once and confirmed on
+  their second identical outcome, with zero conflicts and 44 bounded planner
+  uses;
+- substituting the first edge changed the chosen approach, but that approach
+  exposed a second false geometric edge; after both were confirmed, a third
+  unmodeled approach produced the same convergent transported successor;
+- the target therefore violated both the one-edge diagnostic prediction and
+  the required level-2 completion. V50 is rejected without preservation or
+  full-suite gates; its exact-off code remains diagnostic evidence.
+
+## Active experiment: v51 induced convergent transport family
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`; rejected v50 supplies
+state-conditioned transition evidence only.
+
+Observed higher-order regularity:
+
+- v50's first confirmed edge followed action 2 from anchors
+  `((18, 34), (42, 34))`; the intended right-object footprint intersected one
+  excluded rendered color and both objects appeared at
+  `((22, 10), (38, 10))`;
+- its second confirmed edge followed action 4 from
+  `((22, 34), (38, 34))`; this time the intended left-object footprint
+  intersected that same excluded color and both objects appeared at the exact
+  same successor;
+- a later unconfirmed edge followed action 2 from
+  `((14, 34), (46, 34))`; both intended footprints intersected the same
+  excluded color and again converged to that successor;
+- the coordinates and concrete color above are diagnostic evidence only and
+  are forbidden from the runtime. The candidate must induce the shared
+  relation from masks, substrate membership, and observed outcomes.
+
+Preregistered v51 mutation:
+
+- add exact-off `enable_paired_transport_family`, dependent on v50 contextual
+  transitions;
+- for each confirmed contextual edge, retain the set of colors in the two
+  globally predicted mover footprints that are neither the grounded substrate
+  nor mover color;
+- induce one convergent transport family only when two distinct confirmed
+  state-action keys have the same ordered successor and exactly one shared
+  excluded trigger color; abstain on multiple destinations, an empty or
+  ambiguous trigger intersection, identity loss, or a family cap of one;
+- in later bounded contact search, when a proposed joint move places either
+  mover footprint on the induced trigger color, use the learned convergent
+  successor instead of testing another state-specific hallucinated edge;
+- destination anchors must remain admitted in the current topology, and direct
+  confirmed state-action successors retain priority over the family;
+- clear family evidence on level progress or retry and expose family
+  inductions and planner uses in cognitive telemetry;
+- encode no game ID, coordinate, concrete color, fixed action ID, route,
+  period, or portal name.
+
+Prediction and falsifier:
+
+- synthetic translation/reflection/recoloring and consistent action-ID
+  permutation must preserve the induced relation while transforming its
+  concrete evidence;
+- two independently confirmed convergent edges are required, and divergent
+  destinations or trigger colors must block induction;
+- on `m0r0`, predict one family induction after the second confirmed edge,
+  family use before the third previously observed trigger, and no third
+  state-specific contextual proposal in that episode;
+- require environment-reported level-2 completion within 220 total actions on
+  two fresh 400-action runs before any preservation gate;
+- reject on premature/ambiguous induction, missing family use, a third
+  state-specific proposal, either target miss, or any accepted regression.
+  V49b remains accepted otherwise.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural

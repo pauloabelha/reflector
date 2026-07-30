@@ -260,6 +260,7 @@ class EpistemicExplorer:
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
     paired_contextual_transitions: bool = False
+    paired_transport_family: bool = False
     local_relation_solver: bool = False
     constraint_first_role_replay: bool = False
     global_relation_constraint_solver: bool = False
@@ -529,10 +530,23 @@ class EpistemicExplorer:
             int,
         ]
     ] = field(default_factory=set)
+    paired_contextual_trigger_colors: dict[
+        tuple[
+            tuple[tuple[int, int], tuple[int, int]],
+            int,
+        ],
+        frozenset[int],
+    ] = field(default_factory=dict)
     paired_contextual_proposals: int = 0
     paired_contextual_confirmations: int = 0
     paired_contextual_conflicts: int = 0
     paired_contextual_planner_uses: int = 0
+    paired_transport_trigger_color: int | None = None
+    paired_transport_successor: (
+        tuple[tuple[int, int], tuple[int, int]] | None
+    ) = None
+    paired_transport_inductions: int = 0
+    paired_transport_planner_uses: int = 0
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -1069,10 +1083,15 @@ class EpistemicExplorer:
         self.paired_latent_contact = False
         self.paired_contextual_evidence.clear()
         self.paired_contextual_quarantined.clear()
+        self.paired_contextual_trigger_colors.clear()
         self.paired_contextual_proposals = 0
         self.paired_contextual_confirmations = 0
         self.paired_contextual_conflicts = 0
         self.paired_contextual_planner_uses = 0
+        self.paired_transport_trigger_color = None
+        self.paired_transport_successor = None
+        self.paired_transport_inductions = 0
+        self.paired_transport_planner_uses = 0
 
     @staticmethod
     def _paired_signature(
@@ -1328,6 +1347,119 @@ class EpistemicExplorer:
         successor, count = next(iter(evidence.items()))
         return successor if count >= 2 else None
 
+    def _paired_proposed_trigger_colors(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+        state: tuple[tuple[int, int], tuple[int, int]],
+        effect: tuple[tuple[int, int], tuple[int, int]],
+    ) -> frozenset[int]:
+        grounding = self.paired_grounding
+        if grounding is None or not frame or not frame[0]:
+            return frozenset()
+        height = len(frame)
+        width = len(frame[0])
+        excluded = {
+            grounding.substrate_color,
+            grounding.signature[0],
+        }
+        colors: set[int] = set()
+        for index, anchor in enumerate(state):
+            proposed = (
+                anchor[0] + effect[index][0],
+                anchor[1] + effect[index][1],
+            )
+            colors.update(
+                frame[proposed[1] + dy][proposed[0] + dx]
+                for dx, dy in grounding.mask_offsets
+                if 0 <= proposed[0] + dx < width
+                and 0 <= proposed[1] + dy < height
+            )
+        return frozenset(colors - excluded)
+
+    def _induce_paired_transport_family(self) -> None:
+        if not self.paired_transport_family:
+            return
+        confirmed = [
+            (
+                key,
+                self._paired_confirmed_contextual_successor(*key),
+                self.paired_contextual_trigger_colors.get(
+                    key,
+                    frozenset(),
+                ),
+            )
+            for key in self.paired_contextual_evidence
+            if key not in self.paired_contextual_quarantined
+        ]
+        candidates: set[
+            tuple[
+                int,
+                tuple[tuple[int, int], tuple[int, int]],
+            ]
+        ] = set()
+        for index, (left_key, left_successor, left_triggers) in enumerate(
+            confirmed
+        ):
+            if left_successor is None:
+                continue
+            for right_key, right_successor, right_triggers in confirmed[
+                index + 1 :
+            ]:
+                if (
+                    left_key == right_key
+                    or right_successor != left_successor
+                ):
+                    continue
+                shared = left_triggers & right_triggers
+                if len(shared) == 1:
+                    candidates.add((next(iter(shared)), left_successor))
+        if len(candidates) != 1:
+            self.paired_transport_trigger_color = None
+            self.paired_transport_successor = None
+            return
+        trigger, successor = next(iter(candidates))
+        if any(
+            observed_successor is not None
+            and observed_successor != successor
+            and trigger in triggers
+            for _key, observed_successor, triggers in confirmed
+        ):
+            self.paired_transport_trigger_color = None
+            self.paired_transport_successor = None
+            return
+        if (
+            self.paired_transport_trigger_color != trigger
+            or self.paired_transport_successor != successor
+        ):
+            self.paired_transport_inductions += 1
+        self.paired_transport_trigger_color = trigger
+        self.paired_transport_successor = successor
+
+    def _paired_transport_family_successor(
+        self,
+        frame: tuple[tuple[int, ...], ...],
+        state: tuple[tuple[int, int], tuple[int, int]],
+        effect: tuple[tuple[int, int], tuple[int, int]],
+        nodes: frozenset[tuple[int, int]],
+    ) -> tuple[tuple[int, int], tuple[int, int]] | None:
+        trigger = self.paired_transport_trigger_color
+        successor = self.paired_transport_successor
+        if (
+            not self.paired_transport_family
+            or trigger is None
+            or successor is None
+            or successor[0] not in nodes
+            or successor[1] not in nodes
+            or trigger
+            not in self._paired_proposed_trigger_colors(
+                frame,
+                state,
+                effect,
+            )
+        ):
+            return None
+        return successor
+
     def _observe_paired_contextual_transition(
         self,
         before_frame: tuple[tuple[int, ...], ...],
@@ -1353,6 +1485,13 @@ class EpistemicExplorer:
                 self.paired_diagnostic = "contextual-transition-cap"
                 return True
             self.paired_contextual_evidence[key] = Counter()
+            self.paired_contextual_trigger_colors[key] = (
+                self._paired_proposed_trigger_colors(
+                    before_frame,
+                    before,
+                    effect,
+                )
+            )
         evidence = self.paired_contextual_evidence[key]
         if observed not in evidence and evidence:
             self.paired_contextual_quarantined.add(key)
@@ -1368,6 +1507,7 @@ class EpistemicExplorer:
         elif prior == 1:
             self.paired_contextual_confirmations += 1
             self.paired_diagnostic = "contextual-transition-confirmed"
+            self._induce_paired_transport_family()
         else:
             self.paired_diagnostic = "contextual-transition-reobserved"
         return True
@@ -1490,6 +1630,18 @@ class EpistemicExplorer:
                     ):
                         successor = contextual
                         self.paired_contextual_planner_uses += 1
+                    elif self.paired_transport_family:
+                        family_successor = (
+                            self._paired_transport_family_successor(
+                                frame,
+                                state,
+                                effect,
+                                nodes,
+                            )
+                        )
+                        if family_successor is not None:
+                            successor = family_successor
+                            self.paired_transport_planner_uses += 1
                 expanded_edges += 1
                 if successor == state:
                     continue
@@ -6533,6 +6685,13 @@ class EpistemicExplorer:
             ),
             "paired_contextual_planner_uses": (
                 self.paired_contextual_planner_uses
+            ),
+            "paired_transport_inductions": self.paired_transport_inductions,
+            "paired_transport_family_grounded": int(
+                self.paired_transport_successor is not None
+            ),
+            "paired_transport_planner_uses": (
+                self.paired_transport_planner_uses
             ),
             "paired_diagnostic": self.paired_diagnostic,
             "trajectory_plan_steps": self.trajectory_plan_steps,
