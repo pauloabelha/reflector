@@ -2421,6 +2421,60 @@ accepted level. Recording prediction accuracy alone cannot promote it.
 Only a qualifying v58 variant proceeds to `ar25`, `m0r0`, `sb26`,
 deterministic rerun, and the full suite.
 
+## Rejected experiments: v61-v64 proposal-coverage probes
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`.
+
+V61 tested one deterministic frame-center click before the accepted explorer:
+
+- candidate `candidate-5a85e3b0db5395d9`;
+- five-game score 14.4856728742 with the same seven levels as v49b;
+- it delayed the accepted first completion by one action on `ft09`, `lf52`,
+  and `m0r0`, while `bp35` and `cn04` remained at zero;
+- rejected because an ungrounded first contact added no level and weakened
+  accepted efficiency.
+
+V62 tested a deeper retry cap for already productive action roles:
+
+- candidate `candidate-d0a0255c3cac4c49`;
+- `sp80` regressed from accepted level 1 at action 196 to zero levels in 400
+  actions;
+- 28 productive-reuse selections supplied repetition but not the missing
+  procedure;
+- rejected because more exploitation of a responsive action family was
+  actively harmful.
+
+V64 grafted the independently successful research object/frame graph into the
+shared runtime path:
+
+- candidate `candidate-51cd888f4c2b9a6e`;
+- after one failed coordinate-only retry, it replaced the click vocabulary
+  with compact monochrome components and normalized dominated edge strips in
+  the graph state;
+- `vc33` advanced from zero to level 1 at action 262, exactly twice, with
+  `[262,138]`, seven resets, and 254 compact-frontier selections;
+- the eleven-game accepted-progress gate preserved nine accepted action
+  vectors and added `vc33`, but regressed `tn36` from level 1 at action 123 to
+  zero levels;
+- rejected despite the deterministic gain because the preservation gate is
+  absolute.
+
+The counterexample localizes the missing trigger. On recorded post-failure
+frames, `vc33` had 10-15 compact proposals for 10-15 perceptual objects, while
+`tn36` had 87-88 compact proposals for about 42-48 objects. The graph
+abstraction was compressive only on the gain. The next offspring may activate
+the branch only when its symbolic proposal vocabulary does not exceed the
+current perceptual object vocabulary; no game identity, coordinate, or known
+solution may enter that gate.
+
+Evidence:
+
+- `reports/experimental-v61-center-probe-five-400.json`;
+- `reports/experimental-v62-sp80-deep-reuse-r1-400.json`;
+- `reports/experimental-v64-vc33-compact-frontier-r1-400.json`;
+- `reports/experimental-v64-vc33-compact-frontier-r2-400.json`;
+- `reports/official-isolated-v64-progress-gate-400.json`.
+
 ## Promotion gates
 
 A descendant is accepted only if all are true:

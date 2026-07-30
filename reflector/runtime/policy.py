@@ -48,6 +48,12 @@ class SymbolicPolicy:
             cross_retry_maturity=(
                 self.mind.config.enable_cross_retry_maturity
             ),
+            deep_failure_productive_reuse=(
+                self.mind.config.enable_deep_failure_productive_reuse
+            ),
+            compact_component_frontier=(
+                self.mind.config.enable_compact_component_frontier
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),
@@ -137,6 +143,7 @@ class SymbolicPolicy:
         self._last_update: MindUpdate | None = None
         self._decision_epoch = 0
         self._last_ingested_epoch = -1
+        self._first_contact_center_probe_issued = False
 
     def is_done(self, observation: Observation) -> bool:
         return observation.state == self.TERMINAL
@@ -182,7 +189,18 @@ class SymbolicPolicy:
         if not legal:
             raise ValueError("active observation exposes no legal non-reset action")
 
-        if self.mind.config.enable_epistemic_state_graph:
+        data: tuple[tuple[str, int], ...]
+        if (
+            self.mind.config.enable_first_contact_center_probe
+            and not self._first_contact_center_probe_issued
+            and self.COMPLEX in legal
+        ):
+            action_id = self.COMPLEX
+            reason = "first-contact-center-probe"
+            x, y = self._frame_center(observation.frame)
+            data = (("x", x), ("y", y))
+            self._first_contact_center_probe_issued = True
+        elif self.mind.config.enable_epistemic_state_graph:
             exploration = self.explorer.select(
                 observation,
                 update.scene,
@@ -406,3 +424,12 @@ class SymbolicPolicy:
         x = sum(point[0] for point in points) // len(points)
         y = sum(point[1] for point in points) // len(points)
         return (max(0, min(63, x)), max(0, min(63, y)))
+
+    @staticmethod
+    def _frame_center(frame: tuple[tuple[int, ...], ...]) -> tuple[int, int]:
+        if not frame or not frame[0]:
+            return (32, 32)
+        return (
+            max(0, min(63, len(frame[0]) // 2)),
+            max(0, min(63, len(frame) // 2)),
+        )

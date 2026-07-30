@@ -257,6 +257,8 @@ class EpistemicExplorer:
     click_object_accommodation: bool = False
     productive_role_reuse: bool = False
     cross_retry_maturity: bool = False
+    deep_failure_productive_reuse: bool = False
+    compact_component_frontier: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -618,6 +620,9 @@ class EpistemicExplorer:
     inherited_scheme_trials: Counter[str] = field(default_factory=Counter)
     inherited_scheme_selections: int = 0
     inherited_scheme_diagnostic: str = "not-attempted"
+    compact_component_frontier_active: bool = False
+    compact_component_frontier_selections: int = 0
+    compact_component_frontier_candidates: int = 0
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -4257,6 +4262,9 @@ class EpistemicExplorer:
         tokens = self._tokens(observation, scene, legal_actions)
         if not tokens:
             raise ValueError("epistemic explorer has no represented legal action")
+        self.compact_component_frontier_active = (
+            self._uses_compact_component_frontier(observation)
+        )
         self.tokens_by_state[state] = tokens
         self.selection_frame = observation.frame
         self.last_scheme_components = ()
@@ -5660,6 +5668,20 @@ class EpistemicExplorer:
         reason: str,
         scene: Scene,
     ) -> ExplorationChoice:
+        if self.compact_component_frontier_active and reason in {
+            "epistemic-frontier:hierarchical-action-family",
+            "epistemic-frontier:untried-current-state",
+            "epistemic-frontier:navigate-known-state-graph",
+            "epistemic-frontier:least-repeated-exhausted-state",
+        }:
+            self.compact_component_frontier_selections += 1
+            if not self.last_scheme_components:
+                self.last_scheme_components = (
+                    "scheme:compact-component-frontier",
+                    "operator:click-compact-monochrome-component",
+                    "state:edge-strip-normalized-frame",
+                    "trigger:failed-coordinate-only-level",
+                )
         self.level_interventions = min(
             self.min_productive_reuse_interventions,
             self.level_interventions + 1,
@@ -6462,10 +6484,7 @@ class EpistemicExplorer:
             return None
         if self.learned_local_relation:
             return None
-        if (
-            self.productive_reuse_level_trials
-            >= self.max_productive_reuse_trials_per_level
-        ):
+        if self.productive_reuse_level_trials >= self._productive_reuse_trial_cap():
             return None
         candidates = tuple(
             token
@@ -6487,6 +6506,13 @@ class EpistemicExplorer:
                 token,
             ),
         )
+
+    def _productive_reuse_trial_cap(self) -> int:
+        """Permit a bounded deep-retry ablation without changing the baseline."""
+
+        if self.deep_failure_productive_reuse and self.level_failures >= 2:
+            return 64
+        return self.max_productive_reuse_trials_per_level
 
     def _select_program_role(
         self,
@@ -7053,6 +7079,13 @@ class EpistemicExplorer:
     ) -> tuple[tuple[int, int], ...]:
         """Represent object hypotheses first, then a bounded coarse scan."""
 
+        if self._uses_compact_component_frontier(observation):
+            compact_candidates = self._compact_component_candidates(
+                observation.frame
+            )
+            self.compact_component_frontier_candidates = len(compact_candidates)
+            return compact_candidates[: self.max_click_candidates]
+
         candidates: list[tuple[int, int]] = []
         if self.local_relation_solver:
             candidates.extend(self._local_relation_candidates(observation, scene))
@@ -7145,6 +7178,109 @@ class EpistemicExplorer:
         if not unique and width and height:
             unique.append((width // 2, height // 2))
         return tuple(unique)
+
+    def _uses_compact_component_frontier(
+        self,
+        observation: Observation,
+    ) -> bool:
+        """Activate a graph-compatible click vocabulary only after failure."""
+
+        available = set(observation.available_actions) - {self.reset_action}
+        return (
+            self.compact_component_frontier
+            and self.level_failures > 0
+            and available == {self.complex_action}
+            and bool(observation.frame)
+        )
+
+    @staticmethod
+    def _compact_component_candidates(
+        frame: tuple[tuple[int, ...], ...],
+    ) -> tuple[tuple[int, int], ...]:
+        """Rank grounded monochrome components by compactness and support."""
+
+        height = len(frame)
+        width = len(frame[0]) if height else 0
+        seen: set[tuple[int, int]] = set()
+        ranked: list[tuple[int, int, int, int, int]] = []
+        for y0 in range(height):
+            for x0 in range(width):
+                if (x0, y0) in seen:
+                    continue
+                color = frame[y0][x0]
+                region = {(x0, y0)}
+                queue = deque(((x0, y0),))
+                seen.add((x0, y0))
+                while queue:
+                    x, y = queue.popleft()
+                    for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                        nx, ny = x + dx, y + dy
+                        if (
+                            0 <= nx < width
+                            and 0 <= ny < height
+                            and (nx, ny) not in seen
+                            and frame[ny][nx] == color
+                        ):
+                            seen.add((nx, ny))
+                            region.add((nx, ny))
+                            queue.append((nx, ny))
+                area = len(region)
+                if area < 2 or area * 4 > max(1, height * width):
+                    continue
+                xs = tuple(point[0] for point in region)
+                ys = tuple(point[1] for point in region)
+                box_area = (
+                    (max(xs) - min(xs) + 1)
+                    * (max(ys) - min(ys) + 1)
+                )
+                regularity = area * 1000 // box_area
+                centroid = (sum(xs) // area, sum(ys) // area)
+                target = min(
+                    region,
+                    key=lambda point: (
+                        abs(point[0] - centroid[0])
+                        + abs(point[1] - centroid[1]),
+                        point[1],
+                        point[0],
+                    ),
+                )
+                ranked.append(
+                    (regularity, area, color, target[1], target[0])
+                )
+        ranked.sort(
+            key=lambda item: (-item[0], -item[1], -item[2], item[3], item[4])
+        )
+        return tuple((x, y) for _regularity, _area, _color, y, x in ranked)
+
+    @staticmethod
+    def _compact_component_state_digest(
+        frame: tuple[tuple[int, ...], ...],
+    ) -> str:
+        """Mask conservative edge strips before hashing graph state."""
+
+        if not frame or not frame[0]:
+            return "compact-component-empty"
+        grid = [list(row) for row in frame]
+        height = len(grid)
+        width = len(grid[0])
+        counts = Counter(value for row in grid for value in row)
+        background = max(counts, key=lambda value: (counts[value], -value))
+        edge = max(1, min(4, min(height, width) // 8))
+        rows = (*range(edge), *range(max(edge, height - edge), height))
+        for y in rows:
+            row_counts = Counter(grid[y])
+            if max(row_counts.values()) * 5 >= width * 4:
+                grid[y] = [background] * width
+        columns = (*range(edge), *range(max(edge, width - edge), width))
+        for x in columns:
+            column_counts = Counter(grid[y][x] for y in range(height))
+            if max(column_counts.values()) * 5 >= height * 4:
+                for y in range(height):
+                    grid[y][x] = background
+        normalized = tuple(tuple(row) for row in grid)
+        return "compact-component-" + hashlib.sha256(
+            repr(normalized).encode()
+        ).hexdigest()
 
     def _local_relation_candidates(
         self,
@@ -7457,6 +7593,8 @@ class EpistemicExplorer:
         scene: Scene,
     ) -> StateKey:
         digest = scene.frame_digest
+        if self._uses_compact_component_frontier(observation):
+            digest = self._compact_component_state_digest(observation.frame)
         if self.boundary_nuisance_state_key and self.boundary_nuisance_sides:
             normalized = [list(row) for row in observation.frame]
             if normalized and normalized[0]:
@@ -7726,6 +7864,15 @@ class EpistemicExplorer:
                 sorted(self.inherited_scheme_trials.items())
             ),
             "inherited_scheme_diagnostic": self.inherited_scheme_diagnostic,
+            "compact_component_frontier_active": int(
+                self.compact_component_frontier_active
+            ),
+            "compact_component_frontier_selections": (
+                self.compact_component_frontier_selections
+            ),
+            "compact_component_frontier_candidates": (
+                self.compact_component_frontier_candidates
+            ),
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),
             "relational_scheme_trials": sum(self.relational_trials.values()),

@@ -99,6 +99,9 @@ class MindConfig:
     enable_shape_goal_translation: bool = False
     enable_relational_phase_translation: bool = False
     enable_committed_trajectory_planning: bool = False
+    enable_first_contact_center_probe: bool = False
+    enable_deep_failure_productive_reuse: bool = False
+    enable_compact_component_frontier: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -163,6 +166,9 @@ class MindConfig:
             "enable_shape_goal_translation",
             "enable_relational_phase_translation",
             "enable_committed_trajectory_planning",
+            "enable_first_contact_center_probe",
+            "enable_deep_failure_productive_reuse",
+            "enable_compact_component_frontier",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")

@@ -68,6 +68,77 @@ def test_explorer_generates_distinct_legal_object_clicks() -> None:
     assert choices[1].data == (("x", 1), ("y", 1))
 
 
+def test_compact_component_frontier_activates_only_after_click_only_failure() -> None:
+    frame = (
+        (0, 0, 0, 0, 0, 0, 0, 0),
+        (0, 2, 2, 2, 0, 1, 1, 0),
+        (0, 2, 2, 2, 0, 1, 1, 0),
+        (0, 2, 2, 2, 0, 0, 0, 0),
+        (0, 3, 3, 3, 0, 0, 0, 0),
+        (0, 3, 0, 0, 0, 0, 0, 0),
+        (0, 3, 0, 0, 0, 0, 0, 0),
+        (0, 0, 0, 0, 0, 0, 0, 0),
+    )
+    click_only = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=frame,
+    )
+    mixed = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 6),
+        frame=frame,
+    )
+    explorer = EpistemicExplorer(compact_component_frontier=True)
+
+    assert not explorer._uses_compact_component_frontier(click_only)
+    explorer.level_failures = 1
+    assert explorer._uses_compact_component_frontier(click_only)
+    assert not explorer._uses_compact_component_frontier(mixed)
+    assert explorer._compact_component_candidates(frame)[:3] == (
+        (2, 2),
+        (5, 1),
+        (1, 4),
+    )
+
+
+def test_compact_component_frontier_masks_only_dominated_edge_strips() -> None:
+    def frame(counter: int, *, interior: int = 0):
+        rows = [[0] * 8 for _ in range(8)]
+        rows[0] = [7] * 8
+        rows[0][counter] = 4
+        rows[3][3] = interior
+        rows[4][3] = 2
+        return tuple(tuple(row) for row in rows)
+
+    first = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=frame(1),
+    )
+    second = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=frame(5),
+    )
+    changed = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=frame(5, interior=3),
+    )
+    explorer = EpistemicExplorer(compact_component_frontier=True)
+    explorer.level_failures = 1
+
+    assert explorer._state_key(first, _scene(first)) == explorer._state_key(
+        second,
+        _scene(second),
+    )
+    assert explorer._state_key(first, _scene(first)) != explorer._state_key(
+        changed,
+        _scene(changed),
+    )
+
+
 def test_explorer_navigates_known_edges_to_an_untried_frontier() -> None:
     left = Observation.create(
         state="NOT_FINISHED",
@@ -1363,6 +1434,17 @@ def test_productive_role_reuse_activates_only_after_repeated_failure() -> None:
     assert before.token.data == (("x", 1), ("y", 1))
     assert after.token.data == (("x", 3), ("y", 1))
     assert after.reason.endswith("reuse-productive-action-role")
+
+
+def test_deep_failure_productive_reuse_only_raises_the_failed_retry_cap() -> None:
+    baseline = EpistemicExplorer()
+    enabled = EpistemicExplorer(deep_failure_productive_reuse=True)
+
+    assert baseline._productive_reuse_trial_cap() == 8
+    assert enabled._productive_reuse_trial_cap() == 8
+    enabled.level_failures = 2
+    assert enabled._productive_reuse_trial_cap() == 64
+    assert baseline._productive_reuse_trial_cap() == 8
 
 
 def test_local_relation_solver_induces_and_repairs_repeated_panel_rule() -> None:

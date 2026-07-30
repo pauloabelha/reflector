@@ -31,6 +31,36 @@ def test_complex_action_targets_rare_color() -> None:
     assert decision.data_dict() == {"x": 1, "y": 1}
 
 
+def test_first_contact_center_probe_is_single_use_and_exact_off_by_default() -> None:
+    frame = (
+        (9, 0, 0, 0, 0),
+        (0, 0, 0, 0, 0),
+        (0, 0, 0, 0, 0),
+    )
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=frame,
+    )
+    enabled = SymbolicPolicy(
+        MindConfig(
+            enable_epistemic_state_graph=True,
+            enable_first_contact_center_probe=True,
+        )
+    )
+
+    first = enabled.choose_action(observation)
+    second = enabled.choose_action(observation)
+    baseline = SymbolicPolicy(
+        MindConfig(enable_epistemic_state_graph=True)
+    ).choose_action(observation)
+
+    assert first.reason == "first-contact-center-probe"
+    assert first.data_dict() == {"x": 2, "y": 1}
+    assert second.reason != "first-contact-center-probe"
+    assert baseline.reason != "first-contact-center-probe"
+
+
 def test_active_observation_requires_legal_action() -> None:
     with pytest.raises(ValueError):
         SymbolicPolicy().choose_action(
