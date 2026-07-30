@@ -9,7 +9,12 @@ from typing import Any, Protocol
 
 from ..core.mind import MindConfig
 
-MUTABLE_FIELDS = frozenset(MindConfig().to_dict())
+MUTABLE_FIELDS = frozenset(MindConfig().to_dict()) - {
+    # Knowledge snapshots are mutated through typed SchemeDefinition
+    # operations, never free-form scalar genome patches.
+    "inherited_scheme_definitions",
+    "inherited_scheme_root",
+}
 
 
 @dataclass(frozen=True, slots=True)

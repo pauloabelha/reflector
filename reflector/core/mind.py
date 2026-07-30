@@ -10,6 +10,7 @@ from .abstraction import AbstractionStore
 from .causal import Experiment, HypothesisStore
 from .comparisons import ComparisonTransferSystem
 from .graph import DependencyGraph
+from .inheritance import EMPTY_SCHEME_LIBRARY_ROOT, SchemeLibrary
 from .perception import SceneTracker
 from .planning import Goal, Plan, SymbolicPlanner
 from .reinforcement import StructuralCreditLedger
@@ -72,6 +73,7 @@ class MindConfig:
     enable_preregistered_structural_credit: bool = False
     enable_parameterized_scheme_variation: bool = False
     enable_starter_schemas: bool = False
+    enable_inherited_scheme_library: bool = False
     enable_relational_scheme_binding: bool = False
     enable_visual_primitives: bool = False
     enable_visual_primitive_actions: bool = False
@@ -95,6 +97,8 @@ class MindConfig:
     experiment_weight: float = 0.25
     plan_weight: float = 10.0
     hierarchy_complexity_pressure: float = 1.0
+    inherited_scheme_definitions: tuple[str, ...] = ()
+    inherited_scheme_root: str = EMPTY_SCHEME_LIBRARY_ROOT
 
     def __post_init__(self) -> None:
         for name in (
@@ -131,6 +135,7 @@ class MindConfig:
             "enable_preregistered_structural_credit",
             "enable_parameterized_scheme_variation",
             "enable_starter_schemas",
+            "enable_inherited_scheme_library",
             "enable_relational_scheme_binding",
             "enable_visual_primitives",
             "enable_visual_primitive_actions",
@@ -277,9 +282,40 @@ class MindConfig:
                 raise ValueError(f"{name} must be numeric")
             if not math.isfinite(value) or not 0.0 <= value <= 100.0:
                 raise ValueError(f"{name} must be finite and between 0 and 100")
+        if type(self.inherited_scheme_definitions) is not tuple or any(
+            not isinstance(item, str)
+            for item in self.inherited_scheme_definitions
+        ):
+            raise ValueError(
+                "inherited_scheme_definitions must be a tuple of strings"
+            )
+        if type(self.inherited_scheme_root) is not str:
+            raise ValueError("inherited_scheme_root must be a string")
+        library = SchemeLibrary.from_json_definitions(
+            self.inherited_scheme_definitions
+        )
+        if library.json_definitions() != self.inherited_scheme_definitions:
+            raise ValueError(
+                "inherited scheme definitions must be sorted by content hash"
+            )
+        if library.root != self.inherited_scheme_root:
+            raise ValueError(
+                "inherited_scheme_root does not match inherited definitions"
+            )
+        if self.enable_inherited_scheme_library and not library.definitions:
+            raise ValueError(
+                "enabled inherited scheme library must not be empty"
+            )
 
-    def to_dict(self) -> dict[str, bool | int | float]:
-        return asdict(self)
+    def to_dict(self) -> dict[str, Any]:
+        value = asdict(self)
+        # The genome's authoritative wire form is JSON, where arrays are
+        # lists. Returning that form here keeps process-isolation cross-talk
+        # checks and candidate identities identical before and after encoding.
+        value["inherited_scheme_definitions"] = list(
+            self.inherited_scheme_definitions
+        )
+        return value
 
     @classmethod
     def from_dict(cls, value: dict[str, Any]) -> "MindConfig":
@@ -287,7 +323,11 @@ class MindConfig:
         unknown = set(value) - expected
         if unknown:
             raise ValueError(f"unknown MindConfig fields: {sorted(unknown)}")
-        return cls(**value)
+        normalized = dict(value)
+        definitions = normalized.get("inherited_scheme_definitions", ())
+        if isinstance(definitions, list):
+            normalized["inherited_scheme_definitions"] = tuple(definitions)
+        return cls(**normalized)
 
 
 class SymbolicMind:

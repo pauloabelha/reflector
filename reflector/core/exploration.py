@@ -9,6 +9,7 @@ from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
 
+from .inheritance import SchemeLibrary
 from .symbolic import ObjectState, Observation, Scene
 
 StateKey = tuple[int, str, str]
@@ -267,6 +268,7 @@ class EpistemicExplorer:
     global_relation_constraint_solver: bool = False
     parameterized_scheme_variation: bool = False
     starter_schemas: bool = False
+    inherited_scheme_library: SchemeLibrary = SchemeLibrary()
     relational_scheme_binding: bool = False
     visual_primitives: bool = False
     cyclic_sequence_alignment: bool = False
@@ -4770,8 +4772,10 @@ class EpistemicExplorer:
         ):
             self.episode_roles.append(grounding.role)
             self.episode_groundings.append(grounding)
-        if self.starter_schemas and not self.last_scheme_components:
-            self.last_scheme_components = self._starter_components(
+        if (
+            self.starter_schemas or self.inherited_scheme_library.definitions
+        ) and not self.last_scheme_components:
+            self.last_scheme_components = self._operative_scheme_components(
                 reason,
                 grounding,
             )
@@ -4781,11 +4785,22 @@ class EpistemicExplorer:
         self.pending = (state, token)
         return ExplorationChoice(token, reason)
 
-    @staticmethod
-    def _starter_components(
+    def _operative_scheme_components(
+        self,
         reason: str,
         grounding: GroundedRole,
     ) -> tuple[str, ...]:
+        components: set[str] = set()
+        if self.inherited_scheme_library.definitions:
+            components.update(
+                self.inherited_scheme_library.grounded_components(
+                    relation=("repair-local-relation" in reason),
+                    object_bound=(grounding.centroid is not None),
+                    region_bound=(grounding.primitive_id is not None),
+                )
+            )
+        if not self.starter_schemas:
+            return tuple(sorted(components))
         if "repair-local-relation" in reason:
             schema_id = "repair-relation"
         elif "hierarchical-action-family" in reason:
@@ -4796,7 +4811,7 @@ class EpistemicExplorer:
             schema_id = "intervene-on-object"
         else:
             schema_id = "bounded-novelty"
-        components = {f"scheme:starter:{schema_id}"}
+        components.add(f"scheme:starter:{schema_id}")
         if grounding.centroid is not None:
             components.add(
                 "scheme:starter:intervene-on-region"
@@ -6736,6 +6751,14 @@ class EpistemicExplorer:
                 if self.starter_schemas
                 else []
             ),
+            "inherited_scheme_count": len(
+                self.inherited_scheme_library.definitions
+            ),
+            "inherited_scheme_root": self.inherited_scheme_library.root,
+            "inherited_scheme_ids": [
+                item.scheme_id
+                for item in self.inherited_scheme_library.definitions
+            ],
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),
             "relational_scheme_trials": sum(self.relational_trials.values()),

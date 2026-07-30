@@ -1854,6 +1854,58 @@ None supplied a model of the task's terminal relation or latent phase.
 Continuing to lengthen this advisor would therefore overfit search around a
 missing goal abstraction.
 
+## Active experiment: v53 content-addressed inherited schemes
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`.
+
+Architectural hypothesis:
+
+- cross-run common sense should be inherited as immutable typed scheme
+  definitions whose identity excludes mutable empirical confidence;
+- an append-only evidence ledger should merge confirmations and
+  counterexamples by definition hash;
+- accommodation should produce a new definition hash while conserving the
+  parent as an explicit dependency;
+- the exact dependency-closed library snapshot and Merkle root should live in
+  `MindConfig`, candidate identity, isolated-process JSON, cognitive telemetry,
+  Kaggle notebook serialization, and the offline inference overlay;
+- inherited definitions should enter the existing component-specific
+  structural-credit path only when their declared grounding requirements are
+  present.
+
+Implemented substrate:
+
+- `reflector/core/inheritance.py` defines canonical `SchemeDefinition` and
+  closed `SchemeLibrary` snapshots plus content-free starter definitions;
+- `reflector/evolution/inheritance.py` defines the development-only evidence
+  ledger, conservative held-out promotion rule, accommodation, and genome
+  embedding;
+- free-form scalar mutation providers cannot edit library payloads or roots;
+- isolated descendants inherit the exact snapshot while ordinary genome
+  mutations change only their declared scalar/boolean trait;
+- the operative explorer emits inherited definition hashes and the library
+  root in telemetry and assigns grounded definitions to structural credit;
+- the Kaggle overlay now includes the deterministic inference-side definition
+  module. No evidence database, evolver, or LLM enters the overlay.
+
+Preregistered first runtime audit:
+
+- freeze the implementation before creating the candidate;
+- endow accepted v49b with exactly the six content-free starter definitions,
+  leaving all other v49b policy fields unchanged;
+- on one accepted progress game, require the accepted level/action result to
+  remain exact while the cognitive stream reports the frozen library root,
+  six definitions, and at least one `scheme:inherited:<hash>` operative
+  component;
+- reject on changed accepted action efficiency, missing/incorrect root,
+  ungrounded structural credit, serialization drift, or any embedded game ID,
+  coordinate, route, color, or action constant;
+- treat exact behavior plus operative telemetry only as substrate validation,
+  not as a promotion or task gain. A later offspring must use an
+  evidence-promoted scheme to improve a held-out real-game outcome.
+
+Protocol: `references/INHERITED_SCHEME_PROTOCOL.md`.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural

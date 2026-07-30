@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..core.exploration import EpistemicExplorer
+from ..core.inheritance import SchemeLibrary
 from ..core.mind import MindConfig, MindUpdate, SymbolicMind
 from ..core.symbolic import Decision, Observation
 from .trace import EpisodeTrace, TraceStep
@@ -76,6 +77,13 @@ class SymbolicPolicy:
                 self.mind.config.enable_parameterized_scheme_variation
             ),
             starter_schemas=self.mind.config.enable_starter_schemas,
+            inherited_scheme_library=(
+                SchemeLibrary.from_json_definitions(
+                    self.mind.config.inherited_scheme_definitions
+                )
+                if self.mind.config.enable_inherited_scheme_library
+                else SchemeLibrary()
+            ),
             relational_scheme_binding=(
                 self.mind.config.enable_relational_scheme_binding
             ),

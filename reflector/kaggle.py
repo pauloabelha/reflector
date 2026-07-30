@@ -21,6 +21,7 @@ OVERLAY_FILES = (
     "reflector/__init__.py",
     "reflector/core/__init__.py",
     "reflector/core/symbolic.py",
+    "reflector/core/inheritance.py",
     "reflector/core/perception.py",
     "reflector/core/schemas.py",
     "reflector/core/reinforcement.py",
