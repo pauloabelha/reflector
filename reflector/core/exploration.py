@@ -285,6 +285,7 @@ class EpistemicExplorer:
     nested_source_traversal: bool = False
     enclosure_target_traversal: bool = False
     connector_relocation: bool = False
+    constructive_connector_placement: bool = False
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
     committed_trajectory_planning: bool = False
@@ -367,6 +368,7 @@ class EpistemicExplorer:
     nested_target_plan_active: bool = False
     nested_source_plan_active: bool = False
     connector_relocation_plan_active: bool = False
+    constructive_connector_plan_active: bool = False
     select_apply_diagnostic: str = "not-attempted"
     shape_translation_probes: set[int] = field(default_factory=set)
     shape_translation_effects: dict[int, tuple[int, int]] = field(
@@ -766,6 +768,7 @@ class EpistemicExplorer:
             self.nested_target_plan_active = False
             self.nested_source_plan_active = False
             self.connector_relocation_plan_active = False
+            self.constructive_connector_plan_active = False
             self.select_apply_diagnostic = "not-attempted"
             self._reset_shape_translation_level()
             self._reset_committed_trajectory_level()
@@ -4446,6 +4449,10 @@ class EpistemicExplorer:
                 ("operator:relocate-connector",)
                 if self.connector_relocation_plan_active
                 else ()
+            ) + (
+                ("operator:construct-connector-from-fixed-payload",)
+                if self.constructive_connector_plan_active
+                else ()
             )
             return self._issue(
                 state,
@@ -4832,6 +4839,7 @@ class EpistemicExplorer:
                 bool,
                 bool,
                 bool,
+                bool,
             ]
         ] = []
         for reference in rows:
@@ -4841,7 +4849,10 @@ class EpistemicExplorer:
             if len(color_set) != size:
                 continue
             selector_layouts = list(rows)
-            if self.connector_relocation:
+            if (
+                self.connector_relocation
+                or self.constructive_connector_placement
+            ):
                 selector_layouts.extend(
                     self._rectangular_selector_variants(
                         objects,
@@ -4890,6 +4901,7 @@ class EpistemicExplorer:
                     ) > 1
                     nested_plan = False
                     connector_plan = False
+                    constructive_connector_plan = False
                     relocation_prefix: tuple[ActionToken, ...] = ()
                     if self.nested_target_traversal and is_multiline:
                         nested_order = None
@@ -4903,6 +4915,22 @@ class EpistemicExplorer:
                             nested_order = self._nested_target_order(
                                 observation.frame,
                                 targets,
+                            )
+                        if (
+                            nested_order is None
+                            and self.constructive_connector_placement
+                        ):
+                            nested_order = (
+                                self._constructive_connector_order(
+                                    observation.frame,
+                                    targets,
+                                    objects,
+                                    reference_colors,
+                                    selectors,
+                                )
+                            )
+                            constructive_connector_plan = (
+                                nested_order is not None
                             )
                         if (
                             nested_order is None
@@ -5000,6 +5028,7 @@ class EpistemicExplorer:
                             nested_plan,
                             False,
                             connector_plan,
+                            constructive_connector_plan,
                         )
                     )
             if self.nested_source_traversal:
@@ -5095,6 +5124,7 @@ class EpistemicExplorer:
                                 False,
                                 True,
                                 False,
+                                False,
                             )
                         )
                         self.select_apply_diagnostic = "nested-source-program"
@@ -5104,9 +5134,12 @@ class EpistemicExplorer:
         self.nested_target_plan_active = winner[2]
         self.nested_source_plan_active = winner[3]
         self.connector_relocation_plan_active = winner[4]
+        self.constructive_connector_plan_active = winner[5]
         self.select_apply_diagnostic = (
             "nested-source-selected"
             if winner[3]
+            else "constructive-connector-selected"
+            if winner[5]
             else "connector-relocation-selected"
             if winner[4]
             else "nested-target-selected"
@@ -5333,6 +5366,194 @@ class EpistemicExplorer:
             if all(item.area in {full_area, outline_area} for item in items):
                 variants.append(tuple(sorted(items, key=lambda item: item.centroid)))
         return tuple(variants)
+
+    @staticmethod
+    def _constructive_connector_order(
+        frame: tuple[tuple[int, ...], ...],
+        targets: tuple[_FrameObject, ...],
+        objects: tuple[_FrameObject, ...],
+        reference_colors: tuple[int, ...],
+        selectors: tuple[_FrameObject, ...],
+    ) -> tuple[_FrameObject, ...] | None:
+        """Place an external connector where a fixed child payload aligns.
+
+        A connector consumes one otherwise neutral parent slot but exposes a
+        child traversal containing one already-filled payload.  The fixed
+        payload therefore determines the connector's unique insertion point in
+        the ordered reference without requiring a guessed spatial alignment.
+        """
+
+        if (
+            not frame
+            or not frame[0]
+            or len(targets) != len(reference_colors)
+            or not 3 <= len(targets) <= 12
+        ):
+            return None
+
+        def is_outline_rectangle(item: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = item.bbox
+            width = max_x - min_x + 1
+            height = max_y - min_y + 1
+            if width < 3 or height < 3:
+                return False
+            perimeter = {
+                (x, y)
+                for y in range(height)
+                for x in range(width)
+                if x in {0, width - 1} or y in {0, height - 1}
+            }
+            return item.area == len(perimeter) and set(item.shape) == perimeter
+
+        def is_filled_rectangle(item: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = item.bbox
+            width = max_x - min_x + 1
+            height = max_y - min_y + 1
+            return (
+                width >= 2
+                and height >= 2
+                and item.area == width * height
+            )
+
+        def encloses(container: _FrameObject, item: _FrameObject) -> bool:
+            min_x, min_y, max_x, max_y = container.bbox
+            x, y = item.centroid
+            return min_x < x < max_x and min_y < y < max_y
+
+        containers = tuple(
+            item
+            for item in objects
+            if is_outline_rectangle(item)
+            and sum(encloses(item, target) for target in targets) >= 2
+        )
+        if len(containers) != 2:
+            return None
+
+        assigned: dict[_FrameObject, list[_FrameObject]] = {
+            container: [] for container in containers
+        }
+        for target in targets:
+            enclosing = tuple(
+                container for container in containers if encloses(container, target)
+            )
+            if not enclosing:
+                return None
+            smallest_area = min(container.area for container in enclosing)
+            smallest = tuple(
+                container
+                for container in enclosing
+                if container.area == smallest_area
+            )
+            if len(smallest) != 1:
+                return None
+            assigned[smallest[0]].append(target)
+        if any(len(items) < 2 for items in assigned.values()):
+            return None
+
+        columns = tuple(sorted({item.centroid[0] for item in targets}))
+        pitches = {
+            right - left for left, right in zip(columns, columns[1:])
+        }
+        if len(pitches) != 1:
+            return None
+        pitch = pitches.pop()
+        if pitch <= 0:
+            return None
+
+        target_set = set(targets)
+        container_set = set(containers)
+        selector_set = set(selectors)
+        candidates: list[tuple[_FrameObject, ...]] = []
+        for child in containers:
+            parent = next(item for item in containers if item != child)
+            fixed_payloads = tuple(
+                item
+                for item in objects
+                if item not in target_set
+                and item not in container_set
+                and item not in selector_set
+                and item.color == child.color
+                and encloses(child, item)
+                and is_filled_rectangle(item)
+            )
+            if len(fixed_payloads) != 1:
+                continue
+            fixed_payload = fixed_payloads[0]
+
+            external_connectors = tuple(
+                item
+                for item in selectors
+                if item.color == child.color
+                and is_outline_rectangle(item)
+                and item.bbox[2] - item.bbox[0]
+                == item.bbox[3] - item.bbox[1]
+                and not any(encloses(container, item) for container in containers)
+            )
+            if len(external_connectors) != 1:
+                continue
+
+            child_slots = tuple(
+                sorted(
+                    (*assigned[child], fixed_payload),
+                    key=lambda item: item.centroid,
+                )
+            )
+            parent_slots = tuple(
+                sorted(assigned[parent], key=lambda item: item.centroid)
+            )
+            if (
+                len({item.centroid[1] for item in child_slots}) != 1
+                or len({item.centroid[1] for item in parent_slots}) != 1
+            ):
+                continue
+            child_x = tuple(item.centroid[0] for item in child_slots)
+            parent_x = tuple(item.centroid[0] for item in parent_slots)
+            if any(
+                right - left != pitch
+                for left, right in zip(child_x, child_x[1:])
+            ) or any(
+                right - left != pitch
+                for left, right in zip(parent_x, parent_x[1:])
+            ):
+                continue
+
+            for destination in parent_slots:
+                traversal: list[_FrameObject] = []
+                for parent_slot in parent_slots:
+                    if parent_slot == destination:
+                        traversal.extend(child_slots)
+                    else:
+                        traversal.append(parent_slot)
+                if len(traversal) != len(reference_colors):
+                    continue
+                fixed_indexes = tuple(
+                    index
+                    for index, item in enumerate(traversal)
+                    if item == fixed_payload
+                )
+                if fixed_indexes != (
+                    reference_colors.index(fixed_payload.color),
+                ):
+                    continue
+                if any(
+                    reference_colors[index] != fixed_payload.color
+                    for index in fixed_indexes
+                ):
+                    continue
+                target_order = tuple(
+                    destination if item == fixed_payload else item
+                    for item in traversal
+                )
+                if (
+                    len(set(target_order)) != len(target_order)
+                    or set(target_order) != target_set
+                ):
+                    continue
+                candidates.append(target_order)
+
+        if len(candidates) != 1:
+            return None
+        return candidates[0]
 
     @staticmethod
     def _relocated_connector_order(

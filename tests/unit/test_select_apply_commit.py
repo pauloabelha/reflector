@@ -1,4 +1,6 @@
-from reflector import MindConfig
+import pytest
+
+from reflector import MindConfig, SymbolicPolicy
 from reflector.exploration import ActionToken, EpistemicExplorer
 from reflector.perception import SceneTracker
 from reflector.symbolic import Observation
@@ -225,6 +227,8 @@ def _sibling_container_mapping_frame() -> tuple[tuple[int, ...], ...]:
 def _relocatable_connector_mapping_frame(
     *,
     marker_left: int = 22,
+    fixed_payload_color: int = 14,
+    connector_outline: bool = True,
 ) -> tuple[tuple[int, ...], ...]:
     reference = (11, 8, 14, 9, 6, 12, 15)
     selectors = (11, 6, 12, 8, 15, 9, 14)
@@ -258,7 +262,13 @@ def _relocatable_connector_mapping_frame(
         (34, 16),
     ):
         _paint(pixels, left=left, top=top, color=2, size=2)
-    _paint(pixels, left=marker_left, top=16, color=14, size=2)
+    _paint(
+        pixels,
+        left=marker_left,
+        top=16,
+        color=fixed_payload_color,
+        size=2,
+    )
     for index, color in enumerate(selectors):
         _paint(
             pixels,
@@ -266,7 +276,7 @@ def _relocatable_connector_mapping_frame(
             top=27,
             color=color,
             size=4,
-            outline=color == 14,
+            outline=color == 14 and connector_outline,
         )
     return tuple(tuple(row) for row in pixels)
 
@@ -580,6 +590,96 @@ def test_connector_relocation_abstains_without_exact_lattice_alignment() -> None
     assert not explorer.connector_relocation_plan_active
 
 
+def test_constructive_connector_uses_fixed_payload_reference_alignment() -> None:
+    observation = _observation(_relocatable_connector_mapping_frame())
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        constructive_connector_placement=True,
+    )
+    explorer.observe(observation, scene)
+
+    choices = tuple(
+        explorer.select(observation, scene, (5, 6, 7)).token
+        for _step in range(15)
+    )
+    target_clicks = tuple(
+        dict(token.data)
+        for token in choices
+        if token.action_id == 6 and dict(token.data).get("y") in {8, 16}
+    )
+    connector_point = dict(choices[4].data)
+
+    assert target_clicks == (
+        {"x": 16, "y": 8},
+        {"x": 22, "y": 8},
+        {"x": 28, "y": 8},
+        {"x": 28, "y": 16},
+        {"x": 34, "y": 16},
+        {"x": 34, "y": 8},
+        {"x": 40, "y": 8},
+    )
+    assert connector_point["y"] == 27
+    assert observation.frame[connector_point["y"]][connector_point["x"]] == 14
+    assert choices[-1] == ActionToken(5)
+    assert explorer.nested_target_plan_active
+    assert explorer.constructive_connector_plan_active
+    assert not explorer.connector_relocation_plan_active
+    assert explorer.select_apply_diagnostic == "constructive-connector-selected"
+    assert (
+        "operator:construct-connector-from-fixed-payload"
+        in explorer.last_scheme_components
+    )
+
+
+def test_constructive_connector_requires_an_external_outline() -> None:
+    observation = _observation(
+        _relocatable_connector_mapping_frame(connector_outline=False)
+    )
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(
+        parameterized_select_apply_commit=True,
+        multiline_target_binding=True,
+        nested_target_traversal=True,
+        enclosure_target_traversal=True,
+        constructive_connector_placement=True,
+    )
+    explorer.observe(observation, scene)
+
+    explorer.select(observation, scene, (5, 6, 7))
+
+    assert explorer.select_apply_program == ()
+    assert not explorer.constructive_connector_plan_active
+
+
+def test_constructive_connector_config_requires_enclosure_traversal() -> None:
+    with pytest.raises(
+        ValueError,
+        match="constructive connector placement requires enclosure",
+    ):
+        MindConfig(enable_constructive_connector_placement=True)
+
+
+def test_constructive_connector_config_reaches_runtime_explorer() -> None:
+    config = MindConfig(
+        enable_parameterized_select_apply_commit=True,
+        enable_multiline_target_binding=True,
+        enable_nested_target_traversal=True,
+        enable_enclosure_target_traversal=True,
+        enable_constructive_connector_placement=True,
+    )
+
+    policy = SymbolicPolicy(config)
+
+    assert policy.explorer.constructive_connector_placement
+    assert policy.trace.mind_config[
+        "enable_constructive_connector_placement"
+    ]
+
+
 def test_multiline_accommodation_is_silent_without_exact_cardinality() -> None:
     frame = [list(row) for row in _multiline_mapping_frame()]
     frame[12][34] = 0
@@ -636,3 +736,6 @@ def test_select_apply_commit_is_exactly_off_by_default() -> None:
     )
     assert default.to_dict() == explicit_off.to_dict()
     assert MindConfig() == MindConfig(enable_parameterized_select_apply_commit=False)
+    assert MindConfig() == MindConfig(
+        enable_constructive_connector_placement=False
+    )

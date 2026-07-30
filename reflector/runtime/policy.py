@@ -128,6 +128,9 @@ class SymbolicPolicy:
             connector_relocation=(
                 self.mind.config.enable_connector_relocation
             ),
+            constructive_connector_placement=(
+                self.mind.config.enable_constructive_connector_placement
+            ),
             shape_goal_translation=(
                 self.mind.config.enable_shape_goal_translation
             ),
