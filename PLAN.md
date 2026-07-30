@@ -25,15 +25,15 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last known participant-remote commit: `27f5ac5`
-- Accepted candidate: `candidate-35de85c4fe395c3a`
-- Accepted agent: Reflector v68
+- Accepted candidate: `candidate-2336bc12a0bc28de`
+- Accepted agent: Reflector v69
 - Accepted frozen source/candidate commit:
-  `59daf6171026b986c1e26aaa5fa1f56e2ef03269`
+  `2f3020804baf7578ff691ace2fa556783eb3735a`
 - Accepted public-development report:
-  `reports/official-isolated-v68-frozen-public-400.json`
-- Accepted score: `9.684019526667843`
+  `reports/official-isolated-v69-public-400.json`
+- Accepted score: `10.255448098096416`
 - Accepted coverage: 25/25 games, 9,486 actions
-- Accepted completions: 28/183 levels across 11 games; 2/25 games complete
+- Accepted completions: 30/183 levels across 12 games; 2/25 games complete
 - Kaggle submission: `55113224`, v65b notebook version 1, pending hidden rerun
 - Kaggle public score: pending; not yet returned
 - Kaggle private score: unavailable
@@ -66,6 +66,7 @@ generalization.
 | Learned lattice effects plus exact CSP | v66 grounded one regular repeated-actuator lattice, induced a relative binary click-effect law from two structurally distinct interventions, prospectively quarantined mismatches, and solved visible relation constraints exactly; it preserved every non-`ft09` trajectory and completed all six `ft09` levels in 162 actions twice. |
 | Confirmed segmented permutations plus exact transport | v67 proposed a unique equal-pitch permutation from one rendered transition, preregistered its full-domain successor before a subsequent same-form action, promoted only after an exact match, and searched a bounded projected marker state; it preserved every non-`lp85` outcome and solved `lp85` L4 at action 71 twice. The confirmer need not yet be a spatially distinct controller. |
 | Contiguous path cycles plus topology-grounded controllers | v68 inferred nested one-step rotations over a conserved uniform simple rectilinear slot path and distinguished identical controller sprites by endpoint/straight/corner context; it preserved every non-`lp85` score, level count, action total, reset count, and reported distribution while solving `lp85` L5 at action 50 twice. Level 6 exceeds the fixed slot bound and remains explicitly unrepresented. |
+| Grounded primary colored-stencil composition | v69 uniquely grounded a congruent reference/construction pair, visible palette roles, and an outlined eight-pose template; learned controller roles only from rendered translations; and searched bounded exact programs of palette selection, pose navigation, and half-plane overwrites. It preserved every non-`cd82` accepted trajectory and solved `cd82` L1–L2 at `[12,6]` twice. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -2868,6 +2869,37 @@ Evidence:
 V68 replaces v67 as the local task-performance champion. The gain is one
 known-public level and is not hidden-transfer evidence.
 
+## Accepted experiment: v69 primary colored-stencil composition
+
+Candidate: `candidate-2336bc12a0bc28de`
+
+Frozen source/candidate commit:
+`2f3020804baf7578ff691ace2fa556783eb3735a`
+
+Mechanism:
+
+- uniquely ground one congruent reference/construction grid pair, visible
+  palette roles, and one outlined movable template from the rendered frame;
+- bind movement controls only from observed pose translations and identify the
+  remaining represented plain control as submit after four movement bindings;
+- search a bounded exact last-write-wins program over palette selection,
+  eight-pose navigation, and normalized primary half-plane overwrites;
+- retain no game identity, fixed color, coordinate, action mapping, or route.
+
+Evidence:
+
+- two frozen `cd82` repeats exactly reached 2/6 levels at
+  `[12,6,382,0,0,0]`;
+- the twelve-game gate preserved every non-`cd82` accepted trajectory;
+- the process-isolated 25-game suite scored
+  `10.255448098096416/100`, reached 30/183 levels across 12 games, retained
+  two complete games, covered 25/25 games, and used 9,486 actions;
+- relative to v68, only `cd82` changes, adding two levels and
+  `0.571428571428573` score.
+
+V69 replaces v68 as the accepted local public-development champion. This is a
+causally isolated gain on a known public game, not hidden-transfer evidence.
+
 ## Immediate continuation toward 20/100
 
 The public-code survey in
@@ -2876,27 +2908,57 @@ as symbolic hypothesis proposal rather than symbolic execution. The next
 offspring should therefore add one compact typed operator family at a time,
 with exact replay and ambiguity abstention:
 
-1. preserve accepted v68 and keep `lp85` level 6 separate: its 75 matching
-   slots exceed the fixed 64-slot domain bound and must not be absorbed by
-   a watched-game bound increase or route-shaped special case;
-2. after the standalone K-line retrieval substrate just completed, add the
-   frozen `MindConfig` snapshot and grounded cue compiler exact-off, then
-   measure held-out recall before allowing it to reorder generators;
-3. test the staged `cd82` colored-stencil design in
-   `references/CD82_COLORED_STENCIL_DIAGNOSIS.md`: uniquely ground reference,
-   palette, construction, and the eight-pose outlined template group; learn
-   primary overwrite masks through recolored prospective confirmation and
-   target 2/6 within 80 actions before admitting secondary components;
-4. retain the exact transition graph as a bounded fallback and trace
-   generator, but rank probes by expected hypothesis elimination per action;
-5. monitor v65b Kaggle submission `55113224` to a terminal result, archive its
-   rerun status/logs and returned public score, then complete the
-   participant-owned public-repository and public-notebook publication gates;
-6. submit v68 separately only with its exact candidate/notebook identity.
+1. Freeze v69 as the preservation anchor. No target-only offspring changes the
+   accepted score until its exact source/config identity, deterministic target
+   repeat, twelve-game preservation gate, 25-game run, quality checks, exact
+   export, and network-disabled smoke paths all pass.
+2. Complete the secondary colored-stencil gate. The safety-hardened offspring
+   projects one uniquely grounded smaller exterior component into a normalized
+   construction-edge mask, requires independent recolored overwrite evidence,
+   uses only confirmed C4 transfers, and reverse-synthesizes exact
+   last-write-wins programs. One post-hardening target run completed `cd82`
+   6/6 in 99 actions with per-level authority revalidation and zero conflicts,
+   causal-validation failures, or candidate ambiguities. It remains
+   **unpromoted** pending a frozen exact repeat and v69 preservation/full-suite
+   gates.
+3. Complete the factored-orbit safety gate. The offspring factors a uniquely
+   rendered polar product domain into cyclic-direction × radial-rank modules,
+   learns prospectively confirmed local translations, then separately grounds
+   one global anchor/outlet interface before bounded product-state planning.
+   The target-only pre-safety vector
+   `[37,8,54,71,50,21,159,0]` reached `lp85` 6/8, but is **unpromoted**.
+   Exactly-one controller/interface grounding, visibly discriminated interface
+   evidence, and a deterministic capped exact-cover proof must survive a fresh
+   post-fix repeat before preservation and full-25 evaluation.
+4. Keep relational topology standalone until its integration proof obligations
+   pass. The
+   proposed generic operator tracks one multicolor composite footprint with a
+   hosted pose marker, derives a rendered configuration-space graph from
+   repeated support/connector roles, learns a finite action-to-displacement
+   belief, and emits one prospectively validated BFS edge at a time. A public
+   wrapper replay uniquely grounded a 9-cell actor, 31 nodes, and 32 edges,
+   learned the controller permutation, and completed `tu93` L1 in 19 issued
+   actions: 18 successful moves and one wall noop, without quarantine. This is
+   standalone diagnostic evidence—not an integrated runtime result. L2
+   contains another moving footprint that can enter the route and cause
+   `GAME_OVER`; the static planner must detect that blocker and abstain before
+   unsafe L2 plan execution. Required gates are independent safety review,
+   exact-off integration, repeated L1 progress, safe L2 dynamic-blocker
+   abstention, held-out `ls20`/`ka59`/`dc22` checks, then
+   preservation/full-25 evaluation.
+5. After the standalone K-line retrieval substrate, add the frozen
+   `MindConfig` snapshot and grounded cue compiler exact-off, then measure
+   held-out recall before allowing retrieval to reorder generators. Retain the
+   exact transition graph as a bounded fallback/trace generator and rank probes
+   only by explicit expected hypothesis elimination.
+6. Monitor v65b Kaggle submission `55113224` to a terminal result, archive its
+   returned status and score, and complete the participant-owned public
+   repository/notebook gates. Any later submission must use the exact promoted
+   candidate identity.
 
 Each task mutation remains subject to the full target-repeat, preservation,
 25-game, quality, and exact-export gates below. The `/goal` remains active:
-`9.684019526667843 < 20`.
+`10.255448098096416 < 20`.
 
 ## Promotion gates
 
