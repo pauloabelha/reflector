@@ -223,6 +223,7 @@ class SchemeLibrary:
         return tuple(
             f"scheme:inherited:{definition.scheme_id}"
             for definition in self.definitions
+            if definition.operator != "prioritize-intervention"
             if set(definition.grounding).issubset(present)
         )
 

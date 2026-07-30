@@ -375,6 +375,7 @@ def test_inherited_ranking_definitions_create_bounded_policy_variation() -> None
     assert other.token.data == (("x", 3), ("y", 1))
     assert "inherited-scheme-intervention" in first.reason
     assert "inherited-scheme-intervention" not in second.reason
+    assert not smallest.last_scheme_components
     assert smallest.inherited_scheme_trials[
         smallest_definition.scheme_id
     ] == 1

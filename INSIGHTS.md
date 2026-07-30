@@ -269,6 +269,18 @@ These are narrow earned claims, not claims of general intelligence.
     preregistered post-accommodation plan depth. All three remained at one
     `m0r0` level. The missing variable was a terminal-relation/phase model, not
     another cap increase.
+19. Inherited knowledge needs a causal scope, not just a content hash. V54
+    initially renewed a per-level scheme budget on same-level death; v54a then
+    revealed that generic grounding reattached an exhausted actionable scheme
+    to later interventions. Both errors made the ledger look stronger than the
+    policy actually was. Credit must name the definition, the intervention it
+    selected, and the bounded interval during which it was causally active.
+20. Relative symbolic priors create real diversity but are not common sense by
+    themselves. Smallest-area changed `r11l` from 18 to 16 actions,
+    rarest-shape solved it in 35, and largest-area lost the level. On the
+    preregistered held-out click games, smallest and rarest exactly matched
+    v49b and added nothing. A source-game efficiency gain is mutation evidence,
+    not inheritance evidence.
 
 ## What is still missing
 

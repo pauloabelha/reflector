@@ -47,6 +47,12 @@ an inherited component present in the candidate's exact library, and a
 definition-specific effect or externally observable goal contract. Generic
 active priors cannot inherit credit from coincidental progress.
 
+Actionable definitions have a stricter scope: they enter the primed hypothesis
+only when their own advisor selects the intervention. Ordinary object
+grounding must not reattach an exhausted or bypassed actionable scheme. Trial
+budgets persist across same-level `GAME_OVER` retries and reset only when the
+environment reports a level advance.
+
 `breed_inherited_candidate` unions isolated ledgers by evidence hash, applies
 the held-out gate, closes promoted definitions over their dependencies,
 retains the parent's previously inherited library, and embeds the result in a

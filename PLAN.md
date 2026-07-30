@@ -2053,6 +2053,29 @@ Preregistered v54a repair:
 - only after that structural condition passes may qualifying variants proceed
   unchanged to the already frozen `s5i5`, `tn36`, and `vc33` held-out set.
 
+V54a result:
+
+- the repaired development round respected the 24-trial per-level cap:
+  smallest-area again solved `r11l` level 1 at action 16, rarest-shape at
+  action 35, and largest-area remained at 0/6;
+- smallest and rarest advanced unchanged to the frozen held-out set. Both
+  exactly matched accepted v49b: 0 levels on `s5i5`, `tn36` level 1 at action
+  123, and 0 levels on `vc33`;
+- neither variant added a held-out level or improved accepted held-out action
+  efficiency, so both fail the pragmatic inheritance criterion;
+- evidence compilation then exposed an attribution leak: after the explicit
+  ranking advisor exhausted its cap, generic object exploration reattached
+  the actionable definition through ordinary grounding. This inflated each
+  held-out ledger to hundreds of apparent `frame_changed` confirmations and
+  allowed the `tn36` progress event to hitchhike long after the advisor's
+  intervention window.
+
+V54 and v54a are rejected. The repair excludes
+`prioritize-intervention` definitions from generic grounding; such a scheme
+now enters credit only when its own advisor selected the action. A structural
+test requires no inherited component on the first post-cap generic action.
+Do not rerun these ranks: the held-out pragmatic falsifier already failed.
+
 Protocol: `references/INHERITED_SCHEME_PROTOCOL.md`.
 
 ## Completed experimental branch: v26

@@ -1,0 +1,5125 @@
+{
+  "kind": "process-isolated-official-evaluation",
+  "scorecard": {
+    "source_url": null,
+    "tags": [
+      "agent",
+      "reflector",
+      "process-isolated"
+    ],
+    "opaque": null,
+    "card_id": null,
+    "api_key": null,
+    "score": 0.08057688010097291,
+    "environments": [
+      {
+        "id": "s5i5-18d95033",
+        "runs": [
+          {
+            "id": null,
+            "guid": "3dcf7096-ebfc-46ce-af6e-f06b796f59a0",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 7,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              20,
+              89,
+              106,
+              54,
+              162,
+              38,
+              86,
+              83
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 8,
+        "resets": 7
+      },
+      {
+        "id": "tn36-ef4dde99",
+        "runs": [
+          {
+            "id": null,
+            "guid": "e1288732-553d-4223-a0cb-d4d9ddfd9b25",
+            "score": 0.24173064030291874,
+            "levels_completed": 1,
+            "actions": 400,
+            "resets": 5,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              6.768457928481725,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              123,
+              277,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              32,
+              72,
+              26,
+              40,
+              30,
+              55,
+              62
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.24173064030291874,
+        "actions": 400,
+        "levels_completed": 1,
+        "completed": false,
+        "level_count": 7,
+        "resets": 5
+      },
+      {
+        "id": "vc33-5430563c",
+        "runs": [
+          {
+            "id": null,
+            "guid": "31a2c4d7-f2f9-4b81-9a97-090f2b5e4b7b",
+            "score": 0.0,
+            "levels_completed": 0,
+            "actions": 400,
+            "resets": 7,
+            "state": "GAME_OVER",
+            "completed": false,
+            "level_scores": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "level_actions": [
+              400,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "level_baseline_actions": [
+              7,
+              18,
+              44,
+              61,
+              131,
+              34,
+              152
+            ],
+            "number_of_levels": null,
+            "number_of_environments": null,
+            "message": null
+          }
+        ],
+        "score": 0.0,
+        "actions": 400,
+        "levels_completed": 0,
+        "completed": false,
+        "level_count": 7,
+        "resets": 7
+      }
+    ],
+    "tags_scores": [],
+    "competition_mode": null,
+    "total_environments_completed": 0,
+    "total_environments": 3,
+    "total_levels_completed": 1,
+    "total_levels": 22,
+    "total_actions": 1200
+  },
+  "agents": [
+    {
+      "game_id": "s5i5",
+      "actions": 400,
+      "seconds": 10.72,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 7,
+        "6": 393
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 63
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 1,
+            "y": 63
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 2,
+            "y": 63
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 3,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 5,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 6,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 7,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 9,
+            "y": 52
+          },
+          "count": 5
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 9,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 27
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 29
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 31
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 32
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 34
+          },
+          "count": 5
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 37
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 51
+          },
+          "count": 5
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 52
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 53
+          },
+          "count": 5
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 58
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 52
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 41
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 44
+          },
+          "count": 11
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 37
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 38
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 41
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 43
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 10
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 9
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 29,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 10
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 33,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 10
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 21
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 21
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 18
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 21
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 20
+          },
+          "count": 24
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 21
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 60
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 20
+          },
+          "count": 26
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 10
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 9
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 11
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 60
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 9
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 10
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 11
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 57,
+            "y": 63
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 63
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 60
+          },
+          "count": 1
+        }
+      ],
+      "reason_counts": {
+        "epistemic-frontier": 393,
+        "reset-required": 7
+      },
+      "reason_detail_counts": {
+        "epistemic-frontier:hierarchical-action-family": 245,
+        "epistemic-frontier:inherited-scheme-intervention:dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15": 24,
+        "epistemic-frontier:reuse-productive-action-role": 56,
+        "epistemic-frontier:untried-current-state": 68,
+        "reset-required": 7
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": true,
+        "enable_hierarchical_action_fairness": true,
+        "enable_failure_conditioned_fairness": true,
+        "enable_successful_role_replay": false,
+        "enable_multicolor_click_objects": false,
+        "enable_click_object_accommodation": true,
+        "enable_productive_role_reuse": true,
+        "enable_cross_retry_maturity": true,
+        "enable_boundary_nuisance_state_key": false,
+        "enable_boundary_nuisance_fairness": false,
+        "enable_paired_object_contact_planning": true,
+        "enable_paired_contextual_transitions": false,
+        "enable_paired_transport_family": false,
+        "enable_paired_post_accommodation_plan": false,
+        "enable_local_relation_solver": true,
+        "enable_constraint_first_role_replay": false,
+        "enable_global_relation_constraint_solver": true,
+        "enable_preregistered_structural_credit": true,
+        "enable_parameterized_scheme_variation": false,
+        "enable_starter_schemas": false,
+        "enable_inherited_scheme_library": true,
+        "enable_relational_scheme_binding": false,
+        "enable_visual_primitives": false,
+        "enable_visual_primitive_actions": false,
+        "enable_temporal_primitives": false,
+        "enable_cyclic_sequence_alignment": true,
+        "enable_graph_cycle_transport": true,
+        "enable_parameterized_select_apply_commit": true,
+        "enable_multiline_target_binding": true,
+        "enable_spatial_order_variation": false,
+        "enable_nested_target_traversal": true,
+        "enable_nested_source_traversal": false,
+        "enable_enclosure_target_traversal": true,
+        "enable_connector_relocation": false,
+        "enable_shape_goal_translation": true,
+        "enable_relational_phase_translation": true,
+        "enable_committed_trajectory_planning": true,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0,
+        "inherited_scheme_definitions": [
+          "{\"complexity_cost\":3,\"composition\":[\"rank:smallest-area\"],\"dependencies\":[],\"effects\":[\"frame_changed\"],\"falsifiers\":[\"accepted-level-regression\",\"frame-unchanged\"],\"goal_contract\":[\"level_advanced\"],\"grounding\":[\"action-family\",\"object\"],\"invariants\":[],\"name\":\"prioritize-smallest-area\",\"operator\":\"prioritize-intervention\",\"parameters\":[\"object\"],\"preconditions\":[],\"resource_cap\":24}"
+        ],
+        "inherited_scheme_root": "d2132c708156ef8510400723c851f6c4e086dc4a20bf231723b963e21b3c17bd"
+      },
+      "agent_version": "reflector-symbolic-v26",
+      "exploration_metrics": {
+        "states": 173,
+        "edges": 311,
+        "attempts": 343,
+        "global_interventions": 160,
+        "action_families": 1,
+        "successful_program_length": 0,
+        "program_cursor": 0,
+        "perceptual_accommodations": 7,
+        "productive_roles": 9,
+        "productive_reuse_level_trials": 8,
+        "learned_cyclic_alignments": 0,
+        "cyclic_transport_evidence": 0,
+        "cyclic_alignment_level_trials": 0,
+        "cyclic_last_plan_length": 0,
+        "grounded_cyclic_transports": 0,
+        "select_apply_program_length": 0,
+        "select_apply_cursor": 0,
+        "select_apply_level_trials": 0,
+        "select_apply_diagnostic": "no-structural-candidate",
+        "shape_translation_effects": 0,
+        "shape_translation_effect_evidence": 0,
+        "shape_translation_probes": 0,
+        "shape_translation_invalid_actions": 0,
+        "shape_goal_grounded": 0,
+        "shape_translation_level_trials": 0,
+        "shape_translation_application_trials": 0,
+        "shape_translation_occluded_steps": 0,
+        "shape_translation_phases": 1,
+        "shape_translation_phase_transitions": 0,
+        "shape_translation_phase_blocked": 0,
+        "shape_translation_diagnostic": "not-attempted",
+        "trajectory_stage": "not-attempted",
+        "trajectory_current_anchor": null,
+        "trajectory_latent_anchor": null,
+        "trajectory_target_anchor": null,
+        "trajectory_effects": 0,
+        "trajectory_effect_evidence": 0,
+        "trajectory_probes": 0,
+        "trajectory_endpoint_macros": 0,
+        "trajectory_contextual_blocks": 0,
+        "trajectory_gate_failures": 0,
+        "trajectory_gate_cooldowns": 0,
+        "trajectory_gate_refresh_action_roles": 0,
+        "trajectory_topology_nodes": 0,
+        "trajectory_uncertain_nodes": 0,
+        "trajectory_topology_support_grounded": 0,
+        "trajectory_committed_macro_length": 0,
+        "trajectory_enacted_path_length": 0,
+        "trajectory_replay_cursor": 0,
+        "trajectory_replay_started": 0,
+        "trajectory_replay_validations": 0,
+        "trajectory_causal_states": 0,
+        "trajectory_causal_edges": 0,
+        "trajectory_boundary_nuisance_evidenced": 0,
+        "boundary_nuisance_evidence": 0,
+        "boundary_nuisance_sides": [],
+        "paired_object_grounded": 0,
+        "paired_joint_effects": 0,
+        "paired_probes": 0,
+        "paired_level_trials": 0,
+        "paired_topology_nodes": 0,
+        "paired_search_expansions": 0,
+        "paired_plan_length": 0,
+        "paired_contact_continuations": 0,
+        "paired_latent_contact": 0,
+        "paired_contextual_proposals": 0,
+        "paired_contextual_confirmations": 0,
+        "paired_contextual_conflicts": 0,
+        "paired_contextual_edges": 0,
+        "paired_contextual_planner_uses": 0,
+        "paired_transport_inductions": 0,
+        "paired_transport_family_grounded": 0,
+        "paired_transport_planner_uses": 0,
+        "paired_post_accommodation_allowance": 0,
+        "paired_effective_trial_cap": 64,
+        "paired_diagnostic": "no-unique-reflected-pair",
+        "trajectory_plan_steps": 0,
+        "trajectory_plan_cap": 20,
+        "trajectory_settle_steps": 0,
+        "trajectory_level_trials": 0,
+        "trajectory_disabled": 0,
+        "trajectory_diagnostic": "not-attempted",
+        "level_interventions": 32,
+        "learned_local_relations": 0,
+        "successful_schemes": 0,
+        "parameterized_schemes": 0,
+        "parameterized_scheme_trials": 0,
+        "starter_schemas": 0,
+        "starter_schema_ids": [],
+        "inherited_scheme_count": 1,
+        "inherited_scheme_root": "d2132c708156ef8510400723c851f6c4e086dc4a20bf231723b963e21b3c17bd",
+        "inherited_scheme_ids": [
+          "dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15"
+        ],
+        "inherited_scheme_selections": 24,
+        "inherited_scheme_trials": {
+          "dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15": 24
+        },
+        "inherited_scheme_diagnostic": "no-applicable-definition",
+        "successful_relational_schemes": 0,
+        "relational_schemes": 0,
+        "relational_scheme_trials": 0,
+        "responsive_relational_schemes": 0,
+        "progressing_relational_schemes": 0,
+        "falsified_relational_schemes": 0,
+        "relational_level_trials": 0,
+        "last_relational_binding": {},
+        "frontier_states": 167
+      }
+    },
+    {
+      "game_id": "tn36",
+      "actions": 400,
+      "seconds": 79.39,
+      "levels_completed": 1,
+      "action_counts": {
+        "0": 5,
+        "6": 395
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 5
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 1,
+            "y": 1
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 2,
+            "y": 1
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 3,
+            "y": 1
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 1
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 52
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 5,
+            "y": 1
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 6,
+            "y": 1
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 7,
+            "y": 1
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 7,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 1
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 45
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 58
+          },
+          "count": 6
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 9,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 54
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 58
+          },
+          "count": 15
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 52
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 58
+          },
+          "count": 14
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 14
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 16
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 22
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 42
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 18
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 26
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 34
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 54
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 55
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 58
+          },
+          "count": 13
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 60
+          },
+          "count": 12
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 14
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 22
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 45
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 18
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 26
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 27,
+            "y": 34
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 1
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 14
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 16
+          },
+          "count": 23
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 22
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 31,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 1
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 33,
+            "y": 1
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 25
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 18
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 26
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 34
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 45
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 55
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 5
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 29
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 14
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 22
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 33
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 45
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 25
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 10
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 18
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 26
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 34
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 33
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 60
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 5
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 8
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 25
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 29
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 37
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 58
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 14
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 22
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 30
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 38
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 33
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 25
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 1
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 5
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 21
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 29
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 33
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 39
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 42
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 45
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 48
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 1
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 1
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 57,
+            "y": 1
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 9
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 17
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 25
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 1
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 4
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 12
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 20
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 28
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 36
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 44
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 61,
+            "y": 1
+          },
+          "count": 2
+        }
+      ],
+      "reason_counts": {
+        "epistemic-frontier": 395,
+        "reset-required": 5
+      },
+      "reason_detail_counts": {
+        "epistemic-frontier:hierarchical-action-family": 127,
+        "epistemic-frontier:inherited-scheme-intervention:dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15": 48,
+        "epistemic-frontier:reuse-productive-action-role": 32,
+        "epistemic-frontier:untried-current-state": 188,
+        "reset-required": 5
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": true,
+        "enable_hierarchical_action_fairness": true,
+        "enable_failure_conditioned_fairness": true,
+        "enable_successful_role_replay": false,
+        "enable_multicolor_click_objects": false,
+        "enable_click_object_accommodation": true,
+        "enable_productive_role_reuse": true,
+        "enable_cross_retry_maturity": true,
+        "enable_boundary_nuisance_state_key": false,
+        "enable_boundary_nuisance_fairness": false,
+        "enable_paired_object_contact_planning": true,
+        "enable_paired_contextual_transitions": false,
+        "enable_paired_transport_family": false,
+        "enable_paired_post_accommodation_plan": false,
+        "enable_local_relation_solver": true,
+        "enable_constraint_first_role_replay": false,
+        "enable_global_relation_constraint_solver": true,
+        "enable_preregistered_structural_credit": true,
+        "enable_parameterized_scheme_variation": false,
+        "enable_starter_schemas": false,
+        "enable_inherited_scheme_library": true,
+        "enable_relational_scheme_binding": false,
+        "enable_visual_primitives": false,
+        "enable_visual_primitive_actions": false,
+        "enable_temporal_primitives": false,
+        "enable_cyclic_sequence_alignment": true,
+        "enable_graph_cycle_transport": true,
+        "enable_parameterized_select_apply_commit": true,
+        "enable_multiline_target_binding": true,
+        "enable_spatial_order_variation": false,
+        "enable_nested_target_traversal": true,
+        "enable_nested_source_traversal": false,
+        "enable_enclosure_target_traversal": true,
+        "enable_connector_relocation": false,
+        "enable_shape_goal_translation": true,
+        "enable_relational_phase_translation": true,
+        "enable_committed_trajectory_planning": true,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0,
+        "inherited_scheme_definitions": [
+          "{\"complexity_cost\":3,\"composition\":[\"rank:smallest-area\"],\"dependencies\":[],\"effects\":[\"frame_changed\"],\"falsifiers\":[\"accepted-level-regression\",\"frame-unchanged\"],\"goal_contract\":[\"level_advanced\"],\"grounding\":[\"action-family\",\"object\"],\"invariants\":[],\"name\":\"prioritize-smallest-area\",\"operator\":\"prioritize-intervention\",\"parameters\":[\"object\"],\"preconditions\":[],\"resource_cap\":24}"
+        ],
+        "inherited_scheme_root": "d2132c708156ef8510400723c851f6c4e086dc4a20bf231723b963e21b3c17bd"
+      },
+      "agent_version": "reflector-symbolic-v26",
+      "exploration_metrics": {
+        "states": 152,
+        "edges": 212,
+        "attempts": 212,
+        "global_interventions": 188,
+        "action_families": 1,
+        "successful_program_length": 0,
+        "program_cursor": 0,
+        "perceptual_accommodations": 4,
+        "productive_roles": 2,
+        "productive_reuse_level_trials": 8,
+        "learned_cyclic_alignments": 0,
+        "cyclic_transport_evidence": 0,
+        "cyclic_alignment_level_trials": 0,
+        "cyclic_last_plan_length": 0,
+        "grounded_cyclic_transports": 0,
+        "select_apply_program_length": 0,
+        "select_apply_cursor": 0,
+        "select_apply_level_trials": 0,
+        "select_apply_diagnostic": "no-structural-candidate",
+        "shape_translation_effects": 0,
+        "shape_translation_effect_evidence": 0,
+        "shape_translation_probes": 0,
+        "shape_translation_invalid_actions": 0,
+        "shape_goal_grounded": 0,
+        "shape_translation_level_trials": 0,
+        "shape_translation_application_trials": 0,
+        "shape_translation_occluded_steps": 0,
+        "shape_translation_phases": 1,
+        "shape_translation_phase_transitions": 0,
+        "shape_translation_phase_blocked": 0,
+        "shape_translation_diagnostic": "not-attempted",
+        "trajectory_stage": "not-attempted",
+        "trajectory_current_anchor": null,
+        "trajectory_latent_anchor": null,
+        "trajectory_target_anchor": null,
+        "trajectory_effects": 0,
+        "trajectory_effect_evidence": 0,
+        "trajectory_probes": 0,
+        "trajectory_endpoint_macros": 0,
+        "trajectory_contextual_blocks": 0,
+        "trajectory_gate_failures": 0,
+        "trajectory_gate_cooldowns": 0,
+        "trajectory_gate_refresh_action_roles": 0,
+        "trajectory_topology_nodes": 0,
+        "trajectory_uncertain_nodes": 0,
+        "trajectory_topology_support_grounded": 0,
+        "trajectory_committed_macro_length": 0,
+        "trajectory_enacted_path_length": 0,
+        "trajectory_replay_cursor": 0,
+        "trajectory_replay_started": 0,
+        "trajectory_replay_validations": 0,
+        "trajectory_causal_states": 0,
+        "trajectory_causal_edges": 0,
+        "trajectory_boundary_nuisance_evidenced": 0,
+        "boundary_nuisance_evidence": 0,
+        "boundary_nuisance_sides": [],
+        "paired_object_grounded": 0,
+        "paired_joint_effects": 0,
+        "paired_probes": 0,
+        "paired_level_trials": 0,
+        "paired_topology_nodes": 0,
+        "paired_search_expansions": 0,
+        "paired_plan_length": 0,
+        "paired_contact_continuations": 0,
+        "paired_latent_contact": 0,
+        "paired_contextual_proposals": 0,
+        "paired_contextual_confirmations": 0,
+        "paired_contextual_conflicts": 0,
+        "paired_contextual_edges": 0,
+        "paired_contextual_planner_uses": 0,
+        "paired_transport_inductions": 0,
+        "paired_transport_family_grounded": 0,
+        "paired_transport_planner_uses": 0,
+        "paired_post_accommodation_allowance": 0,
+        "paired_effective_trial_cap": 64,
+        "paired_diagnostic": "no-unique-reflected-pair",
+        "trajectory_plan_steps": 0,
+        "trajectory_plan_cap": 20,
+        "trajectory_settle_steps": 0,
+        "trajectory_level_trials": 0,
+        "trajectory_disabled": 0,
+        "trajectory_diagnostic": "not-attempted",
+        "level_interventions": 32,
+        "learned_local_relations": 0,
+        "successful_schemes": 0,
+        "parameterized_schemes": 0,
+        "parameterized_scheme_trials": 0,
+        "starter_schemas": 0,
+        "starter_schema_ids": [],
+        "inherited_scheme_count": 1,
+        "inherited_scheme_root": "d2132c708156ef8510400723c851f6c4e086dc4a20bf231723b963e21b3c17bd",
+        "inherited_scheme_ids": [
+          "dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15"
+        ],
+        "inherited_scheme_selections": 48,
+        "inherited_scheme_trials": {
+          "dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15": 24
+        },
+        "inherited_scheme_diagnostic": "no-applicable-definition",
+        "successful_relational_schemes": 0,
+        "relational_schemes": 0,
+        "relational_scheme_trials": 0,
+        "responsive_relational_schemes": 0,
+        "progressing_relational_schemes": 0,
+        "falsified_relational_schemes": 0,
+        "relational_level_trials": 0,
+        "last_relational_binding": {},
+        "frontier_states": 147
+      }
+    },
+    {
+      "game_id": "vc33",
+      "actions": 400,
+      "seconds": 13.81,
+      "levels_completed": 0,
+      "action_counts": {
+        "0": 7,
+        "6": 393
+      },
+      "decision_distribution": [
+        {
+          "action_id": 0,
+          "data": {},
+          "count": 7
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 0,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 1,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 2,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 3,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 4
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 4,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 5,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 6,
+            "y": 0
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 7,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 8,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 9,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 10,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 11,
+            "y": 0
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 4
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 12,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 13,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 14,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 15,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 16,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 17,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 18,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 19,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 20,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 21,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 22,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 23,
+            "y": 0
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 24,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 25,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 26,
+            "y": 0
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 29
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 28,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 32,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 33,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 34,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 35,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 0
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 36,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 37,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 38,
+            "y": 29
+          },
+          "count": 21
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 39,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 40,
+            "y": 46
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 41,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 42,
+            "y": 46
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 43,
+            "y": 13
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 44,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 45,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 46,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 47,
+            "y": 13
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 48,
+            "y": 46
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 49,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 50,
+            "y": 46
+          },
+          "count": 4
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 13
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 51,
+            "y": 29
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 46
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 52,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 53,
+            "y": 47
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 54,
+            "y": 46
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 55,
+            "y": 0
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 56,
+            "y": 46
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 57,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 57,
+            "y": 48
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 0
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 58,
+            "y": 46
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 59,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 4
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 12
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 20
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 28
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 36
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 44
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 52
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 60,
+            "y": 60
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 61,
+            "y": 0
+          },
+          "count": 3
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 61,
+            "y": 25
+          },
+          "count": 30
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 61,
+            "y": 33
+          },
+          "count": 30
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 61,
+            "y": 49
+          },
+          "count": 1
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 62,
+            "y": 0
+          },
+          "count": 2
+        },
+        {
+          "action_id": 6,
+          "data": {
+            "x": 63,
+            "y": 0
+          },
+          "count": 2
+        }
+      ],
+      "reason_counts": {
+        "epistemic-frontier": 393,
+        "reset-required": 7
+      },
+      "reason_detail_counts": {
+        "epistemic-frontier:hierarchical-action-family": 245,
+        "epistemic-frontier:inherited-scheme-intervention:dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15": 24,
+        "epistemic-frontier:reuse-productive-action-role": 56,
+        "epistemic-frontier:untried-current-state": 68,
+        "reset-required": 7
+      },
+      "mind_config": {
+        "enable_concepts": true,
+        "enable_counterfactual_pressure": true,
+        "enable_schema_complexity_pressure": true,
+        "enable_experiments": true,
+        "enable_planning": true,
+        "enable_reflecting_abstraction": true,
+        "enable_accommodation": true,
+        "enable_transformations": true,
+        "enable_modal_reasoning": true,
+        "enable_comparison_transfer": true,
+        "enable_comparison_composition": true,
+        "enable_language_meta_reflection": true,
+        "enable_concept_retirement": true,
+        "enable_epistemic_state_graph": true,
+        "enable_hierarchical_action_fairness": true,
+        "enable_failure_conditioned_fairness": true,
+        "enable_successful_role_replay": false,
+        "enable_multicolor_click_objects": false,
+        "enable_click_object_accommodation": true,
+        "enable_productive_role_reuse": true,
+        "enable_cross_retry_maturity": true,
+        "enable_boundary_nuisance_state_key": false,
+        "enable_boundary_nuisance_fairness": false,
+        "enable_paired_object_contact_planning": true,
+        "enable_paired_contextual_transitions": false,
+        "enable_paired_transport_family": false,
+        "enable_paired_post_accommodation_plan": false,
+        "enable_local_relation_solver": true,
+        "enable_constraint_first_role_replay": false,
+        "enable_global_relation_constraint_solver": true,
+        "enable_preregistered_structural_credit": true,
+        "enable_parameterized_scheme_variation": false,
+        "enable_starter_schemas": false,
+        "enable_inherited_scheme_library": true,
+        "enable_relational_scheme_binding": false,
+        "enable_visual_primitives": false,
+        "enable_visual_primitive_actions": false,
+        "enable_temporal_primitives": false,
+        "enable_cyclic_sequence_alignment": true,
+        "enable_graph_cycle_transport": true,
+        "enable_parameterized_select_apply_commit": true,
+        "enable_multiline_target_binding": true,
+        "enable_spatial_order_variation": false,
+        "enable_nested_target_traversal": true,
+        "enable_nested_source_traversal": false,
+        "enable_enclosure_target_traversal": true,
+        "enable_connector_relocation": false,
+        "enable_shape_goal_translation": true,
+        "enable_relational_phase_translation": true,
+        "enable_committed_trajectory_planning": true,
+        "action_budget": 400,
+        "planner_max_depth": 3,
+        "planner_max_expansions": 64,
+        "information_weight": 1.0,
+        "experiment_weight": 0.25,
+        "plan_weight": 10.0,
+        "hierarchy_complexity_pressure": 1.0,
+        "inherited_scheme_definitions": [
+          "{\"complexity_cost\":3,\"composition\":[\"rank:smallest-area\"],\"dependencies\":[],\"effects\":[\"frame_changed\"],\"falsifiers\":[\"accepted-level-regression\",\"frame-unchanged\"],\"goal_contract\":[\"level_advanced\"],\"grounding\":[\"action-family\",\"object\"],\"invariants\":[],\"name\":\"prioritize-smallest-area\",\"operator\":\"prioritize-intervention\",\"parameters\":[\"object\"],\"preconditions\":[],\"resource_cap\":24}"
+        ],
+        "inherited_scheme_root": "d2132c708156ef8510400723c851f6c4e086dc4a20bf231723b963e21b3c17bd"
+      },
+      "agent_version": "reflector-symbolic-v26",
+      "exploration_metrics": {
+        "states": 155,
+        "edges": 325,
+        "attempts": 343,
+        "global_interventions": 142,
+        "action_families": 1,
+        "successful_program_length": 0,
+        "program_cursor": 0,
+        "perceptual_accommodations": 7,
+        "productive_roles": 1,
+        "productive_reuse_level_trials": 8,
+        "learned_cyclic_alignments": 0,
+        "cyclic_transport_evidence": 0,
+        "cyclic_alignment_level_trials": 0,
+        "cyclic_last_plan_length": 0,
+        "grounded_cyclic_transports": 0,
+        "select_apply_program_length": 0,
+        "select_apply_cursor": 0,
+        "select_apply_level_trials": 0,
+        "select_apply_diagnostic": "no-structural-candidate",
+        "shape_translation_effects": 0,
+        "shape_translation_effect_evidence": 0,
+        "shape_translation_probes": 0,
+        "shape_translation_invalid_actions": 0,
+        "shape_goal_grounded": 0,
+        "shape_translation_level_trials": 0,
+        "shape_translation_application_trials": 0,
+        "shape_translation_occluded_steps": 0,
+        "shape_translation_phases": 1,
+        "shape_translation_phase_transitions": 0,
+        "shape_translation_phase_blocked": 0,
+        "shape_translation_diagnostic": "not-attempted",
+        "trajectory_stage": "not-attempted",
+        "trajectory_current_anchor": null,
+        "trajectory_latent_anchor": null,
+        "trajectory_target_anchor": null,
+        "trajectory_effects": 0,
+        "trajectory_effect_evidence": 0,
+        "trajectory_probes": 0,
+        "trajectory_endpoint_macros": 0,
+        "trajectory_contextual_blocks": 0,
+        "trajectory_gate_failures": 0,
+        "trajectory_gate_cooldowns": 0,
+        "trajectory_gate_refresh_action_roles": 0,
+        "trajectory_topology_nodes": 0,
+        "trajectory_uncertain_nodes": 0,
+        "trajectory_topology_support_grounded": 0,
+        "trajectory_committed_macro_length": 0,
+        "trajectory_enacted_path_length": 0,
+        "trajectory_replay_cursor": 0,
+        "trajectory_replay_started": 0,
+        "trajectory_replay_validations": 0,
+        "trajectory_causal_states": 0,
+        "trajectory_causal_edges": 0,
+        "trajectory_boundary_nuisance_evidenced": 0,
+        "boundary_nuisance_evidence": 0,
+        "boundary_nuisance_sides": [],
+        "paired_object_grounded": 0,
+        "paired_joint_effects": 0,
+        "paired_probes": 0,
+        "paired_level_trials": 0,
+        "paired_topology_nodes": 0,
+        "paired_search_expansions": 0,
+        "paired_plan_length": 0,
+        "paired_contact_continuations": 0,
+        "paired_latent_contact": 0,
+        "paired_contextual_proposals": 0,
+        "paired_contextual_confirmations": 0,
+        "paired_contextual_conflicts": 0,
+        "paired_contextual_edges": 0,
+        "paired_contextual_planner_uses": 0,
+        "paired_transport_inductions": 0,
+        "paired_transport_family_grounded": 0,
+        "paired_transport_planner_uses": 0,
+        "paired_post_accommodation_allowance": 0,
+        "paired_effective_trial_cap": 64,
+        "paired_diagnostic": "no-unique-reflected-pair",
+        "trajectory_plan_steps": 0,
+        "trajectory_plan_cap": 20,
+        "trajectory_settle_steps": 0,
+        "trajectory_level_trials": 0,
+        "trajectory_disabled": 0,
+        "trajectory_diagnostic": "not-attempted",
+        "level_interventions": 32,
+        "learned_local_relations": 0,
+        "successful_schemes": 0,
+        "parameterized_schemes": 0,
+        "parameterized_scheme_trials": 0,
+        "starter_schemas": 0,
+        "starter_schema_ids": [],
+        "inherited_scheme_count": 1,
+        "inherited_scheme_root": "d2132c708156ef8510400723c851f6c4e086dc4a20bf231723b963e21b3c17bd",
+        "inherited_scheme_ids": [
+          "dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15"
+        ],
+        "inherited_scheme_selections": 24,
+        "inherited_scheme_trials": {
+          "dc6f0c465171928bf408dede6ffbb0a2a4074c3074f22cac4fbe5aae9b537f15": 24
+        },
+        "inherited_scheme_diagnostic": "no-applicable-definition",
+        "successful_relational_schemes": 0,
+        "relational_schemes": 0,
+        "relational_scheme_trials": 0,
+        "responsive_relational_schemes": 0,
+        "progressing_relational_schemes": 0,
+        "falsified_relational_schemes": 0,
+        "relational_level_trials": 0,
+        "last_relational_binding": {},
+        "frontier_states": 152
+      }
+    }
+  ],
+  "source_commit": "fee0a8aa82ceb33cad63a3f793ff5ec2d1a5d908",
+  "execution": {
+    "isolation": "one fresh Python process per game",
+    "parallel": true,
+    "max_workers": 3,
+    "games": [
+      "s5i5",
+      "tn36",
+      "vc33"
+    ],
+    "child_report_sha256": {
+      "s5i5": "ed38ce5051fe903512cd09514921032603e64512ea04d01808597b0f5adae6b0",
+      "tn36": "9fec37113f2ab0d4da2f765c1002e9f26be3705cf849d1d3a8936121d6170e7a",
+      "vc33": "35a0d931e54877c7b26daffa33a5074c39882a7ee10ab65dcfd6491c5e1dbf94"
+    },
+    "claim_boundary": "Local official public-development evidence; not a Kaggle leaderboard score."
+  }
+}
