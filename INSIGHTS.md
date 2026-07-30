@@ -370,6 +370,13 @@ These are narrow earned claims, not claims of general intelligence.
     fresh evidence for producing another offspring. V58a therefore permits
     exactly one role variation per originating surprise and observes its result
     without recursively propagating it.
+29. Noncascading is not enough; advisor priority expresses epistemology.
+    V58a reduced the propagation to two independent actions but retained the
+    same 8-to-10 action delay. Both actions interrupted an operative
+    cyclic-alignment scheme. A newly reflected abstraction has less causal
+    warrant than a repeatedly confirmed task procedure, so it must be offered
+    only after grounded schemes abstain and before generic exploration. This is
+    a concrete form of conserving lower-stage knowledge during accommodation.
 
 ## What is still missing
 

@@ -2306,6 +2306,18 @@ V58a adds a causal guard: the observation caused by the one varied action may
 update the effect model but cannot schedule another propagation. Rerun the
 identical three-way control/phase/propagation population.
 
+V58a result: two noncascading variations remained, all four levels and the
+6.6465283447 score were preserved, but `lp85` still changed from
+`[37,8,54,301]` to `[37,10,54,299]`. Both variations preempted an active
+cyclic-alignment procedure.
+
+V58b changes only arbitration: grounded repair/replay, select-apply-commit,
+cyclic alignment, paired planning, committed trajectory, shape translation,
+productive reuse, relational schemes, parameterized schemes, and inherited
+schemes all retain priority. Affordance propagation runs only after those
+advisors abstain and before generic action-family exploration. Falsifier and
+development games remain unchanged.
+
 The source-matched population has four frozen modes:
 
 - `off`: accepted behavior;

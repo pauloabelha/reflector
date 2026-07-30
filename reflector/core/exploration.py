@@ -4262,42 +4262,6 @@ class EpistemicExplorer:
         self.last_scheme_components = ()
         self.last_relational_binding = {}
 
-        if self.repeated_form_affordance_role is not None:
-            role = self.repeated_form_affordance_role
-            trigger = self.repeated_form_affordance_trigger_token
-            self.repeated_form_affordance_role = None
-            self.repeated_form_affordance_trigger_token = None
-            variations = tuple(
-                token
-                for token in tokens
-                if token != trigger
-                and self.attempts[(state, token)] == 0
-                and self._role(token, scene) == role
-            )
-            if variations:
-                affordance_variation = min(variations)
-                self.repeated_form_affordance_variations += 1
-                self.repeated_form_affordance_observation_token = (
-                    affordance_variation
-                )
-                self.repeated_form_event_diagnostic = (
-                    "executing-affordance-variation"
-                )
-                self.last_scheme_components = (
-                    "scheme:action-effect-context-change",
-                    "operator:parameterize-new-affordance",
-                    "state:repeated-form-effect-model",
-                )
-                return self._issue(
-                    state,
-                    affordance_variation,
-                    "epistemic-frontier:propagate-repeated-form-affordance",
-                    scene,
-                )
-            self.repeated_form_event_diagnostic = (
-                "no-untried-equivalent-affordance-target"
-            )
-
         if self.repeated_form_confirmation_token is not None:
             pending_confirmation = self.repeated_form_confirmation_token
             self.repeated_form_confirmation_token = None
@@ -4548,6 +4512,42 @@ class EpistemicExplorer:
                 "epistemic-frontier:inherited-scheme-intervention:"
                 f"{scheme_id}",
                 scene,
+            )
+
+        if self.repeated_form_affordance_role is not None:
+            role = self.repeated_form_affordance_role
+            trigger = self.repeated_form_affordance_trigger_token
+            self.repeated_form_affordance_role = None
+            self.repeated_form_affordance_trigger_token = None
+            variations = tuple(
+                token
+                for token in tokens
+                if token != trigger
+                and self.attempts[(state, token)] == 0
+                and self._role(token, scene) == role
+            )
+            if variations:
+                affordance_variation = min(variations)
+                self.repeated_form_affordance_variations += 1
+                self.repeated_form_affordance_observation_token = (
+                    affordance_variation
+                )
+                self.repeated_form_event_diagnostic = (
+                    "executing-affordance-variation"
+                )
+                self.last_scheme_components = (
+                    "scheme:action-effect-context-change",
+                    "operator:parameterize-new-affordance",
+                    "state:repeated-form-effect-model",
+                )
+                return self._issue(
+                    state,
+                    affordance_variation,
+                    "epistemic-frontier:propagate-repeated-form-affordance",
+                    scene,
+                )
+            self.repeated_form_event_diagnostic = (
+                "no-untried-equivalent-affordance-target"
             )
 
         if self.uses_action_family_schema:
