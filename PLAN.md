@@ -2318,6 +2318,29 @@ schemes all retain priority. Affordance propagation runs only after those
 advisors abstain and before generic action-family exploration. Falsifier and
 development games remain unchanged.
 
+V58b result: exact control trajectories and score were restored, but
+propagation selected zero actions despite 14 maximum in-level `g50t`
+detections and 48 on `lp85`. It is rejected as behaviorally inert.
+
+## Preregistered experiment: v59 disequilibrium-gated reflection
+
+Parent: accepted v49b. Donor: rejected v58b.
+
+Preserve the grounded advisor hierarchy during ordinary execution. If the
+mind signals pragmatic disequilibrium, allow one pending, role-grounded,
+noncascading affordance variation to preempt the stalled scheme. Require a
+distinct untried equivalent token. Thus the arbitration rule becomes:
+
+`supported base scheme while progressing`
+`-> pragmatic stall`
+`-> one reflected role variation`
+`-> observe without cascade`
+
+Falsifier: the mutation must be operative only after disequilibrium, preserve
+all control completions and completed-level action counts, and add a level or
+materially reduce stalled-level waste. Otherwise reject it. Use the identical
+`lp85`/`g50t` source-matched development pair first.
+
 The source-matched population has four frozen modes:
 
 - `off`: accepted behavior;

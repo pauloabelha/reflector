@@ -169,13 +169,46 @@ def test_new_affordance_varies_the_structural_target() -> None:
     explorer.repeated_form_affordance_role = role
     explorer.repeated_form_affordance_trigger_token = trigger
 
-    choice = explorer.select(observation, scene, (6,))
+    choice = explorer.select(
+        observation,
+        scene,
+        (6,),
+        pragmatic_disequilibrium=True,
+    )
 
     assert choice.token != trigger
     assert explorer._role(choice.token, scene) == role
     assert "propagate-repeated-form-affordance" in choice.reason
     assert explorer.repeated_form_affordance_variations == 1
     assert explorer.repeated_form_affordance_observation_token == choice.token
+
+
+def test_new_affordance_does_not_preempt_without_disequilibrium() -> None:
+    explorer = EpistemicExplorer(
+        repeated_form_event_mode="propagate-affordance"
+    )
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=_frame(2),
+    )
+    scene, _events = SceneTracker().perceive(observation)
+    explorer.repeated_form_affordance_role = ActionRole(
+        6,
+        color=8,
+        area=1,
+        shape=((0, 0),),
+    )
+    explorer.repeated_form_affordance_trigger_token = ActionToken(
+        6,
+        (("x", 2), ("y", 3)),
+    )
+
+    choice = explorer.select(observation, scene, (6,))
+
+    assert "propagate-repeated-form-affordance" not in choice.reason
+    assert explorer.repeated_form_affordance_role is not None
+    assert explorer.repeated_form_affordance_variations == 0
 
 
 def test_affordance_variation_does_not_cascade() -> None:

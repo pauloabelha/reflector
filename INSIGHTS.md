@@ -377,6 +377,13 @@ These are narrow earned claims, not claims of general intelligence.
     warrant than a repeatedly confirmed task procedure, so it must be offered
     only after grounded schemes abstain and before generic exploration. This is
     a concrete form of conserving lower-stage knowledge during accommodation.
+30. Absolute deference makes reflection safe but inert. V58b restored the
+    exact control trajectories, yet 62 maximum in-level detections produced
+    zero variations because a grounded advisor always selected first.
+    Reflection needs a conditional right to interrupt: conserve the current
+    scheme while it progresses, then permit a bounded structural mutation only
+    under pragmatic disequilibrium. This is closer to Piagetian accommodation
+    than either unconditional preemption or permanent subordination.
 
 ## What is still missing
 
