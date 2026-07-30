@@ -1,6 +1,6 @@
 # Reflector real-games scorecard
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 ## Result at a glance
@@ -33,6 +33,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Three-way terminal-relation development round | v55 contact-only / shortest-grounded / marker-first | 4.7619047619 each for `m0r0` | all remained 1/6 at `[20, 380]`; relation variants each logged 54 distance confirmations and 5 terminal-step falsifications per retry | rejected; sparse marker coverage was a predictable transport trigger, not a terminal goal |
 | Target-binding accommodation | v55a marker-first with exact target retirement | 4.7619047619 for `m0r0` | 1/6 at `[20, 380]`; retired one falsified target and generated a distinct 11-step assignment | rejected; the alternative route crossed the known transport trigger because goal search did not consume contextual transitions |
 | Four-way goal/transition recombination | v55b exact-off / contextual-contact / contextual-marker / transport-marker | 4.7619047619 each for `m0r0` | all 1/6 at `[20, 380]`; contextual-marker confirmed 2 edges, used them in 90 successor evaluations, and retired 3 targets; transport variant induced its family | rejected; operative composition and target variation still lacked a multi-phase goal procedure |
+| Four-way paired-procedure population | v56 exact-off / repeat-entry / reuse-progress / canonical-probe | 4.7619047619 each for `m0r0` | all 1/6 at `[20, 380]`; all procedure variants logged 0 proposals, confirmations, macros, and planner uses | rejected; the pair-absence trigger never recognized the observed object–substrate occlusion, so no task or operative-procedure evidence |
 | Target-only inheritance substrate | v53 content-addressed starter schemes | 4.7619047619 for one game | 1/6 `r11l` levels; `[18, 382]`; correct six-definition library root | rejected; inherited components were not credited because structural preregistration remained disabled |
 | Target-only inheritance substrate | v53a operative content-addressed schemes | 4.7619047619 for one game | 1/6 `r11l` levels; `[18, 382]`; three inherited hashes in 390 assessments | infrastructure passed; no task gain, not promoted |
 | Three-offspring inheritance development round | v54 smallest / rarest / largest relative object ranks | 4.7619047619 / 1.8814382896 / 0.0000000000 for `r11l` | level 1 at action 16 / 35 / no level | invalidated for promotion: two offspring renewed the 24-trial cap across same-level retries |

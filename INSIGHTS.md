@@ -1,6 +1,6 @@
 # Reflector research insights and handoff
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 
 This is the conceptual handoff for the next research agent. It complements,
 but does not replace, `PLAN.md` (the authoritative continuation state) and
@@ -51,6 +51,22 @@ The 2025 Preview results are not comparable to the current competition. The
 Preview evaluated three private games and allowed hundreds of thousands of
 actions. The 2026 competition evaluates a separate set of 110 unseen games,
 split equally between public and private leaderboards.
+
+As of 2026-07-30, stronger LLM/coding-agent results also exist, but they occupy
+different evaluation surfaces. The ARC Prize community table reports
+public-demo systems between 5.2% and 63.7%, and a later verified model report
+gives Claude Opus 5 High 30.16% on ARC-AGI-3. OpenAI reports GPT-5.6 Sol at
+7.78%. These are important upper alternatives to our architecture, not
+like-for-like evidence for a symbolic learner or a Kaggle notebook. Separately,
+the June Kaggle milestone winner was Duck, an offline Qwen 3.6 27B coding
+agent. Public-demo saturation and hidden Kaggle performance must never be
+merged into one ranking.
+
+The public 25-game suite is itself a weak generalization test. A 2026 audit
+reports that all 25 can be reached by simple forced or repeated actions, and
+identifies a null-coordinate vulnerability affecting many games. Reflector
+does not use that exploit, but its public-development score still measures
+engineering progress on a known curriculum, not fluid intelligence.
 
 The correct conclusion is therefore:
 
@@ -302,6 +318,15 @@ These are narrow earned claims, not claims of general intelligence.
     search. Neither advanced. The next abstraction must explain progress over
     a sequence of phases or operations; accumulating locally correct
     transitions and trying more terminal bindings is not enough.
+24. A plausible procedure is not tested unless its event detector fires. V56
+    represented pair disappearance and recovery as a confirmable option and
+    compared three continuation policies, but all variants exactly matched the
+    control and recorded zero procedure proposals. The visual audit had
+    described object–substrate inseparability; the implementation required
+    total pair identity loss. Event abstraction therefore belongs below option
+    learning: learn and validate typed discontinuities such as identity
+    uncertainty, merge, split, occlusion, binding change, control change, and
+    phase change before breeding policies over them.
 
 ## What is still missing
 
@@ -484,6 +509,29 @@ Credit lands on the smallest changed dependency subgraph. A definition that
 only explains familiar public-game coordinates or routes receives no
 inheritance credit. A definition that predicts a held-out transition family,
 reduces interventions, or advances a held-out level does.
+
+The library should be trained as a population-level continual-learning system,
+not by letting one runtime mutate a shared dictionary:
+
+1. Run isolated agents on disjoint curriculum games and emit immutable
+   definition proposals plus append-only evidence.
+2. Canonicalize proposals by typed semantic equivalence, not by their learned
+   names, colors, coordinates, or action IDs.
+3. Replay each proposal on recordings it did not create and score held-out
+   prediction, intervention savings, calibration, and false activation.
+4. Admit only definitions that clear a minimum-description-length and
+   held-out-utility threshold; preserve counterexamples beside support.
+5. Breed offspring from a frozen Merkle root while mutating selection,
+   exploration, composition, and structural-credit policies independently.
+6. Evaluate offspring on rotating game folds, then on one untouched lockbox
+   fold. Never write lockbox outcomes back into the generation being selected.
+
+This is the defensible form of a growing “common sense hash”: cumulative
+executable causal knowledge with versioned evidence and population selection.
+It is not a cache of successful routes. The first training target should be
+cross-game event and affordance prediction; only later should the system
+inherit goal claims, because Reflector's evidence shows that effect learning
+is currently much better calibrated than goal acquisition.
 
 ## Streaming agent “thoughts”
 
@@ -689,6 +737,11 @@ belief state over which object is controlled and which trajectory is replaying.
 - [ARC-AGI-3 human data and scoring update](https://arcprize.org/blog/arc-agi-3-human-dataset)
 - [2025 Preview competition results](https://arcprize.org/blog/arc-agi-3-preview-30-day-learnings)
 - [Tufa Labs Duck Milestone #1 write-up](https://tufalabs.ai/research/duck-harness/)
+- [ARC Prize Milestone #1 results](https://arcprize.org/blog/arc-prize-2026-milestone-1)
+- [ARC Prize community leaderboard](https://arcprize.org/leaderboard/community)
+- [Claude Opus 5 ARC-AGI results](https://arcprize.org/results/anthropic-claude-opus-5)
+- [GPT-5.6 model results](https://openai.com/index/gpt-5-6/)
+- [Explore Before You Solve benchmark audit](https://arxiv.org/abs/2605.25931)
 - [StochasticGoose source](https://github.com/DriesSmit/ARC3-solution)
 - [Graph-Based Exploration paper](https://arxiv.org/abs/2512.24156)
 - [Graph-Based Exploration source](https://github.com/dolphin-in-a-coma/arc-agi-3-just-explore)

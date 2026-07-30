@@ -17,7 +17,7 @@ service, database, or web server.
 
 ## Live score status
 
-Last verified: 2026-07-29
+Last verified: 2026-07-30
 
 > **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
 > It has solved **19 of 183 levels across 10 games**. All 25 games were
@@ -140,6 +140,14 @@ edges, retired three distinct marker targets, and tested a sibling carrying
 the induced transport family. Every variant still ended at 1/6 `m0r0` levels.
 The remaining hypothesis is a learned multi-phase procedure, not another local
 dynamics feature, target prior, or larger search allowance.
+
+V56 then tested that hypothesis with three bounded procedure continuations
+against an exact-off control. All four runs again ended at 1/6 and
+`[20, 380]`, and every procedure-specific counter remained zero. The offspring
+did not actually recognize the audited object–substrate occlusion because its
+trigger required total loss of the pair representation. V56 is rejected; the
+next general step is a cross-game event vocabulary with measured
+false-activation rates, not another `m0r0`-specific continuation.
 
 See the canonical [real-games scorecard](REAL_GAMES_REPORT.md) for per-game
 actions, causal mechanism attribution, evidence hashes, and the distinction

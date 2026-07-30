@@ -1,6 +1,6 @@
 # Reflector persistent plan
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 
 Conceptual research handoff: read `INSIGHTS.md` after this plan and before
 starting the next experiment. It records the current external ARC-AGI-3
@@ -2154,6 +2154,41 @@ depth or isolated terminal predicates. A future return must preregister a
 phase/procedure discriminator learned from progress, not another target
 ranking.
 
+## Rejected experiment: v56 paired occlusion procedures
+
+Parent: accepted v49b `candidate-6ee87ced5a667cae`.
+
+Preregistered hypothesis:
+
+- treat loss and later recovery of the grounded pair during an evidenced plan
+  as a temporally extended option rather than a one-frame transition;
+- compare exact-off, repeat-entry, reuse-the-prior-progress-action, and
+  canonical-probe continuations;
+- confirm a macro only after the same entry, continuation, and recovered pair
+  outcome occurs twice, quarantine conflicts, and expose planner use;
+- require progress beyond `m0r0` level 1 within the same 400-action budget.
+
+Result:
+
+- all four source-matched offspring exactly matched at 1/6 levels,
+  `4.7619047619` for the target game, and `[20, 380]`;
+- the prior level's progress-associated action was retained, so the
+  cross-level credit path was available;
+- nevertheless every procedure variant recorded zero occlusion proposals,
+  confirmations, conflicts, learned macros, and planner uses;
+- the operative pair planner instead completed the same 64-trial budget and
+  ended with `joint-plan-step-observed`.
+
+V56 is rejected. This is not evidence against temporally extended options.
+It is evidence that the trigger was defined at the wrong perceptual boundary:
+the diagnostic recording showed the pair becoming visually inseparable from
+same-color structure, while the runtime identity extractor continued to return
+a pair representation. A future procedure learner must be triggered by
+uncertainty or a discontinuity in object-to-substrate binding, not only by
+total pair absence. Do not widen the trigger on `m0r0` alone; first build a
+cross-game event vocabulary and measure its false-positive rate on a frozen
+fold.
+
 ## Completed experimental branch: v26
 
 - Preregistered causal hypotheses and typed predictive/pragmatic structural
@@ -2168,10 +2203,11 @@ ranking.
 
 ## Next actions
 
-1. Preserve accepted v49b. V50-v55b now show that dynamics, portal
-   accommodation, terminal variation, and their actual planner composition
-   are insufficient on `m0r0` level 2. Pause that chain until a general
-   progress-grounded phase/procedure learner exists.
+1. Preserve accepted v49b. V50-v56 now show that dynamics, portal
+   accommodation, terminal variation, actual planner composition, and a
+   too-narrow pair-absence procedure trigger are insufficient on `m0r0` level
+   2. Pause that chain until a cross-game progress-grounded event and procedure
+   learner exists.
 2. Build a content-addressed inherited scheme substrate. Keep immutable typed
    scheme definitions separate from an append-only evidence ledger; offspring
    inherit only hashes whose predictive, information-efficiency, and pragmatic
