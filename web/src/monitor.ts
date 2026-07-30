@@ -135,6 +135,15 @@ function render(data: Snapshot): void {
   const actionBudget = current?.action_budget ?? 0;
   const levelTotal = current?.levels_total ?? data.games.find((item) => item.game === current?.game)?.levels_total ?? 0;
   const levelNumber = current ? Math.min(levelTotal || current.level + 1, current.level + 1) : 0;
+  const liveCandidate = current?.candidate_id ?? data.offspring?.candidate_id;
+  const liveFingerprint = current?.inference_fingerprint ?? data.offspring?.inference_fingerprint;
+  const liveMatchesFrozen = Boolean(
+    current?.candidate_id
+    && current.candidate_id === data.offspring?.candidate_id
+  );
+  const lineageStatus = current?.candidate_id && !liveMatchesFrozen
+    ? "live unfrozen trial"
+    : `generation ${esc(data.offspring?.generation)}`;
   app.innerHTML = `
     <header>
       <a class="brand" href="/monitor.html"><span>R</span><div><strong>REFLECTOR</strong><small>LIVE MISSION CONTROL</small></div></a>
@@ -160,7 +169,7 @@ function render(data: Snapshot): void {
         </article>
         <article><span class="label">LEVEL COVERAGE</span><strong>${completed}<small> / ${total}</small></strong><p>${pct(completed, total)}% across discovered game bests</p></article>
         <article><span class="label">LATEST RUN</span><strong>${score(data.latest_run?.score)}</strong><p>${esc(data.latest_run?.name ?? "No run")}</p></article>
-        <article><span class="label">OFFSPRING</span><strong class="mono">${short(data.offspring?.candidate_id, 18)}</strong><p>generation ${esc(data.offspring?.generation)}</p></article>
+        <article><span class="label">OFFSPRING</span><strong class="mono">${short(liveCandidate, 18)}</strong><p>${lineageStatus}</p></article>
       </section>
 
       <section class="live-grid">
@@ -195,14 +204,18 @@ function render(data: Snapshot): void {
           ` : `<div class="waiting"><span>◌</span><strong>Ready for the next offspring</strong><p>The stream connects automatically when a cognitive JSONL file starts changing.</p></div>`}
         </article>
         <article class="panel offspring-panel">
-          <div class="panel-title"><div><span class="eyebrow">LINEAGE / CURRENT OFFSPRING</span><h2>${short(data.offspring?.candidate_id, 24)}</h2></div></div>
+          <div class="panel-title"><div><span class="eyebrow">LINEAGE / CURRENT OFFSPRING</span><h2>${short(liveCandidate, 24)}</h2></div></div>
           <dl>
             <div><dt>Parent</dt><dd>${short(data.offspring?.parent_id, 22)}</dd></div>
-            <div><dt>Generation</dt><dd>${esc(data.offspring?.generation)}</dd></div>
-            <div><dt>Mutation</dt><dd>${esc(data.offspring?.mutation_source)}</dd></div>
-            <div><dt>Fingerprint</dt><dd>${short(data.offspring?.inference_fingerprint, 22)}</dd></div>
+            <div><dt>Status</dt><dd>${lineageStatus}</dd></div>
+            <div><dt>Mutation</dt><dd>${esc(liveMatchesFrozen || !current?.candidate_id ? data.offspring?.mutation_source : "live cognitive stream")}</dd></div>
+            <div><dt>Fingerprint</dt><dd>${short(liveFingerprint, 22)}</dd></div>
           </dl>
-          <blockquote>${esc(data.offspring?.rationale ?? "No candidate metadata discovered.")}</blockquote>
+          <blockquote>${esc(
+            current?.candidate_id && !liveMatchesFrozen
+              ? "This card follows the exact offspring emitting the live cognitive trace. Frozen lineage metadata will attach after promotion."
+              : data.offspring?.rationale ?? "No candidate metadata discovered."
+          )}</blockquote>
           <div class="lineage"><i></i><span>PARENT</span><b>→</b><i class="child"></i><span>OFFSPRING</span></div>
         </article>
       </section>
