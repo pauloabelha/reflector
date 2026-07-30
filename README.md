@@ -19,29 +19,45 @@ service, database, or web server.
 
 Last verified: 2026-07-30
 
-> **Plain-language result:** Reflector has fully beaten **0 of 25 games**.
-> It has solved **20 of 183 levels across 11 games**. All 25 games were
+> **Plain-language result:** Reflector has fully beaten **1 of 25 games**.
+> It has solved **25 of 183 levels across 11 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v64b result |
+| Metric | Accepted v65b result |
 | --- | ---: |
-| Complete games beaten | **0 / 25** |
+| Complete games beaten | **1 / 25** |
 | Games with at least one solved level | **11 / 25** |
-| Levels solved | **20 / 183** |
-| Official local score | **4.6402744459 / 100** |
+| Levels solved | **25 / 183** |
+| Official local score | **7.973607779187656 / 100** |
 | Games evaluated | **25 / 25** |
+| Total actions | **9,724** |
+| Frozen inference commit | `ad68c9cd4c4915cbc220c25fba9998425ba5abd9` |
+| Candidate | `candidate-34708ca0a3fb4129` |
 | Kaggle submissions | **0** |
+| Kaggle public score | **not submitted** |
+| Kaggle private score | **unavailable** |
 
-The score is about **4.64% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. V64b preserves all
-19 accepted v49b levels at the same completed-level action boundaries and adds
-`vc33` level 1 at action 262. After failure it admits a compact connected-
-component action vocabulary only when that vocabulary does not expand the
-current perceptual object ontology, then explores an edge-normalized state
-graph. Two paired target/preservation runs were exact, and the 25-game suite
-runs every game in a fresh process. The exact package passes 240 tests
-(3 skipped), Ruff, mypy, the offline smoke path, and export. No hidden Kaggle
-score exists.
+The score is about **7.97% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. V65b preserves
+v64b on all 24 unaffected games and finishes all eight `sb26` levels in
+124 actions, with level boundaries at `[9, 15, 15, 15, 17, 19, 17, 17]`.
+It infers a unique minimum-cost complete assignment from visible ordered
+references, containers, fixed payloads, and connector inventory, while
+retaining the legacy structural program unless the grounded connector graph
+strictly dominates its repeated-reference shadow. Two frozen target runs were
+exact, the preservation gate passed, and the 25-game suite runs every game in
+a fresh process. The exact package passes pytest, Ruff, mypy, the
+network-disabled smoke paths, and export. The permanent result is in
+[the v65b public-development report](reports/official-isolated-v65b-public-400.json).
+
+**Submission recommendation:** submit this frozen candidate to Kaggle for
+hidden-transfer calibration. The technical notebook/export gates pass, but no
+actual Kaggle submission has been made, so both leaderboard regimes remain
+without a returned result. Rule acceptance, identity/account verification,
+the committed Kaggle rerun, and publication of the exact commit from a
+participant-owned public repository remain manual. Follow the
+[ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
+do not report the local 7.97 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object
@@ -52,6 +68,11 @@ showing that lightly normalized visual graphs are overwhelmed by nuisance
 dynamics and hidden phase. This is a public-development comparison, not hidden
 generalization evidence. The method, protocol, and full result are in
 [the symbolic comparison](references/SYMBOLIC_ARC3_COMPARISON.md).
+The broader comparison with public graph explorers, hybrid systems, and
+LLM-generated executable world models is in the
+[public ARC-AGI-3 strategy landscape](references/PUBLIC_ARC3_STRATEGY_LANDSCAPE.md).
+Its public/demo/self-reported results are not directly comparable with this
+single deterministic local run or with Kaggle's hidden evaluation.
 
 The subsequent v38 experiment is rejected and does not change these scores.
 It inferred and executed a 17-action `sb26` level-4 program based on relocating
@@ -71,7 +92,7 @@ macro, autonomous replay, and up to 21 contextual collision edges across
 retries. After seven trace-driven variants it still solved 0/7 `g50t` levels
 at 400 actions, so its preregistered 30-action target was falsified. These
 negative results motivated v42's substrate topology and uncertain-gate
-information actions. The accepted v49b result and all rejected predecessors are
+information actions. The current v65b result and all rejected predecessors are
 documented in the [real-games scorecard](REAL_GAMES_REPORT.md).
 
 A second hybrid tests the stronger architecture: the symbolic agent remains
@@ -83,7 +104,7 @@ Gemma was consulted 27 times, accepted 22 symbolic proposals, made five
 overrides, and produced six invalid responses that safely fell back. It added
 no level and still sometimes named a different action in prose than its chosen
 candidate denoted. The hybrid is therefore rejected; it is not part of the
-accepted v49b runtime.
+accepted symbolic runtime.
 
 The v26 research branch now preregisters intervention hypotheses, keeps
 predictive and pragmatic credit separate, and treats successful action-role
@@ -117,8 +138,8 @@ embedded in `MindConfig`, candidate identity, traces, and the generated Kaggle
 notebook. On `r11l`, v53a preserved the accepted action result exactly at
 `[18, 382]` while three grounded inherited hashes entered 390 transition
 assessments. Its exact package passed the network-disabled smoke test. This
-validates transport and operative credit, not learning benefit, so v49b
-remains accepted. See the
+validated transport and operative credit, not learning benefit, so it did not
+replace the then-accepted v49b policy. See the
 [inherited scheme protocol](references/INHERITED_SCHEME_PROTOCOL.md).
 
 The first cross-offspring common-sense snapshot now extends that substrate
@@ -132,7 +153,7 @@ and selection. See
 The v60 cultural offspring embeds all three roots and exactly matched its
 source control across five games and ten solved levels; it also passed export
 and network-disabled Kaggle smoke. This validates transmission, not a better
-ARC score, so v49b remains the accepted task agent.
+ARC score, so it did not replace the then-accepted task agent.
 
 The rejected v55 population made the missing goal layer operative. Two
 offspring competed object contact with a structurally grounded sparse-marker
@@ -213,8 +234,10 @@ An accepted population descendant is exported without policy translation:
 
 ```bash
 .venv/bin/reflector-kaggle export \
-  --config candidate.json --output dist
-.venv/bin/reflector-kaggle smoke-test --config candidate.json
+  --config candidates/v65b-connector-graph-synthesis-400.json \
+  --output dist
+.venv/bin/reflector-kaggle smoke-test \
+  --config candidates/v65b-connector-graph-synthesis-400.json
 ```
 
 Run the current competition-readiness audit:
@@ -222,6 +245,10 @@ Run the current competition-readiness audit:
 ```bash
 .venv/bin/reflector-prize-audit
 ```
+
+The notebook-only submission workflow, current limits, account actions, and
+evidence checklist are maintained in the
+[ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md).
 
 For a local official-harness run:
 
@@ -259,9 +286,10 @@ report unless every game has an agent result.
 The complete score history is recorded in
 [`REAL_GAMES_REPORT.md`](REAL_GAMES_REPORT.md). Reflector progressed from v8's
 zero-level result to v21's five levels across four public-development games.
-V25 reaches five `ft09` levels and passes the source-matched non-regression
-gate. Kaggle compatibility is proven locally; broad full-suite generalization
-and competitive hidden performance are not.
+V25 reached five `ft09` levels; v64b reached 20 levels; and accepted v65b
+reaches 25 levels and one complete game while passing the source-matched
+non-regression gate. Kaggle compatibility is proven locally; competitive
+hidden performance is not.
 
 Generate, replay, evaluate, and compare deterministic traces:
 
@@ -363,7 +391,10 @@ The Python package is organized by responsibility:
 See [KAGGLE.md](KAGGLE.md), [ARCHITECTURE.md](ARCHITECTURE.md),
 [THEORY.md](THEORY.md), [EVALUATION.md](EVALUATION.md), and
 [PRIZE_READINESS.md](PRIZE_READINESS.md). Requirement-by-requirement status is
-maintained in [COMPLETION_AUDIT.md](COMPLETION_AUDIT.md).
+maintained in [COMPLETION_AUDIT.md](COMPLETION_AUDIT.md). The current public
+strategy comparison and exact submission procedure are in the
+[public ARC-AGI-3 strategy landscape](references/PUBLIC_ARC3_STRATEGY_LANDSCAPE.md)
+and [Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md).
 
 ## Status
 
@@ -386,6 +417,9 @@ operator with provenance, reject inconsistent calibrations, and use the
 inference in bounded planning. Perceived link tokens also support bounded
 endpoint-valid chaining through an inferred intermediate operator while
 preventing unrelated domains from becoming direct comparison shortcuts.
+The accepted v65b path also induces bounded connector-graph programs from
+visible relational structure, enumerates only complete grounded assignments,
+and rejects ambiguous or ungrounded solutions.
 Development tooling measures recoverable
 redundancy and counterfactual representation savings without claiming
 unobservable action savings. It also provides serializable constrained

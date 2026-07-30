@@ -9,26 +9,83 @@ before acting.
 
 ## Executive truth
 
-Reflector is an interesting but currently weak ARC-AGI-3 agent.
+Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v49b, frozen inference commit
-  `83287a7c2e508313fbb52b1982a921159823895e`.
-- Local public-development score: **4.6401724704 / 100**.
-- Progress: **19 / 183 levels across 10 / 25 games**.
-- Fully completed games: **0 / 25**.
+- Accepted agent: v65b, frozen inference commit
+  `ad68c9cd4c4915cbc220c25fba9998425ba5abd9`.
+- Accepted candidate: `candidate-34708ca0a3fb4129`.
+- Local known-public-development score: **7.973607779187656 / 100**.
+- Progress: **25 / 183 levels across the 25 public-development games**.
+- Fully completed games: **1 / 25**.
+- Total actions: **9,724**.
 - Kaggle submissions: **0**.
 - Kaggle public score: **not submitted**.
 - Kaggle private score: **unavailable**.
-- V49b is accepted. It conserves every v47b result and adds a learned
-  higher-order operator over a reflected congruent object pair: ordered joint
-  action effects, independently blocked topology planning, and a bounded
-  continuation when planned contact temporarily merges the rendered objects.
+- V65b is accepted. It preserves every non-`sb26` public-development result
+  from v64b exactly and completes `sb26` in 124 actions.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem
 is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
+
+## 2026-07-30 — v65b accepted result and public-strategy reassessment
+
+### Accepted local result
+
+The accepted v65b source is frozen at
+`ad68c9cd4c4915cbc220c25fba9998425ba5abd9`, with candidate identity
+`candidate-34708ca0a3fb4129`.
+
+| Measure | Accepted v64b | Accepted v65b | Change |
+| --- | ---: | ---: | ---: |
+| Local public25 RHAE / 100 | 4.640274445854323 | 7.973607779187656 | +3.333333333333333 |
+| Levels completed | 20 / 183 | 25 / 183 | +5 |
+| Games completed | 0 / 25 | 1 / 25 | +1 |
+| Total actions | 10,000 | 9,724 | -276 |
+| `sb26` | 3 / 8 levels | 8 / 8 levels in 124 actions | +5 levels and first full game |
+
+The complete `sb26` result—**8 / 8 levels in 124 actions**—was reproduced in
+two identical repeats. Every other game was preserved exactly relative to
+v64b; the aggregate improvement is therefore causally localized to the
+accepted `sb26` mechanism rather than offset by regressions elsewhere.
+
+This is **local evidence on the 25 known public-development games**. It is not
+a Kaggle public-leaderboard result, not a Kaggle private-leaderboard result,
+and not evidence of transfer to unseen games. The frozen source and exact
+preservation gate make it strong engineering evidence within that development
+surface only.
+
+### Public-strategy landscape and the proposal problem
+
+The broader public-code and primary-literature review is recorded in
+[PUBLIC_ARC3_STRATEGY_LANDSCAPE.md](references/PUBLIC_ARC3_STRATEGY_LANDSCAPE.md).
+Its main conclusions are:
+
+- Purely algorithmic ARC-AGI-3 agents exist, chiefly exact-frame or
+  object-weighted graph explorers. No strong public peer was found that
+  performs Reflector-like end-to-end pure-symbolic induction of semantic
+  objects, affordances, transition laws, goals, and plans.
+- Pure-symbolic object, DSL, planning, MDL, and causal-theory systems exist for
+  static ARC and already-symbolized sequences. Their limited coverage shows
+  that symbolic inference is bounded by the representational vocabulary and
+  combinatorial search used to propose a theory.
+- The strongest current public ARC-AGI-3 systems increasingly construct
+  executable symbolic world models, replay observations exactly, and plan
+  inside the certified model, but use an LLM to invent or revise the model.
+  Their architecture supports Reflector's explicit-state, verification, and
+  planning choices without demonstrating a pure-symbolic proposal mechanism.
+- The central research problem is therefore **proposal**, not symbolic
+  execution: construct the right perceptual parse, latent state, affordances,
+  transition program, and goal predicate from very few costly interventions.
+
+For Reflector, the pure-symbolic response is to maintain competing
+representation and transition hypotheses, select interventions by expected
+hypothesis elimination per action, use exact replay and counterexample-guided
+synthesis, price model complexity explicitly, and anti-unify validated
+programs into a held-out-tested symbolic library. V65b is a real gain, but it
+does not by itself show that this general proposal problem has been solved.
 
 ## Answer to the external research question
 
@@ -724,30 +781,36 @@ advisors. It is a **causal graph explorer that learns executable abstractions**.
 
 ## Immediate experimental priorities
 
-1. **Test whether paired-object abstraction transfers beyond `m0r0` level
-   1.** Require the v49b grounding predicate to identify a qualifying pair and
-   preregister joint-effect predictions before planning. Reject any widening
-   that merely recognizes more pairs without improving prediction or progress.
-2. **Reproduce an external graph baseline locally.** Port or adapt the
-   open-source graph explorer as a separately configurable control. Compare at
-   Reflector's exact 400-action budget and process isolation. This establishes
-   whether Reflector's symbolic machinery beats a competent simple baseline.
-3. **Add nuisance-normalized and history-augmented state keys.** Evaluate state
-   collisions and state explosion on at least `g50t`, `ar25`, and a clean
-   Markov game.
-4. **Add retrospective progress credit.** After a level advance, propagate
-   distance-to-progress labels through abstract state-action edges and measure
-   whether later-level exploration becomes shorter.
-5. **Build symbolic affordance ranking.** Predict frame/object/relation change,
-   but separately model probability of goal progress. Compare with uniform
-   frontier selection.
+The external graph baseline, nuisance-reduced component frontier, and first
+paired-object transfer experiments above have now been run; v64b and v65b
+incorporate their accepted consequences. The active priorities are:
+
+1. **Diagnose `ft09` level 6 as a lattice constraint system.** Propose a
+   coordinate-free constraint language, require exact replay of the first five
+   levels, and reject any rule that depends on a fixed panel, color, or route.
+2. **Diagnose `lp85` level 4 as shared-track permutation transport.** Extend
+   only if a bounded operator is grounded from conserved motions and predicts
+   a held-out transition before controlling a plan.
+3. **Test articulated kinematics and palette/stamp algebra as generic operator
+   families.** Use `s5i5` and `cd82` only as development falsifiers; require
+   translation, reflection, recoloring, and action-role permutation controls.
+4. **Maintain competing causal hypotheses and choose discriminating probes.**
+   Add an explicit version-space/CEGIS experiment on one target before
+   widening the shared policy. Count eliminated hypotheses per action and
+   preserve no-op evidence.
+5. **Add retrospective progress credit.** After a level advance, propagate
+   distance-to-progress labels through abstract state-action edges and test
+   whether later-level exploration becomes shorter without contaminating the
+   frozen runtime with public routes.
 6. **Use human replays only as development diagnostics, not policies.** The
    public human dataset can reveal what information humans acquire early and
    which actions are wasteful. Do not encode replay routes or public game IDs.
-7. **Make a real Kaggle submission.** Until Reflector crosses the hidden
-   boundary, claims of generalization are speculation. Submit the exact
-   accepted v49b export first as a baseline, if the user authorizes the external
-   action and all live rules are satisfied.
+7. **Make a real Kaggle submission.** Frozen v65b is the first technically
+   ready checkpoint worth using for hidden-transfer calibration. The user must
+   complete the participant account, identity, team, rule, publication, and
+   notebook-commit actions described in
+   `references/KAGGLE_ARC3_SUBMISSION.md`; until Kaggle returns a result,
+   public and private leaderboard scores remain absent.
 
 ## What the runtime-LLM probe actually established
 

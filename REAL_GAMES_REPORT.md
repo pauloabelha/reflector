@@ -5,27 +5,30 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 
 ## Result at a glance
 
-> **Reflector has fully beaten 0 of 25 public-development games.**
-> It has solved 20 of 183 levels across 11 games. The suite ran all 25 games,
+> **Reflector has fully beaten 1 of 25 public-development games.**
+> It has solved 25 of 183 levels across 11 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v64b result | Meaning |
+| Outcome metric | Accepted v65b result | Meaning |
 | --- | ---: | --- |
-| Complete games beaten | **0 / 25** | No game was solved through its final level. |
+| Complete games beaten | **1 / 25** | `sb26` was solved through its final level. |
 | Games with progress | **11 / 25** | At least one level was solved in eleven games. |
-| Levels solved | **20 / 183** | Five in `ft09`; three each in `lp85` and `sb26`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **4.6402744459 / 100** | About **4.64%** of the 100-point scale. |
+| Levels solved | **25 / 183** | Eight in `sb26`; five in `ft09`; three in `lp85`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **7.9736077792 / 100** | About **7.97%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
-| Action budget used | **10,000** | 400 actions were allocated to each game. |
+| Actions used | **9,724** | The budget was 400 actions per game; completed `sb26` stopped after 124 actions. |
 | Complete Kaggle submissions | **0** | No hidden evaluation result exists yet. |
 
 ## Evaluation surfaces
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v64b accepted | **4.6402744459 / 100** | 0 games beaten; 20/183 levels | 25/25 coverage |
-| Process-isolated eleven-game gate | v64b accepted | 10.5460782860 / 100 | 20 levels; every v49b completed-level action vector preserved; `vc33` added | passed |
-| Paired target/preservation reruns | v64b accepted | 0.1221400128 across `tn36`, `vc33` | exact `[tn36:123,277; vc33:262,138]` twice; expansion gate off/on respectively | deterministic twice |
+| Process-isolated official local suite | v65b accepted | **7.9736077792 / 100** | 1 game beaten; 25/183 levels; 9,724 actions | 25/25 coverage |
+| Process-isolated eleven-game gate | v65b accepted | 18.1218358618 / 100 | 25 levels; every non-`sb26` v64b score, level, action total, and completed-level action vector preserved exactly | passed |
+| Target-only `sb26` reruns | v65b accepted | 100.0000000000 for one game | 8/8 levels in 124 actions; exact `[9,15,15,15,17,19,17,17]` twice | deterministic gain twice |
+| Process-isolated official local suite | v64b historical accepted | **4.6402744459 / 100** | 0 games beaten; 20/183 levels | superseded by v65b |
+| Process-isolated eleven-game gate | v64b historical accepted | 10.5460782860 / 100 | 20 levels; every v49b completed-level action vector preserved; `vc33` added | passed |
+| Paired target/preservation reruns | v64b historical accepted | 0.1221400128 across `tn36`, `vc33` | exact `[tn36:123,277; vc33:262,138]` twice; expansion gate off/on respectively | deterministic twice |
 | Process-isolated official local suite | v49b historical accepted | **4.6401724704 / 100** | 0 games beaten; 19/183 levels | superseded by v64b |
 | Process-isolated ten-game gate | v49b accepted | 11.6004311761 / 100 | 19 levels; every v47b level and action count preserved | exact twice |
 | Target-only `m0r0` reruns | v49b accepted | 4.7619047619 for one game | 1/6 levels; `[20, 380]` under 400 actions | deterministic gain twice |
@@ -102,7 +105,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v64b package ready | — | no returned score | **not submitted** |
+| Kaggle public leaderboard | v65b package ready | — | no returned score | **not submitted** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |
@@ -278,7 +281,7 @@ Raw evidence:
 | v18 | 0.2645681905 | 3 | 3 | 0 | Failure-driven click ontology accommodation | promoted |
 | v20 | 0.4550443810 | 4 | 4 | 0 | Within-frame local relation induction | promoted |
 | v21 | 0.8359967620 | 5 | 4 | 0 | Cross-level relation transfer | historical threaded result |
-| v25 ablation | 2.1693300953 | 7 | 4 | 0 | Current source, global constraint solver disabled | process-isolated control |
+| v25 ablation | 2.1693300953 | 7 | 4 | 0 | Source-matched v25 policy with global constraint solver disabled | process-isolated control |
 | v25 | 2.9104325118 | 8 | 4 | 0 | Global overlapping relation constraints | accepted parent |
 | v26d | 2.9202784571 | 8 | 4 | 0 | Successful coordinate-free role replay plus neutral construction machinery | experimental; complexity not earned |
 | v28 | 2.8820272500 | 9 | 5 | 0 | Visual/temporal object primitives plus bounded role reuse | rejected: one accepted level regressed |
@@ -293,14 +296,110 @@ Raw evidence:
 | v42 | 4.4421547794 | 17 | 8 | 0 | Substrate topology with uncertain-gate information actions | historical accepted |
 | v47b | 4.4496962800 | 18 | 9 | 0 | Failure-conditioned fairness and cross-retry maturity | historical accepted |
 | v49b | 4.6401724704 | 19 | 10 | 0 | Learned paired-object effects, contact planning, and bounded latent continuation | historical accepted |
-| v64b | **4.6402744459** | **20** | **11** | **0** | Compressive compact-component vocabulary plus edge-normalized graph frontier | **current accepted** |
+| v64b | 4.6402744459 | 20 | 11 | 0 | Compressive compact-component vocabulary plus edge-normalized graph frontier | historical accepted |
+| v65b | **7.9736077792** | **25** | **11** | **1** | Unique exhaustive connector-graph synthesis with ambiguity abstention | **current accepted** |
 
 The equal-budget v14 control with the epistemic graph disabled scored zero.
 Unconditional multicolor affordances found `tn36` but lost `r11l`; conditioning
 the ontology change on observed failure preserved both. These comparisons are
 why the mechanisms—not mere version succession—receive causal credit.
 
-## Accepted v64b result
+## Accepted v65b result
+
+V65b adds a bounded pure-symbolic connector-graph synthesizer to the shared
+runtime and Kaggle inference path. From visible objects, it grounds an ordered
+reference, enclosed neutral-slot containers, already-fixed payloads, and
+external connector inventory. It then enumerates root assignments and accepts
+only one minimum-cost, exhaustive semantic program. Every alternative root
+must be a definite no-solution; ambiguous or nonexhaustive explanations
+abstain.
+
+The arbitration boundary is deliberately narrow. The graph runs as a fallback
+when no legacy structural program exists. It may override an existing flat
+mapping only when actual adjacent reference-object segments establish the same
+repeated reference and wrapper forms, and the graph exhaustively accounts for
+strictly more neutral destinations. Color-only or shape-inconsistent matches,
+acyclic prefixes that leave structure unused, ambiguous roots, and a mixture
+of one unique root with an ambiguous alternative are rejected.
+
+That mechanism changes only `sb26` relative to v64b. The parent solved 3/8
+levels in the full 400-action budget with completed-level actions
+`[9,15,15]`. V65b solves all 8/8 in 124 actions with
+`[9,15,15,15,17,19,17,17]`. Two frozen target reruns reproduced that exact
+vector and action total. The eleven-game preservation gate retained every
+non-`sb26` score, level count, action total, and completed-level action vector
+exactly.
+
+The frozen 25-game run scored `7.973607779187656/100`, solved 25/183 levels
+across eleven games, used 9,724 actions, covered 25/25 games, and completed
+1/25 games. Compared with v64b's `4.640274445854323/100`, 20/183 levels,
+10,000 actions, and 0/25 complete games, the gain is five levels, one complete
+game, and 276 fewer actions, all localized to `sb26`.
+
+Frozen inference commit:
+`ad68c9cd4c4915cbc220c25fba9998425ba5abd9`
+
+Candidate: `candidate-34708ca0a3fb4129`
+
+Candidate inference fingerprint:
+`88950d0b02c3eb2aa959ef44c9f2b094c2ccdddf6edb36e1b85f040895418151`
+
+Candidate SHA-256:
+`19e2e4a399954453690d27e9d678177bc507e1f788bbdd63a60470570a18a26f`
+
+Full report SHA-256:
+`f765fc20ff7fe33342d3015859aff8bb60308a316b66ffada7c71768363ee042`
+
+Verification: 271 tests passed (3 skipped), Ruff passed, mypy passed, the
+exact candidate exported without translation, both network-disabled Kaggle
+smoke paths passed, and the repeatable prize audit passed its technical gate.
+Prize readiness remains manual: participant account and eligibility, rule and
+team acceptance, identity verification, a public participant-owned repository,
+notebook publication and committed rerun, and the actual competition
+submission are not complete. No Kaggle submission has been made; the Kaggle
+public score is **not submitted** and the private score is **unavailable**.
+
+The export overlay SHA-256 is
+`cb7f8a8a66c2766ce0a448ee383df7f5e02b8d0c38d23afcd7b19aebe3790285`;
+the notebook SHA-256 is
+`5b27e2c59d511f5fd74fa036af4d4eef24d9407aca25ffeb12f0b61c8b3fd989`.
+
+### Accepted v65b progress by game
+
+| Game | Levels solved | Total levels | Completed-level actions | Local game score | Game beaten? |
+| --- | ---: | ---: | --- | ---: | --- |
+| `ar25` | **2** | 8 | `[17, 17]` | 8.3333333333 | No |
+| `ft09` | **5** | 6 | `[4, 7, 14, 16, 94]` | 66.1466080321 | No |
+| `g50t` | **1** | 7 | `[27]` | 3.5714285714 | No |
+| `lf52` | **1** | 10 | `[34]` | 1.6105693614 | No |
+| `lp85` | **3** | 8 | `[37, 8, 54]` | 9.7216281179 | No |
+| `m0r0` | **1** | 6 | `[20]` | 4.7619047619 | No |
+| `r11l` | **1** | 6 | `[18]` | 4.7619047619 | No |
+| `sb26` | **8** | 8 | `[9, 15, 15, 15, 17, 19, 17, 17]` | 100.0000000000 | **Yes** |
+| `sp80` | **1** | 6 | `[196]` | 0.1885375141 | No |
+| `tn36` | **1** | 7 | `[123]` | 0.2417306403 | No |
+| `vc33` | **1** | 7 | `[262]` | 0.0025493852 | No |
+| Remaining 14 games | **0** | 104 | `[]` | 0 | No |
+| **Total** | **25** | **183** | — | **7.9736077792 overall** | **1 / 25** |
+
+Raw evidence:
+
+- [v65b accepted process-isolated 25-game scorecard](reports/official-isolated-v65b-public-400.json)
+- [v65b eleven-game preservation gate](reports/official-isolated-v65b-progress-gate-400.json)
+- [v65b exact `sb26` rerun 1](reports/official-isolated-v65b-sb26-r1-400.json)
+- [v65b exact `sb26` rerun 2](reports/official-isolated-v65b-sb26-r2-400.json)
+- [v65b candidate](candidates/v65b-connector-graph-synthesis-400.json)
+- [public ARC-AGI-3 strategy landscape](references/PUBLIC_ARC3_STRATEGY_LANDSCAPE.md)
+- [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md)
+
+The earned claim remains local and narrow: a generic, ambiguity-rejecting
+symbolic graph synthesizer completes one known public-development game while
+preserving every other accepted result. The public-code survey finds
+purely algorithmic graph explorers but no strong public end-to-end peer for
+Reflector's semantic induction objective. This is not hidden-transfer evidence
+and does not create a Kaggle score.
+
+## Historical accepted v64b result
 
 V64b transfers the independently successful pure-symbolic object/frame graph
 control into the shared runtime and Kaggle inference path. After a failed
@@ -320,8 +419,8 @@ paired reruns were exact.
 
 The eleven-game gate preserved every v49b completed-level action vector and
 added `vc33`. The frozen 25-game run scored
-`4.640274445854323/100`, solved 20/183 levels across eleven games, used 10,000
-actions, covered 25/25 games, and completed 0/25 games. The only
+`4.640274445854323/100`, solved **20 / 183** levels across eleven games, used
+**10,000** actions, covered 25/25 games, and completed 0/25 games. The only
 completed-level delta from v49b is the new `vc33` level.
 
 Frozen inference commit:
@@ -1253,7 +1352,7 @@ Candidate:
 
 ## What our scheme is learning
 
-The real-game evidence currently supports fourteen bounded insights:
+The real-game evidence currently supports fifteen bounded insights:
 
 1. **Exploration needs memory of intervention identity.** Treating every frame
    independently scored zero; an epistemic transition graph produced the first
@@ -1309,6 +1408,11 @@ The real-game evidence currently supports fourteen bounded insights:
    and re-probed under the new relation. A formerly inert action then supplied
    the missing axis. Two regressing implementations also showed that phase
    inference must abstain when its own objects are only latently represented.
+15. **A structural solver must earn preemption through explanatory
+    completeness.** V65b's unique exhaustive connector graph added five
+    `sb26` levels and the first full game. It overrides a legacy flat program
+    only for an object-grounded repeated-reference shadow with strictly more
+    destinations, while uncertainty or unused structure forces abstention.
 
 These are narrow environment-level results. They do not yet prove general
 Piagetian equilibration, arbitrary schema induction, cross-game transfer, or
@@ -1427,7 +1531,7 @@ hashes are:
 
 These historical artifacts have not been published or scored on Kaggle.
 
-The accepted v64b candidate exports from frozen inference source
+The historical v64b candidate exports from frozen inference source
 `f19624c63e303292ab1691e2e2cb66689922a61e` and passes the
 network-disabled smoke path without translation. Its generated artifact
 hashes are:
@@ -1437,8 +1541,25 @@ hashes are:
 - notebook:
   `db385cdb59258497efda2ff844be0388535a881833b9564f0b41c7c468c30371`
 
-These are the current technically submission-ready artifacts. They have not
-been published or scored on Kaggle.
+These historical artifacts were not published or scored on Kaggle.
+
+The accepted v65b candidate exports from frozen inference source
+`ad68c9cd4c4915cbc220c25fba9998425ba5abd9` and passes both
+network-disabled smoke paths without translation. Its generated artifact
+hashes are:
+
+- overlay:
+  `cb7f8a8a66c2766ce0a448ee383df7f5e02b8d0c38d23afcd7b19aebe3790285`
+- notebook:
+  `5b27e2c59d511f5fd74fa036af4d4eef24d9407aca25ffeb12f0b61c8b3fd989`
+
+These are the current technically submission-ready artifacts. The technical
+prize audit passes, while account, eligibility, identity, publication,
+notebook rerun, and submission checks remain manual. They have not been
+published or scored on Kaggle. Follow the
+[Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md) and retain
+the score boundaries described in the
+[public strategy landscape](references/PUBLIC_ARC3_STRATEGY_LANDSCAPE.md).
 
 ## Reporting protocol
 

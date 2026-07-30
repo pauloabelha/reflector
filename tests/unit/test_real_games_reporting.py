@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ACCEPTED_REPORT = (
     ROOT
     / "reports"
-    / "official-isolated-v64b-public-400.json"
+    / "official-isolated-v65b-public-400.json"
 )
 
 
@@ -40,4 +40,4 @@ def test_human_reports_match_accepted_scorecard() -> None:
 
     assert f"beaten **{games_beaten} of {games_evaluated}" in readme
     assert f"**{levels_solved} of {total_levels} levels" in readme
-    assert f"**{score:.10f} / 100**" in readme
+    assert f"**{score} / 100**" in readme

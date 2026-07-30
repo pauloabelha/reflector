@@ -24,16 +24,16 @@ generalization.
 - Branch: `main`
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
-- Last pushed commit: `9802d4a`
-- Accepted candidate: `candidate-fdd57b632dca6219`
-- Accepted agent: Reflector v64b
+- Last known participant-remote commit: `27f5ac5`
+- Accepted candidate: `candidate-34708ca0a3fb4129`
+- Accepted agent: Reflector v65b
 - Accepted frozen inference commit:
-  `f19624c63e303292ab1691e2e2cb66689922a61e`
+  `ad68c9cd4c4915cbc220c25fba9998425ba5abd9`
 - Accepted public-development report:
-  `reports/official-isolated-v64b-public-400.json`
-- Accepted score: `4.640274445854323`
-- Accepted coverage: 25/25 games, 10,000 actions
-- Accepted completions: 20 levels across 11 games
+  `reports/official-isolated-v65b-public-400.json`
+- Accepted score: `7.973607779187656`
+- Accepted coverage: 25/25 games, 9,724 actions
+- Accepted completions: 25/183 levels across 11 games; 1/25 games complete
 - Kaggle public score: not submitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
@@ -61,6 +61,7 @@ generalization.
 | Failure-conditioned cross-retry accommodation | v47b preserved the accepted zero-failure mature-stall path, suppressed reuse after one ambiguous failure, and conserved capped maturity plus action-family fairness only after two failures; it preserved all 17 v42 levels exactly and solved `sp80` L1 at action 196 twice. |
 | Paired-object contact planning | v49b learned ordered joint effects for one reflected congruent pair, planned over independently blocked anchors, and treated planned contact as a bounded latent intermediate; it preserved all 18 v47b levels exactly and solved `m0r0` L1 at action 20 twice. |
 | Compressive compact-component frontier | v64b admitted an object-graph vocabulary only when it did not expand the current perceptual ontology, preserved all 19 v49b level/action vectors, suppressed the 87-for-47 expansion that had regressed `tn36`, and solved `vc33` L1 at action 262 twice. |
+| Bounded connector-graph synthesis | v65b selected a unique minimum-cost assignment over visible ordered references, nested containers, fixed payloads, and connector inventory only as a legacy fallback or under a strict repeated-reference dominance proof; it preserved every non-target trajectory and completed all eight `sb26` levels in 124 actions twice. |
 
 ## Accepted parent mechanism: v25 global relation constraints
 
@@ -2546,6 +2547,119 @@ V64b replaces v49b as the task-performance champion. The gain is narrow but
 causal: a graph-control result transferred into the shared runtime only after
 its proposal language was constrained to be an actual abstraction rather than
 an expansion.
+
+## Accepted experiment: v65b bounded connector-graph synthesis
+
+Parent: accepted v64b `candidate-fdd57b632dca6219`.
+
+Disequilibrium:
+
+- the accepted select/apply/commit family solved the first three `sb26`
+  levels, then treated a repeated reference-interior shadow as a flat legacy
+  program and exhausted 361 actions;
+- the visible scene contained enough relational structure to describe a
+  connector assignment, but the runtime had no bounded language for ordered
+  references, nested containers, fixed payloads, external connector
+  inventory, and cyclic reuse in one program;
+- a generic repair had to abstain whenever the graph was ambiguous,
+  nonexhaustive, shape-inconsistent, or merely competed with an independently
+  grounded legacy program.
+
+Mechanism and safety boundary:
+
+- derive actual object references and wrappers from color, normalized shape,
+  dimensions, adjacency, containment, and visible connector inventory;
+- enumerate bounded root assignments and accept exactly one minimum-cost
+  exhaustive graph program;
+- require every alternative root to be a definitive no-solution, rejecting a
+  unique-plus-ambiguous mixture;
+- reject acyclic prefixes that leave required structure unused; truncate only
+  after an evidenced productive cycle;
+- use the graph as a fallback when no legacy structural program exists, or
+  allow it to dominate only the narrow repeated-reference-interior shadow
+  whose actual adjacent graph segments support the same grounding;
+- include no game ID, fixed coordinate, color constant, action ID, or known
+  solution.
+
+Promotion evidence:
+
+- candidate `candidate-34708ca0a3fb4129`;
+- inference fingerprint
+  `88950d0b02c3eb2aa959ef44c9f2b094c2ccdddf6edb36e1b85f040895418151`;
+- two frozen process-isolated target repeats completed `sb26` 8/8 at 124
+  actions with identical level actions
+  `[9, 15, 15, 15, 17, 19, 17, 17]`;
+- the eleven-game preservation gate retained every non-target score, level,
+  action total, and completed-level action vector exactly while replacing
+  `sb26 [9,15,15,361,0,0,0,0]` with the complete vector;
+- the process-isolated full public-development suite reached
+  `7.973607779187656/100`, 25/183 levels across 11 games, 1/25 complete games,
+  25/25 coverage, and 9,724 actions;
+- relative to v64b, the only per-game behavioral delta is `sb26`; score rose
+  from `4.640274445854323`, levels from 20/183, complete games from 0/25, and
+  actions fell from 10,000;
+- adversarial controls reject color-only and shape-only false matches,
+  nonexhaustive acyclic prefixes, ambiguous roots, and mixed
+  unique-plus-ambiguous roots;
+- 271 tests passed and 3 skipped; Ruff and mypy passed;
+- both network-disabled Kaggle smoke paths passed, the exact candidate
+  exported without translation, and the technical prize audit passed. The
+  participant account, rule acceptance, identity verification, notebook
+  commit/rerun, public publication, and actual submission remain manual.
+
+Frozen evidence:
+
+- inference commit:
+  `ad68c9cd4c4915cbc220c25fba9998425ba5abd9`;
+- candidate SHA-256:
+  `19e2e4a399954453690d27e9d678177bc507e1f788bbdd63a60470570a18a26f`;
+- full report SHA-256:
+  `f765fc20ff7fe33342d3015859aff8bb60308a316b66ffada7c71768363ee042`;
+- target report SHA-256 values:
+  `cced81bd2b6839484152caca94cd91397cbac810187727467da645e22e8cea6e`
+  and
+  `5503b263677056e1b3a05fbf95c401c1d7f217888eb60f771d2e188ef5a65e24`;
+- preservation report SHA-256:
+  `efc41c2ef2b664c2ecc20abfa47c323775dbbfa1678f805d2dae7a24ebc10fe3`;
+- export overlay SHA-256:
+  `cb7f8a8a66c2766ce0a448ee383df7f5e02b8d0c38d23afcd7b19aebe3790285`;
+- export notebook SHA-256:
+  `5b27e2c59d511f5fd74fa036af4d4eef24d9407aca25ffeb12f0b61c8b3fd989`.
+
+Reports:
+
+- `reports/official-isolated-v65b-sb26-r1-400.json`;
+- `reports/official-isolated-v65b-sb26-r2-400.json`;
+- `reports/official-isolated-v65b-progress-gate-400.json`;
+- `reports/official-isolated-v65b-public-400.json`.
+
+V65b replaces v64b as the task-performance champion. It is a substantial
+known-public gain and the first complete game, not hidden-transfer evidence.
+The exact export is technically ready for a Kaggle notebook submission; use
+`references/KAGGLE_ARC3_SUBMISSION.md` and keep local, Kaggle public, and
+Kaggle private scores separate.
+
+## Immediate continuation toward 20/100
+
+The public-code survey in
+`references/PUBLIC_ARC3_STRATEGY_LANDSCAPE.md` localizes the remaining frontier
+as symbolic hypothesis proposal rather than symbolic execution. The next
+offspring should therefore add one compact typed operator family at a time,
+with exact replay and ambiguity abstention:
+
+1. diagnose `ft09` level 6 as a lattice constraint system and attempt a
+   held-out structural mutation rather than extending a memorized panel rule;
+2. diagnose `lp85` level 4 as permutation transport over shared cyclic tracks;
+3. test articulated actuator/kinematic grounding on `s5i5`;
+4. test palette/stamp algebra on `cd82`;
+5. retain the exact transition graph as a bounded fallback and trace
+   generator, but rank probes by expected hypothesis elimination per action;
+6. make the first Kaggle submission from frozen v65b after the user completes
+   the account, identity, rule, team, and participant-owned-publication steps.
+
+Each task mutation remains subject to the full target-repeat, preservation,
+25-game, quality, and exact-export gates below. The `/goal` remains active:
+`7.973607779187656 < 20`.
 
 ## Promotion gates
 
