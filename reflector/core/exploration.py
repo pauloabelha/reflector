@@ -36,6 +36,7 @@ from .permutation_transport import (
     PermutationBounds,
     PermutationGenerator,
     PermutationSystem,
+    infer_path_cycle_permutations,
     infer_segmented_permutations,
     merge_generator_evidence,
     plan_marker_transport,
@@ -43,12 +44,21 @@ from .permutation_transport import (
 from .symbolic import ObjectState, Observation, Scene
 
 StateKey = tuple[int, str, str]
-ControllerForm = tuple[
-    int,
-    tuple[tuple[int, int], ...],
-    str | None,
-    tuple[str, ...],
-]
+ControllerForm = (
+    tuple[
+        int,
+        tuple[tuple[int, int], ...],
+        str | None,
+        tuple[str, ...],
+    ]
+    | tuple[
+        int,
+        tuple[tuple[int, int], ...],
+        str | None,
+        tuple[str, ...],
+        tuple[str, ...],
+    ]
+)
 PhaseSignature = tuple[
     tuple[
         int,
@@ -370,6 +380,7 @@ class EpistemicExplorer:
     connector_graph_synthesis: bool = False
     lattice_effect_planning: bool = False
     segmented_permutation_transport: bool = False
+    path_cycle_transport: bool = False
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
     committed_trajectory_planning: bool = False
@@ -758,6 +769,16 @@ class EpistemicExplorer:
     segmented_permutation_last_plan_length: int = 0
     segmented_permutation_search_states: int = 0
     segmented_permutation_diagnostic: str = "exact-off"
+    segmented_permutation_total_observations: int = 0
+    segmented_permutation_total_predictions: int = 0
+    segmented_permutation_total_confirmations: int = 0
+    segmented_permutation_total_conflicts: int = 0
+    segmented_permutation_total_plan_steps: int = 0
+    segmented_permutation_last_token_count: int = 0
+    segmented_permutation_last_changed_token_count: int = 0
+    segmented_permutation_last_segmented_candidates: int = 0
+    segmented_permutation_last_path_candidates: int = 0
+    segmented_permutation_last_controller_context: tuple[str, ...] = ()
 
     @property
     def uses_action_family_schema(self) -> bool:
@@ -1233,6 +1254,11 @@ class EpistemicExplorer:
         self.segmented_permutation_plan_steps = 0
         self.segmented_permutation_last_plan_length = 0
         self.segmented_permutation_search_states = 0
+        self.segmented_permutation_last_token_count = 0
+        self.segmented_permutation_last_changed_token_count = 0
+        self.segmented_permutation_last_segmented_candidates = 0
+        self.segmented_permutation_last_path_candidates = 0
+        self.segmented_permutation_last_controller_context = ()
         self.segmented_permutation_diagnostic = (
             "not-attempted"
             if self.segmented_permutation_transport
@@ -4719,6 +4745,7 @@ class EpistemicExplorer:
         if segmented_permutation is not None:
             self.cyclic_alignment_level_trials += 1
             self.segmented_permutation_plan_steps += 1
+            self.segmented_permutation_total_plan_steps += 1
             if self.cyclic_alignment_scheme is not None:
                 self.last_scheme_components = (
                     *self.cyclic_alignment_scheme.components(),
@@ -6976,17 +7003,95 @@ class EpistemicExplorer:
     @staticmethod
     def _segmented_controller_form(
         grounding: GroundedRole,
+        token_positions: tuple[tuple[int, int], ...] = (),
     ) -> ControllerForm | None:
-        """Return a coordinate-, color-, and action-id-free controller form."""
+        """Return the legacy form, optionally extended by local slot topology."""
 
         role = grounding.role
         if grounding.centroid is None or role.area is None or not role.shape:
             return None
-        return (
+        base_form = (
             role.area,
             role.shape,
             role.primitive_kind,
             role.primitive_properties,
+        )
+        if not token_positions:
+            return base_form
+        return (
+            *base_form,
+            EpistemicExplorer._controller_topology_context(
+                grounding.centroid,
+                token_positions,
+            ),
+        )
+
+    @staticmethod
+    def _controller_topology_context(
+        centroid: tuple[int, int],
+        token_positions: tuple[tuple[int, int], ...],
+    ) -> tuple[str, ...]:
+        """Describe nearest slot incidence without coordinates or orientation."""
+
+        if len(token_positions) < 2:
+            return ()
+        differences = [
+            difference
+            for index, left in enumerate(token_positions)
+            for right in token_positions[index + 1 :]
+            for difference in (
+                abs(right[0] - left[0]) if right[1] == left[1] else 0,
+                abs(right[1] - left[1]) if right[0] == left[0] else 0,
+            )
+            if difference > 0
+        ]
+        if not differences:
+            return ()
+        pitch = differences[0]
+        for difference in differences[1:]:
+            pitch = math.gcd(pitch, difference)
+        if pitch < 1:
+            return ()
+        position_set = set(token_positions)
+        distances = {
+            point: abs(point[0] - centroid[0]) + abs(point[1] - centroid[1])
+            for point in token_positions
+        }
+        nearest_distance = min(distances.values())
+        nearest = tuple(
+            sorted(
+                point
+                for point, distance in distances.items()
+                if distance == nearest_distance
+            )
+        )
+        incidence: list[str] = []
+        for point in nearest:
+            vectors = tuple(
+                candidate
+                for candidate in ((-1, 0), (1, 0), (0, -1), (0, 1))
+                if (
+                    point[0] + candidate[0] * pitch,
+                    point[1] + candidate[1] * pitch,
+                )
+                in position_set
+            )
+            if len(vectors) == 1:
+                kind = "endpoint"
+            elif len(vectors) == 2:
+                kind = (
+                    "straight"
+                    if vectors[0][0] == -vectors[1][0]
+                    and vectors[0][1] == -vectors[1][1]
+                    else "corner"
+                )
+            else:
+                kind = f"degree-{len(vectors)}"
+            incidence.append(kind)
+        return (
+            f"nearest-count:{len(nearest)}",
+            f"distance-bucket:{min(4, nearest_distance // pitch)}",
+            *sorted(incidence),
         )
 
     @classmethod
@@ -7095,6 +7200,7 @@ class EpistemicExplorer:
         self.segmented_permutation_quarantined_forms.add(controller_form)
         self.segmented_permutation_pending_prediction = None
         self.segmented_permutation_conflicts += 1
+        self.segmented_permutation_total_conflicts += 1
         self.segmented_permutation_diagnostic = diagnostic
 
     def _observe_segmented_permutation_transition(
@@ -7124,10 +7230,14 @@ class EpistemicExplorer:
                 else "exact-off"
             )
             return
-        controller_form = self._segmented_controller_form(grounding)
         domain = self._segmented_token_domain(
             before,
             bounds=self.segmented_permutation_bounds,
+        )
+        positions = domain[1] if domain is not None else ()
+        controller_form = self._segmented_controller_form(
+            grounding,
+            positions if self.path_cycle_transport else (),
         )
         if controller_form is None or grounding.centroid is None or domain is None:
             if pending is not None:
@@ -7139,6 +7249,16 @@ class EpistemicExplorer:
                 self.segmented_permutation_diagnostic = "domain-unrepresented"
             return
         _anchors, positions = domain
+        self.segmented_permutation_last_token_count = len(positions)
+        self.segmented_permutation_last_changed_token_count = sum(
+            before[point[1]][point[0]] != after[point[1]][point[0]]
+            for point in positions
+        )
+        self.segmented_permutation_last_controller_context = (
+            self._controller_topology_context(grounding.centroid, positions)
+            if self.path_cycle_transport
+            else ()
+        )
         after_domain = self._segmented_token_domain(
             after,
             bounds=self.segmented_permutation_bounds,
@@ -7154,15 +7274,37 @@ class EpistemicExplorer:
                     "token-domain-not-conserved"
                 )
             return
-        candidates = infer_segmented_permutations(
+        segmented_candidates = infer_segmented_permutations(
             before,
             after,
             positions,
             grounding.centroid,
             bounds=self.segmented_permutation_bounds,
         )
+        path_candidates = (
+            infer_path_cycle_permutations(
+                before,
+                after,
+                positions,
+                grounding.centroid,
+                bounds=self.segmented_permutation_bounds,
+            )
+            if self.path_cycle_transport
+            else ()
+        )
+        self.segmented_permutation_last_segmented_candidates = len(
+            segmented_candidates
+        )
+        self.segmented_permutation_last_path_candidates = len(path_candidates)
+        candidates = tuple(
+            {
+                (candidate.slots, candidate.successor): candidate
+                for candidate in (*segmented_candidates, *path_candidates)
+            }.values()
+        )
         if candidates:
             self.segmented_permutation_observations += 1
+            self.segmented_permutation_total_observations += 1
 
         if pending is not None:
             if pending.controller_form != controller_form:
@@ -7229,6 +7371,7 @@ class EpistemicExplorer:
             )
             self.segmented_permutation_proposals.pop(controller_form, None)
             self.segmented_permutation_confirmations += 1
+            self.segmented_permutation_total_confirmations += 1
             self.segmented_permutation_diagnostic = "prospectively-confirmed"
             return
 
@@ -7265,7 +7408,15 @@ class EpistemicExplorer:
             or self.cyclic_alignment_scheme is None
         ):
             return
-        controller_form = self._segmented_controller_form(grounding)
+        domain = self._segmented_token_domain(
+            self.selection_frame,
+            bounds=self.segmented_permutation_bounds,
+        )
+        positions = domain[1] if domain is not None else ()
+        controller_form = self._segmented_controller_form(
+            grounding,
+            positions if self.path_cycle_transport else (),
+        )
         if (
             controller_form is None
             or controller_form in self.segmented_permutation_quarantined_forms
@@ -7285,6 +7436,7 @@ class EpistemicExplorer:
             controller_form, generator
         )
         self.segmented_permutation_predictions += 1
+        self.segmented_permutation_total_predictions += 1
 
     def _select_segmented_permutation_transport(
         self,
@@ -7368,7 +7520,13 @@ class EpistemicExplorer:
             if token.action_id != self.complex_action or not token.data:
                 continue
             grounding = self._grounding(token, scene)
-            if self._segmented_controller_form(grounding) in controller_forms:
+            if (
+                self._segmented_controller_form(
+                    grounding,
+                    positions if self.path_cycle_transport else (),
+                )
+                in controller_forms
+            ):
                 represented.append(token)
         if not represented:
             self.segmented_permutation_diagnostic = "planned-controller-unrepresented"
@@ -9802,6 +9960,36 @@ class EpistemicExplorer:
             ),
             "segmented_permutation_diagnostic": (
                 self.segmented_permutation_diagnostic
+            ),
+            "segmented_permutation_total_observations": (
+                self.segmented_permutation_total_observations
+            ),
+            "segmented_permutation_total_predictions": (
+                self.segmented_permutation_total_predictions
+            ),
+            "segmented_permutation_total_confirmations": (
+                self.segmented_permutation_total_confirmations
+            ),
+            "segmented_permutation_total_conflicts": (
+                self.segmented_permutation_total_conflicts
+            ),
+            "segmented_permutation_total_plan_steps": (
+                self.segmented_permutation_total_plan_steps
+            ),
+            "segmented_permutation_last_token_count": (
+                self.segmented_permutation_last_token_count
+            ),
+            "segmented_permutation_last_changed_token_count": (
+                self.segmented_permutation_last_changed_token_count
+            ),
+            "segmented_permutation_last_segmented_candidates": (
+                self.segmented_permutation_last_segmented_candidates
+            ),
+            "segmented_permutation_last_path_candidates": (
+                self.segmented_permutation_last_path_candidates
+            ),
+            "segmented_permutation_last_controller_context": list(
+                self.segmented_permutation_last_controller_context
             ),
             "select_apply_program_length": len(self.select_apply_program),
             "select_apply_cursor": self.select_apply_cursor,

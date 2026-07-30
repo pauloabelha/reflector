@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from reflector.core.permutation_transport import (
     Frame,
     MarkerTarget,
@@ -7,6 +9,7 @@ from reflector.core.permutation_transport import (
     PermutationGenerator,
     PermutationSystem,
     Point,
+    infer_path_cycle_permutations,
     infer_segmented_permutations,
     merge_generator_evidence,
     plan_marker_transport,
@@ -224,3 +227,212 @@ def test_inference_and_planning_abstain_when_evidence_or_bounds_are_missing() ->
         )
         is None
     )
+
+
+@pytest.mark.parametrize(
+    "path",
+    (
+        ((2, 2), (5, 2), (8, 2), (5, 5)),
+        ((2, 2), (5, 2), (5, 5), (2, 5)),
+        ((2, 2), (5, 2), (8, 2), (14, 2), (17, 2), (20, 2)),
+        ((2, 2), (5, 2), (9, 2), (9, 5)),
+    ),
+    ids=("branch", "closed-loop", "disconnected", "nonuniform"),
+)
+def test_path_cycle_inference_rejects_non_simple_uniform_paths(
+    path: tuple[Point, ...],
+) -> None:
+    values = {point: 30 + index for index, point in enumerate(path)}
+    expected = _cycle_generator(
+        path,
+        controller=(1, 2),
+        axis="path",
+        pitch=3,
+        segment_count=1,
+    )
+
+    assert (
+        infer_path_cycle_permutations(
+            _paint(values),
+            _paint(_apply_values(values, expected)),
+            tuple(sorted(path)),
+            controller=(1, 2),
+        )
+        == ()
+    )
+
+
+def test_path_cycle_inference_retains_repeated_color_ambiguity() -> None:
+    path = ((2, 2), (5, 2), (8, 2), (8, 5), (8, 8), (5, 8))
+    before_values = dict(zip(path, (1, 1, 1, 1, 2, 1), strict=True))
+    expected = _cycle_generator(
+        path,
+        controller=(1, 2),
+        axis="path",
+        pitch=3,
+        segment_count=1,
+    )
+
+    candidates = infer_path_cycle_permutations(
+        _paint(before_values),
+        _paint(_apply_values(before_values, expected)),
+        tuple(sorted(path)),
+        controller=(1, 2),
+    )
+
+    assert len(candidates) == 4
+    assert len({(item.slots, item.successor) for item in candidates}) == 4
+
+
+def test_path_cycle_inference_is_exact_on_its_declared_token_domain() -> None:
+    path = ((2, 2), (5, 2), (8, 2), (8, 5), (8, 8), (5, 8))
+    subpath = path[:3]
+    values = {point: 20 + index for index, point in enumerate(path)}
+    expected = _cycle_generator(
+        subpath,
+        controller=(1, 2),
+        axis="path",
+        pitch=3,
+        segment_count=1,
+    )
+    before = _paint(values)
+    exact_after = _paint(_apply_values(values, expected))
+    changed_outside_domain = dict(_apply_values(values, expected))
+    changed_outside_domain[path[-1]] = 99
+
+    exact = infer_path_cycle_permutations(
+        before,
+        exact_after,
+        tuple(sorted(path)),
+        controller=(1, 2),
+    )
+    assert len(exact) == 1
+    assert set(exact[0].slots) == set(subpath)
+    assert (
+        infer_path_cycle_permutations(
+            before,
+            _paint(changed_outside_domain),
+            tuple(sorted(path)),
+            controller=(1, 2),
+        )
+        == ()
+    )
+
+    ui_changed = [list(row) for row in exact_after]
+    ui_changed[0][0] = 91
+    projected = infer_path_cycle_permutations(
+        before,
+        _freeze(ui_changed),
+        tuple(sorted(path)),
+        controller=(1, 2),
+    )
+    assert tuple(
+        (item.slots, item.successor) for item in projected
+    ) == tuple((item.slots, item.successor) for item in exact)
+
+
+def test_path_cycle_inference_enforces_slot_and_candidate_bounds() -> None:
+    path = ((2, 2), (5, 2), (8, 2), (8, 5), (8, 8), (5, 8))
+    values = {point: 20 + index for index, point in enumerate(path)}
+    expected = _cycle_generator(
+        path,
+        controller=(1, 2),
+        axis="path",
+        pitch=3,
+        segment_count=1,
+    )
+    before = _paint(values)
+    after = _paint(_apply_values(values, expected))
+
+    assert (
+        infer_path_cycle_permutations(
+            before,
+            after,
+            (*tuple(sorted(path)), path[0]),
+            controller=(1, 2),
+        )
+        == ()
+    )
+    assert (
+        infer_path_cycle_permutations(
+            before,
+            after,
+            tuple(sorted(path)),
+            controller=(1, 2),
+            bounds=PermutationBounds(max_slots=len(path) - 1),
+        )
+        == ()
+    )
+    assert (
+        infer_path_cycle_permutations(
+            before,
+            after,
+            tuple(sorted(path)),
+            controller=(1, 2),
+            bounds=PermutationBounds(max_cycle_orderings=0),
+        )
+        == ()
+    )
+    assert (
+        infer_path_cycle_permutations(
+            before,
+            after,
+            (*tuple(sorted(path[:-1])), (30, 2)),
+            controller=(1, 2),
+        )
+        == ()
+    )
+
+
+@pytest.mark.parametrize("transform_index", range(8))
+def test_path_cycle_inference_is_d4_translation_and_color_equivariant(
+    transform_index: int,
+) -> None:
+    path = ((0, 0), (3, 0), (6, 0), (6, 3), (6, 6), (3, 6), (3, 9))
+    controller = (-3, 0)
+
+    def raw_transform(point: Point) -> Point:
+        x, y = point
+        return (
+            (x, y),
+            (-x, y),
+            (x, -y),
+            (-x, -y),
+            (y, x),
+            (-y, x),
+            (y, -x),
+            (-y, -x),
+        )[transform_index]
+
+    raw_points = tuple(raw_transform(point) for point in (*path, controller))
+    shift_x = 4 - min(point[0] for point in raw_points)
+    shift_y = 4 - min(point[1] for point in raw_points)
+
+    def transform(point: Point) -> Point:
+        raw_x, raw_y = raw_transform(point)
+        return raw_x + shift_x, raw_y + shift_y
+
+    transformed_path = tuple(transform(point) for point in path)
+    transformed_controller = transform(controller)
+    values = {
+        point: 101 + index * 7 for index, point in enumerate(transformed_path)
+    }
+    expected = _cycle_generator(
+        transformed_path,
+        controller=transformed_controller,
+        axis="path",
+        pitch=3,
+        segment_count=1,
+    )
+
+    candidates = infer_path_cycle_permutations(
+        _paint(values),
+        _paint(_apply_values(values, expected)),
+        tuple(sorted(transformed_path)),
+        transformed_controller,
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].slots == expected.slots
+    assert candidates[0].successor == expected.successor
+    assert candidates[0].axis == "path"

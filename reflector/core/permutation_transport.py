@@ -1,9 +1,9 @@
-"""Bounded symbolic inference and planning for segmented permutations.
+"""Bounded symbolic inference and planning for projected token permutations.
 
 The runtime-facing types in this module contain only episode-grounded perceptual
 roles.  They do not name games, colors, actions, or absolute solution paths.
 An effect is admitted only when a before/after observation exactly supports a
-successor permutation over equal-pitch token segments.
+successor permutation over the declared conserved token-centroid domain.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from typing import Literal, Self
 type Point = tuple[int, int]
 type Frame = tuple[tuple[int, ...], ...]
 type ProjectedState = tuple[tuple[int, ...], ...]
-type Axis = Literal["horizontal", "vertical"]
+type Axis = Literal["horizontal", "vertical", "path"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -320,6 +320,80 @@ def infer_segmented_permutations(
     )
 
 
+def infer_path_cycle_permutations(
+    before: Frame,
+    after: Frame,
+    token_positions: tuple[Point, ...],
+    controller: Point,
+    *,
+    bounds: PermutationBounds = PermutationBounds(),
+) -> tuple[PermutationGenerator, ...]:
+    """Infer rotations over intervals of one uniform simple rectilinear path.
+
+    The exact boundary is the declared token-centroid domain: every changed
+    token must belong to the inferred interval and every value on that interval
+    must match one cyclic successor step.  Unrelated rendered UI is outside this
+    projected operator.
+    """
+
+    dimensions = _shared_dimensions(before, after)
+    if dimensions is None:
+        return ()
+    width, height = dimensions
+    points = tuple(sorted(set(token_positions)))
+    if (
+        len(points) != len(token_positions)
+        or len(points) < bounds.min_segment_length
+        or len(points) > bounds.max_slots
+        or any(not (0 <= x < width and 0 <= y < height) for x, y in points)
+    ):
+        return ()
+    changed = {
+        point for point in points if _value(before, point) != _value(after, point)
+    }
+    if not changed:
+        return ()
+    ordered = _rectilinear_path(points)
+    if ordered is None:
+        return ()
+
+    candidates: dict[
+        tuple[tuple[Point, ...], tuple[int, ...]],
+        PermutationGenerator,
+    ] = {}
+    for start in range(len(ordered)):
+        for stop in range(start + bounds.min_segment_length, len(ordered) + 1):
+            segment = ordered[start:stop]
+            segment_set = set(segment)
+            if not changed.issubset(segment_set):
+                continue
+            if any(
+                _value(before, point) != _value(after, point)
+                for point in points
+                if point not in segment_set
+            ):
+                continue
+            for track in (segment, tuple(reversed(segment))):
+                if not _predicts_cycle(before, after, track):
+                    continue
+                generator = _generator_from_track(
+                    track,
+                    controller=controller,
+                    axis="path",
+                    pitch=_path_pitch(track),
+                    segment_count=1,
+                )
+                candidates[(generator.slots, generator.successor)] = generator
+                if len(candidates) > bounds.max_cycle_orderings:
+                    return ()
+    return tuple(
+        sorted(
+            candidates.values(),
+            key=lambda item: (item.effect_id, item.controllers),
+        )
+    )
+
+
 def plan_marker_transport(
     frame: Frame,
     token_positions: tuple[Point, ...],
@@ -490,6 +564,71 @@ def _predicts_cycle(before: Frame, after: Frame, track: tuple[Point, ...]) -> bo
         _value(after, track[(index + 1) % len(track)]) == _value(before, source)
         for index, source in enumerate(track)
     )
+
+
+def _rectilinear_path(points: tuple[Point, ...]) -> tuple[Point, ...] | None:
+    """Return the canonical ordering of one uniform rectilinear path."""
+
+    pitch = _path_pitch(points)
+    if pitch < 1:
+        return None
+    point_set = set(points)
+    neighbors = {
+        point: tuple(
+            sorted(
+                candidate
+                for candidate in (
+                    (point[0] - pitch, point[1]),
+                    (point[0] + pitch, point[1]),
+                    (point[0], point[1] - pitch),
+                    (point[0], point[1] + pitch),
+                )
+                if candidate in point_set
+            )
+        )
+        for point in points
+    }
+    if any(len(items) > 2 for items in neighbors.values()):
+        return None
+    endpoints = tuple(
+        sorted(point for point, items in neighbors.items() if len(items) == 1)
+    )
+    if len(endpoints) != 2:
+        return None
+    ordered = [endpoints[0]]
+    previous: Point | None = None
+    while len(ordered) < len(points):
+        candidates = tuple(
+            item for item in neighbors[ordered[-1]] if item != previous
+        )
+        if len(candidates) != 1 or candidates[0] in ordered:
+            return None
+        previous, current = ordered[-1], candidates[0]
+        ordered.append(current)
+    if set(ordered) != point_set:
+        return None
+    return tuple(ordered)
+
+
+def _path_pitch(points: tuple[Point, ...]) -> int:
+    """Return the greatest shared axial spacing of a rectilinear slot set."""
+
+    differences = [
+        difference
+        for index, left in enumerate(points)
+        for right in points[index + 1 :]
+        for difference in (
+            abs(right[0] - left[0]) if right[1] == left[1] else 0,
+            abs(right[1] - left[1]) if right[0] == left[0] else 0,
+        )
+        if difference > 0
+    ]
+    if not differences:
+        return 0
+    pitch = differences[0]
+    for difference in differences[1:]:
+        pitch = math.gcd(pitch, difference)
+    return pitch
 
 
 def _generator_from_track(
