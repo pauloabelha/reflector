@@ -79,7 +79,9 @@ class PrimaryStencilPlanner:
     palette_predictions: int = 0
     palette_confirmations: int = 0
     palette_conflicts: int = 0
-    latent_commits: int = 0
+    apply_predictions: int = 0
+    apply_confirmations: int = 0
+    apply_conflicts: int = 0
     plan_steps: int = 0
     search_states: int = 0
     submit_action: int | None = None
@@ -89,7 +91,6 @@ class PrimaryStencilPlanner:
     last_plan_length: int = 0
     last_target_pose: Pose | None = None
     last_reference_mismatches: int = 0
-    latent_construction: Grid | None = None
 
     def observe(self, frame: Frame, levels_completed: int) -> StencilScene | None:
         """Ground the current scene and validate the previously issued action."""
@@ -101,8 +102,6 @@ class PrimaryStencilPlanner:
             return scene
         if self.current_level is None:
             self.current_level = levels_completed
-            if scene is not None:
-                self.latent_construction = scene.construction
         elif levels_completed > self.current_level:
             self.current_level = levels_completed
             self.pending_token = None
@@ -110,9 +109,6 @@ class PrimaryStencilPlanner:
             self.no_effect_poses.clear()
             self.submit_action = None
             self.quarantined = False
-            self.latent_construction = (
-                scene.construction if scene is not None else None
-            )
             self.diagnostic = "level-advanced"
         if (
             self.pending_token is not None
@@ -210,11 +206,7 @@ class PrimaryStencilPlanner:
 
     def _plan(self, scene: StencilScene) -> tuple[StencilToken, ...]:
         assert self.submit_action is not None
-        start = (
-            self.latent_construction or scene.construction,
-            scene.selected_color,
-            scene.pose,
-        )
+        start = (scene.construction, scene.selected_color, scene.pose)
         queue: deque[
             tuple[tuple[Grid, int, Pose], tuple[StencilToken, ...]]
         ] = deque(((start, ()),))
@@ -223,13 +215,9 @@ class PrimaryStencilPlanner:
         while queue and self.search_states < self.max_search_states:
             (construction, color, pose), path = queue.popleft()
             self.search_states += 1
-            prospective = apply_primary_stencil(construction, pose, color)
-            mismatches = _grid_mismatches(prospective, scene.reference)
+            mismatches = _grid_mismatches(construction, scene.reference)
             if not path:
                 self.last_reference_mismatches = mismatches
-            if mismatches == 0:
-                self.last_target_pose = pose
-                return path + (StencilToken(self.submit_action),)
             if len(path) >= self.max_plan_depth:
                 continue
             for action, direction in sorted(self.action_directions.items()):
@@ -241,15 +229,27 @@ class PrimaryStencilPlanner:
                     continue
                 visited.add(next_state)
                 queue.append((next_state, path + (StencilToken(action),)))
-            committed = apply_primary_stencil(construction, pose, color)
             for next_color, token in scene.palette:
                 if next_color == color:
                     continue
-                next_state = (committed, next_color, pose)
+                next_state = (construction, next_color, pose)
                 if next_state in visited:
                     continue
                 visited.add(next_state)
                 queue.append((next_state, path + (token,)))
+            committed = apply_primary_stencil(construction, pose, color)
+            if committed == scene.reference:
+                self.last_target_pose = pose
+                return path + (StencilToken(self.submit_action),)
+            next_state = (committed, color, pose)
+            if next_state not in visited:
+                visited.add(next_state)
+                queue.append(
+                    (
+                        next_state,
+                        path + (StencilToken(self.submit_action),),
+                    )
+                )
         return ()
 
     def _first_navigation_step(
@@ -296,25 +296,37 @@ class PrimaryStencilPlanner:
                 self.diagnostic = "unrepresented-palette-token"
                 return
             self.palette_predictions += 1
-            expected = apply_primary_stencil(
-                self.latent_construction or before.construction,
-                before.pose,
-                before.selected_color,
-            )
             if (
                 after.construction == before.construction
                 and after.selected_color == selected
             ):
-                self.latent_construction = expected
-                self.latent_commits += 1
                 self.palette_confirmations += 1
-                self.diagnostic = "latent-palette-commit-confirmed"
+                self.diagnostic = "palette-selection-confirmed"
             else:
                 self.quarantined = True
                 self.palette_conflicts += 1
                 self.diagnostic = "palette-commit-mismatch"
             return
         if token.data:
+            return
+        if token.action_id == self.submit_action:
+            self.apply_predictions += 1
+            expected = apply_primary_stencil(
+                before.construction,
+                before.pose,
+                before.selected_color,
+            )
+            if (
+                after.construction == expected
+                and after.selected_color == before.selected_color
+                and after.pose == before.pose
+            ):
+                self.apply_confirmations += 1
+                self.diagnostic = "stencil-apply-confirmed"
+            else:
+                self.apply_conflicts += 1
+                self.quarantined = True
+                self.diagnostic = "stencil-apply-mismatch"
             return
         before_coord = POSE_COORDINATES[before.pose]
         after_coord = POSE_COORDINATES[after.pose]
@@ -360,7 +372,9 @@ class PrimaryStencilPlanner:
             "palette_predictions": self.palette_predictions,
             "palette_confirmations": self.palette_confirmations,
             "palette_conflicts": self.palette_conflicts,
-            "latent_commits": self.latent_commits,
+            "apply_predictions": self.apply_predictions,
+            "apply_confirmations": self.apply_confirmations,
+            "apply_conflicts": self.apply_conflicts,
             "search_states": self.search_states,
             "last_plan_length": self.last_plan_length,
             "plan_steps": self.plan_steps,

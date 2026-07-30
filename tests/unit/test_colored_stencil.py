@@ -138,14 +138,14 @@ def test_exact_planner_composes_committed_and_prospective_layers() -> None:
         last_scene=scene,
     )
     first = planner.select((), 0, (0, 1, 2, 3, 4, 5, 6))
-    assert first == StencilToken(6, (("x", 10), ("y", 2)))
+    assert first == StencilToken(5)
     assert planner.submit_action == 5
     assert planner.last_target_pose == "se"
     assert planner.last_plan_length > 1
     assert planner.search_states > 0
 
 
-def test_palette_selection_confirms_an_invisible_latent_commit() -> None:
+def test_palette_selection_changes_only_the_active_attribute() -> None:
     base = _solid(10, 7)
     before = StencilScene(
         reference=base,
@@ -172,15 +172,41 @@ def test_palette_selection_confirms_an_invisible_latent_commit() -> None:
     planner = PrimaryStencilPlanner(
         enabled=True,
         current_level=0,
-        latent_construction=base,
         pending_token=clicked,
         pending_scene=before,
     )
     planner._validate_pending(before, after, clicked)
     assert planner.palette_confirmations == 1
     assert planner.palette_conflicts == 0
-    assert planner.latent_commits == 1
-    assert planner.latent_construction == apply_primary_stencil(base, "n", 2)
+    assert not planner.quarantined
+
+
+def test_apply_control_commits_an_intermediate_layer() -> None:
+    base = _solid(10, 7)
+    after_grid = apply_primary_stencil(base, "n", 2)
+    before = StencilScene(
+        reference=apply_primary_stencil(after_grid, "se", 3),
+        construction=base,
+        reference_bbox=(0, 0, 9, 9),
+        construction_bbox=(20, 0, 29, 9),
+        palette=((2, StencilToken(6, (("x", 2), ("y", 2)))),),
+        selected_color=2,
+        pose="n",
+    )
+    after = StencilScene(
+        reference=before.reference,
+        construction=after_grid,
+        reference_bbox=before.reference_bbox,
+        construction_bbox=before.construction_bbox,
+        palette=before.palette,
+        selected_color=2,
+        pose="n",
+    )
+    planner = PrimaryStencilPlanner(enabled=True, submit_action=5)
+    planner._validate_pending(before, after, StencilToken(5))
+    assert planner.apply_predictions == 1
+    assert planner.apply_confirmations == 1
+    assert planner.apply_conflicts == 0
     assert not planner.quarantined
 
 
