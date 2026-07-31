@@ -66,9 +66,14 @@ Submission status, 2026-07-31 UTC:
 - the exact v99l candidate exports byte-identically twice, both
   network-disabled smoke paths pass, and the technical prize audit reports
   `technical_ready: true`;
-- v99l preserves v99k's score and completed levels while recovering 69
-  completed-prefix actions on `ls20`; publish and commit its exact hashed
-  notebook before requesting the next competition submission;
+- private notebook `pauloabelha/reflector-arc-agi-3-v99l` version 1 completed
+  successfully and emitted a 2,648-byte `submission.parquet`, SHA-256
+  `71bfd543030e339d87bd9ff744d466218398a1259650b2c255626d27049c88bb`;
+- the exact v99l competition request returned HTTP 400 because v74 submission
+  `55123277` had consumed the UTC daily allowance; the subsequent listing
+  still contains only v65b and v74, so no v99l submission ID exists;
+- submit completed v99l notebook version 1 unchanged after the allowance
+  resets;
 - v74 submission `55123277` has now completed with public score `0.02`;
 - historical v65b submission `55113224` is complete with Kaggle public score
   `0.02`; the private score remains unavailable.

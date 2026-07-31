@@ -45,6 +45,16 @@ listing contains only `55113224` and `55123277`, so Kaggle created **no v99k
 submission ID**. Submit this already-completed version 1 unchanged after the
 allowance resets.
 
+The exact accepted v99l private notebook
+[`pauloabelha/reflector-arc-agi-3-v99l`](https://www.kaggle.com/code/pauloabelha/reflector-arc-agi-3-v99l)
+version 1 also completed successfully and emitted the same 2,648-byte
+`submission.parquet`, SHA-256
+`71bfd543030e339d87bd9ff744d466218398a1259650b2c255626d27049c88bb`.
+Its competition request returned HTTP 400 because today's v74 submission had
+already consumed the UTC allowance. The post-request listing still contains
+only `55113224` and `55123277`, so Kaggle created **no v99l submission ID**.
+Submit this completed version 1 unchanged after the allowance resets.
+
 ## Current handoff and next research frontier
 
 The preregistered v99l offspring is a **preservation-verified 69-action
@@ -100,8 +110,8 @@ adding another game-specific detector:
 5. retain only sufficient causal statistics and counterexamples, compressing
    away raw histories once their predictions are subsumed.
 
-The immediate operational action is to publish and run the exact v99l Kaggle
-notebook, then submit it if the one-per-day slot is available. The immediate
+The immediate operational action is to submit completed v99l Kaggle notebook
+version 1 unchanged when the one-per-day slot resets. The immediate
 scientific action is to use its 156-action level-5 trace to learn a more
 general causal horizon/option representation without losing preservation.
 

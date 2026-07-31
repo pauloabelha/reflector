@@ -382,8 +382,14 @@ overlay `4612b3a9adcbd6fa366d10e6eeb25345c16784f36adce08f7b66e825739707e2`,
 and notebook `b62522c08d85802651dfd3bc57e62fde2006124a7f53bb2e0ec56fc52716ece2`.
 V99l is accepted as the minimal score-neutral efficiency successor to v99k.
 Accepted package commit is `4f6551f`.
-Publish and run the exact hashed notebook, then submit it if the daily slot is
-available.
+Exact private Kaggle notebook `pauloabelha/reflector-arc-agi-3-v99l` version 1
+completed and emitted a 2,648-byte `submission.parquet`, SHA-256
+`71bfd543030e339d87bd9ff744d466218398a1259650b2c255626d27049c88bb`.
+The exact competition request returned HTTP 400 because v74 submission
+`55123277` had consumed the UTC daily allowance. The post-request listing
+contains only v65b `55113224` and v74 `55123277`; Kaggle created no v99l
+submission ID. Submit completed version 1 unchanged after the allowance
+resets.
 
 ### V99m addendum: reset-scoped negative transition evidence (preregistered)
 

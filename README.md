@@ -73,6 +73,10 @@ v97 submission ID exists. Exact accepted v98 private notebook
 `pauloabelha/reflector-arc-agi-3-v98` version 1 completed and emitted
 `submission.parquet`; its competition request also returned HTTP 400 because
 the same daily allowance was occupied. No v98 submission ID exists yet.
+The exact accepted v99l private notebook
+`pauloabelha/reflector-arc-agi-3-v99l` version 1 completed and emitted a
+2,648-byte `submission.parquet`. Its competition request returned HTTP 400
+after v74 consumed the UTC daily allowance; no v99l submission ID exists.
 Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the

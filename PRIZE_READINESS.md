@@ -123,9 +123,13 @@ the subsequent submissions listing confirms that no v99k submission ID was
 created. Submit this already-completed version unchanged after the slot resets.
 
 The accepted v99l export passes byte-identical dual export, both
-network-disabled smoke paths, and the technical audit. Its exact notebook has
-not yet been committed on Kaggle; v99k remains the latest completed private
-notebook until that deployment finishes.
+network-disabled smoke paths, and the technical audit. Exact private notebook
+`pauloabelha/reflector-arc-agi-3-v99l` version 1 completed and emitted a
+2,648-byte `submission.parquet`, SHA-256
+`71bfd543030e339d87bd9ff744d466218398a1259650b2c255626d27049c88bb`.
+Its competition request returned HTTP 400 after v74 consumed the UTC daily
+allowance; the subsequent listing contains no v99l submission ID. Submit this
+completed version unchanged after the slot resets.
 
 ## Required account and publication actions
 
