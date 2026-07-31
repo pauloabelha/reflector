@@ -135,6 +135,20 @@ def test_infers_dihedral_targets_and_selected_slot() -> None:
     assert layout.selected_index == 0
 
 
+def test_retains_layout_when_selected_glyph_is_empty() -> None:
+    layout = infer_dihedral_analogy(
+        _panel(
+            selected=0,
+            first_answer=_mask("...", "...", "..."),
+            second_answer=_mask(".#.", "...", "..."),
+        )
+    )
+
+    assert layout is not None
+    assert not any(cell for row in layout.answer_tiles[0].mask for cell in row)
+    assert layout.selected_index == 0
+
+
 def test_concatenates_variable_length_demonstrated_outputs() -> None:
     layout = infer_dihedral_analogy(_sequence_panel())
 

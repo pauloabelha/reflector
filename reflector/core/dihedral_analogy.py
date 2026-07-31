@@ -73,7 +73,11 @@ def _framed_tiles(frame: Frame) -> tuple[GlyphTile, ...]:
                     for row in range(y + 1, y + size - 1)
                 )
                 colors = {cell for row in interior for cell in row}
-                if color not in colors or len(colors) != 2:
+                if len(colors) > 2:
+                    continue
+                if len(colors) == 2 and color not in colors:
+                    continue
+                if colors == {color}:
                     continue
                 mask = tuple(
                     tuple(cell == color for cell in row) for row in interior
@@ -89,10 +93,23 @@ def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
     rows: dict[tuple[int, int], list[GlyphTile]] = {}
     for tile in tiles:
         rows.setdefault((tile.y, tile.size), []).append(tile)
+    disjoint_rows: list[tuple[GlyphTile, ...]] = []
+    for items in rows.values():
+        disjoint: list[GlyphTile] = []
+        next_x = -1
+        for item in sorted(items, key=lambda candidate: candidate.x):
+            if item.x < next_x:
+                continue
+            disjoint.append(item)
+            next_x = item.x + item.size
+        if len(disjoint) >= 2:
+            disjoint_rows.append(tuple(disjoint))
     ordered_rows = tuple(
-        tuple(sorted(items, key=lambda item: item.x))
-        for (_key, items) in sorted(rows.items())
-        if len(items) >= 2
+        row
+        for row in sorted(
+            disjoint_rows,
+            key=lambda items: (items[0].y, items[0].size),
+        )
     )
     mixed_rows: list[tuple[GlyphTile, ...]] = []
     single_color_rows: list[tuple[GlyphTile, ...]] = []
