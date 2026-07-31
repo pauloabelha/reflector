@@ -24,31 +24,68 @@ generalization.
 - Branch: `codex/v74-fresh`
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
-- Last known participant-remote commit: `27f5ac5`
-- Accepted candidate: `candidate-42dbfa39cba78041`
-- Accepted agent: Reflector v92
-- Frozen inference source commit: `e03fb30`
-- Frozen candidate commit: `e03fb30`
+- Last pushed participant-remote commit: `5523abc`
+- Accepted candidate: `candidate-2d9cadd5859ce47d`
+- Accepted agent: Reflector v94b
+- Frozen inference source commit: `203fa2e`
+- Frozen candidate commit: `203fa2e`
 - Inference fingerprint:
-  `32462ddff38fa9ba86691e66601adcef93a9147e0b02e5f219433435f9f54c1f`
+  `80d2c3f7c3a1842fefd0b29fb43eb5968b61eecbc66e0462def3e6bee7dc1db8`
 - Verified public-development report:
-  `reports/official-isolated-v92-phase-topology-400.json`
-- Verified score: `20.561797304445623`
+  `reports/official-isolated-v94b-atomic-temporal-resource-400.json`
+- Verified score: `20.65827051873133`
 - Accepted coverage: 25/25 games, 9,185 actions
-- Verified completions: 48/183 levels across 15 games; 3/25 games complete
+- Verified completions: 49/183 levels across 15 games; 3/25 games complete
 - Kaggle submissions: v65b `55113224` complete at public score `0.02`; v74
   `55123277` pending
 - V84m Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v84m`, version 1,
   complete with `submission.parquet`; competition submission blocked by the
   already-consumed daily allowance, so no v84m submission ID exists
-- V92 Kaggle artifact: exact export and offline smoke pass; submission pending
-  the daily quota workflow in `KAGGLE.md`
-- Kaggle public score: `0.02` for v65b only; v74 pending; v92 unsubmitted
+- V94b Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v94b`, version 1,
+  complete with `submission.parquet`; competition submission was attempted but
+  blocked by the daily quota occupied by pending v74, so no v94b submission ID
+  exists
+- Kaggle public score: `0.02` for v65b only; v74 pending; v94b unsubmitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
 - Maintenance state: canonical code is organized under `reflector/core/`,
   `reflector/runtime/`, `reflector/research/`, and `reflector/evolution/`.
   Legacy top-level imports remain compatibility aliases.
+
+## Current experiment: v95 confirmed cross-level action algebra
+
+Parent: accepted v94b `candidate-2d9cadd5859ce47d`.
+
+The accepted trace conserves the same four primitive translations and the same
+25-cell colored-body partition through `ls20` levels 1--3, but v94b relearns
+the algebra after each level. This costs part of the 21-action temporal horizon
+and leaves only 143 actions for level 3.
+
+V95 retains a complete, grounded action algebra only as an inactive hypothesis.
+After the level transition it:
+
+1. waits through any whole-scene discontinuity;
+2. canonicalizes the mover's colored mask up to bijective color renaming;
+3. checks one mapped action against both the inherited partition signature and
+   inherited displacement;
+4. activates all laws only if that commuting square holds;
+5. rejects the inherited algebra atomically on either mismatch and learns only
+   the current observation.
+
+This is bounded knowledge compression with an explicit causal falsifier, not
+unconditional cross-level leakage. Unit and transformed controls pass; offline
+replay confirms that authority first becomes prospective on level 2, where it
+changes the next action with 15 inferred budget units remaining.
+
+Evaluation protocol:
+
+- freeze candidate `candidate-304a6d8e5158b3ae` and source fingerprint
+  `f4df3a58770ab1aa59a766a474aae74ceade91b7a6f36a8686f27d3b752e1362`;
+- run one fresh-process isolated `ls20` target;
+- reject or diagnose immediately if it regresses v94b's
+  `[17,240,143,0,0,0,0]`;
+- if it adds a level or materially improves efficiency, repeat exactly;
+- only then run accepted-win preservation and the full 25-game gate.
 
 ## Why the accepted agent wins what it wins
 

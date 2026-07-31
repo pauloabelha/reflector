@@ -32,6 +32,33 @@ the complete-suite gate pass. The final quality gate passes with 498 tests and
 smoke paths pass, and the technical prize audit is ready. V94b is the accepted
 local candidate.
 
+## Current bounded offspring: confirmed cross-level algebra compression
+
+V95 `candidate-304a6d8e5158b3ae` is a frozen experimental child of v94b.
+The accepted `ls20` recording shows that levels 1--3 preserve the same
+25-cell body partition and the same four action morphisms:
+`(0,-5)`, `(0,5)`, `(-5,0)`, and `(5,0)`. V94b nevertheless discards those
+laws at every level boundary and spends scarce temporal budget relearning
+them.
+
+V95 compresses the complete action algebra into a cross-level scheme
+hypothesis. It does not immediately reuse that knowledge. It waits through
+the scene discontinuity and grants authority only when one prospective
+intervention makes a commuting square: the new mover has the same partition
+signature up to bijective color renaming and the observed displacement equals
+the inherited law for that action. A mismatch rejects the whole transfer
+atomically and retains only the new current-level observation.
+
+This is a concrete synthesis of the requested ideas: Piagetian assimilation is
+prospective and falsifiable; Drescher-style scheme knowledge is compressed
+instead of copied as raw frames; the categorical test is commutation under a
+presentation-changing abstraction; and the HRL planner receives conserved
+primitive operators only after causal confirmation. The transformed controls
+and full local quality gate pass at **501 tests, 3 skips**, with Ruff and mypy
+clean. Offline replay reaches its first authority point on level 2 and changes
+the next action while 15 budget units remain. No score is claimed until the
+fresh-process isolated run completes.
+
 ## New accepted mechanism: phase-topology product planning
 
 V92 `candidate-42dbfa39cba78041` is the first accepted gain after v84m.

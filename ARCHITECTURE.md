@@ -465,6 +465,37 @@ orchestration, evolver, and CLI modules remain outside it.
 Future inference mechanisms must be added to the explicit overlay allowlist
 and pass its import closure test.
 
+## Prospective cross-level scheme transport
+
+`PhaseTopologyPlanner` may compress a fully evidenced primitive translation
+algebra at level progress, but the retained object is an inactive hypothesis.
+Operative anchors, paths, phase state, resources, traversability, and terminal
+beliefs are always cleared. This keeps hierarchical knowledge separated by
+scope: primitive causal laws may be conserved; episode-specific plans may not.
+
+The first ordinary rendered transition after the new scene stabilizes supplies
+a naturality test. The planner canonicalizes the moving body's colored mask as
+a coordinate-and-partition signature invariant to bijective color renaming,
+then compares the observed displacement with the inherited action morphism:
+
+```text
+previous colored body ── inherited action ──> translated previous body
+          │ partition renaming                         │ partition renaming
+          ▼                                            ▼
+new colored body ───── observed action ─────> translated new body
+```
+
+If the square commutes, the whole finite algebra becomes current-level
+authority and its evidence is conserved. If it does not, the inherited
+hypothesis is discarded atomically and only the observed current-level law is
+learned. Whole-scene discontinuities neither confirm nor reject it. Telemetry
+counts pending inherited laws, confirmations, and rejections.
+
+The resulting compression is deliberately weaker than cross-level policy
+transfer. It transports neither targets nor action sequences and contains no
+game identity, color, coordinate, route, or horizon constant. Its purpose is
+to reduce intervention cost while preserving causal falsifiability.
+
 ## Development control plane
 
 `MindConfig` is the deployable genome. It contains bounded booleans, planner

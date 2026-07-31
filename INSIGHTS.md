@@ -11,16 +11,16 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v92.
-- Accepted candidate: `candidate-42dbfa39cba78041`.
-- Local known-public-development score: **20.561797304445623 / 100**.
-- Progress: **48 / 183 levels across the 25 public-development games**.
+- Accepted agent: v94b.
+- Accepted candidate: `candidate-2d9cadd5859ce47d`.
+- Local known-public-development score: **20.65827051873133 / 100**.
+- Progress: **49 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
 - Total actions: **9,185**.
 - Kaggle submissions: v65b `55113224` complete and v74 `55123277` pending.
 - Kaggle public score: **0.02 for frozen v65b only**.
 - Kaggle private score: **unavailable**.
-- V92 is accepted. Relative to v84m, only `ls20` changes; all 24 other
+- V94b is accepted. Relative to v92, only `ls20` changes; all 24 other
   score/action vectors are exactly preserved.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
@@ -28,6 +28,36 @@ one-level accommodations on known public games. The central unsolved problem
 is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
+
+## 2026-07-31 — v95: knowledge compression must remain prospective
+
+The next useful abstraction is not another object type. It is conservation of
+an already falsifiable causal algebra across level boundaries. In v94b,
+`ls20` repeatedly presents the same 25-cell multicolor mover and the same four
+five-cell translations, but clearing all knowledge on progress forces the
+agent to relearn the primitive action category inside each short temporal
+horizon.
+
+V95 represents the previous level's complete algebra as a dormant scheme, not
+as authority. One intervention in the new level must make a commuting square:
+canonicalizing both movers up to color renaming yields the same partition, and
+the concrete action yields the same abstract displacement. Only then are all
+four laws transported. A mismatch destroys the entire inherited hypothesis
+and the observed transition starts a fresh current-level model.
+
+This gives “natural transformation” an operational meaning. Presentation can
+change in layout and color vocabulary while the action/abstraction square must
+commute. It also gives Piagetian conservation a safety condition: assimilation
+is a compressed prediction tested against reality, and accommodation is the
+smallest possible rollback. The HRL consequence is efficient reuse of
+primitive operators without inheriting a route, goal, resource schedule, or
+level solution.
+
+The mechanism passes recolored-positive, noncommuting-negative, and
+scene-discontinuity controls. The complete local gate is 501 passed and 3
+skipped with Ruff and mypy clean. Accepted-trace replay locates a prospective
+authority point in level 2 and predicts a behavior change; the fresh-process
+target remains the required causal test.
 
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 

@@ -11,6 +11,7 @@ type Frame = tuple[tuple[int, ...], ...]
 type Point = tuple[int, int]
 type Pattern = tuple[int, int, tuple[Point, ...]]
 type ResourceKey = tuple[int, tuple[int, int, int, int], tuple[Point, ...]]
+type MaskSignature = tuple[tuple[int, int, int], ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -282,6 +283,20 @@ def _resource_key(component: Component) -> ResourceKey:
     return component.color, component.bbox, component.shape
 
 
+def _partition_signature(
+    colored_mask: tuple[tuple[int, int, int], ...],
+) -> MaskSignature:
+    """Canonicalize a colored mask up to a bijective color renaming."""
+
+    classes: dict[int, int] = {}
+    signature = []
+    for x, y, color in sorted(colored_mask):
+        if color not in classes:
+            classes[color] = len(classes)
+        signature.append((x, y, classes[color]))
+    return tuple(signature)
+
+
 def _bbox_union(
     left: tuple[int, int, int, int] | None,
     right: tuple[int, int, int, int],
@@ -307,6 +322,11 @@ class PhaseTopologyPlanner:
     min_budget_evidence: int = 2
     action_effects: dict[int, Point] = field(default_factory=dict)
     action_evidence: Counter[int] = field(default_factory=Counter)
+    inherited_action_effects: dict[int, Point] = field(default_factory=dict)
+    inherited_action_evidence: Counter[int] = field(default_factory=Counter)
+    inherited_mask_signature: MaskSignature = ()
+    cross_level_transfer_confirmations: int = 0
+    cross_level_transfer_rejections: int = 0
     invalid_actions: set[int] = field(default_factory=set)
     colored_mask: tuple[tuple[int, int, int], ...] = ()
     current_anchor: Point | None = None
@@ -355,7 +375,19 @@ class PhaseTopologyPlanner:
     def body_colors(self) -> frozenset[int]:
         return frozenset(color for _x, _y, color in self.colored_mask)
 
-    def reset_level(self) -> None:
+    def reset_level(self, *, retain_action_algebra: bool = False) -> None:
+        if (
+            retain_action_algebra
+            and 4 <= len(self.action_effects) <= 8
+            and self.colored_mask
+        ):
+            self.inherited_action_effects = dict(self.action_effects)
+            self.inherited_action_evidence = Counter(self.action_evidence)
+            self.inherited_mask_signature = _partition_signature(self.colored_mask)
+        else:
+            self.inherited_action_effects.clear()
+            self.inherited_action_evidence.clear()
+            self.inherited_mask_signature = ()
         self.action_effects.clear()
         self.action_evidence.clear()
         self.invalid_actions.clear()
@@ -392,6 +424,46 @@ class PhaseTopologyPlanner:
         self.last_plan_length = 0
         self.diagnostic = "level-reset"
         self.cap_failure = None
+
+    def _clear_inherited_action_algebra(self) -> None:
+        self.inherited_action_effects.clear()
+        self.inherited_action_evidence.clear()
+        self.inherited_mask_signature = ()
+
+    def _consider_inherited_action_algebra(
+        self,
+        motion: RigidTranslation,
+        *,
+        action_id: int,
+    ) -> None:
+        """Prospectively confirm or reject a compressed cross-level scheme."""
+
+        if (
+            not self.inherited_action_effects
+            or action_id not in self.inherited_action_effects
+        ):
+            return
+        commutes = (
+            _partition_signature(motion.colored_mask) == self.inherited_mask_signature
+            and motion.displacement == self.inherited_action_effects[action_id]
+        )
+        if commutes:
+            self.action_effects = dict(self.inherited_action_effects)
+            self.action_evidence = Counter(
+                {
+                    inherited_action: max(
+                        1,
+                        self.inherited_action_evidence[inherited_action],
+                    )
+                    for inherited_action in self.inherited_action_effects
+                }
+            )
+            self.cross_level_transfer_confirmations += 1
+            self.diagnostic = "cross-level-action-algebra-confirmed"
+        else:
+            self.cross_level_transfer_rejections += 1
+            self.diagnostic = "cross-level-action-algebra-rejected"
+        self._clear_inherited_action_algebra()
 
     @property
     def remaining_budget(self) -> int | None:
@@ -654,6 +726,10 @@ class PhaseTopologyPlanner:
                 and not scene_discontinuity
                 and (not had_pending or predicted_transition)
             ):
+                self._consider_inherited_action_algebra(
+                    motion,
+                    action_id=action_id,
+                )
                 previous = self.action_effects.get(action_id)
                 if previous not in {None, motion.displacement}:
                     self.invalid_actions.add(action_id)

@@ -1378,7 +1378,7 @@ class EpistemicExplorer:
             self._reset_linear_track()
             self._reset_constellation_alignment(clear_controls=False)
             if self.phase_topology_planning:
-                self.phase_topology_planner.reset_level()
+                self.phase_topology_planner.reset_level(retain_action_algebra=True)
         elif observation.state == "GAME_OVER":
             self.level_start_state = None
             self._reset_finite_orbit(clear_trials=False)
@@ -13392,6 +13392,15 @@ class EpistemicExplorer:
             "phase_topology_enabled": int(self.phase_topology_planning),
             "phase_topology_grounded_actions": len(
                 self.phase_topology_planner.action_effects
+            ),
+            "phase_topology_inherited_action_hypotheses": len(
+                self.phase_topology_planner.inherited_action_effects
+            ),
+            "phase_topology_cross_level_transfer_confirmations": (
+                self.phase_topology_planner.cross_level_transfer_confirmations
+            ),
+            "phase_topology_cross_level_transfer_rejections": (
+                self.phase_topology_planner.cross_level_transfer_rejections
             ),
             "phase_topology_body_grounded": int(
                 bool(self.phase_topology_planner.colored_mask)
