@@ -214,16 +214,22 @@ def test_finite_orbit_composes_inverse_pair_with_silent_controls() -> None:
     silent_one = ActionToken(1)
     silent_two = ActionToken(4)
     tokens = (silent_one, generator, inverse, silent_two)
-    explorer.edges = {
-        (first, generator): second,
-        (second, inverse): first,
-        (first, silent_one): first,
-        (first, silent_two): first,
+    first_frame = _frame(((1, 2, 3),))
+    second_frame = _frame(((3, 2, 3),))
+    first_orbit = explorer._compact_component_state_digest(first_frame)
+    second_orbit = explorer._compact_component_state_digest(second_frame)
+    explorer.selection_frame = first_frame
+    explorer.finite_orbit_edges = {
+        (first_orbit, generator): second_orbit,
+        (second_orbit, inverse): first_orbit,
+        (first_orbit, silent_one): first_orbit,
+        (first_orbit, silent_two): first_orbit,
     }
     explorer.attempts[(first, silent_one)] = 1
     explorer.attempts[(first, silent_two)] = 1
 
     assert explorer._select_finite_orbit_commit(first, tokens) == generator
+    explorer.selection_frame = second_frame
     first_commit = explorer._select_finite_orbit_commit(second, tokens)
     assert first_commit == silent_one
     explorer.attempts[(second, first_commit)] += 1

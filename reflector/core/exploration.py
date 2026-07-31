@@ -525,7 +525,11 @@ class EpistemicExplorer:
     finite_orbit_generator: ActionToken | None = None
     finite_orbit_inverse: ActionToken | None = None
     finite_orbit_commit_tokens: tuple[ActionToken, ...] = ()
-    finite_orbit_expanded_states: set[StateKey] = field(
+    finite_orbit_edges: dict[tuple[str, ActionToken], str] = field(
+        default_factory=dict,
+        repr=False,
+    )
+    finite_orbit_expanded_states: set[str] = field(
         default_factory=set,
         repr=False,
     )
@@ -1244,6 +1248,18 @@ class EpistemicExplorer:
             self.current_level is not None
             and observation.levels_completed > self.current_level
         )
+        if (
+            self.finite_orbit_commit_exploration
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+            and not progressed
+            and len(self.finite_orbit_edges) < 128
+        ):
+            source = self._compact_component_state_digest(before)
+            destination = self._compact_component_state_digest(after)
+            self.finite_orbit_edges[(source, pending_token)] = destination
         if (
             self.boundary_nuisance_state_key
             and pending_token is not None
@@ -5547,6 +5563,7 @@ class EpistemicExplorer:
         if clear_trials:
             self.finite_orbit_selections = 0
             self.finite_orbit_commit_trials = 0
+            self.finite_orbit_edges.clear()
 
     def _select_finite_orbit_commit(
         self,
@@ -5566,6 +5583,9 @@ class EpistemicExplorer:
             if not token.data
             and token.action_id not in {self.reset_action, self.complex_action}
         )
+        orbit_state = self._compact_component_state_digest(
+            self.selection_frame
+        )
         if self.finite_orbit_generator is None:
             groundings: list[
                 tuple[
@@ -5575,19 +5595,25 @@ class EpistemicExplorer:
                 ]
             ] = []
             for generator in represented:
-                destination = self.edges.get((state, generator))
-                if destination is None or destination == state:
+                destination = self.finite_orbit_edges.get(
+                    (orbit_state, generator)
+                )
+                if destination is None or destination == orbit_state:
                     continue
                 for inverse in represented:
                     if inverse == generator:
                         continue
-                    if self.edges.get((destination, inverse)) != state:
+                    if (
+                        self.finite_orbit_edges.get((destination, inverse))
+                        != orbit_state
+                    ):
                         continue
                     commits = tuple(
                         token
                         for token in represented
                         if token not in {generator, inverse}
-                        and self.edges.get((state, token)) == state
+                        and self.finite_orbit_edges.get((orbit_state, token))
+                        == orbit_state
                     )
                     if len(commits) >= 2:
                         groundings.append((generator, inverse, commits))
@@ -5612,7 +5638,7 @@ class EpistemicExplorer:
                     "testing-silent-control-at-orbit-state"
                 )
                 return commit
-        if state in self.finite_orbit_expanded_states:
+        if orbit_state in self.finite_orbit_expanded_states:
             self.finite_orbit_diagnostic = "finite-orbit-closed"
             return None
         if len(self.finite_orbit_expanded_states) >= 16:
@@ -5622,7 +5648,7 @@ class EpistemicExplorer:
         if generator not in represented:
             self.finite_orbit_diagnostic = "generator-not-represented"
             return None
-        self.finite_orbit_expanded_states.add(state)
+        self.finite_orbit_expanded_states.add(orbit_state)
         self.finite_orbit_selections += 1
         self.finite_orbit_diagnostic = "advancing-finite-selector-orbit"
         return generator
