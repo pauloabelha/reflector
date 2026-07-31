@@ -25,23 +25,26 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed participant-remote commit: `5523abc`
-- Accepted candidate: `candidate-2d9cadd5859ce47d`
-- Accepted agent: Reflector v94b
-- Frozen inference source commit: `203fa2e`
-- Frozen candidate commit: `203fa2e`
+- Accepted candidate: `candidate-e59a92e72fbd1aef`
+- Accepted agent: Reflector v97
+- Frozen inference source commit: `b8677a2`
+- Frozen candidate commit: `b8677a2`
 - Inference fingerprint:
-  `80d2c3f7c3a1842fefd0b29fb43eb5968b61eecbc66e0462def3e6bee7dc1db8`
+  `b06553316290d3e83db6d2d72c0c0c54daf16ecda152a571d25368d84f10f258`
 - Verified public-development report:
-  `reports/official-isolated-v94b-atomic-temporal-resource-400.json`
-- Verified score: `20.65827051873133`
+  `reports/official-isolated-v97-retry-action-algebra-400.json`
+- Verified score: `20.847511590159908`
 - Accepted coverage: 25/25 games, 9,185 actions
 - Verified completions: 49/183 levels across 15 games; 3/25 games complete
-- V97 promotion candidate: `candidate-e59a92e72fbd1aef`, frozen source
-  `b8677a2`, fingerprint
-  `b06553316290d3e83db6d2d72c0c0c54daf16ecda152a571d25368d84f10f258`
 - V97 complete-suite result:
   `20.847511590159908`, 49/183 levels, 25/25 coverage, 9,185 actions;
   all 24 non-target vectors exact versus v94b
+- V97 exact export hashes: candidate
+  `2af160b278eaf5e00d374957c792fac7f45315550939d0ea68fc1fa864919841`,
+  overlay
+  `50563ae0c0bd29042c574abc0792c6c9c2381b1ea3dc68c6b4664fc539c11ab0`,
+  notebook
+  `5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`
 - Kaggle submissions: v65b `55113224` complete at public score `0.02`; v74
   `55123277` pending
 - V84m Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v84m`, version 1,
@@ -181,6 +184,12 @@ The complete suite passes exactly. V97 scores `20.847511590159908`, a
 3 complete games, and 9,185 actions. Only `ls20` changes. Finish exact export,
 both network-disabled smoke paths, and the technical prize audit before
 changing the accepted artifact state from v94b to v97.
+
+Those artifact gates pass. Two exports reproduce the overlay and notebook
+hashes byte-for-byte, both smoke paths select a legal action inside the
+network-disabled official fixture, and the audit reports
+`technical_ready: true`. V97 is accepted. Build and submit the exact hashed
+notebook through the quota-aware workflow in `KAGGLE.md`.
 
 ## Why the accepted agent wins what it wins
 

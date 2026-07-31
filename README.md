@@ -23,29 +23,29 @@ Last verified: 2026-07-31
 > It has solved **49 of 183 levels across 15 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | v94b full-suite result |
+| Metric | v97 full-suite result |
 | --- | ---: |
 | Complete games beaten | **3 / 25** |
 | Games with at least one solved level | **15 / 25** |
 | Levels solved | **49 / 183** |
-| Official local score | **20.65827051873133 / 100** |
+| Official local score | **20.847511590159908 / 100** |
 | Games evaluated | **25 / 25** |
 | Total actions | **9,185** |
-| Frozen inference source | `203fa2e` |
-| Frozen candidate commit | `203fa2e` |
-| Candidate | `candidate-2d9cadd5859ce47d` |
+| Frozen inference source | `b8677a2` |
+| Frozen candidate commit | `b8677a2` |
+| Candidate | `candidate-e59a92e72fbd1aef` |
 | Kaggle submissions | **2**: `55113224` complete; `55123277` pending |
 | Kaggle public score | **0.02** for frozen v65b only |
 | Kaggle private score | **unavailable** |
 
-The score is about **20.66% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. Relative to v92,
-v94b adds `ls20` level 2 by learning a depleting action meter, same-role reset
-resources, and an atomic resource option over the product of anchor, display
-phase, budget, and available resources. All other 24 score/action vectors are
-exactly preserved. The clean
+The score is about **20.85% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. Relative to v94b,
+v97 conserves a complete primitive action algebra across an explicit
+same-level retry only after a fresh commuting transition. This removes one
+failed `ls20` retry and improves level 2 from 240 to 112 actions. All other 24
+score/action/reset vectors are exactly preserved. The clean
 process-isolated result is in
-[the v94b public-development report](reports/official-isolated-v94b-atomic-temporal-resource-400.json).
+[the v97 public-development report](reports/official-isolated-v97-retry-action-algebra-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -64,12 +64,13 @@ The exact private v92 notebook
 still occupies the one-per-day allowance. The exact accepted v94b notebook
 `pauloabelha/reflector-arc-agi-3-v94b` version 1 also completed and emitted
 `submission.parquet`; its submission request received the same quota rejection.
-No v92 or v94b submission ID exists yet.
+No v92 or v94b submission ID exists yet. The exact accepted v97 artifact is
+ready for the next quota-aware Kaggle notebook commit and submission.
 Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
-do not report the local 20.66 score as a Kaggle public or private score.
+do not report the local 20.85 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object

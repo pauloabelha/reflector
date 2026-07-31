@@ -2,16 +2,16 @@
 
 Audit date: 2026-07-31.
 
-Current accepted export: v94b
-`candidate-2d9cadd5859ce47d`, local public-development score
-`20.65827051873133 / 100`. Exact SHA-256 values:
+Current accepted export: v97
+`candidate-e59a92e72fbd1aef`, local public-development score
+`20.847511590159908 / 100`. Exact SHA-256 values:
 
 - candidate:
-  `0432087230ed083c9410fa94de367c38a536bcb4c565f8f7b160992bad3f28d5`;
+  `2af160b278eaf5e00d374957c792fac7f45315550939d0ea68fc1fa864919841`;
 - overlay:
-  `f676d8294f49cfa8c0152aa524021c6175ee10c4f51093d09b95e8208c40d047`;
+  `50563ae0c0bd29042c574abc0792c6c9c2381b1ea3dc68c6b4664fc539c11ab0`;
 - notebook:
-  `585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219`.
+  `5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`.
 
 This is local evidence, not a Kaggle public or private score.
 
@@ -22,7 +22,7 @@ Submission status, 2026-07-31 UTC:
 - its competition submission request returned HTTP 400 because v74 submission
   `55123277` had already consumed the one-per-day allowance and is pending;
 - no v84m competition submission ID exists yet;
-- v94b is now the accepted local package and its exact notebook is ready for a
+- v97 is now the accepted local package and its exact notebook is ready for a
   new Kaggle commit/submission when the daily allowance permits;
 - private notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed
   successfully and emitted `submission.parquet`;
@@ -33,6 +33,9 @@ Submission status, 2026-07-31 UTC:
 - its competition submission request returned HTTP 400 while v74 remains
   pending and occupies the UTC daily allowance, so no v94b submission ID
   exists yet;
+- the exact v97 export passes two deterministic exports, both network-disabled
+  smoke paths, and the technical prize audit; its Kaggle notebook
+  `pauloabelha/reflector-arc-agi-3-v97` is the next commit/submission target;
 - historical v65b submission `55113224` is complete with Kaggle public score
   `0.02`; the private score remains unavailable.
 

@@ -27,8 +27,15 @@ It identifies report source commit `872b1b6`, frozen inference/candidate commit
 `b8677a2`, candidate `candidate-e59a92e72fbd1aef`, and inference fingerprint
 `b06553316290d3e83db6d2d72c0c0c54daf16ecda152a571d25368d84f10f258`.
 The complete quality gate passes with 504 tests, 3 skips, Ruff, and mypy.
-Exact export, network-disabled smoke, and technical prize audit are pending;
-v94b remains the fully artifact-gated package until those checks pass.
+Two exact exports reproduce byte-for-byte, both network-disabled smoke paths
+pass, and the technical prize audit reports `technical_ready: true`. Exact
+SHA-256 values are candidate
+`2af160b278eaf5e00d374957c792fac7f45315550939d0ea68fc1fa864919841`,
+overlay
+`50563ae0c0bd29042c574abc0792c6c9c2381b1ea3dc68c6b4664fc539c11ab0`,
+and notebook
+`5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`.
+V97 is accepted.
 
 ## Evaluation surfaces
 
@@ -52,7 +59,7 @@ v94b remains the fully artifact-gated package until those checks pass.
 | Target-only `ls20` reruns | v94b atomic temporal-resource option, provisional gain | **5.9832589286 for one game** | **2/7** at exact `[17,240,143,0,0,0,0]` twice, with four resets each | deterministic first autonomous level-2 gain; preservation pending |
 | Process-isolated accepted-win preservation gate | v94b atomic temporal-resource option, promotion candidate | **34.4304508646 gate mean** | 49 levels in 5,185 actions; all 14 non-`ls20` vectors exactly preserve v92, while `ls20` alone gains level 2 | target attribution and non-regression pass; complete 25-game run pending |
 | Complete process-isolated 25-game suite | v94b atomic temporal-resource option, accepted | **20.6582705187 / 100** | 49/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v92 | all promotion, quality, and exact-export gates pass |
-| Complete process-isolated 25-game suite | v97 prospective retry-scoped algebra, promotion candidate | **20.8475115902 / 100** | 49/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v94b | target repeat, preservation, full-suite, and quality gates pass; artifact gates pending |
+| Complete process-isolated 25-game suite | v97 prospective retry-scoped algebra, accepted | **20.8475115902 / 100** | 49/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v94b | all promotion, quality, exact-export, smoke, and technical audit gates pass |
 | Target-only `ls20` run | v95 prospectively confirmed cross-level algebra, rejected | **5.5155319371 for one game** | 2/7 at `[17,277,106,0,0,0,0]`; two algebra transfers confirmed and zero rejected | correct primitive transfer prematurely licensed a reset before local operator evidence, lengthening the first retry by 37 actions; v94b remains accepted |
 | Target-only `ls20` run | v96 fibered action authority, safe but not promoted | **5.9832589286 for one game** | exact accepted 2/7 at `[17,240,143,0,0,0,0]`; transferred navigation active, reset scheduling withheld until local operator evidence | removes v95 regression but adds no level or efficiency; explicit retries still clear the algebra |
 | Target-only `ls20` reruns | v97 prospective retry-scoped algebra, provisional gain | **10.7142857143 for one game** | exact 2/7 at `[17,112,271,0,0,0,0]` twice; two cross-level and one retry transfer confirmed with zero rejections per run | deterministic 128-action level-2 efficiency gain; preservation pending |

@@ -27,10 +27,15 @@ but improves from `[17,240,143,0,0,0,0]` to
 **`[17,112,271,0,0,0,0]`**; all other 24 score/action/reset vectors and the
 9,185-action total are exactly preserved. The aggregate gain is
 **+0.18924107142857594 points**. Target repeat, accepted-win preservation, the
-complete-suite gate, and the 504-test quality gate pass. Exact export, offline
-smoke, and prize audit are the remaining promotion checks; until they pass,
-v97 is the verified local champion and v94b remains the fully artifact-gated
-accepted package.
+complete-suite gate, and the 504-test quality gate pass. Exact export
+reproduces byte-for-byte, both network-disabled smoke paths pass, and the prize
+audit reports `technical_ready: true`. V97 is the accepted local package.
+Exact artifact SHA-256 values are candidate
+`2af160b278eaf5e00d374957c792fac7f45315550939d0ea68fc1fa864919841`,
+overlay
+`50563ae0c0bd29042c574abc0792c6c9c2381b1ea3dc68c6b4664fc539c11ab0`,
+and notebook
+`5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`.
 
 ## Rejected offspring: cross-level algebra was natural but not sufficient
 

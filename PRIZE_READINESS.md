@@ -19,8 +19,8 @@ distinct symbolic thesis, an operative implementation, deterministic traces,
 ablation machinery, and explicit approximations. It does **not** yet have
 enough multi-game evidence for a prize-quality paper.
 
-The current accepted v94b public-development result is
-`20.65827051873133/100`: 49/183 levels across 15/25 games, with `sb26`,
+The current accepted v97 public-development result is
+`20.847511590159908/100`: 49/183 levels across 15/25 games, with `sb26`,
 `ft09`, and `cd82` fully completed. This is materially stronger than fixture-only
 compatibility but remains known-public development evidence, not a Kaggle
 leaderboard result or a competitive hidden-game claim.
@@ -80,20 +80,20 @@ Reflector:
 - discloses that the symbolic model has parameters but no weights.
 
 The accepted inference package is frozen at source/candidate commit
-`203fa2e`, candidate `candidate-2d9cadd5859ce47d`. Its exact 25-game
+`b8677a2`, candidate `candidate-e59a92e72fbd1aef`. Its exact 25-game
 scorecard has complete 25/25
 coverage; its target repeats, 15-game preservation gate, full suite,
 pytest, Ruff, mypy, direct export, both network-disabled smoke paths, and
 technical prize audit pass. Exact current artifact hashes are:
 
 - candidate:
-  `0432087230ed083c9410fa94de367c38a536bcb4c565f8f7b160992bad3f28d5`;
+  `2af160b278eaf5e00d374957c792fac7f45315550939d0ea68fc1fa864919841`;
 - Kaggle overlay:
-  `f676d8294f49cfa8c0152aa524021c6175ee10c4f51093d09b95e8208c40d047`;
+  `50563ae0c0bd29042c574abc0792c6c9c2381b1ea3dc68c6b4664fc539c11ab0`;
 - Kaggle notebook:
-  `585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219`;
+  `5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`;
 - accepted 25-game report:
-  `8e75171f64ad6879ba1f9298fa32fa66a5b714772382b7baf1c8b77956d97c6e`.
+  `918090d57d8a7547285d1b91dfebd968732482c076f055c7eecc5d003da9caee`.
 
 `technical_ready` is true. `prize_ready` remains false because the account,
 publication, and committed Kaggle-rerun gates below are manual.

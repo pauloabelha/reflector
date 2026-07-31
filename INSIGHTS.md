@@ -11,8 +11,7 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Fully artifact-gated accepted agent: v94b.
-- Verified local promotion candidate: v97
+- Fully artifact-gated accepted agent: v97
   `candidate-e59a92e72fbd1aef`.
 - Local known-public-development score: **20.847511590159908 / 100**.
 - Progress: **49 / 183 levels across the 25 public-development games**.
