@@ -131,7 +131,7 @@ def test_infers_dihedral_targets_and_selected_slot() -> None:
 
     assert layout is not None
     assert len(layout.query_tiles) == len(layout.answer_tiles) == 2
-    assert all(1 <= len(targets) <= 2 for targets in layout.targets)
+    assert all(1 <= len(targets) <= 8 for targets in layout.targets)
     assert layout.selected_index == 0
 
 

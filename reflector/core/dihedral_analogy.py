@@ -83,7 +83,7 @@ def _framed_tiles(frame: Frame) -> tuple[GlyphTile, ...]:
 
 
 def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
-    """Ground demonstrations, queries, targets, and the active answer slot."""
+    """Ground class-valued demonstrations, queries, and the active answer."""
 
     tiles = _framed_tiles(frame)
     rows: dict[tuple[int, int], list[GlyphTile]] = {}
@@ -154,40 +154,17 @@ def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
             target_groups: list[tuple[frozenset[Mask], ...]] = []
             valid = True
             for query_tile in query:
-                matching_sequences: list[tuple[Mask, ...]] = []
-                matched_inputs = 0
+                matching_outputs: list[tuple[GlyphTile, ...]] = []
                 for source, outputs in relevant:
-                    local: list[tuple[Mask, ...]] = []
-                    output_variants = tuple(
-                        dihedral_variants(item.mask) for item in outputs
-                    )
-                    for transform_index, transformed_source in enumerate(
-                        dihedral_variants(source.mask)
-                    ):
-                        if transformed_source == query_tile.mask:
-                            local.append(
-                                tuple(
-                                    variants[transform_index]
-                                    for variants in output_variants
-                                )
-                            )
-                    if local:
-                        matched_inputs += 1
-                        matching_sequences.extend(local)
-                if matched_inputs != 1 or not matching_sequences:
-                    valid = False
-                    break
-                lengths = {len(sequence) for sequence in matching_sequences}
-                if len(lengths) != 1:
+                    if query_tile.mask in dihedral_variants(source.mask):
+                        matching_outputs.append(outputs)
+                if len(matching_outputs) != 1:
                     valid = False
                     break
                 target_groups.append(
                     tuple(
-                        frozenset(
-                            sequence[index]
-                            for sequence in matching_sequences
-                        )
-                        for index in range(lengths.pop())
+                        frozenset(dihedral_variants(output.mask))
+                        for output in matching_outputs[0]
                     )
                 )
             targets = tuple(
