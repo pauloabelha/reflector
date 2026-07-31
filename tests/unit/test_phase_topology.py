@@ -844,6 +844,127 @@ def test_cross_level_action_algebra_rejects_noncommuting_action() -> None:
     assert planner.diagnostic == "cross-level-action-algebra-rejected"
 
 
+def _retained_probe_planner() -> PhaseTopologyPlanner:
+    effects = {1: (0, -5), 2: (0, 5), 3: (-5, 0), 4: (5, 0)}
+    planner = PhaseTopologyPlanner(
+        action_effects=dict(effects),
+        action_evidence=Counter({action_id: 3 for action_id in effects}),
+        colored_mask=tuple(
+            (x, y, 9 if x < 2 else 12) for x in range(4) for y in range(4)
+        ),
+        traversable_colors={3},
+    )
+    planner.reset_level(retain_action_algebra=True)
+    return planner
+
+
+def test_inherited_naturality_probe_relocates_recolored_body_on_substrate() -> (
+    None
+):
+    planner = _retained_probe_planner()
+    frame = _frame(28, 24, color=3)
+    _paint_body(frame, (8, 8), left_color=2, right_color=11)
+    for y in range(13, 17):
+        for x in range(8, 12):
+            frame[y][x] = 6
+
+    selected = planner.select(_freeze(frame), (1, 2, 3, 4))
+
+    assert selected == 1
+    assert planner.inherited_probe_actions == {1}
+    assert planner.transfer_probe_selections == 1
+    assert planner.action_effects == {}
+    assert planner.diagnostic == "executing-inherited-naturality-probe"
+
+
+def test_inherited_naturality_probe_abstains_without_unique_supported_square() -> (
+    None
+):
+    ambiguous = _retained_probe_planner()
+    duplicate = _frame(32, 24, color=3)
+    _paint_body(duplicate, (3, 8), left_color=2, right_color=11)
+    _paint_body(duplicate, (20, 8), left_color=7, right_color=13)
+
+    recolored_substrate = _retained_probe_planner()
+    recolored = _frame(28, 24, color=6)
+    _paint_body(recolored, (8, 8), left_color=2, right_color=11)
+
+    outside = _retained_probe_planner()
+    boundary = _frame(28, 24, color=3)
+    _paint_body(boundary, (8, 0), left_color=2, right_color=11)
+
+    assert ambiguous.select(_freeze(duplicate), (1, 2, 3, 4)) is None
+    assert recolored_substrate.select(_freeze(recolored), (1, 2, 3, 4)) is None
+    assert outside.select(_freeze(boundary), (1,)) is None
+    assert ambiguous.inherited_probe_actions == set()
+    assert recolored_substrate.inherited_probe_actions == set()
+    assert outside.inherited_probe_actions == set()
+
+
+def test_failed_inherited_probe_is_not_repeated() -> None:
+    planner = _retained_probe_planner()
+    frame = _frame(28, 24, color=3)
+    _paint_body(frame, (8, 8), left_color=2, right_color=11)
+
+    first = planner.select(_freeze(frame), (1, 2, 3, 4))
+    second = planner.select(_freeze(frame), (1, 2, 3, 4))
+
+    assert first == 1
+    assert second == 2
+    assert planner.inherited_probe_actions == {1, 2}
+    assert planner.action_effects == {}
+
+
+def test_commuting_naturality_probe_activates_inherited_algebra() -> None:
+    planner = _retained_probe_planner()
+    before = _frame(28, 24, color=3)
+    after = _frame(28, 24, color=3)
+    _paint_body(before, (8, 8), left_color=2, right_color=11)
+    _paint_body(after, (8, 3), left_color=2, right_color=11)
+
+    selected = planner.select(_freeze(before), (1, 2, 3, 4))
+    planner.observe(
+        _freeze(before),
+        _freeze(after),
+        action_id=selected or 0,
+        progressed=False,
+    )
+
+    assert selected == 1
+    assert planner.action_effects == {
+        1: (0, -5),
+        2: (0, 5),
+        3: (-5, 0),
+        4: (5, 0),
+    }
+    assert planner.cross_level_transfer_confirmations == 1
+    assert planner.transferred_action_algebra_active
+    assert planner.inherited_traversable_colors == frozenset()
+    assert planner.inherited_probe_actions == set()
+
+
+def test_noncommuting_naturality_probe_rejects_inherited_algebra() -> None:
+    planner = _retained_probe_planner()
+    before = _frame(28, 24, color=3)
+    after = _frame(28, 24, color=3)
+    _paint_body(before, (8, 8), left_color=2, right_color=11)
+    _paint_body(after, (8, 13), left_color=2, right_color=11)
+
+    selected = planner.select(_freeze(before), (1, 2, 3, 4))
+    planner.observe(
+        _freeze(before),
+        _freeze(after),
+        action_id=selected or 0,
+        progressed=False,
+    )
+
+    assert selected == 1
+    assert planner.action_effects == {1: (0, 5)}
+    assert planner.cross_level_transfer_rejections == 1
+    assert not planner.transferred_action_algebra_active
+    assert planner.inherited_action_effects == {}
+
+
 def test_cross_level_hypothesis_waits_through_scene_discontinuity() -> None:
     effects = {1: (0, -5), 2: (0, 5), 3: (-5, 0), 4: (5, 0)}
     planner = PhaseTopologyPlanner(

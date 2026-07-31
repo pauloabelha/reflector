@@ -474,9 +474,12 @@ class PhaseTopologyPlanner:
     inherited_action_effects: dict[int, Point] = field(default_factory=dict)
     inherited_action_evidence: Counter[int] = field(default_factory=Counter)
     inherited_mask_signature: MaskSignature = ()
+    inherited_traversable_colors: frozenset[int] = frozenset()
+    inherited_probe_actions: set[int] = field(default_factory=set)
     inherited_action_algebra_scope: RetentionScope | None = None
     transferred_action_algebra_active: bool = False
     active_action_algebra_scope: RetentionScope | None = None
+    transfer_probe_selections: int = 0
     cross_level_transfer_confirmations: int = 0
     cross_level_transfer_rejections: int = 0
     retry_transfer_confirmations: int = 0
@@ -549,20 +552,26 @@ class PhaseTopologyPlanner:
     ) -> None:
         self.transferred_action_algebra_active = False
         self.active_action_algebra_scope = None
-        if (
+        retain_supported = (
             retain_action_algebra
             and 4 <= len(self.action_effects) <= 8
-            and self.colored_mask
-        ):
+            and bool(self.colored_mask)
+        )
+        if retain_supported:
             self.inherited_action_effects = dict(self.action_effects)
             self.inherited_action_evidence = Counter(self.action_evidence)
             self.inherited_mask_signature = _partition_signature(self.colored_mask)
+            self.inherited_traversable_colors = frozenset(
+                self.traversable_colors
+            )
             self.inherited_action_algebra_scope = retention_scope
         else:
             self.inherited_action_effects.clear()
             self.inherited_action_evidence.clear()
             self.inherited_mask_signature = ()
+            self.inherited_traversable_colors = frozenset()
             self.inherited_action_algebra_scope = None
+        self.inherited_probe_actions.clear()
         self.action_effects.clear()
         self.action_evidence.clear()
         self.invalid_actions.clear()
@@ -614,7 +623,115 @@ class PhaseTopologyPlanner:
         self.inherited_action_effects.clear()
         self.inherited_action_evidence.clear()
         self.inherited_mask_signature = ()
+        self.inherited_traversable_colors = frozenset()
+        self.inherited_probe_actions.clear()
         self.inherited_action_algebra_scope = None
+
+    def _locate_inherited_body(
+        self,
+        frame: Frame,
+    ) -> tuple[Point, tuple[tuple[int, int, int], ...]] | None:
+        """Relocate one retained color partition from exact components."""
+
+        if not self.inherited_mask_signature:
+            return None
+        partition: dict[int, list[Point]] = defaultdict(list)
+        for x, y, color_class in self.inherited_mask_signature:
+            partition[color_class].append((x, y))
+        base_class = min(partition)
+        base = partition[base_class]
+        base_min_x = min(x for x, _y in base)
+        base_min_y = min(y for _x, y in base)
+        base_shape = tuple(
+            sorted((x - base_min_x, y - base_min_y) for x, y in base)
+        )
+        frame_components = components(frame)
+        component_by_cell = {
+            cell: component
+            for component in frame_components
+            for cell in component.cells
+        }
+        matches: list[tuple[Point, tuple[tuple[int, int, int], ...]]] = []
+        for component in frame_components:
+            if component.shape != base_shape:
+                continue
+            anchor = (
+                component.origin[0] - base_min_x,
+                component.origin[1] - base_min_y,
+            )
+            class_colors: dict[int, int] = {}
+            valid = True
+            for color_class, local_cells in sorted(partition.items()):
+                absolute_cells = {
+                    (anchor[0] + x, anchor[1] + y)
+                    for x, y in local_cells
+                }
+                witness = component_by_cell.get(next(iter(absolute_cells)))
+                if witness is None or set(witness.cells) != absolute_cells:
+                    valid = False
+                    break
+                class_colors[color_class] = witness.color
+            if not valid or len(class_colors) != len(set(class_colors.values())):
+                continue
+            colored_mask = tuple(
+                (x, y, class_colors[color_class])
+                for x, y, color_class in self.inherited_mask_signature
+            )
+            matches.append((anchor, colored_mask))
+        return matches[0] if len(matches) == 1 else None
+
+    def _select_inherited_probe(
+        self,
+        frame: Frame,
+        legal_action_ids: tuple[int, ...],
+    ) -> int | None:
+        """Prospectively test one inherited morphism on known substrate."""
+
+        if (
+            self.action_effects
+            or not self.inherited_action_effects
+            or not self.inherited_traversable_colors
+        ):
+            return None
+        located = self._locate_inherited_body(frame)
+        if located is None:
+            return None
+        anchor, colored_mask = located
+        mask = tuple((x, y) for x, y, _color in colored_mask)
+        occupied = {(anchor[0] + x, anchor[1] + y) for x, y in mask}
+        candidates = []
+        for action_id, (dx, dy) in sorted(self.inherited_action_effects.items()):
+            if (
+                action_id not in legal_action_ids
+                or action_id in self.inherited_probe_actions
+            ):
+                continue
+            destination = anchor[0] + dx, anchor[1] + dy
+            entering = tuple(
+                (destination[0] + x, destination[1] + y)
+                for x, y in mask
+                if (destination[0] + x, destination[1] + y) not in occupied
+            )
+            if not entering or any(
+                not (0 <= y < len(frame) and 0 <= x < len(frame[y]))
+                for x, y in entering
+            ):
+                continue
+            if all(
+                frame[y][x] in self.inherited_traversable_colors
+                for x, y in entering
+            ):
+                candidates.append(action_id)
+        if not candidates:
+            return None
+        selected = min(candidates)
+        self.inherited_probe_actions.add(selected)
+        self.transfer_probe_selections += 1
+        self.selections += 1
+        self.compilations += 1
+        self.last_plan_length = 1
+        self.diagnostic = "executing-inherited-naturality-probe"
+        return selected
 
     def _consider_inherited_action_algebra(
         self,
@@ -1755,6 +1872,12 @@ class PhaseTopologyPlanner:
         if self.selections >= self.max_plan_selections:
             self.diagnostic = "plan-selection-cap"
             return None
+        inherited_probe = self._select_inherited_probe(
+            frame,
+            legal_action_ids,
+        )
+        if inherited_probe is not None:
+            return inherited_probe
         if (
             not self.colored_mask
             or self.current_anchor is None

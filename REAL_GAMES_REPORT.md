@@ -47,6 +47,8 @@ quota-blocked and created no submission ID.
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
+| Target-only `ls20` reruns | v99l prospective naturality probe, preservation-verified efficiency gain | **30.3413138108 for one game** | exact 4/7 at `[17,45,49,133,156,0,0,0]` twice; same completed levels as v99k, but the four-level prefix falls from 313 to 244 actions | scorecards `2da21321-b2da-4298-b4cb-937f647fc5c7` and `a4dc3cf8-9139-43d9-a9ee-1497dd10f1a2`; deterministic 69-action prefix gain |
+| Process-isolated accepted-progress preservation gate | v99l prospective naturality probe, promotion candidate | **36.0543211900 gate mean** | 51 levels in 5,185 actions; all 14 non-`ls20` signatures exactly preserve v99k; `ls20` keeps 4/7, shortens its completed prefix by 69 actions, and uses one fewer reset | target attribution and non-regression pass; complete frozen 25-game gate pending |
 | Process-isolated official local suite | v92 accepted | **20.5617973044 / 100** | 3 games beaten; 48/183 levels across 15 games; 9,185 actions | exact v84m preservation on 24/24 non-target games; full quality/export/smoke gates; 25/25 coverage |
 | Process-isolated official local suite | v84m former accepted parent | **20.4189401616 / 100** | 3 games beaten; 47/183 levels across 14 games; 9,185 actions | historical accepted checkpoint; superseded by v92 |
 | Process-isolated 14-game falsifier | v85 compressed progress-path transport, rejected | **35.9812800045 gate mean** | no added level; `lp85` improved, `ft09` regressed 99.0037508892→89.2285714286 | operative but rejected; accepted v84m remains unchanged |

@@ -280,6 +280,254 @@ paths, technical audit, and full quality pass. Private Kaggle notebook
 `submission.parquet`; the competition request was quota-blocked and created no
 submission ID. Retry that exact completed version after the daily slot resets.
 
+## Active experiment: v99l prospective naturality probe (preregistered)
+
+Parent v99k remains frozen and accepted. A public-recording-only audit of
+`ls20` level 5 falsifies the first suspected cause: across 59 observed rigid
+motions, all ten repeated `(body anchor, action)` keys have one destination.
+The learned contextual edges are sparse but not observably phase-aliased.
+
+The actual waste occurs before the learned hierarchy becomes operative. V99k
+retains a complete four-action translation algebra and the conserved body
+partition across levels, but treats both as inert until generic exploration
+happens to produce a nonzero motion. Exact-frame novelty then repeats the same
+blocked action eight times at the start of level 5. Three alternative inherited
+translations lead entirely onto the already observed traversable substrate.
+
+V99l preregisters one bounded assimilation/accommodation rule:
+
+1. retain the prior level's color-renaming-invariant body partition, complete
+   action-to-relative-translation algebra, and directly observed traversable
+   substrate colors only as an inactive cross-level hypothesis;
+2. relocate the body in the new frame only when each partition class is an
+   exact connected component and the whole partition has one unique anchor;
+3. among still-untried legal inherited actions, admit a one-step prospective
+   probe only when every newly occupied destination cell is in the retained
+   traversable substrate and the move remains in bounds;
+4. grant authority only if the next rendered transition commutes with the
+   inherited relative translation and body partition, using the existing
+   confirmation/rejection rule;
+5. if localization is ambiguous, the substrate was independently recolored,
+   no inherited destination is supported, or all bounded probes were tried,
+   abstain and preserve v99k behavior;
+6. clear the retained substrate and probe set with the inherited hypothesis;
+   never retain coordinates, routes, game identity, or terminal claims.
+
+This is the smallest naturality square available from current evidence: the
+body object is matched up to color isomorphism, the action morphism predicts a
+relative codomain, and the rendered transition must make that square commute.
+In Piaget/Drescher terms it is a cautious assimilation probe whose failed
+prediction triggers the already implemented accommodation path. In HRL terms
+it validates a transferred primitive option before compiling longer resource
+and factor options.
+
+Pre-target falsifiers:
+
+- a translated and bijectively recolored body is still uniquely relocated and
+  selects the correspondingly safe inherited action;
+- ambiguous duplicate partitions, a destination outside the retained
+  substrate, an independently recolored substrate, and an out-of-bounds
+  codomain all abstain;
+- a failed probe is not repeated, grants no action-algebra authority, and does
+  not poison the inherited hypothesis before another bounded probe;
+- a commuting transition activates the exact existing algebra, while a
+  contradictory nonzero transition rejects it;
+- exact-off behavior and all existing phase-topology tests remain unchanged.
+
+Only after those controls pass may v99l run `ls20`. Promotion still requires
+an exact target repeat, preservation of every accepted completion, the full
+25-game process-isolated suite, quality checks, exact export, and both offline
+Kaggle smoke paths.
+
+The pre-target controls pass: 32 focused phase-topology tests cover transformed
+relocation, ambiguity, substrate recoloring, bounds, non-repetition,
+confirmation, and rejection; focused Ruff and strict mypy are clean. The first
+fresh target scorecard, `2da21321-b2da-4298-b4cb-937f647fc5c7`, remains at
+30.341313810842898 and 4/7 but changes the vector from v99k
+`[17,112,51,133,87,0,0,0]` to `[17,45,49,133,156,0,0,0]`. Thus the completed
+prefix shrinks by 69 actions, from 313 to 244, and level 5 receives 156 actions.
+Five probes yield four cross-level confirmations and one retry confirmation,
+with no transfer rejection. This is provisional target-only efficiency
+evidence, not a promotion: level 5 still does not complete. Diagnose its longer
+immutable cognitive trace before deciding whether to repeat or revise.
+
+The exact source-only repeat, scorecard
+`a4dc3cf8-9139-43d9-a9ee-1497dd10f1a2`, reproduces the score, vector, reset
+count, action distribution, advisor distribution, and probe telemetry. The
+deterministic target gate passes. The subsequent 15-game process-isolated gate
+also passes at **36.05432119003699**, 51 levels, and 5,185 actions. Every one
+of the fourteen non-`ls20` score/level/action/reset/level-action signatures is
+exactly v99k. `ls20` alone changes from `[17,112,51,133,87,0,0]` with two
+resets to `[17,45,49,133,156,0,0]` with one reset. Preservation report:
+`reports/official-isolated-v99l-naturality-probe-preservation-400.json`,
+SHA-256 `84cbf60a9acde082ef4b8905b0f99898088d09b0fb7eb462e11ae58731e66e9c`.
+V99l now qualifies for source freeze and the complete process-isolated gate.
+
+### V99m addendum: reset-scoped negative transition evidence (preregistered)
+
+The v99l level-5 trace makes the next failure falsifiable. At the first joint
+resource-reappearance horizon reset, option selections restart at zero and
+three resources return, but nine accumulated blocked-edge claims survive.
+`no-operator-path` then persists for 45 actions while generic exploration adds
+five further positive contextual transitions. The recorded positive
+`(anchor, action) → destination` observations remain single-valued; it is the
+negative no-op/passability evidence whose applicability changes with horizon.
+
+V99m adds one asymmetric causal-memory rule to v99l: when the already grounded
+joint-reappearance witness declares a horizon reset, clear local
+`blocked_edges` while retaining confirmed ordinary translations and positive
+contextual destinations. Resource-exit constraints already clear at this
+boundary. Ordinary resource consumption, partial reappearance, scene
+occlusion, and non-reset steps retain all negative evidence. The number of
+released claims is exposed in the cognitive metrics.
+
+Pre-target falsifiers:
+
+- joint reappearance releases blocked edges, resets bounded option state, and
+  preserves a confirmed contextual edge;
+- partial reappearance and an ordinary resource refill release nothing;
+- clearing a negative claim grants no positive edge or action authority;
+- the existing horizon-reset, contextual-edge, transformed naturality, and
+  exact-off controls remain clean.
+
+This is Drescher-style context accommodation: a failed scheme's negative
+applicability evidence is scoped to the context in which it was observed. In
+categorical terms, witnessed morphisms survive transport across the horizon
+change, while absence of a morphism is not treated as a natural transformation.
+Only after these controls pass may the combined v99l+v99m offspring run the
+target.
+
+V99m's controls pass (33 focused tests, Ruff, and strict mypy). Target
+scorecard `bb655f3a-24c3-4e8e-8b31-4e7a1069a383` exactly retains v99l's
+4/7 score and `[17,45,49,133,156,0,0,0]` vector, so it is not a task gain.
+It is causally operative: the first level-5 horizon reset releases 15 stale
+blocks, planning resumes immediately, and two operator-induced factor
+transitions occur by global action 309. A second one-frame disappearance then
+restores the full meter and all three resources, but no reset is declared
+because no resource was consumed in that subcycle. Stale option state again
+survives the actual boundary.
+
+### V99n addendum: occlusion-bridged joint change point (preregistered)
+
+V99n retains the bounded set of resource identities observed in the current
+level as a relational universe. If the meter/resource bundle is temporarily
+unobservable, then later returns with (a) every identity in that universe
+jointly visible and (b) a meter-area increase of at least two learned units
+relative to the last observed area, declare the same horizon reset already
+used by v99k. This bridge is inactive when the previous meter was unknown,
+the unit is ungrounded, only part of the resource universe returns, or the
+increase is smaller than two units. Ordinary resource consumption remains a
+resource reset because the contacted identity is absent after the refill.
+
+Pre-target falsifiers:
+
+- small-meter → unobservable bundle → full-meter plus joint resource return
+  triggers exactly one horizon reset and the v99m negative-evidence release;
+- partial return, small meter growth, and an ungrounded meter trigger nothing;
+- ordinary consumption does not become a horizon reset;
+- resource identities are bounded by `max_resources`, cleared only at a level
+  reset, and never carry coordinates across levels;
+- all v99l/v99m transformed and causal controls remain clean.
+
+This is a bounded change-point detector over sufficient causal statistics,
+not raw-frame memory: last grounded scalar area, learned unit, and a finite set
+of same-role resource identities. Only after the controls pass may v99n run
+the target.
+
+V99n's controls pass (35 focused tests, Ruff, and strict mypy). Target
+scorecard `20a1bc95-4e8a-4850-ba92-73e2b8119af2` again retains 4/7 and
+`[17,45,49,133,156,0,0,0]`; it is not a score or efficiency gain over v99l.
+The new witness is operative: the previously missed full-bundle return at
+global action 309 becomes a second horizon reset and releases nine additional
+negative claims. The same occurs on the explicit retry. The remaining waste is
+now across the retry boundary itself: `reset_level` clears every confirmed
+positive contextual edge, so the second attempt reconstructs the first
+attempt's map.
+
+### V99o addendum: retry-scoped positive topology compression (preregistered)
+
+V99o retains confirmed contextual `(anchor, action) → destination` edges only
+when `reset_level` is explicitly invoked with the existing
+`same-level-retry` scope and a complete conserved action algebra/body partition
+is also eligible for retention. Cross-level resets still clear all contextual
+edges. Negative blocked edges, resource exits, active options, budgets,
+resource identities, display latches, and operator applications still clear on
+every retry. A retained edge remains prospective: the existing observation
+logic confirms the same destination and quarantines a contradictory one.
+
+Pre-target falsifiers:
+
+- same-level retry retains at most `max_contextual_edges` positive edges and
+  their planning utility, while cross-level reset retains none;
+- no blocked edge or resource-exit constraint crosses the retry;
+- the first contradictory reuse removes the retained edge and increments the
+  existing conflict counter;
+- retry retention is absent without a complete action algebra and conserved
+  body partition;
+- all prior transformed, change-point, resource, and exact-off controls remain
+  clean.
+
+This is episodic knowledge compression, not cultural coordinate inheritance:
+the coordinate-bearing topology lives only within a retry of the same level
+and must survive a prospective counterexample. Only after these controls pass
+may v99o run the target.
+
+V99o is rejected. Its controls passed, and target scorecard
+`6d215812-fe55-45ad-9b53-da0371010249` retained seven positive contextual
+edges across the retry, but it stayed at 4/7 with
+`[17,45,49,133,156,0,0,0]` and increased explicit resets from one to two.
+The retry-retention code was removed; the negative result remains here as
+evidence that positive teleport topology alone is not the missing sufficient
+statistic.
+
+### V99p addendum: positive-edge dominance over contextual no-ops (preregistered)
+
+A frame-level audit of the accepted immutable level-5 recording finds two
+ordinary `(anchor, action)` edges that each first execute the inherited
+translation and later no-op within the same horizon and the same visible
+resource/operator summary. The current planner permanently inserts every
+failed prediction into `blocked_edges`, erasing directly witnessed
+passability. V99p introduces a bounded positive ordinary-edge set. A predicted
+ordinary transition adds its edge after direct observation. A later no-op at
+that edge is counted as a contextual no-op but cannot create a permanent
+block; a later successful ordinary observation also removes any older block.
+Unwitnessed no-ops retain v99n behavior. Contextual destinations and
+resource-exit constraints remain higher-priority explicit alternatives.
+
+Pre-target falsifiers:
+
+- a directly observed ordinary edge survives a later no-op and remains
+  available to search;
+- an unwitnessed no-op still creates a block;
+- a later directly observed ordinary transition removes a stale block;
+- contextual destination conflicts and resource-exit constraints are
+  unchanged;
+- positive ordinary edges are capped by `max_anchors`, cleared at level/reset
+  boundaries, and never inferred from the global action law alone;
+- all v99l--v99n controls, exact-off behavior, Ruff, and strict mypy remain
+  clean.
+
+This is a causal version space over edge applicability: positive enactment is
+not falsified by one context-dependent absence. It is also a compression rule:
+retain one witnessed edge plus a contextual-no-op count instead of memorizing
+the raw transition history. Only after the controls pass may v99p run the
+target.
+
+V99p is rejected as inert. Its controls passed, and target scorecard
+`cebf86a7-d890-4199-916c-244e141e9df9` exactly matched v99n's score, vector,
+reset count, action distribution, and advisor distribution. It witnessed 23
+ordinary edges but zero later contextual no-ops, so the new branch never
+affected a decision. The v99m, v99n, and v99p runtime changes and tests were
+removed together; v99o had already been removed. Their preregistrations and
+scorecards remain as falsifying evidence.
+
+The live offspring is therefore collapsed back to **v99l only**: prospective
+naturality probes over the retained body/action/substrate structure. This is
+the minimum-description descendant with a demonstrated outcome: 69 fewer
+actions in the accepted four-level `ls20` prefix. The exact target repeat and
+accepted-progress preservation gates pass; next are source freeze, the full
+suite, and package checks if no completion regresses.
+
 ## Active breakthrough: compile `ls20` level 3 as a fibered product CSP
 
 A legal public-wrapper diagnosis advances level 3 in 49 actions after the v97

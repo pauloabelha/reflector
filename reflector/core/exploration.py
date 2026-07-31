@@ -13417,6 +13417,9 @@ class EpistemicExplorer:
             "phase_topology_retry_transfer_rejections": (
                 self.phase_topology_planner.retry_transfer_rejections
             ),
+            "phase_topology_transfer_probe_selections": (
+                self.phase_topology_planner.transfer_probe_selections
+            ),
             "phase_topology_body_grounded": int(
                 bool(self.phase_topology_planner.colored_mask)
             ),

@@ -49,6 +49,31 @@ allowance resets.
 
 ## Current handoff and next research frontier
 
+The preregistered v99l offspring is a **preservation-verified 69-action
+efficiency breakthrough**, not a new accepted score. Target scorecard
+`2da21321-b2da-4298-b4cb-937f647fc5c7` and exact repeat
+`a4dc3cf8-9139-43d9-a9ee-1497dd10f1a2` remain at 4/7 and
+30.341313810842898, but changes the `ls20` vector from accepted
+`[17,112,51,133,87,0,0,0]` to **`[17,45,49,133,156,0,0]`**. The completed
+four-level prefix falls from 313 to 244 actions, giving level 5 156 actions
+instead of 87. Five prospective naturality probes produce four cross-level
+and one same-level-retry algebra confirmations with zero transfer rejection.
+The 15-game process-isolated preservation gate passes at
+**36.05432119003699**, 51 levels, and 5,185 actions. All fourteen non-`ls20`
+score/level/action/reset signatures are exact versus v99k; `ls20` alone has
+the shorter prefix and one fewer reset. Its report SHA-256 is
+`84cbf60a9acde082ef4b8905b0f99898088d09b0fb7eb462e11ae58731e66e9c`.
+V99l is still live and unfrozen; v99k remains accepted until the frozen
+full-suite, quality, and package gates pass.
+
+V99l relocates the retained body partition from exact connected components,
+then tests an inherited relative action only when its newly occupied cells lie
+on the previously observed traversable substrate. Authority still requires the
+next rendered transition to commute. Ambiguous localization, unsupported or
+recolored substrate, out-of-bounds codomains, and exhausted probes abstain.
+This turns compressed cross-level knowledge into a bounded information option
+without retaining a coordinate or route.
+
 The accepted gain is not a coordinate script. Its compressed state consists
 of a host-preserving complementary-display quotient, contact-induced
 shape/palette morphism types, bounded resource identities, contextual
@@ -67,10 +92,11 @@ adding another game-specific detector:
    away raw histories once their predictions are subsumed.
 
 The immediate operational action is to resubmit completed Kaggle notebook
-version 1 when the one-per-day slot resets. The next scientific action is a
-bounded v100 hypothesis against `ls20` level 5 or a broader zero-progress
-cluster, with transformed controls, deterministic repeat, exact preservation,
-and the full 25-game gate unchanged.
+version 1 when the one-per-day slot resets. The immediate scientific action is
+to freeze the minimal v99l inference change, run the complete 25-game
+process-isolated gate, and only then package it if no completion regresses.
+The transformed-control, deterministic-repeat, quality, exact-export, and
+Kaggle-smoke requirements remain unchanged.
 
 ## Verified v99k full-suite breakthrough: complementary-display accommodation
 
