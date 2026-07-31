@@ -32,7 +32,7 @@ the complete-suite gate pass. The final quality gate passes with 498 tests and
 smoke paths pass, and the technical prize audit is ready. V94b is the accepted
 local candidate.
 
-## Current bounded offspring: confirmed cross-level algebra compression
+## Rejected offspring: cross-level algebra was natural but not sufficient
 
 V95 `candidate-304a6d8e5158b3ae` is a frozen experimental child of v94b.
 The accepted `ls20` recording shows that levels 1--3 preserve the same
@@ -55,9 +55,27 @@ instead of copied as raw frames; the categorical test is commutation under a
 presentation-changing abstraction; and the HRL planner receives conserved
 primitive operators only after causal confirmation. The transformed controls
 and full local quality gate pass at **501 tests, 3 skips**, with Ruff and mypy
-clean. Offline replay reaches its first authority point on level 2 and changes
-the next action while 15 budget units remain. No score is claimed until the
-fresh-process isolated run completes.
+clean. Offline replay reached its first authority point on level 2 and changed
+the next action while 15 budget units remained.
+
+The fresh-process test rejects v95 for promotion. It preserved 2/7 levels but
+slowed the vector from accepted `[17,240,143,0,0,0,0]` to
+`[17,277,106,0,0,0,0]`, lowering the target score from 5.983258928571429 to
+**5.515531937077246**. The report is
+[`reports/experimental-v95-cross-level-algebra-ls20-r1-400.json`](reports/experimental-v95-cross-level-algebra-ls20-r1-400.json),
+SHA-256
+`d8bb7c5cdc50eb3ab755bb73aa0daa97fde454ca43fcfda22bd4b6fd27b1d4fe`.
+
+The representation itself was prospectively correct: two cross-level squares
+commuted and none failed. The policy implication was false. On level 2,
+transporting all primitive laws made the temporal CSP authoritative before any
+current-level operator effect had been observed. It consumed the first reset
+resource early, reached the terminal route one action short, and prolonged the
+first failed retry from 66 to 103 actions. Later baseline retries were
+identical modulo that 37-action shift. The next accommodation must preserve a
+dependency boundary: inherited navigation laws may shorten operator discovery,
+but they may not license resource scheduling until a local operator transition
+grounds the dependent phase model.
 
 ## New accepted mechanism: phase-topology product planning
 

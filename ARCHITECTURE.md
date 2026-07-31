@@ -496,6 +496,14 @@ transfer. It transports neither targets nor action sequences and contains no
 game identity, color, coordinate, route, or horizon constant. Its purpose is
 to reduce intervention cost while preserving causal falsifiability.
 
+V95 shows that this primitive-level naturality check is necessary but not
+sufficient for hierarchical authority. A confirmed translation algebra made
+resource scheduling act before the current level had supplied any
+operator-induced phase transition, and the resulting retry regressed. The
+architecture therefore treats dependent option layers separately: inherited
+translations can license navigation, while a temporal resource option must
+also have current-level evidence for the phase-changing operator it serves.
+
 ## Development control plane
 
 `MindConfig` is the deployable genome. It contains bounded booleans, planner

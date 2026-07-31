@@ -52,7 +52,7 @@ generalization.
   `reflector/runtime/`, `reflector/research/`, and `reflector/evolution/`.
   Legacy top-level imports remain compatibility aliases.
 
-## Current experiment: v95 confirmed cross-level action algebra
+## Rejected experiment: v95 confirmed cross-level action algebra
 
 Parent: accepted v94b `candidate-2d9cadd5859ce47d`.
 
@@ -77,15 +77,29 @@ unconditional cross-level leakage. Unit and transformed controls pass; offline
 replay confirms that authority first becomes prospective on level 2, where it
 changes the next action with 15 inferred budget units remaining.
 
-Evaluation protocol:
+Frozen candidate `candidate-304a6d8e5158b3ae`, source commit `32961b4`,
+fingerprint
+`f4df3a58770ab1aa59a766a474aae74ceade91b7a6f36a8686f27d3b752e1362`,
+is rejected after the first target. It preserved 2/7 but regressed the vector
+from `[17,240,143,0,0,0,0]` to `[17,277,106,0,0,0,0]`. The two transfer
+checks confirmed with zero rejections, so the naturality predicate was not the
+failure.
 
-- freeze candidate `candidate-304a6d8e5158b3ae` and source fingerprint
-  `f4df3a58770ab1aa59a766a474aae74ceade91b7a6f36a8686f27d3b752e1362`;
-- run one fresh-process isolated `ls20` target;
-- reject or diagnose immediately if it regresses v94b's
-  `[17,240,143,0,0,0,0]`;
-- if it adds a level or materially improves efficiency, repeat exactly;
-- only then run accepted-win preservation and the full 25-game gate.
+The causal divergence is precise. V95 activated at level-2 action 6 and
+scheduled a reset resource before observing any local operator-induced phase
+transition. That option reached the apparent terminal route one action short
+and lengthened the first failed retry by 37 actions. After explicit retries
+cleared the inherited algebra, v95 and v94b executed the same 106-action failed
+retry and the same 68-action successful retry.
+
+Next minimal hypothesis:
+
+- retain prospectively confirmed primitive laws as navigation authority;
+- treat resource scheduling as a dependent morphism requiring at least one
+  current-level operator transition;
+- before that evidence, permit only direct navigation to the operator;
+- preserve every existing budget, path, atomicity, and falsification bound;
+- reject unless a frozen target improves v94b without losing a level.
 
 ## Why the accepted agent wins what it wins
 

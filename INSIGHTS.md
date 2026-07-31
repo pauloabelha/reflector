@@ -57,7 +57,26 @@ The mechanism passes recolored-positive, noncommuting-negative, and
 scene-discontinuity controls. The complete local gate is 501 passed and 3
 skipped with Ruff and mypy clean. Accepted-trace replay locates a prospective
 authority point in level 2 and predicts a behavior change; the fresh-process
-target remains the required causal test.
+target supplies the required causal test—and rejects the offspring.
+
+V95 preserved two levels but changed level 2 from 240 to 277 actions. Both
+transfer opportunities confirmed and neither rejected, demonstrating an
+important distinction: a natural primitive representation does not make every
+dependent hierarchical policy natural. The inherited algebra caused the
+temporal planner to consume a reset before observing the new level's operator
+effect. That first retry reached its terminal route one action short and lasted
+103 actions instead of the control's 66. The remaining failed and successful
+retries were exactly the control trajectories shifted by 37 actions.
+
+The categorical lesson is a dependency or fibration constraint. Translation
+morphisms can transport along a presentation change, while phase and resource
+options live over additional level-local causal evidence. Authority must move
+up that hierarchy only after its base observation exists. In Piagetian terms,
+conservation of the sensorimotor scheme was correct, but premature assimilation
+of the higher coordination was not. The smallest next accommodation is to use
+inherited laws for navigation toward the operator while forbidding them to
+license reset scheduling until one local operator-induced phase transition has
+been observed.
 
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 
