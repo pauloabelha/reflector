@@ -13441,8 +13441,14 @@ class EpistemicExplorer:
             "phase_topology_phase_grounded": int(
                 self.phase_topology_planner.current_pattern is not None
             ),
+            "phase_topology_goal_latched": int(
+                self.phase_topology_planner.goal_latched
+            ),
             "phase_topology_operator_applications": (
                 self.phase_topology_planner.operator_applications
+            ),
+            "phase_topology_contextual_transitions": (
+                self.phase_topology_planner.contextual_transitions
             ),
             "phase_topology_selections": self.phase_topology_planner.selections,
             "phase_topology_compilations": self.phase_topology_planner.compilations,

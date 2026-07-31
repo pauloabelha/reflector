@@ -286,7 +286,7 @@ class PhaseTopologyPlanner:
     """Learn and execute a bounded anchor × display-phase option."""
 
     max_anchors: int = 512
-    max_operator_applications: int = 8
+    max_operator_applications: int = 16
     max_plan_selections: int = 96
     action_effects: dict[int, Point] = field(default_factory=dict)
     action_evidence: Counter[int] = field(default_factory=Counter)
@@ -299,6 +299,7 @@ class PhaseTopologyPlanner:
     goal_host: tuple[int, int, int, int] | None = None
     goal_pattern: Pattern | None = None
     goal_cells: tuple[Point, ...] = ()
+    goal_latched: bool = False
     operator_cells: tuple[Point, ...] = ()
     pattern_candidates: tuple[EmbeddedPattern, ...] = ()
     blocked_edges: set[tuple[Point, int]] = field(default_factory=set)
@@ -306,6 +307,7 @@ class PhaseTopologyPlanner:
     pending_source: Point | None = None
     pending_action: int | None = None
     operator_applications: int = 0
+    contextual_transitions: int = 0
     selections: int = 0
     compilations: int = 0
     confirmations: int = 0
@@ -335,6 +337,7 @@ class PhaseTopologyPlanner:
         self.goal_host = None
         self.goal_pattern = None
         self.goal_cells = ()
+        self.goal_latched = False
         self.operator_cells = ()
         self.pattern_candidates = ()
         self.blocked_edges.clear()
@@ -356,6 +359,38 @@ class PhaseTopologyPlanner:
         progressed: bool,
     ) -> None:
         motion = infer_rigid_translation(before, after)
+        source_goal_equal = (
+            self.current_pattern is not None
+            and self.current_pattern == self.goal_pattern
+        )
+        operator_contact = (
+            bool(self.operator_cells)
+            and (
+                (
+                    self.pending_anchor is not None
+                    and _covers(
+                        self.pending_anchor,
+                        self.mask,
+                        self.operator_cells,
+                    )
+                )
+                or (
+                    self.pending_source is not None
+                    and _covers(
+                        self.pending_source,
+                        self.mask,
+                        self.operator_cells,
+                    )
+                )
+            )
+        )
+        contextual_transition = (
+            operator_contact
+            and motion is not None
+            and bool(self.colored_mask)
+            and motion.colored_mask == self.colored_mask
+            and motion.after_anchor != self.pending_anchor
+        )
         if progressed:
             self.confirmations += int(self.pending_action is not None)
             self.pending_anchor = None
@@ -364,7 +399,13 @@ class PhaseTopologyPlanner:
             self.diagnostic = "terminal-predicate-confirmed"
             return
         if self.pending_action is not None:
-            if (
+            if contextual_transition:
+                self.confirmations += 1
+                self.operator_applications += 1
+                self.contextual_transitions += 1
+                self.goal_latched = self.goal_latched or source_goal_equal
+                self.diagnostic = "operator-induced-context-transition"
+            elif (
                 motion is None
                 or motion.after_anchor != self.pending_anchor
                 or action_id != self.pending_action
@@ -388,14 +429,15 @@ class PhaseTopologyPlanner:
                 return
             self.colored_mask = motion.colored_mask
             self.current_anchor = motion.after_anchor
-            previous = self.action_effects.get(action_id)
-            if previous not in {None, motion.displacement}:
-                self.invalid_actions.add(action_id)
-                self.action_effects.pop(action_id, None)
-                self.diagnostic = "inconsistent-action-displacement"
-            elif action_id not in self.invalid_actions:
-                self.action_effects[action_id] = motion.displacement
-                self.action_evidence[action_id] += 1
+            if not contextual_transition:
+                previous = self.action_effects.get(action_id)
+                if previous not in {None, motion.displacement}:
+                    self.invalid_actions.add(action_id)
+                    self.action_effects.pop(action_id, None)
+                    self.diagnostic = "inconsistent-action-displacement"
+                elif action_id not in self.invalid_actions:
+                    self.action_effects[action_id] = motion.displacement
+                    self.action_evidence[action_id] += 1
             for local_x, local_y in motion.mask:
                 x = motion.before_anchor[0] + local_x
                 y = motion.before_anchor[1] + local_y
@@ -437,7 +479,7 @@ class PhaseTopologyPlanner:
             self.goal_host = goal.host_bbox
             self.goal_pattern = goal.pattern
             self.goal_cells = goal.glyph_cells
-            self.operator_applications += 1
+            self.operator_applications += int(not contextual_transition)
             self.diagnostic = "operator-induced-phase-transition"
         elif self.current_host in after_patterns:
             current = after_patterns[self.current_host]
@@ -533,6 +575,23 @@ class PhaseTopologyPlanner:
                     anchors.append((x, y))
         return tuple(sorted(anchors))
 
+    def _goal_anchors(self) -> tuple[Point, ...]:
+        if self.goal_host is None or not self.mask:
+            return ()
+        min_x, min_y, max_x, max_y = self.goal_host
+        mask_width = max(x for x, _y in self.mask) + 1
+        mask_height = max(y for _x, y in self.mask) + 1
+        host_width = max_x - min_x + 1
+        host_height = max_y - min_y + 1
+        if host_width < mask_width or host_height < mask_height:
+            return ()
+        return (
+            (
+                min_x + (host_width - mask_width) // 2,
+                min_y + (host_height - mask_height) // 2,
+            ),
+        )
+
     def _valid_anchor(
         self,
         frame: Frame,
@@ -557,7 +616,11 @@ class PhaseTopologyPlanner:
     ) -> tuple[int, ...]:
         if self.current_anchor is None:
             return ()
-        targets = set(self._target_anchors(target_cells))
+        targets = set(
+            self._goal_anchors()
+            if target_cells == self.goal_cells
+            else self._target_anchors(target_cells)
+        )
         if not targets:
             return ()
         special_colors = frozenset(
@@ -643,11 +706,23 @@ class PhaseTopologyPlanner:
             self.diagnostic = "awaiting-rigid-translation-algebra"
             return None
         self._refresh_operator(frame)
-        phase_equal = (
-            self.current_pattern is not None
-            and self.current_pattern == self.goal_pattern
+        on_operator = (
+            self.current_anchor is not None
+            and bool(self.operator_cells)
+            and _covers(
+                self.current_anchor,
+                self.mask,
+                self.operator_cells,
+            )
         )
-        if phase_equal and self.goal_cells:
+        phase_equal = (
+            self.goal_latched
+            or (
+                self.current_pattern is not None
+                and self.current_pattern == self.goal_pattern
+            )
+        )
+        if phase_equal and self.goal_cells and not on_operator:
             target_cells = self.goal_cells
             mode = "terminal"
         elif (
@@ -660,6 +735,30 @@ class PhaseTopologyPlanner:
             self.diagnostic = "missing-phase-goal-or-operator"
             return None
         path = self._path(frame, target_cells)
+        if (
+            not path
+            and mode == "operator"
+            and _covers(self.current_anchor, self.mask, self.operator_cells)
+        ):
+            for candidate, (dx, dy) in sorted(self.action_effects.items()):
+                neighbor = (
+                    self.current_anchor[0] + dx,
+                    self.current_anchor[1] + dy,
+                )
+                if (
+                    candidate in legal_action_ids
+                    and (self.current_anchor, candidate)
+                    not in self.blocked_edges
+                    and self._valid_anchor(frame, neighbor)
+                    and not _covers(
+                        neighbor,
+                        self.mask,
+                        self.operator_cells,
+                    )
+                ):
+                    path = (candidate,)
+                    mode = "operator-rearm"
+                    break
         if not path:
             self.diagnostic = f"no-{mode}-path"
             return None

@@ -124,7 +124,7 @@ def test_phase_equal_planner_compiles_shortest_terminal_option() -> None:
         traversable_colors={3},
         current_pattern=(3, 3, ((0, 0), (2, 2))),
         goal_pattern=(3, 3, ((0, 0), (2, 2))),
-        goal_host=(0, 4, 6, 10),
+        goal_host=(0, 4, 4, 10),
         goal_cells=((0, 5), (3, 8)),
     )
 
@@ -133,6 +133,70 @@ def test_phase_equal_planner_compiles_shortest_terminal_option() -> None:
     assert selected == 1
     assert planner.last_plan_length == 2
     assert planner.diagnostic == "executing-terminal-option"
+
+
+def test_operator_context_transition_preserves_plain_action_morphism() -> None:
+    before = _frame(24, 20, color=3)
+    after = _frame(24, 20, color=3)
+    _paint_body(before, (10, 10))
+    _paint_body(after, (2, 10))
+    planner = PhaseTopologyPlanner(
+        action_effects={4: (5, 0)},
+        colored_mask=tuple(
+            (x, y, 9 if x < 2 else 12)
+            for x in range(4)
+            for y in range(4)
+        ),
+        current_anchor=(10, 10),
+        traversable_colors={3},
+        current_pattern=(3, 3, ((0, 0),)),
+        goal_pattern=(3, 3, ((0, 0),)),
+        operator_cells=((11, 11),),
+        pending_source=(10, 10),
+        pending_anchor=(15, 10),
+        pending_action=4,
+    )
+
+    planner.observe(
+        _freeze(before),
+        _freeze(after),
+        action_id=4,
+        progressed=False,
+    )
+
+    assert planner.action_effects == {4: (5, 0)}
+    assert planner.current_anchor == (2, 10)
+    assert planner.operator_applications == 1
+    assert planner.contextual_transitions == 1
+    assert planner.goal_latched
+    assert planner.confirmations == 1
+    assert planner.conflicts == 0
+    assert planner.diagnostic == "operator-induced-context-transition"
+
+
+def test_operator_rearm_leaves_before_reapplying_contact_transition() -> None:
+    frame = _frame(20, 20, color=3)
+    _paint_body(frame, (5, 5))
+    planner = PhaseTopologyPlanner(
+        action_effects={1: (0, -5), 2: (0, 5), 3: (-5, 0), 4: (5, 0)},
+        colored_mask=tuple(
+            (x, y, 9 if x < 2 else 12)
+            for x in range(4)
+            for y in range(4)
+        ),
+        current_anchor=(5, 5),
+        traversable_colors={3},
+        current_pattern=(3, 3, ((0, 0),)),
+        goal_pattern=(3, 3, ((0, 0),)),
+        operator_cells=((6, 6),),
+        operator_applications=1,
+    )
+
+    selected = planner.select(_freeze(frame), (1, 2, 3, 4))
+
+    assert selected == 1
+    assert planner.pending_anchor == (5, 0)
+    assert planner.diagnostic == "executing-operator-rearm-option"
 
 
 def test_phase_topology_is_serializable_and_exactly_off_by_default() -> None:
