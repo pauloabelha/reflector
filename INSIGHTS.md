@@ -1775,3 +1775,7 @@ coordinate, route, horizon constant, or game identifier—was sufficient for
 the extra level. The Piagetian accommodation modified the smallest falsified
 scheme; the categorical reading is associativity of the compiled primitive
 path with its intended reset morphism; the HRL reading is option atomicity.
+
+An exact second fresh-process run reproduces the score, four resets, and every
+level-action count. The result is therefore not a one-run exploration
+accident; target repeatability is established before wider preservation.

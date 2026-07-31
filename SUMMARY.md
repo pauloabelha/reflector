@@ -112,7 +112,12 @@ at `[17,240,143,0,0,0,0]` and a one-game score of
 SHA-256
 `04f73bcb95e5849e2afc6662802b809a5bc1593cf60a7fe9713d53916253e50a`.
 This is the first autonomous level-2 gain, but v92 remains accepted until v94b
-repeats and passes preservation/full-suite gates.
+repeats and passes preservation/full-suite gates. The exact repeat reproduces
+the same score, four resets, and `[17,240,143,0,0,0,0]`; its report is
+[`reports/experimental-v94b-atomic-resource-ls20-r2-400.json`](reports/experimental-v94b-atomic-resource-ls20-r2-400.json),
+SHA-256
+`0e9e497302dabb9ea6cb8a8024925e07b75c1b10941a420e345842e7af038f4c`.
+The target-repeat gate therefore passes.
 
 ## New accepted mechanism: demonstrated analogy algebra
 

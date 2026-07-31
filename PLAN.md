@@ -688,6 +688,12 @@ Next run an exact target repeat. If it reproduces 2/7, run the accepted-win
 preservation suite against v92, followed by all 25 games, full quality gates,
 and exact Kaggle export.
 
+The second fresh-process run is exact: 2/7, four resets, score
+`5.983258928571429`, and `[17,240,143,0,0,0,0]` again. Report
+`reports/experimental-v94b-atomic-resource-ls20-r2-400.json`, SHA-256
+`0e9e497302dabb9ea6cb8a8024925e07b75c1b10941a420e345842e7af038f4c`.
+The target-repeat gate passes; run accepted-win preservation now.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.
