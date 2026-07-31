@@ -163,6 +163,13 @@ confirmation, and zero rejections. Proceed to the 15-game accepted-win gate:
 non-target score/action vectors to match v94b exactly and the repeated `ls20`
 gain to remain exact.
 
+The 15-game gate passes: 49 levels, 5,185 actions, mean
+`34.745852650266514`. All fourteen non-target outcomes—including reset counts
+and completed-level action vectors—are exact. Only `ls20` changes, exactly as
+repeated. Proceed to the complete process-isolated 25-game evaluation. Require
+25/25 coverage, no lost completion, exact preservation on all 24 non-targets,
+and the same target vector.
+
 ## Why the accepted agent wins what it wins
 
 | Mechanism | Causal real-game evidence |

@@ -137,6 +137,17 @@ SHA-256
 `0e90ba3b7a2b0fc666f60ca278fae3ce67b008d5f6dc7cab1607b56ad6a1532e`.
 Target determinism passes; accepted-win preservation is next.
 
+The 15-game accepted-win preservation gate also passes. V97 solves the same
+49 levels in 5,185 actions with a gate mean of **34.745852650266514**. All
+fourteen non-`ls20` scores, level vectors, action totals, and reset counts are
+exactly v94b; `ls20` alone carries the repeated 128-action efficiency gain.
+Report
+[`reports/experimental-v97-accepted-win-preservation-r1-400.json`](reports/experimental-v97-accepted-win-preservation-r1-400.json),
+SHA-256
+`1454e2f0a4cf540239d86836bce752a0bda082120a51b4714a1185a16718a76e`.
+Target attribution and accepted-win non-regression pass. The complete 25-game
+suite remains the promotion gate.
+
 ## New accepted mechanism: phase-topology product planning
 
 V92 `candidate-42dbfa39cba78041` is the first accepted gain after v84m.

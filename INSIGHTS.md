@@ -133,6 +133,13 @@ target-level knowledge but not yet cross-game safety; the dormant hypothesis
 can arise on other phase-topology scenes, so exact preservation remains the
 next falsifier.
 
+That falsifier passes across every previously positive game. Fourteen
+non-target trajectories remain exact; only `ls20` changes. This is strong
+evidence that scoped retry conservation is not a broad exploration heuristic.
+Its authority gate is narrow enough to preserve unrelated planners and games,
+while its compressed primitive model removes a specific relearning cycle where
+the same causal structure truly recurs.
+
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 
 The strongest post-restart gain came from treating `tr87` as a visible algebra
