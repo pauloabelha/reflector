@@ -1360,16 +1360,12 @@ class EpistemicExplorer:
                 self.partial_bisimulation_model.reset_level()
             self.abstract_causal_frontier_selections = 0
             self.abstract_causal_frontier_diagnostic = (
-                "not-attempted"
-                if self.abstract_causal_frontier
-                else "exact-off"
+                "not-attempted" if self.abstract_causal_frontier else "exact-off"
             )
             self.causal_discrimination_selections = 0
             self.causal_discrimination_pending_outcomes = ()
             self.causal_discrimination_diagnostic = (
-                "not-attempted"
-                if self.causal_discrimination_frontier
-                else "exact-off"
+                "not-attempted" if self.causal_discrimination_frontier else "exact-off"
             )
             self.bisimulation_coverage_selections = 0
             self.bisimulation_coverage_diagnostic = (
@@ -1454,9 +1450,7 @@ class EpistemicExplorer:
             self.terminal_edge_viability_credit
             and self.terminal_viability_pending_generic
         ):
-            self.terminal_viability.role_only = (
-                self.terminal_role_viability_credit
-            )
+            self.terminal_viability.role_only = self.terminal_role_viability_credit
             self.terminal_viability.observe(
                 frame=before,
                 role=role,
@@ -1478,8 +1472,7 @@ class EpistemicExplorer:
             self.phase_topology_planning
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
         ):
             self.phase_topology_planner.observe(
                 before,
@@ -1508,9 +1501,7 @@ class EpistemicExplorer:
             else:
                 causal_kind = infer_action_effect(before, after).kind
             if self.causal_discrimination_pending_outcomes:
-                outcome_counts = dict(
-                    self.causal_discrimination_pending_outcomes
-                )
+                outcome_counts = dict(self.causal_discrimination_pending_outcomes)
                 hypotheses = sum(outcome_counts.values())
                 eliminated = hypotheses - outcome_counts.get(causal_kind, 0)
                 self.causal_discrimination_query_hypotheses += hypotheses
@@ -5478,8 +5469,10 @@ class EpistemicExplorer:
                     "scheme:phase-conditioned-configuration-space",
                     "operator:rigid-body-anchor-translation",
                     "operator:relational-phase-transition",
+                    "operator:same-role-temporal-resource-reset",
+                    "state:anchor-phase-budget-resource-product",
                     "goal:display-equality-and-terminal-entry",
-                    "falsifier:predicted-anchor-or-phase-conflict",
+                    "falsifier:predicted-anchor-phase-or-budget-conflict",
                 )
                 return self._issue(
                     state,
@@ -5487,9 +5480,7 @@ class EpistemicExplorer:
                     "epistemic-frontier:phase-topology-planning",
                     scene,
                 )
-            self.phase_topology_planner.cap_failure = (
-                "grounded-token-not-represented"
-            )
+            self.phase_topology_planner.cap_failure = "grounded-token-not-represented"
             self.phase_topology_planner.diagnostic = (
                 "fail-closed:grounded-token-not-represented"
             )
@@ -11960,9 +11951,7 @@ class EpistemicExplorer:
             )
             return None
         domain = tuple(sorted({token.action_id for token in tokens}))
-        represented = tuple(
-            dict.fromkeys(self._role(token, scene) for token in tokens)
-        )
+        represented = tuple(dict.fromkeys(self._role(token, scene) for token in tokens))
         predictions = model.frontier_predictions(
             source=state[2],
             domain=domain,
@@ -11985,16 +11974,11 @@ class EpistemicExplorer:
         candidates = tuple(
             (index, token, outcome)
             for index, token in enumerate(tokens)
-            if (
-                outcome := prediction_by_role.get(self._role(token, scene))
-            )
-            is not None
+            if (outcome := prediction_by_role.get(self._role(token, scene))) is not None
         )
         if not candidates:
             self.abstract_causal_frontier_abstentions += 1
-            self.abstract_causal_frontier_diagnostic = (
-                "no-positive-abstract-frontier"
-            )
+            self.abstract_causal_frontier_diagnostic = "no-positive-abstract-frontier"
             return None
         index, selected, outcome = min(
             candidates,
@@ -12028,14 +12012,10 @@ class EpistemicExplorer:
         model = self.partial_bisimulation_model
         if not model.ready_for_discrimination(min_confirmations=4):
             self.causal_discrimination_abstentions += 1
-            self.causal_discrimination_diagnostic = (
-                "awaiting-predictive-quotient"
-            )
+            self.causal_discrimination_diagnostic = "awaiting-predictive-quotient"
             return None
         domain = tuple(sorted({token.action_id for token in tokens}))
-        represented = tuple(
-            dict.fromkeys(self._role(token, scene) for token in tokens)
-        )
+        represented = tuple(dict.fromkeys(self._role(token, scene) for token in tokens))
         queries = model.discrimination_frontier(
             source=state[2],
             domain=domain,
@@ -12049,9 +12029,7 @@ class EpistemicExplorer:
         )
         if not candidates:
             self.causal_discrimination_abstentions += 1
-            self.causal_discrimination_diagnostic = (
-                "no-ambiguous-causal-frontier"
-            )
+            self.causal_discrimination_diagnostic = "no-ambiguous-causal-frontier"
             return None
         _index, selected, query = min(
             candidates,
@@ -12065,8 +12043,7 @@ class EpistemicExplorer:
         self.causal_discrimination_selections += 1
         self.causal_discrimination_total_selections += 1
         self.causal_discrimination_diagnostic = (
-            "selected-max-expected-elimination:"
-            f"{query.expected_elimination:.6f}"
+            f"selected-max-expected-elimination:{query.expected_elimination:.6f}"
         )
         return selected
 
@@ -12085,9 +12062,7 @@ class EpistemicExplorer:
             return tokens
         model = self.partial_bisimulation_model
         if not model.ready_for_discrimination(min_confirmations=4):
-            self.bisimulation_coverage_diagnostic = (
-                "awaiting-predictive-quotient"
-            )
+            self.bisimulation_coverage_diagnostic = "awaiting-predictive-quotient"
             return tokens
         domain = tuple(sorted({token.action_id for token in tokens}))
         redundant = {
@@ -12106,9 +12081,7 @@ class EpistemicExplorer:
             and prediction.donor_states >= 2
         }
         if not redundant:
-            self.bisimulation_coverage_diagnostic = (
-                "no-multiply-supported-redundancy"
-            )
+            self.bisimulation_coverage_diagnostic = "no-multiply-supported-redundancy"
             return tokens
         retained = tuple(token for token in tokens if token not in redundant)
         if not retained:
@@ -13277,9 +13250,7 @@ class EpistemicExplorer:
                 self.shortest_progress_path_diagnostic
             ),
             "terminal_viability_enabled": int(self.terminal_edge_viability_credit),
-            "terminal_viability_role_only": int(
-                self.terminal_role_viability_credit
-            ),
+            "terminal_viability_role_only": int(self.terminal_role_viability_credit),
             "terminal_viability_observations": (self.terminal_viability.observations),
             "terminal_viability_terminal_observations": (
                 self.terminal_viability.terminal_observations
@@ -13353,9 +13324,7 @@ class EpistemicExplorer:
             "partial_bisimulation_level_conflicts": (
                 self.partial_bisimulation_model.level_conflicts
             ),
-            "abstract_causal_frontier_enabled": int(
-                self.abstract_causal_frontier
-            ),
+            "abstract_causal_frontier_enabled": int(self.abstract_causal_frontier),
             "abstract_causal_frontier_selections": (
                 self.abstract_causal_frontier_selections
             ),
@@ -13371,9 +13340,7 @@ class EpistemicExplorer:
             "causal_discrimination_frontier_enabled": int(
                 self.causal_discrimination_frontier
             ),
-            "causal_discrimination_selections": (
-                self.causal_discrimination_selections
-            ),
+            "causal_discrimination_selections": (self.causal_discrimination_selections),
             "causal_discrimination_total_selections": (
                 self.causal_discrimination_total_selections
             ),
@@ -13386,15 +13353,11 @@ class EpistemicExplorer:
             "causal_discrimination_eliminated_hypotheses": (
                 self.causal_discrimination_eliminated_hypotheses
             ),
-            "causal_discrimination_diagnostic": (
-                self.causal_discrimination_diagnostic
-            ),
+            "causal_discrimination_diagnostic": (self.causal_discrimination_diagnostic),
             "bisimulation_coverage_compression_enabled": int(
                 self.bisimulation_coverage_compression
             ),
-            "bisimulation_coverage_selections": (
-                self.bisimulation_coverage_selections
-            ),
+            "bisimulation_coverage_selections": (self.bisimulation_coverage_selections),
             "bisimulation_coverage_total_selections": (
                 self.bisimulation_coverage_total_selections
             ),
@@ -13404,9 +13367,7 @@ class EpistemicExplorer:
             "bisimulation_coverage_all_redundant_abstentions": (
                 self.bisimulation_coverage_all_redundant_abstentions
             ),
-            "bisimulation_coverage_diagnostic": (
-                self.bisimulation_coverage_diagnostic
-            ),
+            "bisimulation_coverage_diagnostic": (self.bisimulation_coverage_diagnostic),
             "finite_orbit_commit_enabled": int(self.finite_orbit_commit_exploration),
             "finite_orbit_grounded": int(self.finite_orbit_generator is not None),
             "finite_orbit_states": len(self.finite_orbit_expanded_states),
@@ -13450,11 +13411,29 @@ class EpistemicExplorer:
             "phase_topology_contextual_transitions": (
                 self.phase_topology_planner.contextual_transitions
             ),
+            "phase_topology_budget_grounded": int(
+                self.phase_topology_planner.budget_unit is not None
+            ),
+            "phase_topology_budget_area": (self.phase_topology_planner.budget_area),
+            "phase_topology_budget_unit": (self.phase_topology_planner.budget_unit),
+            "phase_topology_remaining_budget": (
+                self.phase_topology_planner.remaining_budget
+            ),
+            "phase_topology_budget_horizon": (
+                self.phase_topology_planner.budget_horizon
+            ),
+            "phase_topology_resource_candidates": len(
+                self.phase_topology_planner.resource_candidates
+            ),
+            "phase_topology_resource_resets": (
+                self.phase_topology_planner.resource_resets
+            ),
+            "phase_topology_horizon_resets": (
+                self.phase_topology_planner.horizon_resets
+            ),
             "phase_topology_selections": self.phase_topology_planner.selections,
             "phase_topology_compilations": self.phase_topology_planner.compilations,
-            "phase_topology_confirmations": (
-                self.phase_topology_planner.confirmations
-            ),
+            "phase_topology_confirmations": (self.phase_topology_planner.confirmations),
             "phase_topology_conflicts": self.phase_topology_planner.conflicts,
             "phase_topology_search_expansions": (
                 self.phase_topology_planner.search_expansions
@@ -13467,9 +13446,7 @@ class EpistemicExplorer:
                 if self.phase_topology_planning
                 else "exact-off"
             ),
-            "phase_topology_cap_failure": (
-                self.phase_topology_planner.cap_failure
-            ),
+            "phase_topology_cap_failure": (self.phase_topology_planner.cap_failure),
             "constellation_alignment_enabled": int(self.constellation_alignment),
             "constellation_move_actions": len(self.constellation_move_actions),
             "constellation_switch_actions": len(self.constellation_switch_actions),

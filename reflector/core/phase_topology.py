@@ -10,6 +10,7 @@ from typing import Iterable
 type Frame = tuple[tuple[int, ...], ...]
 type Point = tuple[int, int]
 type Pattern = tuple[int, int, tuple[Point, ...]]
+type ResourceKey = tuple[int, tuple[int, int, int, int], tuple[Point, ...]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,9 +89,7 @@ def components(frame: Frame) -> tuple[Component, ...]:
                     color=color,
                     cells=tuple(sorted(cells)),
                     origin=(min_x, min_y),
-                    shape=tuple(
-                        sorted((px - min_x, py - min_y) for px, py in cells)
-                    ),
+                    shape=tuple(sorted((px - min_x, py - min_y) for px, py in cells)),
                     bbox=(min_x, min_y, max_x, max_y),
                 )
             )
@@ -156,9 +155,8 @@ def infer_rigid_translation(before: Frame, after: Frame) -> RigidTranslation | N
     if not candidates:
         return None
     candidates.sort(key=lambda item: (-len(item.colored_mask), item.colored_mask))
-    if (
-        len(candidates) > 1
-        and len(candidates[0].colored_mask) == len(candidates[1].colored_mask)
+    if len(candidates) > 1 and len(candidates[0].colored_mask) == len(
+        candidates[1].colored_mask
     ):
         return None
     return candidates[0]
@@ -275,19 +273,38 @@ def _overlaps_bbox(
 ) -> bool:
     min_x, min_y, max_x, max_y = bbox
     return any(
-        min_x <= anchor[0] + local_x <= max_x
-        and min_y <= anchor[1] + local_y <= max_y
+        min_x <= anchor[0] + local_x <= max_x and min_y <= anchor[1] + local_y <= max_y
         for local_x, local_y in mask
+    )
+
+
+def _resource_key(component: Component) -> ResourceKey:
+    return component.color, component.bbox, component.shape
+
+
+def _bbox_union(
+    left: tuple[int, int, int, int] | None,
+    right: tuple[int, int, int, int],
+) -> tuple[int, int, int, int]:
+    if left is None:
+        return right
+    return (
+        min(left[0], right[0]),
+        min(left[1], right[1]),
+        max(left[2], right[2]),
+        max(left[3], right[3]),
     )
 
 
 @dataclass(slots=True)
 class PhaseTopologyPlanner:
-    """Learn and execute a bounded anchor × display-phase option."""
+    """Learn bounded options over anchor × phase × temporal-resource state."""
 
     max_anchors: int = 512
     max_operator_applications: int = 16
     max_plan_selections: int = 96
+    max_resources: int = 8
+    min_budget_evidence: int = 2
     action_effects: dict[int, Point] = field(default_factory=dict)
     action_evidence: Counter[int] = field(default_factory=Counter)
     invalid_actions: set[int] = field(default_factory=set)
@@ -299,6 +316,7 @@ class PhaseTopologyPlanner:
     goal_host: tuple[int, int, int, int] | None = None
     goal_pattern: Pattern | None = None
     goal_cells: tuple[Point, ...] = ()
+    # Equality remains valid under later visual occlusion until a causal reset.
     goal_latched: bool = False
     operator_cells: tuple[Point, ...] = ()
     pattern_candidates: tuple[EmbeddedPattern, ...] = ()
@@ -308,6 +326,17 @@ class PhaseTopologyPlanner:
     pending_action: int | None = None
     operator_applications: int = 0
     contextual_transitions: int = 0
+    budget_color: int | None = None
+    budget_bbox: tuple[int, int, int, int] | None = None
+    budget_area: int | None = None
+    budget_capacity: int = 0
+    budget_unit: int | None = None
+    budget_evidence: Counter[int] = field(default_factory=Counter)
+    resource_candidates: tuple[Component, ...] = ()
+    consumed_resources: set[ResourceKey] = field(default_factory=set)
+    pending_resource: ResourceKey | None = None
+    resource_resets: int = 0
+    horizon_resets: int = 0
     selections: int = 0
     compilations: int = 0
     confirmations: int = 0
@@ -345,10 +374,209 @@ class PhaseTopologyPlanner:
         self.pending_source = None
         self.pending_action = None
         self.operator_applications = 0
+        self.contextual_transitions = 0
+        self.budget_color = None
+        self.budget_bbox = None
+        self.budget_area = None
+        self.budget_capacity = 0
+        self.budget_unit = None
+        self.budget_evidence.clear()
+        self.resource_candidates = ()
+        self.consumed_resources.clear()
+        self.pending_resource = None
+        self.resource_resets = 0
+        self.horizon_resets = 0
         self.selections = 0
         self.last_plan_length = 0
         self.diagnostic = "level-reset"
         self.cap_failure = None
+
+    @property
+    def remaining_budget(self) -> int | None:
+        if self.budget_area is None or self.budget_unit is None:
+            return None
+        return self.budget_area // self.budget_unit
+
+    @property
+    def budget_horizon(self) -> int | None:
+        if not self.budget_capacity or self.budget_unit is None:
+            return None
+        return self.budget_capacity // self.budget_unit
+
+    def _temporal_components(
+        self,
+        frame: Frame,
+    ) -> tuple[Component | None, tuple[Component, ...]]:
+        """Find one boundary meter and its bounded same-role spatial tokens."""
+
+        if not frame or not frame[0]:
+            return None, ()
+        height = len(frame)
+        width = len(frame[0])
+        items = components(frame)
+
+        def boundary_distance(item: Component) -> int:
+            min_x, min_y, max_x, max_y = item.bbox
+            return min(min_x, min_y, width - 1 - max_x, height - 1 - max_y)
+
+        def thin(item: Component) -> bool:
+            min_x, min_y, max_x, max_y = item.bbox
+            box_width = max_x - min_x + 1
+            box_height = max_y - min_y + 1
+            return min(box_width, box_height) <= 2
+
+        def aligned_with_meter(item: Component) -> bool:
+            if self.budget_bbox is None:
+                return True
+            min_x, min_y, max_x, max_y = item.bbox
+            old_min_x, old_min_y, old_max_x, old_max_y = self.budget_bbox
+            horizontal = old_max_x - old_min_x >= old_max_y - old_min_y
+            if horizontal:
+                return min_y <= old_max_y and max_y >= old_min_y
+            return min_x <= old_max_x and max_x >= old_min_x
+
+        meter_options = [
+            item
+            for item in items
+            if (self.budget_color is None or item.color == self.budget_color)
+            and thin(item)
+            and boundary_distance(item) <= 2
+            and aligned_with_meter(item)
+            and (
+                self.budget_color is not None
+                or (
+                    item.area >= 16
+                    and max(
+                        item.bbox[2] - item.bbox[0] + 1,
+                        item.bbox[3] - item.bbox[1] + 1,
+                    )
+                    >= 4
+                    * min(
+                        item.bbox[2] - item.bbox[0] + 1,
+                        item.bbox[3] - item.bbox[1] + 1,
+                    )
+                )
+            )
+        ]
+        meter_options.sort(key=lambda item: (-item.area, item.bbox, item.color))
+
+        if self.budget_color is None:
+            paired = []
+            for meter in meter_options:
+                tokens = tuple(
+                    item
+                    for item in items
+                    if item.color == meter.color
+                    and item is not meter
+                    and 4 <= item.area <= 64
+                    and boundary_distance(item) > 2
+                    and item.bbox[2] - item.bbox[0] + 1 >= 2
+                    and item.bbox[3] - item.bbox[1] + 1 >= 2
+                    and (
+                        (item.bbox[2] - item.bbox[0] + 1)
+                        * (item.bbox[3] - item.bbox[1] + 1)
+                        > item.area
+                    )
+                )
+                if 1 <= len(tokens) <= self.max_resources:
+                    paired.append((meter, tokens))
+            if len(paired) != 1:
+                return None, ()
+            meter, tokens = paired[0]
+        else:
+            if not meter_options:
+                return None, ()
+            meter = meter_options[0]
+            tokens = tuple(
+                item
+                for item in items
+                if item.color == self.budget_color
+                and item is not meter
+                and 4 <= item.area <= 64
+                and boundary_distance(item) > 2
+                and item.bbox[2] - item.bbox[0] + 1 >= 2
+                and item.bbox[3] - item.bbox[1] + 1 >= 2
+                and (
+                    (item.bbox[2] - item.bbox[0] + 1)
+                    * (item.bbox[3] - item.bbox[1] + 1)
+                    > item.area
+                )
+            )
+        return meter, tuple(
+            sorted(tokens, key=lambda item: (item.bbox, item.shape))[
+                : self.max_resources
+            ]
+        )
+
+    def _observe_temporal_resources(
+        self,
+        before: Frame,
+        after: Frame,
+        motion: RigidTranslation | None,
+    ) -> bool:
+        """Update the learned reset algebra; return whether the horizon reset."""
+
+        before_meter, before_resources = self._temporal_components(before)
+        if before_meter is not None and self.budget_color is None:
+            self.budget_color = before_meter.color
+            self.budget_bbox = before_meter.bbox
+        if before_meter is not None:
+            self.budget_bbox = _bbox_union(self.budget_bbox, before_meter.bbox)
+            self.budget_capacity = max(self.budget_capacity, before_meter.area)
+        after_meter, after_resources = self._temporal_components(after)
+        if after_meter is not None and self.budget_color is None:
+            self.budget_color = after_meter.color
+
+        horizon_reset = False
+        if after_meter is not None:
+            self.budget_bbox = _bbox_union(self.budget_bbox, after_meter.bbox)
+            self.budget_area = after_meter.area
+            self.budget_capacity = max(self.budget_capacity, after_meter.area)
+        if before_meter is not None and after_meter is not None:
+            difference = before_meter.area - after_meter.area
+            if 0 < difference <= 64:
+                self.budget_evidence[difference] += 1
+                best, count = self.budget_evidence.most_common(1)[0]
+                if count >= self.min_budget_evidence:
+                    self.budget_unit = best
+            elif (
+                difference < 0
+                and self.budget_unit is not None
+                and -difference >= 2 * self.budget_unit
+            ):
+                contacted = tuple(
+                    item
+                    for item in before_resources
+                    if motion is not None
+                    and _covers(motion.after_anchor, motion.mask, item.cells)
+                )
+                if (
+                    not contacted
+                    and self.pending_resource is not None
+                    and all(
+                        _resource_key(item) != self.pending_resource
+                        for item in after_resources
+                    )
+                ):
+                    contacted = tuple(
+                        item
+                        for item in before_resources
+                        if _resource_key(item) == self.pending_resource
+                    )
+                if len(contacted) == 1:
+                    self.consumed_resources.add(_resource_key(contacted[0]))
+                    self.resource_resets += 1
+                else:
+                    horizon_reset = True
+                    self.horizon_resets += 1
+                    self.consumed_resources.clear()
+        self.resource_candidates = tuple(
+            item
+            for item in after_resources
+            if _resource_key(item) not in self.consumed_resources
+        )
+        self.pending_resource = None
+        return horizon_reset
 
     def observe(
         self,
@@ -359,38 +587,24 @@ class PhaseTopologyPlanner:
         progressed: bool,
     ) -> None:
         motion = infer_rigid_translation(before, after)
-        source_goal_equal = (
-            self.current_pattern is not None
-            and self.current_pattern == self.goal_pattern
-        )
-        operator_contact = (
-            bool(self.operator_cells)
-            and (
-                (
-                    self.pending_anchor is not None
-                    and _covers(
-                        self.pending_anchor,
-                        self.mask,
-                        self.operator_cells,
-                    )
-                )
-                or (
-                    self.pending_source is not None
-                    and _covers(
-                        self.pending_source,
-                        self.mask,
-                        self.operator_cells,
-                    )
-                )
+        had_pending = self.pending_action is not None
+        changed_cells = sum(
+            before_cell != after_cell
+            for before_row, after_row in zip(before, after, strict=False)
+            for before_cell, after_cell in zip(
+                before_row,
+                after_row,
+                strict=False,
             )
         )
-        contextual_transition = (
-            operator_contact
-            and motion is not None
-            and bool(self.colored_mask)
-            and motion.colored_mask == self.colored_mask
-            and motion.after_anchor != self.pending_anchor
+        frame_area = sum(len(row) for row in after)
+        scene_discontinuity = changed_cells > max(
+            4 * len(motion.colored_mask) if motion is not None else 0,
+            frame_area // 5,
         )
+        horizon_reset = self._observe_temporal_resources(before, after, motion)
+        if horizon_reset:
+            self.goal_latched = False
         if progressed:
             self.confirmations += int(self.pending_action is not None)
             self.pending_anchor = None
@@ -398,18 +612,21 @@ class PhaseTopologyPlanner:
             self.pending_action = None
             self.diagnostic = "terminal-predicate-confirmed"
             return
+        predicted_transition = (
+            self.pending_action is not None
+            and motion is not None
+            and motion.after_anchor == self.pending_anchor
+            and action_id == self.pending_action
+        )
         if self.pending_action is not None:
-            if contextual_transition:
+            if horizon_reset or scene_discontinuity:
                 self.confirmations += 1
-                self.operator_applications += 1
-                self.contextual_transitions += 1
-                self.goal_latched = self.goal_latched or source_goal_equal
-                self.diagnostic = "operator-induced-context-transition"
-            elif (
-                motion is None
-                or motion.after_anchor != self.pending_anchor
-                or action_id != self.pending_action
-            ):
+                self.diagnostic = (
+                    "temporal-horizon-reset"
+                    if horizon_reset
+                    else "scene-transition-bootstrap"
+                )
+            elif not predicted_transition:
                 if self.pending_source is not None:
                     self.blocked_edges.add((self.pending_source, action_id))
                 self.conflicts += 1
@@ -420,16 +637,17 @@ class PhaseTopologyPlanner:
         self.pending_source = None
         self.pending_action = None
         if motion is not None:
-            if (
-                self.colored_mask
-                and motion.colored_mask != self.colored_mask
-            ):
+            if self.colored_mask and motion.colored_mask != self.colored_mask:
                 self.cap_failure = "inconsistent-rigid-body-mask"
                 self.diagnostic = "fail-closed:inconsistent-rigid-body-mask"
                 return
             self.colored_mask = motion.colored_mask
             self.current_anchor = motion.after_anchor
-            if not contextual_transition:
+            if (
+                not horizon_reset
+                and not scene_discontinuity
+                and (not had_pending or predicted_transition)
+            ):
                 previous = self.action_effects.get(action_id)
                 if previous not in {None, motion.displacement}:
                     self.invalid_actions.add(action_id)
@@ -438,21 +656,21 @@ class PhaseTopologyPlanner:
                 elif action_id not in self.invalid_actions:
                     self.action_effects[action_id] = motion.displacement
                     self.action_evidence[action_id] += 1
+            protected_cells = set(self.operator_cells)
+            for resource in self.resource_candidates:
+                protected_cells.update(resource.cells)
             for local_x, local_y in motion.mask:
                 x = motion.before_anchor[0] + local_x
                 y = motion.before_anchor[1] + local_y
                 if (
                     0 <= y < len(after)
                     and 0 <= x < len(after[y])
+                    and (x, y) not in protected_cells
                     and after[y][x] not in motion.colors
                 ):
                     self.traversable_colors.add(after[y][x])
-        before_patterns = {
-            item.host_bbox: item for item in embedded_patterns(before)
-        }
-        after_patterns = {
-            item.host_bbox: item for item in embedded_patterns(after)
-        }
+        before_patterns = {item.host_bbox: item for item in embedded_patterns(before)}
+        after_patterns = {item.host_bbox: item for item in embedded_patterns(after)}
         self.pattern_candidates = tuple(after_patterns.values())
         changed = tuple(
             (before_patterns[host], after_patterns[host])
@@ -472,14 +690,19 @@ class PhaseTopologyPlanner:
             )
             == 1
         )
-        if len(qualified_changes) == 1:
+        if (
+            len(qualified_changes) == 1
+            and not horizon_reset
+            and not scene_discontinuity
+        ):
             _previous_phase, next_phase, goal = qualified_changes[0]
             self.current_host = next_phase.host_bbox
             self.current_pattern = next_phase.pattern
             self.goal_host = goal.host_bbox
             self.goal_pattern = goal.pattern
             self.goal_cells = goal.glyph_cells
-            self.operator_applications += int(not contextual_transition)
+            self.goal_latched = next_phase.pattern == goal.pattern
+            self.operator_applications += 1
             self.diagnostic = "operator-induced-phase-transition"
         elif self.current_host in after_patterns:
             current = after_patterns[self.current_host]
@@ -488,12 +711,17 @@ class PhaseTopologyPlanner:
                 goal = after_patterns[self.goal_host]
                 self.goal_pattern = goal.pattern
                 self.goal_cells = goal.glyph_cells
+                self.goal_latched = self.goal_latched or (
+                    current.pattern == goal.pattern
+                )
         self._refresh_operator(before)
 
     def _refresh_operator(self, frame: Frame) -> None:
         if not self.colored_mask or not self.traversable_colors:
             return
         excluded = set(self.body_colors) | self.traversable_colors
+        if self.budget_color is not None:
+            excluded.add(self.budget_color)
         for item in self.pattern_candidates:
             excluded.update((item.host_color, item.glyph_color))
         body_cells = (
@@ -597,56 +825,35 @@ class PhaseTopologyPlanner:
         frame: Frame,
         anchor: Point,
         *,
-        special_colors: frozenset[int] = frozenset(),
+        special_cells: frozenset[Point] = frozenset(),
     ) -> bool:
-        allowed = self.traversable_colors | set(self.body_colors) | set(
-            special_colors
-        )
+        allowed = self.traversable_colors | set(self.body_colors)
         return all(
             0 <= anchor[1] + local_y < len(frame)
             and 0 <= anchor[0] + local_x < len(frame[anchor[1] + local_y])
-            and frame[anchor[1] + local_y][anchor[0] + local_x] in allowed
+            and (
+                frame[anchor[1] + local_y][anchor[0] + local_x] in allowed
+                or (
+                    anchor[0] + local_x,
+                    anchor[1] + local_y,
+                )
+                in special_cells
+            )
             for local_x, local_y in self.mask
         )
 
-    def _path(
+    def _search_path(
         self,
         frame: Frame,
-        target_cells: tuple[Point, ...],
+        *,
+        start: Point,
+        targets: set[Point],
+        special_cells: frozenset[Point] = frozenset(),
     ) -> tuple[int, ...]:
-        if self.current_anchor is None:
-            return ()
-        targets = set(
-            self._goal_anchors()
-            if target_cells == self.goal_cells
-            else self._target_anchors(target_cells)
-        )
         if not targets:
             return ()
-        special_colors = frozenset(
-            frame[y][x]
-            for x, y in target_cells
-            if 0 <= y < len(frame) and 0 <= x < len(frame[y])
-        )
-        if target_cells == self.goal_cells and self.goal_host is not None:
-            min_x, min_y, max_x, max_y = self.goal_host
-            special_colors = frozenset(
-                {
-                    *special_colors,
-                    *(
-                        frame[y][x]
-                        for y in range(max(0, min_y), min(len(frame), max_y + 1))
-                        for x in range(
-                            max(0, min_x),
-                            min(len(frame[y]), max_x + 1),
-                        )
-                    ),
-                }
-            )
-        queue: deque[tuple[Point, tuple[int, ...]]] = deque(
-            [(self.current_anchor, ())]
-        )
-        seen = {self.current_anchor}
+        queue: deque[tuple[Point, tuple[int, ...]]] = deque([(start, ())])
+        seen = {start}
         expansions = 0
         while queue and expansions < self.max_anchors:
             anchor, path = queue.popleft()
@@ -663,20 +870,7 @@ class PhaseTopologyPlanner:
                 if not self._valid_anchor(
                     frame,
                     neighbor,
-                    special_colors=(
-                        special_colors
-                        if neighbor in targets
-                        or (
-                            target_cells == self.goal_cells
-                            and self.goal_host is not None
-                            and _overlaps_bbox(
-                                neighbor,
-                                self.mask,
-                                self.goal_host,
-                            )
-                        )
-                        else frozenset()
-                    ),
+                    special_cells=special_cells,
                 ):
                     continue
                 seen.add(neighbor)
@@ -685,6 +879,118 @@ class PhaseTopologyPlanner:
         if expansions >= self.max_anchors:
             self.cap_failure = "anchor-search-cap"
         return ()
+
+    def _path(
+        self,
+        frame: Frame,
+        target_cells: tuple[Point, ...],
+        *,
+        start: Point | None = None,
+        transit_cells: tuple[Point, ...] = (),
+    ) -> tuple[int, ...]:
+        source = self.current_anchor if start is None else start
+        if source is None:
+            return ()
+        targets = set(
+            self._goal_anchors()
+            if target_cells == self.goal_cells
+            else self._target_anchors(target_cells)
+        )
+        special_cells = set(target_cells) | set(transit_cells)
+        if target_cells == self.goal_cells and self.goal_host is not None:
+            min_x, min_y, max_x, max_y = self.goal_host
+            special_cells.update(
+                (x, y)
+                for y in range(max(0, min_y), min(len(frame), max_y + 1))
+                for x in range(
+                    max(0, min_x),
+                    min(len(frame[y]), max_x + 1),
+                )
+            )
+        return self._search_path(
+            frame,
+            start=source,
+            targets=targets,
+            special_cells=frozenset(special_cells),
+        )
+
+    def _endpoint(self, start: Point, path: tuple[int, ...]) -> Point:
+        x, y = start
+        for action_id in path:
+            dx, dy = self.action_effects[action_id]
+            x += dx
+            y += dy
+        return x, y
+
+    def _operator_rearm_path(
+        self,
+        frame: Frame,
+        legal_action_ids: tuple[int, ...],
+    ) -> tuple[int, ...]:
+        if self.current_anchor is None or not self.operator_cells:
+            return ()
+        candidates = []
+        for action_id, (dx, dy) in sorted(self.action_effects.items()):
+            neighbor = (
+                self.current_anchor[0] + dx,
+                self.current_anchor[1] + dy,
+            )
+            if (
+                action_id not in legal_action_ids
+                or (self.current_anchor, action_id) in self.blocked_edges
+                or not self._valid_anchor(frame, neighbor)
+                or _covers(neighbor, self.mask, self.operator_cells)
+            ):
+                continue
+            return_path = self._path(
+                frame,
+                self.operator_cells,
+                start=neighbor,
+            )
+            if return_path:
+                candidates.append((action_id, *return_path))
+        if not candidates:
+            return ()
+        return min(candidates, key=lambda path: (len(path), path))
+
+    def _resource_option(
+        self,
+        frame: Frame,
+        destination: tuple[Point, ...],
+        *,
+        remaining: int,
+        horizon: int,
+    ) -> tuple[Component, tuple[int, ...]] | None:
+        """Choose the latest reachable reset whose post-reset suffix is feasible."""
+
+        if self.current_anchor is None:
+            return None
+        feasible = []
+        for resource in self.resource_candidates:
+            path = self._path(frame, resource.cells)
+            if not path or len(path) > remaining:
+                continue
+            resource_anchor = self._endpoint(self.current_anchor, path)
+            suffix = self._path(
+                frame,
+                destination,
+                start=resource_anchor,
+                transit_cells=resource.cells,
+            )
+            if not suffix or len(suffix) > horizon:
+                continue
+            feasible.append((resource, path, suffix))
+        if not feasible:
+            return None
+        resource, path, _suffix = min(
+            feasible,
+            key=lambda item: (
+                -len(item[1]),
+                len(item[2]),
+                item[0].bbox,
+            ),
+        )
+        return resource, path
 
     def select(
         self,
@@ -715,50 +1021,101 @@ class PhaseTopologyPlanner:
                 self.operator_cells,
             )
         )
-        phase_equal = (
-            self.goal_latched
-            or (
-                self.current_pattern is not None
-                and self.current_pattern == self.goal_pattern
-            )
+        phase_equal = self.goal_latched or (
+            self.current_pattern is not None
+            and self.current_pattern == self.goal_pattern
         )
-        if phase_equal and self.goal_cells and not on_operator:
+        remaining = self.remaining_budget
+        horizon = self.budget_horizon
+        bounded_remaining = remaining if remaining is not None else 0
+        bounded_horizon = horizon if horizon is not None else 0
+        temporal_grounded = (
+            remaining is not None
+            and horizon is not None
+            and bool(self.resource_candidates)
+        )
+        target_cells: tuple[Point, ...]
+        path: tuple[int, ...]
+        selected_resource: Component | None = None
+
+        if phase_equal and self.goal_cells:
             target_cells = self.goal_cells
             mode = "terminal"
+            path = self._path(frame, target_cells)
+            if (
+                temporal_grounded
+                and path
+                and len(path) > bounded_remaining
+                and (
+                    option := self._resource_option(
+                        frame,
+                        self.goal_cells,
+                        remaining=bounded_remaining,
+                        horizon=bounded_horizon,
+                    )
+                )
+                is not None
+            ):
+                selected_resource, path = option
+                target_cells = selected_resource.cells
+                mode = "resource-reset"
         elif (
             self.operator_cells
             and self.operator_applications < self.max_operator_applications
         ):
             target_cells = self.operator_cells
-            mode = "operator"
+            if on_operator:
+                path = self._operator_rearm_path(frame, legal_action_ids)
+                mode = "operator-rearm"
+                if temporal_grounded and path:
+                    resource_paths = tuple(
+                        candidate
+                        for resource in self.resource_candidates
+                        if (candidate := self._path(frame, resource.cells))
+                    )
+                    nearest_resource = min(
+                        (len(candidate) for candidate in resource_paths),
+                        default=None,
+                    )
+                    if (
+                        nearest_resource is not None
+                        and len(path) + nearest_resource > bounded_remaining
+                        and (
+                            option := self._resource_option(
+                                frame,
+                                self.operator_cells,
+                                remaining=bounded_remaining,
+                                horizon=bounded_horizon,
+                            )
+                        )
+                        is not None
+                    ):
+                        selected_resource, path = option
+                        target_cells = selected_resource.cells
+                        mode = "resource-reset"
+            else:
+                path = self._path(frame, target_cells)
+                mode = "operator"
+                if (
+                    temporal_grounded
+                    and path
+                    and len(path) >= bounded_remaining
+                    and (
+                        option := self._resource_option(
+                            frame,
+                            self.operator_cells,
+                            remaining=bounded_remaining,
+                            horizon=bounded_horizon,
+                        )
+                    )
+                    is not None
+                ):
+                    selected_resource, path = option
+                    target_cells = selected_resource.cells
+                    mode = "resource-reset"
         else:
             self.diagnostic = "missing-phase-goal-or-operator"
             return None
-        path = self._path(frame, target_cells)
-        if (
-            not path
-            and mode == "operator"
-            and _covers(self.current_anchor, self.mask, self.operator_cells)
-        ):
-            for candidate, (dx, dy) in sorted(self.action_effects.items()):
-                neighbor = (
-                    self.current_anchor[0] + dx,
-                    self.current_anchor[1] + dy,
-                )
-                if (
-                    candidate in legal_action_ids
-                    and (self.current_anchor, candidate)
-                    not in self.blocked_edges
-                    and self._valid_anchor(frame, neighbor)
-                    and not _covers(
-                        neighbor,
-                        self.mask,
-                        self.operator_cells,
-                    )
-                ):
-                    path = (candidate,)
-                    mode = "operator-rearm"
-                    break
         if not path:
             self.diagnostic = f"no-{mode}-path"
             return None
@@ -773,6 +1130,9 @@ class PhaseTopologyPlanner:
             self.current_anchor[1] + displacement[1],
         )
         self.pending_action = action_id
+        self.pending_resource = (
+            _resource_key(selected_resource) if selected_resource is not None else None
+        )
         self.selections += 1
         self.compilations += 1
         self.last_plan_length = len(path)
