@@ -73,6 +73,52 @@ def _panel(
     return tuple(tuple(row) for row in grid)
 
 
+def _sequence_panel() -> Frame:
+    grid = [[2 for _x in range(42)] for _y in range(30)]
+    for y in range(15, 30):
+        grid[y] = [3 for _x in range(42)]
+    inputs = (
+        _mask("##.", "...", "..."),
+        _mask("#..", "##.", "..."),
+        _mask("###", "...", "..."),
+        _mask("###", ".#.", "..."),
+    )
+    outputs = (
+        (_mask("#..", "#..", "..."),),
+        (
+            _mask("##.", "#..", "..."),
+            _mask("...", ".#.", ".#."),
+        ),
+        (_mask("#..", "#..", "#.."),),
+        (
+            _mask(".#.", "###", "..."),
+            _mask("##.", ".#.", "..."),
+        ),
+    )
+    for row, indexes in ((1, (0, 1)), (7, (2, 3))):
+        x = 1
+        for index in indexes:
+            _draw_tile(grid, x, row, 10, inputs[index])
+            x += 6
+            for output in outputs[index]:
+                _draw_tile(grid, x, row, 7, output)
+                x += 6
+            x += 2
+    transform = 2
+    query_masks = (
+        dihedral_variants(inputs[0])[transform],
+        dihedral_variants(inputs[1])[transform],
+    )
+    for index, query in enumerate(query_masks):
+        _draw_tile(grid, 10 + index * 6, 16, 10, query)
+    arbitrary = _mask(".#.", "...", "...")
+    for index in range(3):
+        _draw_tile(grid, 10 + index * 6, 23, 7, arbitrary)
+    grid[22][10] = 0
+    grid[28][10] = 0
+    return tuple(tuple(row) for row in grid)
+
+
 def test_infers_dihedral_targets_and_selected_slot() -> None:
     arbitrary = _mask(".#.", "...", "...")
     layout = infer_dihedral_analogy(
@@ -86,6 +132,15 @@ def test_infers_dihedral_targets_and_selected_slot() -> None:
     assert layout is not None
     assert len(layout.query_tiles) == len(layout.answer_tiles) == 2
     assert all(1 <= len(targets) <= 2 for targets in layout.targets)
+    assert layout.selected_index == 0
+
+
+def test_concatenates_variable_length_demonstrated_outputs() -> None:
+    layout = infer_dihedral_analogy(_sequence_panel())
+
+    assert layout is not None
+    assert len(layout.query_tiles) == 2
+    assert len(layout.answer_tiles) == len(layout.targets) == 3
     assert layout.selected_index == 0
 
 
