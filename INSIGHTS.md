@@ -477,6 +477,22 @@ all legal choices are redundant. In category language, exploration should
 cover morphisms of the quotient, not every concrete presentation. In HRL
 language, this is state-action abstraction before option discovery.
 
+V91 makes that compression operative at scale—7,201 concrete tokens omitted,
+368 filtered decisions, and broader raw-state reach on three games—without one
+new level. This is useful negative evidence. The bottleneck is no longer
+ordinary exploration coverage. A policy can know which causal models disagree
+and avoid relearning equivalent interventions, yet still explore the wrong
+parts of a well-compressed world.
+
+The hierarchy must now move from dynamics to telos. Progress supplies sparse
+examples of terminal relational predicates; failures and no-ops supply
+counterexamples. A bounded version space can propose predicates such as
+contact, containment, alignment, equality of forms, completed permutation, or
+phase synchronization without naming a game. Causal action effects can then
+be evaluated by predicted reduction of predicate violations. This is where
+CSP planning and HRL meet: the predicate defines an option termination
+condition, and the causal quotient supplies its abstract transition model.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

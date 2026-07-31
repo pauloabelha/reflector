@@ -326,6 +326,14 @@ untried role with one unique outcome and at least two donor supports is
 temporarily omitted. The filter has a 64-decision level cap and preserves an
 exact fallback if omission would empty the legal set.
 
+V91 exercises this filter on 368 decisions and omits 7,201 concrete tokens,
+yet adds no progress. The mode remains exact-off. Together v89–v91 establish
+that the partial-bisimulation quotient is a valid dynamics compression but not
+a reward model. Architecture work now moves one level up: a bounded relational
+goal-predicate version space must distinguish progress from terminal failure
+and no-op, after which the quotient may support CSP search toward decreasing
+predicate violation.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

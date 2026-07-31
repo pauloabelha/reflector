@@ -548,6 +548,23 @@ four-confirmation/75%-precision maturity gate, requires two donor supports,
 caps filtering at 64 generic decisions per level, and falls back when every
 legal role is redundant.
 
+Reject v91 for task promotion. It filtered 7,201 concrete tokens over 368
+generic decisions and expanded raw-state coverage on `g50t`, `ls20`, and
+`tu93`, but every eight-game score and level-action vector exactly matched
+v88. Report `reports/experimental-v91-bisimulation-coverage-r1-400.json`,
+SHA-256
+`80d6ae92b850b0a7cc1ea73ae2307410167fc66130a158280f38559dbe32dc8d`.
+Keep the bit exact-off.
+
+Stop mutating undirected exploration. The quotient has now validated
+prediction, CEGIS refinement, and intervention compression without progress.
+Return to hierarchical goal induction: audit progress and terminal-adjacent
+states for relational predicates conserved across structurally different
+games, retain competing predicates as a bounded CSP version space, and test
+actions by whether their evidenced effects reduce a selected predicate's
+violation count. Require the predicate to distinguish progress from failure
+and no-op before it can define a subgoal option.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

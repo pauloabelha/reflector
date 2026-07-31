@@ -459,3 +459,20 @@ state/role intervention whose outcome is already uniquely supported by
 multiple compatible donor states, while retaining ambiguous and unpredicted
 roles as the abstract intervention frontier. This would make the quotient an
 operative coverage structure rather than another advisor.
+
+V91 tests that compression and is rejected for task promotion. Across the
+same eight-game quotient gate it applied the filter on 368 generic decisions
+and omitted 7,201 multiply supported concrete tokens. `g50t` changed its
+action distribution and reached 205 raw states versus 195 under v88; `ls20`
+and `tu93` also reached more raw states. Nevertheless, every score, level
+count, completed-level action vector, and total action count remained exact.
+Report
+[`reports/experimental-v91-bisimulation-coverage-r1-400.json`](reports/experimental-v91-bisimulation-coverage-r1-400.json),
+SHA-256
+`80d6ae92b850b0a7cc1ea73ae2307410167fc66130a158280f38559dbe32dc8d`.
+
+This closes the undirected-exploration branch: raw novelty, predicted positive
+effects, causal information gain, and quotient coverage can all change
+behavior without supplying a task terminal predicate. The next work must
+induce a goal/subgoal constraint from relational invariants, phase changes,
+and progress evidence, then plan to it; more breadth is not the leap.
