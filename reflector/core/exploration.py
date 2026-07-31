@@ -5457,6 +5457,33 @@ class EpistemicExplorer:
                 scene,
             )
 
+        committed_constellation = (
+            self.reference_constellation_cursor
+            < len(self.reference_constellation_plan)
+            or (
+                self.composite_reference_plan is not None
+                and len(self.composite_reference_completed)
+                < len(self.composite_reference_plan.options)
+            )
+        )
+        if self.constellation_alignment and committed_constellation:
+            constellation = self._select_constellation_alignment(
+                observation,
+                tokens,
+            )
+            if constellation is not None:
+                self.last_scheme_components = (
+                    "scheme:latent-constellation-alignment",
+                    "operator:execute-committed-hierarchical-option",
+                    "state:joint-placement-paint-cover",
+                )
+                return self._issue(
+                    state,
+                    constellation,
+                    "epistemic-frontier:constellation-alignment",
+                    scene,
+                )
+
         paired = self._select_paired_object_contact(
             observation,
             tokens,

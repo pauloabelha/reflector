@@ -194,6 +194,14 @@ the target object is a coproduct of movers within a paint-color fiber. This is
 also a useful MDL step: the agent needs one joint solver over already learned
 morphisms, not three new shape-specific procedures.
 
+V84i then supplied an HRL falsifier rather than a representational one. It
+grounded all three options, but the paired-object advisor inserted five
+primitive actions halfway through the plus route. The option later resumed and
+reported its own goals satisfied, yet the world endpoint was wrong. A compiled
+option is a semi-Markov action with an initiation set and termination
+condition, not a loose suggestion queue. Arbitration must preserve that
+atomicity unless a causal prediction fails or an action becomes unavailable.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

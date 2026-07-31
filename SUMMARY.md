@@ -142,7 +142,11 @@ the current plus occludes them. A joint latent-color exact-cover CSP has one
 minimum-cost geometric assignment—X `(30,15)`, plus `(33,51)`, diamond
 `(51,36)`—and its paint-aware public-wrapper program solved level 5 in
 **63 actions**. This is diagnostic evidence, not yet an autonomous candidate
-result.
+result. V84i grounded all three options and issued 63 option selections, but
+five lower-level paired-object actions interrupted the plus option; it
+therefore remained 4/8. The active correction gives a committed hierarchical
+option arbitration priority until completion, preserving its atomic
+semi-Markov semantics.
 
 ## Rejected branch
 

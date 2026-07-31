@@ -158,6 +158,15 @@ transfers solved level 5 through the public wrapper in 63 actions. Implement
 this as a joint latent-color placement CSP, not a watched route, and require
 the autonomous agent to reproduce the 63-action consequence.
 
+V84i's first frozen run grounded the unique three-option CSP with zero
+constellation conflicts but remained 4/8. Its trace localized the failure:
+after seven plus-route steps, the lower-priority paired-object advisor
+interleaved five actions before the option resumed. The executed 63
+constellation selections were therefore not the 63-action program. The next
+offspring enforces standard hierarchical-RL option atomicity: once a bounded
+reference option is committed, lower-level advisors cannot interrupt it before
+termination or an unavailable-action failure.
+
 Required gates are:
 
 1. integrate and validate the general joint CSP on level 5;
