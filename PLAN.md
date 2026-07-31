@@ -418,6 +418,25 @@ evidence identities only; the retained forbidden assignment is the grounded
 role. Synthetic tests require two distinct frames, separate different roles,
 and preserve safe-counterexample quarantine.
 
+The seven-game online gate rejects v87 for task promotion. It earned four
+prospective confirmations and filtered seven token opportunities. Concrete
+behavior changed on `s5i5` and `vc33`, but every score, level-action vector,
+and failure count exactly matched v84m; `bp35` filtered a nonselected token.
+Report `reports/experimental-v87-role-viability-targeted-r1-400.json`,
+SHA-256
+`68c0d3837d9acdd09b06043e2f65d38c5e8b9b674e3551aeb15f1ac848ab56ab`.
+Keep both viability modes exact-off in accepted candidates.
+
+Do not broaden the taboo or lower its evidence threshold. The next hypothesis
+must add direction: construct a bounded abstract causal graph whose nodes are
+compressed effect/state roles, attach terminal roles as forbidden constraints,
+and learn a positive potential only from progress or prospectively confirmed
+subgoals. A useful formulation is a finite MDP homomorphism/quotient functor:
+concrete transitions may merge only when their available grounded-role effects
+and observed outcomes commute. Plan over the quotient with a CSP/CEGIS
+version space of candidate subgoals. First validate bisimulation and aliasing
+offline; then test one partially solved game and one zero-progress game.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

@@ -373,6 +373,25 @@ HRL terms, this is an initiation-set exclusion for a grounded option. The
 result is still only an offline hypothesis until an online role-local child
 filters those edges without regressing accepted progress.
 
+The online child completed that causal test. Four grounded roles earned
+prospective terminal authority and seven candidate tokens were removed. Two
+games changed their actual click sequences, yet no score, level vector, or
+failure count changed. This falsifies “unsafe initiation-set learning alone
+improves exploration.” It is constraint learning without a value function:
+after removing one morphism, the policy selects another by undirected
+fairness.
+
+The next categorical object should therefore be a quotient transition system,
+not a longer blacklist. A functor from concrete states to effect-equivalent
+causal states is legitimate only when grounded action roles and their observed
+outcomes commute under the quotient. Progress can then define a positive
+potential on the abstract graph; terminal roles constrain its viable domain.
+Piagetian accommodation changes the smallest failed equivalence class,
+Drescher-style schemas provide action/context/result triples, CEGIS retains
+competing subgoal predicates, and hierarchical planning compiles the selected
+abstract path into a bounded option. This joins causal learning, CSP, and HRL
+without pretending negative knowledge is itself a goal.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

@@ -243,6 +243,14 @@ Thus the mechanism learns a bounded unsafe boundary for an option initiation
 set without inventing a goal or overwriting an independently supported
 controller.
 
+The evaluated role-only quotient drops the whole-scene term while retaining
+the grounded role and distinct concrete frames as evidence identities. It
+earns terminal authority online and changes generic click sequences, but does
+not improve score or reduce failures. This locates viability as a constraint
+layer, not a value layer: a future abstract causal graph may consume these
+forbidden assignments, but the accepted policy must keep both modes exact-off
+until a positive potential supplies directed control.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

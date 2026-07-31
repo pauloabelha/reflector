@@ -373,3 +373,20 @@ counterexample quarantine. Audit
 [`reports/v84m-terminal-viability-quotients-v1.json`](reports/v84m-terminal-viability-quotients-v1.json),
 SHA-256
 `dbd8272a05239bf8d11727f9f82e4e5321f15852e133742aea4f57acfe1e08e7`.
+
+V87 tested that grounded-role quotient online. It earned four prospective
+confirmations and filtered seven token opportunities across `bp35`, `s5i5`,
+and `vc33`; `s5i5` and `vc33` changed concrete click sequences. Nevertheless,
+all seven target/sentinel games retained exactly the same scores,
+level-action vectors, and failure counts. `sp80` earned authority but no later
+exact-role filter. The mechanism is causally operative but supplies no goal
+gradient, so it is not promoted. Report
+[`reports/experimental-v87-role-viability-targeted-r1-400.json`](reports/experimental-v87-role-viability-targeted-r1-400.json),
+SHA-256
+`68c0d3837d9acdd09b06043e2f65d38c5e8b9b674e3551aeb15f1ac848ab56ab`.
+
+The earned insight is a boundary, not a new score: an initiation-set exclusion
+can prevent one undefined grounded morphism, but substituting the next
+least-tried action remains undirected. The next architecture must learn a
+positive abstract value or subgoal over causal states—while retaining failure
+evidence as a constraint—rather than widening the taboo.

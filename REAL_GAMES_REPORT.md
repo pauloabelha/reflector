@@ -43,6 +43,7 @@ and notebook
 | Process-isolated official local suite | v84m accepted | **20.4189401616 / 100** | 3 games beaten; 47/183 levels across 14 games; 9,185 actions | full quality/export gates and exact v82f preservation on 23/23 non-target games; 25/25 coverage |
 | Process-isolated 14-game falsifier | v85 compressed progress-path transport, rejected | **35.9812800045 gate mean** | no added level; `lp85` improved, `ft09` regressed 99.0037508892→89.2285714286 | operative but rejected; accepted v84m remains unchanged |
 | Process-isolated 16-game failure gate | v86 whole-scene terminal viability, inert | **0.8455034772 gate mean** | exact v84m score/action preservation; 65 terminal proposals, 0 confirmations, 0 filters | representation too specific; not promoted |
+| Process-isolated 7-game causal gate | v87 grounded-role terminal viability, rejected | **0.0272981285 gate mean** | 4 confirmations and 7 filtered opportunities; exact v84m score/level-action vectors and failure counts | operative constraint with no goal gradient; not promoted |
 | Kaggle notebook artifact | v84m accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and emitted `submission.parquet` | submission request rejected after v74 consumed daily allowance; no v84m submission ID |
 | Kaggle public leaderboard | v65b, submission `55113224` | **0.02** | synchronous hidden rerun complete | belongs only to frozen v65b |
 | Kaggle rerun | v74, submission `55123277` | pending | submitted 2026-07-31 01:05:23 UTC | pending; no score yet |
