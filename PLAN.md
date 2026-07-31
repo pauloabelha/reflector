@@ -25,17 +25,17 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last known participant-remote commit: `27f5ac5`
-- Accepted candidate: `candidate-cb34c9a1195fafa1`
-- Accepted agent: Reflector v74
+- Accepted candidate: `candidate-40b2dad207199755`
+- Accepted agent: Reflector v82f
 - Accepted frozen source/candidate commit:
-  `5422fb823d464e9f837f7b523d06e41a930effd5`
+  `79a872ca0ed3fa40a98b185b3217e304d81dc68f`
 - Accepted inference fingerprint:
-  `dd77d4f57b4820659cc8f63a6d988511cb975833cdf8be1a24182214792ff33f`
+  `7c28b2a24674941f30a8053326fc2b9b6c2decea339cb8f3c57ff53ef54f7008`
 - Accepted public-development report:
-  `reports/official-isolated-v74-clean-baseline-400.json`
-- Accepted score: `14.450686193334509`
+  `reports/official-isolated-v82f-dihedral-bridge-400.json`
+- Accepted score: `16.355448098096414`
 - Accepted coverage: 25/25 games, 9,185 actions
-- Accepted completions: 35/183 levels across 12 games; 3/25 games complete
+- Accepted completions: 39/183 levels across 13 games; 3/25 games complete
 - Kaggle submission: `55113224`, v65b notebook version 1, pending hidden rerun
 - Kaggle public score: pending; not yet returned
 - Kaggle private score: unavailable
@@ -70,6 +70,29 @@ generalization.
 | Contiguous path cycles plus topology-grounded controllers | v68 inferred nested one-step rotations over a conserved uniform simple rectilinear slot path and distinguished identical controller sprites by endpoint/straight/corner context; it preserved every non-`lp85` score, level count, action total, reset count, and reported distribution while solving `lp85` L5 at action 50 twice. Level 6 exceeds the fixed slot bound and remains explicitly unrepresented. |
 | Grounded primary colored-stencil composition | v69 uniquely grounded a congruent reference/construction pair, visible palette roles, and an outlined eight-pose template; learned controller roles only from rendered translations; and searched bounded exact programs of palette selection, pose navigation, and half-plane overwrites. It preserved every non-`cd82` accepted trajectory and solved `cd82` L1–L2 at `[12,6]` twice. |
 | Secondary stencil and factored orbit composition | v74 independently grounded smaller overwrite components and factored cyclic direction from radial rank. It completed `cd82` 6/6 and reached `lp85` 6/8 while preserving all other v69 outcomes exactly. |
+| Demonstrated dihedral analogy algebra | v82f inferred glyph-to-glyph, glyph-to-sequence, sequence-to-sequence, and bridge-composed relations under square symmetries. It preserved every v74 game exactly except `tr87`, where it reproducibly advanced 4/6 at `[56,45,44,38,217,0]`; the full suite rose to 16.3554480981 and 39/183 levels. |
+
+## Current experiment: v84 landmark-constrained shape embedding
+
+V84 is not promoted. Its first frozen target run advanced `re86` from 0/8 to
+1/8 in 34 actions and grounded four translations plus one control-transfer
+action with zero conflicts. The plus-only target parser then abstained on level
+2, which contains a plus, an X, and a diamond.
+
+The active generalization replaces shape-specific target centers with a
+translation subset constraint: for each colored mover, infer translations
+under which every same-colored landmark center lies on the translated mover
+mask. Candidate ambiguity is resolved only by the intervention-grounded action
+lattice. Required gates are:
+
+1. focused parser and controller tests;
+2. deterministic multi-level `re86` gain twice;
+3. exact preservation of the v82f suite outside changed targets;
+4. full 25-game score of at least 20 before Kaggle submission.
+
+V83's one-dimensional track replay is rejected: it was active on `sc25` but
+remained 0/6 in 400 actions because geometric endpoint proximity was not the
+task goal.
 
 ## Accepted parent mechanism: v25 global relation constraints
 

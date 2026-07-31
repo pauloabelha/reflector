@@ -11,24 +11,72 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v74, frozen source/candidate commit
-  `5422fb823d464e9f837f7b523d06e41a930effd5`.
-- Accepted candidate: `candidate-cb34c9a1195fafa1`.
-- Local known-public-development score: **14.450686193334509 / 100**.
-- Progress: **35 / 183 levels across the 25 public-development games**.
+- Accepted agent: v82f, frozen source/candidate commit
+  `79a872ca0ed3fa40a98b185b3217e304d81dc68f`.
+- Accepted candidate: `candidate-40b2dad207199755`.
+- Local known-public-development score: **16.355448098096414 / 100**.
+- Progress: **39 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
 - Total actions: **9,185**.
 - Kaggle submissions: **1 pending** (`55113224`, frozen v65b).
 - Kaggle public score: **pending; not yet returned**.
 - Kaggle private score: **unavailable**.
-- V74 is accepted. Relative to v69, it changes only `cd82` and `lp85`,
-  completing `cd82` 6/6 and reaching `lp85` 6/8.
+- V82f is accepted. Relative to v74, it changes only `tr87`, advancing that
+  game from 0/6 to 4/6 while exactly preserving every other outcome.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem
 is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
+
+## 2026-07-30 — v82f demonstrated analogy algebra accepted
+
+The strongest post-restart gain came from treating `tr87` as a visible algebra
+of examples rather than an interface to explore uniformly. A bounded parser
+extracts framed glyphs, quotients masks by the eight symmetries of the square,
+and compiles uniquely supported relations. Successive falsifications required
+four increasingly general forms: class-to-class, class-to-sequence,
+sequence-to-sequence, and composition through a latent bridge color.
+
+The frozen agent reached 4/6 twice at `[56,45,44,38,217,0]`. Its full
+process-isolated suite scored **16.355448098096414**, solved **39/183** levels,
+and changed only `tr87` relative to v74. The full quality gate passed: 437
+tests, 3 skips, Ruff, and mypy.
+
+The earned insight is that visible examples can define a small relational
+category: objects are dihedral equivalence classes, demonstrated mappings are
+morphisms, variable-length outputs are products, and bridge-colored examples
+support composition. This is substantially more useful than balancing action
+types because it produces an executable prediction.
+
+## 2026-07-30 — v83 track proximity rejected
+
+V83 compiled and replayed only macros whose observed effect reduced a marker's
+distance to a framed endpoint. On `sc25` the mechanism was operative but
+remained 0/6 in 400 actions. The endpoint was part of the interface, not the
+goal. This closes another undirected geometry branch: even a correctly learned
+distance potential is useless when its target role is not evidenced.
+
+## 2026-07-30 — v84 constellation alignment: first gain, broader form exposed
+
+Black-box analysis of `re86` found that action 5 transfers control between
+colored movers and actions 1–4 translate the selected mover on a three-pixel
+lattice. In level 1, four colored landmark centers for each mover form a latent
+plus target. The derived 20-action hand program completed the level exactly.
+
+The first frozen autonomous offspring grounded all five roles without conflict
+and completed level 1 in 34 actions, scoring 1.6243752403 on the target run.
+It then abstained on level 2. That failure exposed the more general invariant:
+the next scene contains a plus, an X, and a diamond, and each color has a set of
+landmark centers that must lie on the corresponding translated shape mask.
+Target inference is therefore translation subset embedding, not plus-center
+intersection. Ambiguous pixel-level embeddings should be filtered by the
+already grounded action lattice rather than by a shape-specific rule.
+
+This is promising but not accepted evidence beyond one level. The stronger
+parser must solve changed layouts reproducibly and pass preservation before it
+can affect the canonical score.
 
 ## 2026-07-30 — clean restart and v75 translation algebra
 

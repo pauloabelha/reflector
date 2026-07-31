@@ -6,32 +6,36 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 3 of 25 public-development games.**
-> It has solved 35 of 183 levels across 12 games. The suite ran all 25 games,
+> It has solved 39 of 183 levels across 13 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
 | Outcome metric | Accepted v74 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **3 / 25** | `sb26`, `ft09`, and `cd82` were solved through their final levels. |
-| Games with progress | **12 / 25** | At least one level was solved in twelve games. |
-| Levels solved | **35 / 183** | Eight in `sb26`; six each in `ft09`, `cd82`, and `lp85`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **14.4506861933 / 100** | About **14.45%** of the 100-point scale on the known public-development games. |
+| Games with progress | **13 / 25** | At least one level was solved in thirteen games. |
+| Levels solved | **39 / 183** | Eight in `sb26`; six each in `ft09`, `cd82`, and `lp85`; four in `tr87`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **16.3554480981 / 100** | About **16.36%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
 | Kaggle submissions | **1 pending** | Submission `55113224` remains `PENDING`; no hidden score has returned yet. |
 
-The clean process-isolated baseline is
-[`reports/official-isolated-v74-clean-baseline-400.json`](reports/official-isolated-v74-clean-baseline-400.json),
+The current process-isolated result is
+[`reports/official-isolated-v82f-dihedral-bridge-400.json`](reports/official-isolated-v82f-dihedral-bridge-400.json),
 SHA-256
-`889a03f1d46dd3ca1f062ecfe7d9482b124b142a614d04188da3cf17b48a2eeb`.
+`a29e963af1dd3af31d6e7cf040b8d28e7006e9bbf1e5007ed02e32e714674f56`.
 It identifies frozen source commit
-`5422fb823d464e9f837f7b523d06e41a930effd5`, candidate
-`candidate-cb34c9a1195fafa1`, and inference fingerprint
-`dd77d4f57b4820659cc8f63a6d988511cb975833cdf8be1a24182214792ff33f`.
+`79a872ca0ed3fa40a98b185b3217e304d81dc68f`, candidate
+`candidate-40b2dad207199755`, and inference fingerprint
+`7c28b2a24674941f30a8053326fc2b9b6c2decea339cb8f3c57ff53ef54f7008`.
 
 ## Evaluation surfaces
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
+| Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |
+| Target-only `tr87` reruns | v82f accepted | 47.6190476190 for one game | 4/6 levels; exact `[56,45,44,38,217,0]` twice | deterministic demonstrated-analogy gain |
+| Target-only `re86` run | v84 experimental | 1.6243752403 for one game | 1/8 levels at `[34,366,0,0,0,0,0,0]`; four moves and one switch grounded, zero conflicts | target gain once; broader level-2 shape embedding under development |
+| Target-only `sc25` run | v83 rejected | 0.0000000000 for one game | 0/6 levels in 400 actions despite operative distance-decreasing track replay | rejected; track endpoint was not the task goal |
 | Clean process-isolated official local suite | v74 accepted | **14.4506861933 / 100** | 3 games beaten; 35/183 levels across 12 games; 9,185 actions | exact clean restart; 25/25 coverage |
 | Read-only v75 representation audit | action-conditioned translation algebra, inactive | — | prospective authority on 13/25 games; same-episode inverse pairs on 7/25 | architecture evidence only; no task score |
 | Process-isolated official local suite | v69 historical | **10.2554480981 / 100** | 2 games beaten; 30/183 levels across 12 games; 9,486 actions | superseded by v74 |
