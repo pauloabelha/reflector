@@ -168,6 +168,32 @@ sideways so the X did not cross the color-6 swatch. It solved level 4 in 44
 actions. Planning must therefore include color in causal state and treat paint
 acquisition/retention as option subgoals.
 
+V84h turned that diagnosis into a bounded symbolic operator. Its A* state is
+the product `(anchor,color)`; movement and paint contact are evidenced
+morphisms; the terminal CSP requires both landmark embedding and the bound
+reference color. The frozen agent solved level 4 in exactly the predicted 44
+actions and reached 4/8 at `[24,36,56,44]`, target score 27.7777777778.
+This is the clearest current example of useful accommodation and compression:
+no route was retained as episodic prose, only a smaller causal state space and
+an executable option over it. Level 5 is the next disequilibrium and should
+first be tested as a composition or product of already earned morphisms.
+
+That test exposed a coproduct as well as a product. The level-5 X and plus
+jointly realize one color-9 target, while the diamond realizes a color-8
+target. A one-mover/one-group bijection is therefore false. Two color-8
+landmark centers also render as color 12 because the current plus lies over
+them. Conserving the evidenced ring locations while making only those
+causally overwritten center colors latent produces a unique joint CSP over
+placement, paint state, and exact cover. Its assignments are X `(30,15)` and
+plus `(33,51)`, both painted 9, plus diamond `(51,36)` painted 8.
+
+A 63-action program compiled from those constraints solved level 5 through the
+public wrapper. Conceptually, the natural transformation from concrete pixels
+to landmark constraints must commute only modulo a justified occlusion map;
+the target object is a coproduct of movers within a paint-color fiber. This is
+also a useful MDL step: the agent needs one joint solver over already learned
+morphisms, not three new shape-specific procedures.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

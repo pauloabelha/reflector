@@ -72,7 +72,7 @@ generalization.
 | Secondary stencil and factored orbit composition | v74 independently grounded smaller overwrite components and factored cyclic direction from radial rank. It completed `cd82` 6/6 and reached `lp85` 6/8 while preserving all other v69 outcomes exactly. |
 | Demonstrated dihedral analogy algebra | v82f inferred glyph-to-glyph, glyph-to-sequence, sequence-to-sequence, and bridge-composed relations under square symmetries. It preserved every v74 game exactly except `tr87`, where it reproducibly advanced 4/6 at `[56,45,44,38,217,0]`; the full suite rose to 16.3554480981 and 39/183 levels. |
 
-## Current experiment: v84b categorical constellation options
+## Current experiment: v84h causal paint-state constellation options
 
 V84b is not promoted. Candidate `candidate-ec8492354af28870`, frozen at source
 `5d64e5794c3720e14f2a7f7d3f430e359cf6992d`, reproduced `re86` exactly twice
@@ -136,12 +136,36 @@ while reaching the same embedding targets, solved level 4 in 44 actions. V84h
 lifts search to `(anchor,color)` and compiles this waypoint structure with a
 4,096-expansion bound.
 
+Frozen v84h candidate `candidate-ff5318e279917649`, from source commit
+`906af49`, passed that behavioral gate once. It reached `re86` 4/8 at
+`[24,36,56,44,240,0,0,0]`, target score 27.7777777778. Level 4 consumed
+exactly the predicted 44 actions. The immutable report is
+`reports/experimental-v84h-paint-re86-r1-400.json`, SHA-256
+`20948ea86de811784a896085e831fd98cc83983288f6044b5a5093c1a3484ab6`.
+Level 5 is now the concrete falsifier. At the end of the budget its factor and
+reference parsers abstained as `not-grounded`, so the next step is to inspect
+its initial relational object and seek a composition of existing translation,
+focus, factorization, reference, and paint morphisms before adding vocabulary.
+
+That inspection found a unique compositional account. Three movers cover ten
+landmarks: X and plus jointly realize the six color-9 constraints and must
+both be painted 9; diamond realizes four color-8 constraints and must be
+painted 8. The plus initially overwrites two of those color-8 centers, making
+their rendered color 12. Treating only causally explained center overwrites as
+latent variables yields one minimum-cost exact cover: X `(30,15)`, plus
+`(33,51)`, diamond `(51,36)`. Bounded paint-aware routes plus two focus
+transfers solved level 5 through the public wrapper in 63 actions. Implement
+this as a joint latent-color placement CSP, not a watched route, and require
+the autonomous agent to reproduce the 63-action consequence.
+
 Required gates are:
 
-1. validate v84h's causal paint-state plan on level 4;
-2. reproduce every multi-level gain exactly;
-3. exact preservation of the v82f suite outside changed targets;
-4. full 25-game score of at least 20 before Kaggle submission.
+1. integrate and validate the general joint CSP on level 5;
+2. use level 6 as the next falsifier and reach enough `re86` score to imply a
+   full-suite score of at least 20;
+3. reproduce every multi-level gain exactly;
+4. exact preservation of the v82f suite outside changed targets;
+5. full 25-game score of at least 20 before Kaggle submission.
 
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the

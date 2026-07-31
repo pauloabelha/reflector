@@ -74,7 +74,11 @@ from .permutation_transport import (
     plan_factored_orbit_transport,
     plan_marker_transport,
 )
-from .reference_constellation import compile_reference_constellation_plan
+from .reference_constellation import (
+    CompositeReferencePlan,
+    compile_composite_reference_plan,
+    compile_reference_constellation_plan,
+)
 from .scheme_category import (
     FocusedRewriteObject,
     FocusedVariable,
@@ -653,6 +657,18 @@ class EpistemicExplorer:
     reference_constellation_cursor: int = 0
     reference_constellation_selections: int = 0
     reference_constellation_diagnostic: str = "not-grounded"
+    composite_reference_plan: CompositeReferencePlan | None = field(
+        default=None,
+        repr=False,
+    )
+    composite_reference_completed: set[int] = field(
+        default_factory=set,
+        repr=False,
+    )
+    composite_reference_active_color: int | None = None
+    composite_reference_cursor: int = 0
+    composite_reference_selections: int = 0
+    composite_reference_diagnostic: str = "not-grounded"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -5796,6 +5812,12 @@ class EpistemicExplorer:
         self.reference_constellation_cursor = 0
         self.reference_constellation_selections = 0
         self.reference_constellation_diagnostic = "not-grounded"
+        self.composite_reference_plan = None
+        self.composite_reference_completed.clear()
+        self.composite_reference_active_color = None
+        self.composite_reference_cursor = 0
+        self.composite_reference_selections = 0
+        self.composite_reference_diagnostic = "not-grounded"
         self.constellation_diagnostic = (
             "not-grounded" if self.constellation_alignment else "exact-off"
         )
@@ -6299,13 +6321,105 @@ class EpistemicExplorer:
         )
         self.reference_constellation_diagnostic = plan.status
         if not plan.actions:
-            return None
+            return self._select_composite_reference_constellation(
+                observation,
+                available,
+                switches[0],
+            )
         self.reference_constellation_plan = plan.actions
         action_id = plan.actions[0]
         self.reference_constellation_cursor = 1
         self.reference_constellation_selections += 1
         self.reference_constellation_diagnostic = (
             "executing-reference-constellation-option"
+        )
+        return available[action_id]
+
+    def _select_composite_reference_constellation(
+        self,
+        observation: Observation,
+        available: dict[int, ActionToken],
+        switch_action: int,
+    ) -> ActionToken | None:
+        plan = self.composite_reference_plan
+        if plan is None:
+            plan = compile_composite_reference_plan(
+                observation.frame,
+                tuple(
+                    TranslationMorphism(action_id, displacement)
+                    for action_id, displacement in sorted(
+                        self.constellation_move_actions.items()
+                    )
+                    if action_id in available
+                ),
+            )
+            self.composite_reference_diagnostic = plan.status
+            if not plan.options:
+                return None
+            self.composite_reference_plan = plan
+        options = {
+            option.source_color: option
+            for option in plan.options
+        }
+        active_color = self.composite_reference_active_color
+        if active_color is not None:
+            active = options[active_color]
+            if self.composite_reference_cursor < len(active.actions):
+                action_id = active.actions[self.composite_reference_cursor]
+                if action_id not in available:
+                    self.composite_reference_diagnostic = (
+                        "composite-plan-action-unavailable"
+                    )
+                    return None
+                self.composite_reference_cursor += 1
+                self.composite_reference_selections += 1
+                self.composite_reference_diagnostic = (
+                    "executing-composite-reference-option"
+                )
+                return available[action_id]
+            self.composite_reference_completed.add(active_color)
+            self.composite_reference_active_color = None
+            self.composite_reference_cursor = 0
+        if len(self.composite_reference_completed) == len(options):
+            self.composite_reference_diagnostic = "composite-goals-satisfied"
+            return None
+        selector = (
+            find_selector(observation.frame, plan.selector_color)
+            if plan.selector_color is not None
+            else None
+        )
+        selected = next(
+            (
+                option
+                for option in plan.options
+                if option.source_color
+                not in self.composite_reference_completed
+                and option.home_anchor == selector
+            ),
+            None,
+        )
+        if selected is None:
+            if switch_action not in available:
+                self.composite_reference_diagnostic = (
+                    "composite-switch-unavailable"
+                )
+                return None
+            self.composite_reference_selections += 1
+            self.composite_reference_diagnostic = (
+                "switching-composite-reference-mover"
+            )
+            return available[switch_action]
+        self.composite_reference_active_color = selected.source_color
+        self.composite_reference_cursor = 1
+        action_id = selected.actions[0]
+        if action_id not in available:
+            self.composite_reference_diagnostic = (
+                "composite-plan-action-unavailable"
+            )
+            return None
+        self.composite_reference_selections += 1
+        self.composite_reference_diagnostic = (
+            "executing-composite-reference-option"
         )
         return available[action_id]
 
@@ -13122,6 +13236,21 @@ class EpistemicExplorer:
             ),
             "reference_constellation_diagnostic": (
                 self.reference_constellation_diagnostic
+            ),
+            "composite_reference_options": (
+                len(self.composite_reference_plan.options)
+                if self.composite_reference_plan is not None
+                else 0
+            ),
+            "composite_reference_completed": len(
+                self.composite_reference_completed
+            ),
+            "composite_reference_cursor": self.composite_reference_cursor,
+            "composite_reference_selections": (
+                self.composite_reference_selections
+            ),
+            "composite_reference_diagnostic": (
+                self.composite_reference_diagnostic
             ),
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(

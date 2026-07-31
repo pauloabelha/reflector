@@ -122,6 +122,28 @@ later destructive swatches, and solved level 4 in 44 actions. The active v84h
 planner therefore runs bounded A* over `(anchor,color)` and compiles the same
 44-action paint-and-embed option.
 
+V84h has now validated that accommodation behaviorally. Frozen candidate
+`candidate-ff5318e279917649` solved `re86` levels 1–4 in exactly
+**`[24,36,56,44]`**, reaching **4/8** and target score
+**27.77777777777778**. The complete 400-action vector is
+`[24,36,56,44,240,0,0,0]`; level 4 took exactly the predicted 44 actions.
+The immutable report is
+[`reports/experimental-v84h-paint-re86-r1-400.json`](reports/experimental-v84h-paint-re86-r1-400.json),
+SHA-256
+`20948ea86de811784a896085e831fd98cc83983288f6044b5a5093c1a3484ab6`.
+This remains experimental pending an exact repeat and preservation gate.
+
+Black-box level-5 analysis has produced the next structural breakthrough. The
+scene is a coproduct/product composition rather than one mover per landmark
+color: the X and plus must both be painted 9 and jointly cover the six
+color-9 landmarks, while the diamond must be painted 8 and cover four
+color-8 landmarks. Two of the latter centers render as color 12 only because
+the current plus occludes them. A joint latent-color exact-cover CSP has one
+minimum-cost geometric assignment—X `(30,15)`, plus `(33,51)`, diamond
+`(51,36)`—and its paint-aware public-wrapper program solved level 5 in
+**63 actions**. This is diagnostic evidence, not yet an autonomous candidate
+result.
+
 ## Rejected branch
 
 V83 tested distance-decreasing replay on an inferred one-dimensional track.
@@ -133,6 +155,11 @@ negative result and is disabled in v82f/v84 candidates.
 
 The verified score remains **16.3554480981 / 100**. Reaching 20 requires at
 least **+3.6445519019** aggregate points. The current priority is to validate
-derive level 4's relational object, reproduce every gain, then run
+level 5 as the next relational falsifier and continue composing the learned
+operators. The immediate implementation target is the newly validated joint
+placement/paint/occlusion CSP for level 5. If no other game changes, v84h's
+present target gain would imply only **17.4665592092 / 100**, still below the
+gate. A complete `re86` would
+imply about **20.3554480981 / 100**. Reproduce every gain, then run
 preservation/full-suite gates. The exact accepted package is submitted to
 Kaggle using `KAGGLE.md` only after the verified aggregate reaches 20.
