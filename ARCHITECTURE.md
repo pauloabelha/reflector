@@ -192,6 +192,19 @@ target without later crossing a destructive swatch. This makes an intermediate
 paint contact an explicit hierarchical subgoal rather than a rendering side
 effect.
 
+`factor_bundle_constellation.py` extends this representation to conserved
+subobjects. It identifies orthogonal line factors and rectangular perimeter
+loops, binds them to landmark fibers by exact span and perimeter constraints,
+and treats a compact obstacle as a differential actuator: contact may hold or
+deform one factor while the shared translation continues on the bundle. Paint
+swatches are fiber-changing morphisms. The compiler admits only a unique
+two-cross/one-loop construction with a complete four-direction action algebra,
+matching paint fibers, conserved lengths, one obstacle, and a selected first
+bundle. Its waypoints and repetition counts are computed from perceived
+anchors, lattice step, swatch bounds, obstacle bounds, target extrema, and
+perimeter differences. The three object programs and focus transfers execute
+as one protected semi-Markov option.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

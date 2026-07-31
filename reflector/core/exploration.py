@@ -33,6 +33,7 @@ from .constellation_alignment import (
 )
 from .deformable_constellation import compile_deformable_constellation_plan
 from .dihedral_analogy import infer_dihedral_analogy
+from .factor_bundle_constellation import compile_factor_bundle_plan
 from .factored_constellation import (
     FactorGoal,
     FactorMask,
@@ -6373,7 +6374,29 @@ class EpistemicExplorer:
             )
             self.deformable_constellation_diagnostic = deformable.status
             if not deformable.actions:
-                return None
+                factor_bundle = compile_factor_bundle_plan(
+                    observation.frame,
+                    tuple(
+                        TranslationMorphism(action_id, displacement)
+                        for action_id, displacement in sorted(
+                            self.constellation_move_actions.items()
+                        )
+                        if action_id in available
+                    ),
+                    switch_action=switches[0],
+                )
+                self.deformable_constellation_diagnostic = factor_bundle.status
+                if not factor_bundle.actions:
+                    return None
+                self.deformable_constellation_compilations += 1
+                self.reference_constellation_plan = factor_bundle.actions
+                action_id = factor_bundle.actions[0]
+                self.reference_constellation_cursor = 1
+                self.reference_constellation_selections += 1
+                self.reference_constellation_diagnostic = (
+                    "executing-factor-bundle-constellation-option"
+                )
+                return available[action_id]
             self.deformable_constellation_compilations += 1
             self.reference_constellation_plan = deformable.actions
             action_id = deformable.actions[0]

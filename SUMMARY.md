@@ -167,6 +167,60 @@ derived from visible constraints. A 57-action program—35 cross-factor actions,
 two focus transfers, and 20 loop actions—solved level 6 through the public
 wrapper. Autonomous compilation is the active target.
 
+V84k validates that compiler autonomously. Frozen candidate
+`candidate-93770ad218d4a821` solved level 6 in exactly the predicted
+**57 actions**, reaching `re86` **6/8**, target score
+**58.333333333333336**, and vector
+`[24,36,56,44,63,57,120,0]`. Report
+[`reports/experimental-v84k-deformable-re86-r1-400.json`](reports/experimental-v84k-deformable-re86-r1-400.json),
+SHA-256
+`3655b3e259cde1f2f2ee8d50b19c5344d49042bccef884939617fe75b0ac4f71`.
+This remains experimental pending repetition and preservation.
+
+Level 7 black-box interventions expose a still more compressed construction.
+The three visible movers are not new indivisible shapes: they are a 19×19
+cross, a 37×19 cross, and a 13×13 conserved-perimeter loop. Translating the
+occluded movers apart reveals four line factors. The target landmarks admit a
+single economical factorization, but an initial cross-object recombination
+hypothesis fails the obstacle/boundary reachability CSP. The simpler reachable
+model preserves object identity: the 37×19 cross shears internally to cover
+the color-8 target, the 19×19 cross shears by nine pixels to cover color 11,
+and each cross receives one color. The loop maps to the two opposite color-9
+corners of a 19×7 rectangle, whose perimeter equals the original loop's 48
+pixels. Thus level 7 composes factor separation, paint-state routing, exact
+cover, and within-object recombination. A bounded general compiler and
+public-wrapper route remain to be validated.
+
+The perimeter-48 loop has a 32-action paint/deformation route to the 19×7
+color-9 target. Same-color occupancy checks have rejected two apparent cross
+shortcuts. The 45-action small-cross route places its horizontal factor but
+leaves the vertical factor at `y=39…57`; `(45,30)` merely remains visible.
+The first fully occupied color-11 route is therefore the earlier **56-action**
+construction, covering `x=36…54` and `y=30…48`. Likewise, proposed 34/36
+action color-8 routes merely preserve visible landmark centers. The first
+fully occupied color-8 construction takes **50 actions**. These correct
+options exceed the remaining 120-action level budget, so route/prefix
+compression and the actual level transition remain unvalidated.
+
+A diagnostic extended-horizon composition has now crossed the real level
+boundary. Executing the fully occupied 56-action small cross, 32-action loop,
+50-action asymmetric cross, and two focus transfers completed level 7 at
+total action **420** (140 actions within the level). This is not an admissible
+400-action candidate, but it validates the complete factor/paint/deformation
+model and isolates a 40-action efficiency deficit. The next gate is a shorter
+representative of the same proven morphism, followed by autonomous
+compilation at the official horizon.
+
+Exact-span macro minimization has now closed that deficit. The small cross
+compresses from 56 to **38 actions**, and a coupled two-count loop reduction
+compresses 32 to **30** while preserving its full perimeter target. Together
+with the exact 50-action asymmetric cross and two focus transfers, level 7
+takes exactly **120 actions**. A fresh public-wrapper composition completed
+level 7 at total action **400**, yielding the diagnostic vector
+`[24,36,56,44,63,57,120,0]` with 7/8 levels. This is the first valid
+seven-level route; autonomous compilation, repetition, and suite preservation
+remain pending.
+
 ## Rejected branch
 
 V83 tested distance-decreasing replay on an inferred one-dimensional track.
@@ -183,7 +237,7 @@ operators. The immediate implementation target is the newly validated joint
 placement/paint/occlusion CSP for level 5. If no other game changes, v84h's
 present target gain would imply only **17.4665592092 / 100**, still below the
 gate; v84j's five-level result would imply about **18.0221147648 / 100**. A
-complete `re86` would
-imply about **20.3554480981 / 100**. Reproduce every gain, then run
+v84k-only full-suite projection is about **18.6887814314 / 100**. A complete
+`re86` would imply about **20.3554480981 / 100**. Reproduce every gain, then run
 preservation/full-suite gates. The exact accepted package is submitted to
 Kaggle using `KAGGLE.md` only after the verified aggregate reaches 20.

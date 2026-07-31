@@ -185,6 +185,50 @@ A geometry-derived 57-action program solved the level. Implement a bounded
 factor/obstacle option compiler and require autonomous reproduction; do not
 retain the watched action string.
 
+V84k passed that gate once. Frozen candidate `candidate-93770ad218d4a821`
+reached 6/8 at `[24,36,56,44,63,57,120,0]`, target score
+58.3333333333; level 6 matched the predicted 57 actions exactly. Report
+`reports/experimental-v84k-deformable-re86-r1-400.json`, SHA-256
+`3655b3e259cde1f2f2ee8d50b19c5344d49042bccef884939617fe75b0ac4f71`.
+Level 7 is now the concrete falsifier. Because the first six levels consume
+280 actions, levels 7–8 must jointly fit the remaining 120-action budget to
+cross 20 from this game alone.
+
+Controlled level-7 translations have now identified its compositional
+objects. A 19×19 cross and a 37×19 cross factor into four conserved line
+segments. A proposed cross-object reassignment is unreachable and therefore
+rejected. The minimal reachable binding preserves the two bundles: the 37×19
+cross shears to color 8, the 19×19 cross shears to color 11, and a 13×13
+perimeter loop independently targets opposite color-9 corners of a 19×7
+rectangle, preserving perimeter 48. Next compile a bounded joint
+factor-separation/paint/exact-cover option, validate its route through the
+public wrapper, and reject it if factor-level paint or obstacle effects do not
+commute as predicted.
+
+Public-wrapper validation supplies a 32-action color-9 loop option. Fully
+continuous factor-span checks reject the apparent 45-action small-cross and
+34/36-action asymmetric-cross shortcuts: same-color target centers were still
+visible but unoccupied. The trustworthy baselines are 56 actions for the
+small color-11 cross and 50 actions for the color-8 asymmetric cross. Search
+for compression using exact span occupancy and require an actual level
+transition; only then implement the generalized compiler rather than
+retaining observed strings.
+
+The trustworthy 56 + 32 + 50 action options plus two focus transfers completed
+level 7 through the public wrapper at total action 420. This extended-horizon
+diagnostic validates the full construction but is not a candidate result.
+Compress at least 40 actions across these options or the six-level prefix,
+using exact factor spans and the actual level transition as the terminal
+predicate. Then implement and test only the invariant-derived compiler.
+
+That compression gate is now met diagnostically. The exact routes are 38,
+30, and 50 actions, plus two focus transfers: 120 actions total. The public
+wrapper transitioned to level 7 at total action 400. Implement a conservative
+factor-bundle compiler whose waypoints and counts are derived from lattice
+step, obstacle bounds, palette fibers, segment spans, loop perimeter, target
+extrema, and focus cycle. Freeze and run it autonomously; do not embed the
+watched action sequence.
+
 Required gates are:
 
 1. integrate and validate the general joint CSP on level 5;

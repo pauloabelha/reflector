@@ -224,6 +224,56 @@ pixels of width into height per action. Composing these two factored options
 solved level 6 in 57 public-wrapper actions. This is hierarchical planning in
 a causal product configuration space, not a memorized deformation route.
 
+V84k reproduced that 57-action consequence autonomously and reached 6/8 at
+`[24,36,56,44,63,57]`, score 58.3333333333. Once again, predicted, compiled,
+and observed option lengths agree. The gain supports a general strategy:
+factor a conserved object until obstacle contact is deterministic on each
+factor, plan in the product, and expose the resulting macro as one protected
+hierarchical action.
+
+Level 7 sharpens the abstraction. Interventions that translate one occluded
+mover at a time reveal a 19×19 cross, a cross with 37-pixel horizontal and
+19-pixel vertical factors, and a 13×13 loop. The target is most simply
+described as a change of factorization rather than a change of shape: the long
+horizontal and short vertical of the 37×19 cross shear within the color-8
+fiber, while the two 19-pixel factors of the smaller cross shear within the
+color-11 fiber. A first hypothesis that exchanged factors across the two
+objects is rejected because its required relative offsets are outside the
+reachable obstacle/boundary state space. Meanwhile, the loop's perimeter-48
+invariant selects a 19×7 color-9 rectangle from two opposite-corner landmarks.
+In categorical terms, obstacle-mediated factorization followed by paint
+morphisms should commute with exact-cover recomposition while preserving each
+object bundle. In Piaget/Drescher terms, the agent is assimilating a new scene
+into existing translation, collision, paint, and conservation schemas; the
+only accommodation needed is a factor-level relational state rather than
+another game-shaped policy.
+
+This factor-bundle model has produced a 32-action loop option and exposed a
+crucial measurement hazard. Candidate 34/36-action asymmetric-cross routes
+left original color-8 landmark centers visible, and a 45-action small-cross
+route did the same at the isolated color-11 vertical point. Predicates that
+inspected center color falsely called those states coverage. Continuous
+factor-span reconstruction rejects all three. The trustworthy cross baselines
+are 56 and 50 actions. Quotient search remains appropriate, but equivalence
+must include causal occupancy, not merely rendered target color.
+
+Composing the trustworthy routes finally produced the decisive causal test:
+level 7 transitioned at total action 420. The 140-action within-level program
+is outside the official budget, so it is diagnostic rather than a candidate,
+but it proves that factor bundles, target bindings, paint fibers, loop
+conservation, and protected option ordering jointly commute. The residual
+failure is no longer semantic; it is a shortest-representative problem in the
+same morphism class. Forty primitive actions must be removed before promotion.
+
+Exact occupancy made aggressive compression safe. Coordinate descent over
+macro counts removed 18 actions from the small cross without changing either
+paint state or target spans. A coupled change—one fewer ascent and one fewer
+descent—removed two from the loop, whereas neither count was independently
+removable. The final `38 + 30 + 50 + 2 = 120` composition transitioned at
+total action 400 exactly. This is a useful planning lesson: natural
+transformations should be optimized over coupled commuting paths, because
+locally indispensable primitives can cancel at the level of the composite.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the
