@@ -329,8 +329,11 @@ At the 2026-07-31 audit:
 - v92 notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and
   emitted `submission.parquet`, but the submission request was rejected after
   v74 consumed the daily allowance; no v92 submission ID exists yet;
-- the exact v94b export is ready but has not yet been pushed as a private
-  Kaggle notebook version or submitted;
+- exact private v94b notebook `pauloabelha/reflector-arc-agi-3-v94b` version 1
+  completed and emitted `submission.parquet`;
+- the v94b competition submission request returned HTTP 400 while pending v74
+  submission `55123277` occupies the daily allowance; no v94b submission ID
+  exists, so retry the same completed version after quota reset;
 - the project virtual environment has a working authenticated Kaggle CLI; a
   live read-only check reports `55113224` complete and `55123277` pending;
 - rule acceptance, identity verification, eligibility confirmation, team

@@ -28,7 +28,11 @@ Submission status, 2026-07-31 UTC:
   successfully and emitted `submission.parquet`;
 - its competition submission request also returned HTTP 400 while v74 remains
   pending, so no v92 competition submission ID exists yet;
-- v94b has not yet been pushed as a Kaggle notebook version or submitted;
+- private notebook `pauloabelha/reflector-arc-agi-3-v94b` version 1 completed
+  successfully and emitted `submission.parquet`;
+- its competition submission request returned HTTP 400 while v74 remains
+  pending and occupies the UTC daily allowance, so no v94b submission ID
+  exists yet;
 - historical v65b submission `55113224` is complete with Kaggle public score
   `0.02`; the private score remains unavailable.
 

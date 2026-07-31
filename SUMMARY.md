@@ -143,6 +143,12 @@ overlay
 and notebook
 `585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219`.
 
+Private Kaggle notebook `pauloabelha/reflector-arc-agi-3-v94b` version 1
+completed and emitted `submission.parquet`. The competition submission call
+returned HTTP 400 because pending v74 submission `55123277` still occupies the
+one-per-day allowance. Kaggle created no v94b submission ID; retry this exact
+completed version after the UTC quota resets.
+
 ## New accepted mechanism: demonstrated analogy algebra
 
 V82f learns transformations from visible input/output demonstrations rather

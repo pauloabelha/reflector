@@ -720,6 +720,13 @@ and
 Freeze the documentation/report commit, push the exact v94b notebook, and
 attempt a competition submission only if Kaggle's daily quota permits.
 
+The exact private notebook `pauloabelha/reflector-arc-agi-3-v94b` version 1
+completed and its output was downloaded as `submission.parquet`. The requested
+competition submission attempt returned HTTP 400; a read-back shows no new
+submission ID, with v74 `55123277` still pending as today's submission. Retry
+the already completed v94b version 1 after the UTC quota reset; do not rebuild
+or change the accepted artifact.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

@@ -98,6 +98,11 @@ technical prize audit pass. Exact current artifact hashes are:
 `technical_ready` is true. `prize_ready` remains false because the account,
 publication, and committed Kaggle-rerun gates below are manual.
 
+The exact private v94b notebook version 1 has completed and emitted
+`submission.parquet`. Its competition submission request returned HTTP 400
+while pending v74 submission `55123277` occupies the daily allowance; no v94b
+submission ID exists yet.
+
 ## Required account and publication actions
 
 These cannot be completed from a local checkout:

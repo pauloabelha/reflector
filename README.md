@@ -61,7 +61,10 @@ Kaggle leaderboard series.
 The exact private v92 notebook
 `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and emitted
 `submission.parquet`, but its submission request returned HTTP 400 while v74
-still occupies the one-per-day allowance. No v92 submission ID exists yet.
+still occupies the one-per-day allowance. The exact accepted v94b notebook
+`pauloabelha/reflector-arc-agi-3-v94b` version 1 also completed and emitted
+`submission.parquet`; its submission request received the same quota rejection.
+No v92 or v94b submission ID exists yet.
 Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the

@@ -59,6 +59,7 @@ and notebook
 | Complete process-isolated 25-game suite | v94b atomic temporal-resource option, accepted | **20.6582705187 / 100** | 49/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v92 | all promotion, quality, and exact-export gates pass |
 | Kaggle notebook artifact | v84m accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and emitted `submission.parquet` | submission request rejected after v74 consumed daily allowance; no v84m submission ID |
 | Kaggle notebook artifact | v92 accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v92 submission ID |
+| Kaggle notebook artifact | v94b accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v94b` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v94b submission ID |
 | Kaggle public leaderboard | v65b, submission `55113224` | **0.02** | synchronous hidden rerun complete | belongs only to frozen v65b |
 | Kaggle rerun | v74, submission `55123277` | pending | submitted 2026-07-31 01:05:23 UTC | pending; no score yet |
 | Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |
