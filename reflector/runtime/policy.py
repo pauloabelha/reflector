@@ -89,6 +89,9 @@ class SymbolicPolicy:
             shortest_progress_path_reuse=(
                 self.mind.config.enable_shortest_progress_path_reuse
             ),
+            finite_orbit_commit_exploration=(
+                self.mind.config.enable_finite_orbit_commit_exploration
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),

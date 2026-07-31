@@ -205,6 +205,34 @@ def test_progress_path_enumerates_ambiguous_role_bindings() -> None:
     assert selections[0] != selections[2]
 
 
+def test_finite_orbit_composes_inverse_pair_with_silent_controls() -> None:
+    explorer = EpistemicExplorer(finite_orbit_commit_exploration=True)
+    first = (0, "NOT_FINISHED", "first")
+    second = (0, "NOT_FINISHED", "second")
+    generator = ActionToken(2)
+    inverse = ActionToken(3)
+    silent_one = ActionToken(1)
+    silent_two = ActionToken(4)
+    tokens = (silent_one, generator, inverse, silent_two)
+    explorer.edges = {
+        (first, generator): second,
+        (second, inverse): first,
+        (first, silent_one): first,
+        (first, silent_two): first,
+    }
+    explorer.attempts[(first, silent_one)] = 1
+    explorer.attempts[(first, silent_two)] = 1
+
+    assert explorer._select_finite_orbit_commit(first, tokens) == generator
+    first_commit = explorer._select_finite_orbit_commit(second, tokens)
+    assert first_commit == silent_one
+    explorer.attempts[(second, first_commit)] += 1
+    second_commit = explorer._select_finite_orbit_commit(second, tokens)
+    assert second_commit == silent_two
+    explorer.attempts[(second, second_commit)] += 1
+    assert explorer._select_finite_orbit_commit(second, tokens) == generator
+
+
 def test_one_positive_effect_proposes_and_distinct_source_confirms() -> None:
     typer = ProspectiveActionEffectTyper()
     action = ActionIdentity(5)

@@ -415,6 +415,7 @@ class EpistemicExplorer:
     action_effect_typing: bool = False
     positive_effect_family_fairness: bool = False
     shortest_progress_path_reuse: bool = False
+    finite_orbit_commit_exploration: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -521,6 +522,16 @@ class EpistemicExplorer:
     shortest_progress_path_compilations: int = 0
     shortest_progress_path_abstentions: int = 0
     shortest_progress_path_diagnostic: str = "exact-off"
+    finite_orbit_generator: ActionToken | None = None
+    finite_orbit_inverse: ActionToken | None = None
+    finite_orbit_commit_tokens: tuple[ActionToken, ...] = ()
+    finite_orbit_expanded_states: set[StateKey] = field(
+        default_factory=set,
+        repr=False,
+    )
+    finite_orbit_selections: int = 0
+    finite_orbit_commit_trials: int = 0
+    finite_orbit_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -988,6 +999,8 @@ class EpistemicExplorer:
             order.append("committed-trajectory-planning")
         if self.shape_goal_translation:
             order.append("shape-goal-translation")
+        if self.finite_orbit_commit_exploration:
+            order.append("finite-orbit-commit-exploration")
         if self.productive_role_reuse:
             order.append("productive-role-reuse")
         if self.parameterized_scheme_variation:
@@ -1000,6 +1013,8 @@ class EpistemicExplorer:
             order.append("action-translation-orbit-probe")
         if self.positive_effect_family_fairness:
             order.append("positive-effect-family-fairness")
+        if self.shortest_progress_path_reuse:
+            order.append("shortest-progress-path-reuse")
         if self.uses_action_family_schema:
             order.append("hierarchical-action-fairness")
         order.extend(("untried-state-intervention", "known-frontier-navigation"))
@@ -1021,6 +1036,8 @@ class EpistemicExplorer:
             if "committed-trajectory-planning" in selected_reason
             else "shape-goal-translation"
             if "shape-goal-translation" in selected_reason
+            else "finite-orbit-commit-exploration"
+            if "finite-orbit-commit-exploration" in selected_reason
             else "parameterized-select-apply-commit"
             if "parameterized-select-apply-commit" in selected_reason
             else "lattice-effect-planning"
@@ -1037,6 +1054,8 @@ class EpistemicExplorer:
             if "action-translation-contact-probe" in selected_reason
             else "positive-effect-family-fairness"
             if "positive-effect-family-fairness" in selected_reason
+            else "shortest-progress-path-reuse"
+            if "shortest-progress-path-reuse" in selected_reason
             else "hierarchical-action-fairness"
             if "hierarchical-action-family" in selected_reason
             else "untried-state-intervention"
@@ -1151,8 +1170,10 @@ class EpistemicExplorer:
             self.shortest_progress_path_variant_tokens = ()
             self.shortest_progress_path_variant_repetitions = 0
             self.shortest_progress_path_selections = 0
+            self._reset_finite_orbit(clear_trials=True)
         elif observation.state == "GAME_OVER":
             self.level_start_state = None
+            self._reset_finite_orbit(clear_trials=False)
             self.episode_roles.clear()
             self.episode_groundings.clear()
             self.productive_groundings.clear()
@@ -5293,6 +5314,24 @@ class EpistemicExplorer:
                 scene,
             )
 
+        finite_orbit = self._select_finite_orbit_commit(
+            state,
+            tokens,
+        )
+        if finite_orbit is not None:
+            self.last_scheme_components = (
+                "scheme:finite-selector-orbit",
+                "operator:prospective-inverse-pair",
+                "operator:enumerate-render-silent-commit",
+                "state:observed-interface-automaton",
+            )
+            return self._issue(
+                state,
+                finite_orbit,
+                "epistemic-frontier:finite-orbit-commit-exploration",
+                scene,
+            )
+
         productive = self._select_productive_role(tokens, scene, state)
         if productive is not None:
             self.productive_reuse_level_trials += 1
@@ -5494,6 +5533,99 @@ class EpistemicExplorer:
             "epistemic-frontier:least-repeated-exhausted-state",
             scene,
         )
+
+    def _reset_finite_orbit(self, *, clear_trials: bool) -> None:
+        self.finite_orbit_generator = None
+        self.finite_orbit_inverse = None
+        self.finite_orbit_commit_tokens = ()
+        self.finite_orbit_expanded_states.clear()
+        self.finite_orbit_diagnostic = (
+            "not-grounded"
+            if self.finite_orbit_commit_exploration
+            else "exact-off"
+        )
+        if clear_trials:
+            self.finite_orbit_selections = 0
+            self.finite_orbit_commit_trials = 0
+
+    def _select_finite_orbit_commit(
+        self,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Compose an observed inverse selector with render-silent controls."""
+
+        if not self.finite_orbit_commit_exploration:
+            return None
+        if self.finite_orbit_selections >= 64:
+            self.finite_orbit_diagnostic = "finite-orbit-trial-cap"
+            return None
+        represented = tuple(
+            token
+            for token in tokens
+            if not token.data
+            and token.action_id not in {self.reset_action, self.complex_action}
+        )
+        if self.finite_orbit_generator is None:
+            groundings: list[
+                tuple[
+                    ActionToken,
+                    ActionToken,
+                    tuple[ActionToken, ...],
+                ]
+            ] = []
+            for generator in represented:
+                destination = self.edges.get((state, generator))
+                if destination is None or destination == state:
+                    continue
+                for inverse in represented:
+                    if inverse == generator:
+                        continue
+                    if self.edges.get((destination, inverse)) != state:
+                        continue
+                    commits = tuple(
+                        token
+                        for token in represented
+                        if token not in {generator, inverse}
+                        and self.edges.get((state, token)) == state
+                    )
+                    if len(commits) >= 2:
+                        groundings.append((generator, inverse, commits))
+            if not groundings:
+                self.finite_orbit_diagnostic = (
+                    "no-inverse-selector-with-two-silent-controls"
+                )
+                return None
+            generator, inverse, commits = min(groundings)
+            self.finite_orbit_generator = generator
+            self.finite_orbit_inverse = inverse
+            self.finite_orbit_commit_tokens = commits
+            self.finite_orbit_diagnostic = "finite-orbit-grounded"
+        for commit in self.finite_orbit_commit_tokens:
+            if (
+                commit in represented
+                and self.attempts[(state, commit)] == 0
+            ):
+                self.finite_orbit_selections += 1
+                self.finite_orbit_commit_trials += 1
+                self.finite_orbit_diagnostic = (
+                    "testing-silent-control-at-orbit-state"
+                )
+                return commit
+        if state in self.finite_orbit_expanded_states:
+            self.finite_orbit_diagnostic = "finite-orbit-closed"
+            return None
+        if len(self.finite_orbit_expanded_states) >= 16:
+            self.finite_orbit_diagnostic = "finite-orbit-state-cap"
+            return None
+        generator = self.finite_orbit_generator
+        if generator not in represented:
+            self.finite_orbit_diagnostic = "generator-not-represented"
+            return None
+        self.finite_orbit_expanded_states.add(state)
+        self.finite_orbit_selections += 1
+        self.finite_orbit_diagnostic = "advancing-finite-selector-orbit"
+        return generator
 
     def _select_positive_effect_family(
         self,
@@ -11791,6 +11923,18 @@ class EpistemicExplorer:
             "shortest_progress_path_diagnostic": (
                 self.shortest_progress_path_diagnostic
             ),
+            "finite_orbit_commit_enabled": int(
+                self.finite_orbit_commit_exploration
+            ),
+            "finite_orbit_grounded": int(
+                self.finite_orbit_generator is not None
+            ),
+            "finite_orbit_states": len(
+                self.finite_orbit_expanded_states
+            ),
+            "finite_orbit_selections": self.finite_orbit_selections,
+            "finite_orbit_commit_trials": self.finite_orbit_commit_trials,
+            "finite_orbit_diagnostic": self.finite_orbit_diagnostic,
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()
