@@ -1779,3 +1779,9 @@ path with its intended reset morphism; the HRL reading is option atomicity.
 An exact second fresh-process run reproduces the score, four resets, and every
 level-action count. The result is therefore not a one-run exploration
 accident; target repeatability is established before wider preservation.
+
+The accepted-win preservation gate then isolates the effect across 15 games:
+all fourteen non-target vectors are exact, total actions are unchanged, and
+only the predicted `ls20` level is added. This is strong evidence that the
+new authority gate is structurally narrow rather than a broad exploration
+perturbation.

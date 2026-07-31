@@ -694,6 +694,13 @@ The second fresh-process run is exact: 2/7, four resets, score
 `0e9e497302dabb9ea6cb8a8024925e07b75c1b10941a420e345842e7af038f4c`.
 The target-repeat gate passes; run accepted-win preservation now.
 
+The accepted-win gate passes: 49 levels, 5,185 actions, and score
+`34.43045086455222`, with only `ls20` differing from v92. All fourteen
+non-target vectors are exact. Report
+`reports/experimental-v94b-accepted-win-preservation-r1-400.json`, SHA-256
+`d833d7912755edb632e66cfbb8494d424d0434dd8ed6e8b5996731397ed7644e`.
+Run all 25 public-development games from fresh processes next.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

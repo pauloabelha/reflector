@@ -119,6 +119,16 @@ SHA-256
 `0e9e497302dabb9ea6cb8a8024925e07b75c1b10941a420e345842e7af038f4c`.
 The target-repeat gate therefore passes.
 
+The 15-game accepted-win preservation gate also passes exactly. V94b reaches
+49 levels versus v92's 48 with the same 5,185 aggregate actions; `ls20` alone
+changes, while every other completed-level/action vector is identical. The
+gate score rises from `34.26966217407604` to `34.43045086455222`. Report:
+[`reports/experimental-v94b-accepted-win-preservation-r1-400.json`](reports/experimental-v94b-accepted-win-preservation-r1-400.json),
+SHA-256
+`d833d7912755edb632e66cfbb8494d424d0434dd8ed6e8b5996731397ed7644e`.
+The complete 25-game process-isolated run is now the remaining empirical
+promotion gate.
+
 ## New accepted mechanism: demonstrated analogy algebra
 
 V82f learns transformations from visible input/output demonstrations rather
