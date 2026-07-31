@@ -10,6 +10,7 @@ Reflector's best complete, process-isolated 25-game public-development result is
 - Candidate: `candidate-94f98951742396fb` (`v99l`)
 - Frozen inference source: `72e1345`
 - Frozen candidate commit: `80a8069`
+- Accepted package commit: `4f6551f`
 - Accepted parent: `candidate-ddf2529a2bae5601` (`v99k`)
 - Coverage: 25/25 games
 - Levels: **51/183**

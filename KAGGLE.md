@@ -6,6 +6,9 @@ Current accepted export: v99l
 `candidate-94f98951742396fb`, local public-development score
 `21.632592714022195 / 100`. Exact SHA-256 values:
 
+Frozen inference source is `72e1345`, frozen candidate commit is `80a8069`,
+and accepted package commit is `4f6551f`.
+
 - candidate:
   `11e728e0477909207a15b9825af87f3153744c7ca57a2bab0253bb9769878822`;
 - overlay:

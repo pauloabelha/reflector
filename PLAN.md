@@ -381,6 +381,7 @@ candidate `11e728e0477909207a15b9825af87f3153744c7ca57a2bab0253bb9769878822`,
 overlay `4612b3a9adcbd6fa366d10e6eeb25345c16784f36adce08f7b66e825739707e2`,
 and notebook `b62522c08d85802651dfd3bc57e62fde2006124a7f53bb2e0ec56fc52716ece2`.
 V99l is accepted as the minimal score-neutral efficiency successor to v99k.
+Accepted package commit is `4f6551f`.
 Publish and run the exact hashed notebook, then submit it if the daily slot is
 available.
 
