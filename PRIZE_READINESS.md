@@ -19,8 +19,8 @@ distinct symbolic thesis, an operative implementation, deterministic traces,
 ablation machinery, and explicit approximations. It does **not** yet have
 enough multi-game evidence for a prize-quality paper.
 
-The current accepted v98 public-development result is
-`21.276083018731335/100`: 50/183 levels across 15/25 games, with `sb26`,
+The current accepted v99k public-development result is
+`21.632592714022195/100`: 51/183 levels across 15/25 games, with `sb26`,
 `ft09`, and `cd82` fully completed. This is materially stronger than fixture-only
 compatibility but remains known-public development evidence, not a Kaggle
 leaderboard result or a competitive hidden-game claim.
@@ -79,21 +79,21 @@ Reflector:
 - separates third-party MIT starter code from dual-licensed contributions;
 - discloses that the symbolic model has parameters but no weights.
 
-The accepted inference package is frozen at source commit `d73027d` and
-candidate commit `00c0039`, candidate `candidate-59010e6c00da94ac`. Its exact 25-game
+The accepted inference package is frozen at source commit `794d9a1` and
+candidate commit `38cb243`, candidate `candidate-ddf2529a2bae5601`. Its exact 25-game
 scorecard has complete 25/25
 coverage; its target repeats, 15-game preservation gate, full suite,
 pytest, Ruff, mypy, direct export, both network-disabled smoke paths, and
 technical prize audit pass. Exact current artifact hashes are:
 
 - candidate:
-  `cc4a7709d841cbab3f76b63562013b9d3c7f9f81750946171963667af6b6d0e9`;
+  `fa2c05667cca8078123d0e517f7918a9a701a8e1dfa9d6dfb35e0332d92bbc58`;
 - Kaggle overlay:
-  `e4352d7faf21c41f67f5009952c5381e3a083a2fc086e511185b73432d9c7d0a`;
+  `0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`;
 - Kaggle notebook:
-  `98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`;
+  `dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`;
 - accepted 25-game report:
-  `2860c7146a5dd5bffed0739ad013f1f302c87b3dcc49383b5b06a6f8346e7927`.
+  `8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`.
 
 `technical_ready` is true. `prize_ready` remains false because the account,
 publication, and committed Kaggle-rerun gates below are manual.

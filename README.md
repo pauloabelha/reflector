@@ -20,33 +20,33 @@ service, database, or web server.
 Last verified: 2026-07-31
 
 > **Plain-language result:** Reflector has fully beaten **3 of 25 games**.
-> It has solved **50 of 183 levels across 15 games**. All 25 games were
+> It has solved **51 of 183 levels across 15 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | v98 full-suite result |
+| Metric | v99k full-suite result |
 | --- | ---: |
 | Complete games beaten | **3 / 25** |
 | Games with at least one solved level | **15 / 25** |
-| Levels solved | **50 / 183** |
-| Official local score | **21.276083018731335 / 100** |
+| Levels solved | **51 / 183** |
+| Official local score | **21.632592714022195 / 100** |
 | Games evaluated | **25 / 25** |
 | Total actions | **9,185** |
-| Frozen inference source | `d73027d` |
-| Frozen candidate commit | `00c0039` |
-| Candidate | `candidate-59010e6c00da94ac` |
+| Frozen inference source | `794d9a1` |
+| Frozen candidate commit | `38cb243` |
+| Candidate | `candidate-ddf2529a2bae5601` |
 | Kaggle submissions | **2**: `55113224` and `55123277` complete |
 | Kaggle public score | **0.02** for frozen v65b and v74 |
 | Kaggle private score | **unavailable** |
 
-The score is about **21.28% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. Relative to v97,
-v98 learns sparse context-conditioned anchor morphisms, factors display state
-into palette and shape, and quotients overlapping cropped/full observations
-into one causal operator identity. This autonomously adds `ls20` level 3 in
-51 actions. All other 24 score/action/reset vectors are exactly preserved. The
-clean
+The score is about **21.63% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. Relative to v98,
+v99k recognizes exact complementary displays as presentations of one binary
+partition, learns shape and palette morphisms from contact, composes
+contextual resource options, and treats joint resource reappearance as a
+relational horizon reset. This autonomously adds `ls20` level 4 while exactly
+preserving all other 24 score/level/action/reset signatures. The clean
 process-isolated result is in
-[the v98 public-development report](reports/official-isolated-v98-fibered-factored-quotient-400.json).
+[the v99k public-development report](reports/official-isolated-v99k-complementary-display-resource-horizon-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -77,7 +77,7 @@ Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
-do not report the local 21.28 score as a Kaggle public or private score.
+do not report the local 21.63 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object

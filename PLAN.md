@@ -25,26 +25,26 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last pushed participant-remote commit: `40e49cb`
-- Accepted candidate: `candidate-59010e6c00da94ac`
-- Accepted agent: Reflector v98
-- Frozen inference source commit: `d73027d`
-- Frozen candidate commit: `00c0039`
+- Accepted candidate: `candidate-ddf2529a2bae5601`
+- Accepted agent: Reflector v99k
+- Frozen inference source commit: `794d9a1`
+- Frozen candidate commit: `38cb243`
 - Inference fingerprint:
-  `a692a9a9bbe29305abaa221327f38c79326847cd21df1445f059e5023a912e8f`
+  `1ee5f03659be2e70ce6b3d52066468ab5a8bb783e55fb4ba5c7b063f9ee39a7f`
 - Verified public-development report:
-  `reports/official-isolated-v98-fibered-factored-quotient-400.json`
-- Verified score: `21.276083018731335`
+  `reports/official-isolated-v99k-complementary-display-resource-horizon-400.json`
+- Verified score: `21.632592714022195`
 - Accepted coverage: 25/25 games, 9,185 actions
-- Verified completions: 50/183 levels across 15 games; 3/25 games complete
-- V98 complete-suite result:
-  `21.276083018731335`, 50/183 levels, 25/25 coverage, 9,185 actions;
-  all 24 non-target vectors exact versus v97
-- V98 exact export hashes: candidate
-  `cc4a7709d841cbab3f76b63562013b9d3c7f9f81750946171963667af6b6d0e9`,
+- Verified completions: 51/183 levels across 15 games; 3/25 games complete
+- V99k complete-suite result:
+  `21.632592714022195`, 51/183 levels, 25/25 coverage, 9,185 actions;
+  all 24 non-target vectors exact versus v98
+- V99k exact export hashes: candidate
+  `fa2c05667cca8078123d0e517f7918a9a701a8e1dfa9d6dfb35e0332d92bbc58`,
   overlay
-  `e4352d7faf21c41f67f5009952c5381e3a083a2fc086e511185b73432d9c7d0a`,
+  `0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`,
   notebook
-  `98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`
+  `dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`
 - Kaggle submissions: v65b `55113224` and v74 `55123277` are complete at
   public score `0.02`
 - V84m Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v84m`, version 1,
@@ -272,8 +272,9 @@ complete, and 9,185 actions. Exactly one complete signature changes versus
 v98: `ls20` advances from 3/7 at `[17,112,51,220,0,0,0]` to 4/7 at
 `[17,112,51,133,87,0,0]`; all other 24 score/level/action/reset signatures are
 exact. Report SHA-256:
-`5e9d81c5f76a9e7124ff5abff96f8ac4cce106c51ba12350d4594a2f5524f82f`.
-The active gates are full quality, candidate freeze, exact export,
+`8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`.
+Frozen candidate `candidate-ddf2529a2bae5601` at `38cb243` exactly reproduces
+the earlier pre-freeze signature. The active gates are exact export,
 network-disabled smoke, technical audit, and Kaggle submission.
 
 ## Active breakthrough: compile `ls20` level 3 as a fibered product CSP

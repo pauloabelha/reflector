@@ -5,27 +5,32 @@ Last updated: 2026-07-31
 ## Best verified result
 
 Reflector's best complete, process-isolated 25-game public-development result is
-**21.632592714022195 / 100**. This is the verified v99k inference result;
-candidate freezing and package validation are still in progress.
+**21.632592714022195 / 100**.
 
-- Candidate: v99k candidate identity pending freeze
+- Candidate: `candidate-ddf2529a2bae5601` (`v99k`)
+- Frozen inference source: `794d9a1`
+- Frozen candidate commit: `38cb243`
 - Accepted parent: `candidate-59010e6c00da94ac` (`v98`)
 - Coverage: 25/25 games
 - Levels: **51/183**
 - Games with progress: **15/25**
 - Complete games: **3/25**
 - Actions: **9,185**
+- Report:
+  [`reports/official-isolated-v99k-complementary-display-resource-horizon-400.json`](reports/official-isolated-v99k-complementary-display-resource-horizon-400.json)
+- Candidate:
+  [`candidates/v99k-complementary-display-resource-horizon-400.json`](candidates/v99k-complementary-display-resource-horizon-400.json)
 - Report SHA-256:
-  `5e9d81c5f76a9e7124ff5abff96f8ac4cce106c51ba12350d4594a2f5524f82f`
+  `8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`
 
 Relative to accepted v98, v99k changes exactly one game. `ls20` advances from
 3/7 at `[17,112,51,220,0,0,0]` to
 **4/7 at `[17,112,51,133,87,0,0]`**; all other 24 complete
 score/level/action/reset signatures and the 9,185-action total are exactly
 preserved. The aggregate gain is **+0.3565096952908604 points** and one level.
-Target repeat, accepted-progress preservation, and the complete-suite gate
-pass. V98 remains the accepted frozen package only until v99k clears the
-quality, exact-export, smoke, technical-audit, and Kaggle packaging gates.
+Target repeat, accepted-progress preservation, the frozen complete-suite gate,
+quality, exact export, offline smoke, and technical audit all pass. V99k is the
+accepted local package.
 
 Kaggle submissions `55113224` (v65b) and `55123277` (v74) are complete at
 public score **0.02** each. Private v97 notebook version 1 completed but has no
@@ -70,13 +75,21 @@ passes. The 15-game accepted-progress preservation gate also passes at
 non-`ls20` score/action/reset signatures are exact versus v98, and `ls20`
 alone gains level 4.
 
-The complete 25-game process-isolated suite also passes at
+The frozen-candidate 25-game process-isolated suite also passes at
 **21.632592714022195/100**, **51/183 levels**, 15 games with progress, 3 games
 complete, and 9,185 actions. Its SHA-256 is
-`5e9d81c5f76a9e7124ff5abff96f8ac4cce106c51ba12350d4594a2f5524f82f`.
+`8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`.
 All 24 non-target score/level/action/reset signatures are byte-for-value exact
-versus v98. Only quality, freezing, exact packaging, smoke/audit, and Kaggle
-remain before v99k becomes the accepted reproducible package.
+versus v98, and the frozen run exactly reproduces the earlier pre-freeze
+score/action signatures. Two exports are byte-identical, both offline smoke
+paths pass, and the technical audit reports `technical_ready: true`. Exact
+artifact SHA-256 values are candidate
+`fa2c05667cca8078123d0e517f7918a9a701a8e1dfa9d6dfb35e0332d92bbc58`,
+overlay
+`0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`,
+and notebook
+`dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`.
+Kaggle publication and submission remain.
 
 ## Provisional autonomous breakthrough: `ls20` level 3
 

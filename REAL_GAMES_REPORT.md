@@ -19,23 +19,27 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
 | Kaggle submissions | **2** | V65b `55113224` and v74 `55123277` are complete at public score **0.02** each. V98 notebook version 1 is complete but its competition request hit the daily quota, so it has no submission ID. |
 
-The current verified v99k process-isolated report has SHA-256
-`5e9d81c5f76a9e7124ff5abff96f8ac4cce106c51ba12350d4594a2f5524f82f`.
+The current verified v99k process-isolated result is
+[`reports/official-isolated-v99k-complementary-display-resource-horizon-400.json`](reports/official-isolated-v99k-complementary-display-resource-horizon-400.json),
+SHA-256
+`8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`.
+It binds frozen candidate `candidate-ddf2529a2bae5601`, inference source
+`794d9a1`, candidate commit and report source `38cb243`, and inference
+fingerprint
+`1ee5f03659be2e70ce6b3d52066468ab5a8bb783e55fb4ba5c7b063f9ee39a7f`.
 Relative to v98, it changes only `ls20`: 3/7 becomes 4/7 and the vector changes
 from `[17,112,51,220,0,0,0]` to `[17,112,51,133,87,0,0]`. All other 24
-score/level/action/reset signatures remain exact. The v99k quality and package
-gates are in progress; the following completed artifact claims still describe
-the accepted v98 parent. Until v99k is frozen, that accepted parent remains
-**50 / 183** levels at **21.2760830187 / 100**.
+score/level/action/reset signatures remain exact. The complete quality gate
+passes with 516 tests and 3 skips, Ruff, and mypy.
 Two exact exports reproduce byte-for-byte, both network-disabled smoke paths
 pass, and the technical prize audit reports `technical_ready: true`. Exact
 SHA-256 values are candidate
-`cc4a7709d841cbab3f76b63562013b9d3c7f9f81750946171963667af6b6d0e9`,
+`fa2c05667cca8078123d0e517f7918a9a701a8e1dfa9d6dfb35e0332d92bbc58`,
 overlay
-`e4352d7faf21c41f67f5009952c5381e3a083a2fc086e511185b73432d9c7d0a`,
+`0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`,
 and notebook
-`98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`.
-V98 is accepted.
+`dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`.
+V99k is accepted locally; Kaggle publication and submission remain.
 
 ## Evaluation surfaces
 

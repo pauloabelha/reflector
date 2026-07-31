@@ -11,17 +11,17 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Fully artifact-gated accepted agent: v98
-  `candidate-59010e6c00da94ac`.
-- Local known-public-development score: **21.276083018731335 / 100**.
-- Progress: **50 / 183 levels across the 25 public-development games**.
+- Fully artifact-gated accepted agent: v99k
+  `candidate-ddf2529a2bae5601`.
+- Local known-public-development score: **21.632592714022195 / 100**.
+- Progress: **51 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
 - Total actions: **9,185**.
 - Kaggle submissions: v65b `55113224` and v74 `55123277` complete.
 - Kaggle public score: **0.02 for frozen v65b and v74**.
 - Kaggle private score: **unavailable**.
-- V98 passes target repeat, preservation, the full suite, quality, and exact
-  deployment gates. Relative to v97, only `ls20` changes; all 24 other
+- V99k passes target repeat, preservation, the frozen full suite, quality, and
+  exact deployment gates. Relative to v98, only `ls20` changes; all 24 other
   score/action vectors are exactly preserved.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
@@ -29,6 +29,32 @@ one-level accommodations on known public games. The central unsolved problem
 is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
+
+## 2026-07-31 — complementary displays and relational horizon reset
+
+V99k makes the category-theoretic language operational rather than
+decorative. Two nested, color-dual, disjoint 3×3 masks whose union is the whole
+logical grid are treated as two presentations of one binary partition. The
+selected presentation is preserved by the unique host/background-color
+naturality relation to the external goal, so an intervention cannot spuriously
+swap the object being tracked.
+
+Operator appearance supplies only an information prior. Contact induces the
+actual shape or palette morphism. HRL then composes these typed morphisms with
+resource-reset options under a bounded CSP, while confirmed resource exits
+constrain the next path. When every consumed resource identity reappears
+together, that joint relation—not a fragile pixel scalar—marks a new horizon.
+The planner clears per-horizon option state but conserves its learned causal
+counterexample. This is Piagetian accommodation in a strict sense: preserve
+the valid scheme, revise only the failed contextual law, and try the
+composition again.
+
+That compact relational memory advances `ls20` from 3/7 to 4/7 at
+`[17,112,51,133,87,0,0]`, repeats exactly, and preserves every other game. The
+full 25-game score rises to 21.632592714022195 with 51/183 levels. The next
+research step should seek the same pattern at a broader level: infer horizon
+boundaries, option objects, and commuting factor transformations from generic
+change-point evidence rather than adding another task-local visual noun.
 
 ## 2026-07-31 — observational quotients turn perception into causal identity
 
