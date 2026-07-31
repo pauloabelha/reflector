@@ -60,6 +60,22 @@ representation and isolation evidence, not task progress. The next step must
 construct a bounded relative-position quotient, then show better-than-uniform
 probing or safe abstention before claiming useful control.
 
+## 2026-07-30 — v76 generator-ray probe rejected
+
+The first operative use of the algebra deliberately tested the simplest
+explanation for the failure: perhaps uniform inverse-action alternation was
+preventing spatial coverage. V76 therefore continued one authoritative
+generator in a bounded straight ray, stopping on a contextual no-op,
+conflict, progress, or a frame-derived cap.
+
+That explanation was wrong. The probe displaced the base policy 198 times on
+`dc22`, 320 on `ls20`, 305 on `re86`, and 8 on `tu93`, yet all four remained
+at zero levels. Raw relative reachability is not the missing goal abstraction.
+The next mechanism must condition on a relational event—contact, topology
+change, phase change, or another prospectively evidenced discontinuity—or
+abstain. Merely traversing a learned action group more aggressively is now a
+closed branch.
+
 ## 2026-07-30 — v68 accepted path-cycle result
 
 V68 supplies a generic prior absent from v67: a conserved same-form

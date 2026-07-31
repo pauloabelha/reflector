@@ -400,6 +400,7 @@ class EpistemicExplorer:
     compact_component_frontier: bool = False
     compact_component_nuisance_filter: bool = False
     action_translation_algebra: bool = False
+    action_translation_orbit_probe: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -455,6 +456,16 @@ class EpistemicExplorer:
     translation_last_diagnostic: str = "exact-off"
     translation_last_predicted_displacement: tuple[int, int] | None = None
     translation_last_observed_displacement: tuple[int, int] | None = None
+    translation_probe_active: ActionIdentity | None = None
+    translation_probe_steps: int = 0
+    translation_probe_ray_counts: Counter[ActionIdentity] = field(
+        default_factory=Counter,
+        repr=False,
+    )
+    translation_probe_selections: int = 0
+    translation_probe_completed_rays: int = 0
+    translation_probe_progress_events: int = 0
+    translation_probe_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -928,6 +939,8 @@ class EpistemicExplorer:
             order.append("parameterized-scheme-variation")
         if self.inherited_scheme_library.definitions:
             order.append("inherited-scheme-intervention")
+        if self.action_translation_orbit_probe:
+            order.append("action-translation-orbit-probe")
         if self.uses_action_family_schema:
             order.append("hierarchical-action-fairness")
         order.extend(("untried-state-intervention", "known-frontier-navigation"))
@@ -959,6 +972,8 @@ class EpistemicExplorer:
             if "parameterized-scheme-variation" in selected_reason
             else "inherited-scheme-intervention"
             if "inherited-scheme-intervention" in selected_reason
+            else "action-translation-orbit-probe"
+            if "action-translation-orbit-probe" in selected_reason
             else "hierarchical-action-fairness"
             if "hierarchical-action-family" in selected_reason
             else "untried-state-intervention"
@@ -1184,6 +1199,29 @@ class EpistemicExplorer:
             self.translation_last_observed_displacement = (
                 update.observed_displacement
             )
+            if (
+                self.action_translation_orbit_probe
+                and self.translation_probe_active == update.action
+                and (
+                    update.diagnostic
+                    in {
+                        "contextual-noop-preserves-hypothesis",
+                        "conflicting-nonzero-translation",
+                        "abstain:quarantined-action",
+                    }
+                    or update.cap_failure is not None
+                )
+            ):
+                self._complete_action_translation_probe_ray(
+                    update.diagnostic
+                )
+        elif (
+            self.action_translation_orbit_probe
+            and progressed
+            and self.translation_probe_active is not None
+        ):
+            self.translation_probe_progress_events += 1
+            self._complete_action_translation_probe_ray("progress-observed")
         if self.paired_object_contact_planning and self.paired_pending is not None:
             self._observe_paired_object_contact(
                 before,
@@ -1476,11 +1514,19 @@ class EpistemicExplorer:
     def _reset_action_translation_algebra(self) -> None:
         self.translation_algebra.reset_episode()
         self.translation_sequence = 0
+        self.translation_probe_active = None
+        self.translation_probe_steps = 0
+        self.translation_probe_ray_counts.clear()
         self.translation_last_diagnostic = (
             "not-attempted" if self.action_translation_algebra else "exact-off"
         )
         self.translation_last_predicted_displacement = None
         self.translation_last_observed_displacement = None
+        self.translation_probe_diagnostic = (
+            "not-attempted"
+            if self.action_translation_orbit_probe
+            else "exact-off"
+        )
 
     def _reset_repeated_form_events(self) -> None:
         self.repeated_form_effect_history.clear()
@@ -5172,6 +5218,23 @@ class EpistemicExplorer:
                 scene,
             )
 
+        translation_probe = self._select_action_translation_orbit_probe(
+            observation,
+            tokens,
+        )
+        if translation_probe is not None:
+            self.last_scheme_components = (
+                "scheme:prospective-action-translation-algebra",
+                "operator:bounded-generator-ray",
+                "state:episode-local-relative-orbit",
+            )
+            return self._issue(
+                state,
+                translation_probe,
+                "epistemic-frontier:action-translation-orbit-probe",
+                scene,
+            )
+
         if self.uses_action_family_schema:
             _index, balanced = min(
                 enumerate(tokens),
@@ -5235,6 +5298,80 @@ class EpistemicExplorer:
             "epistemic-frontier:least-repeated-exhausted-state",
             scene,
         )
+
+    def _select_action_translation_orbit_probe(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Traverse one confirmed inverse generator as a bounded probe ray."""
+
+        if not self.action_translation_orbit_probe:
+            return None
+        represented = {
+            ActionIdentity(token.action_id): token
+            for token in tokens
+            if not token.data
+            and token.action_id not in {self.reset_action, self.complex_action}
+        }
+        inverse_actions = {
+            action
+            for pair in self.translation_algebra.inverse_pairs()
+            for action in pair
+            if action.payload == () and action in represented
+        }
+        laws = {
+            law.action: law
+            for law in self.translation_algebra.authoritative_laws()
+            if law.action in inverse_actions
+        }
+        if len(laws) < 2:
+            self.translation_probe_active = None
+            self.translation_probe_steps = 0
+            self.translation_probe_diagnostic = "no-authoritative-inverse-pair"
+            return None
+        active = self.translation_probe_active
+        if active is not None and active not in laws:
+            self._complete_action_translation_probe_ray(
+                "active-generator-lost-authority"
+            )
+            active = None
+        if active is not None:
+            displacement = laws[active].displacement
+            step = max(abs(displacement[0]), abs(displacement[1]))
+            height = len(observation.frame)
+            width = len(observation.frame[0]) if observation.frame else 0
+            ray_cap = min(
+                24,
+                max(2, math.ceil(max(width, height) / max(step, 1))),
+            )
+            if self.translation_probe_steps >= ray_cap:
+                self._complete_action_translation_probe_ray("ray-cap-reached")
+                active = None
+        if active is None:
+            active = min(
+                laws,
+                key=lambda action: (
+                    self.translation_probe_ray_counts[action],
+                    action,
+                ),
+            )
+            self.translation_probe_active = active
+            self.translation_probe_steps = 0
+            self.translation_probe_diagnostic = "ray-started"
+        self.translation_probe_steps += 1
+        self.translation_probe_selections += 1
+        self.translation_probe_diagnostic = "ray-step-selected"
+        return represented[active]
+
+    def _complete_action_translation_probe_ray(self, diagnostic: str) -> None:
+        active = self.translation_probe_active
+        if active is not None:
+            self.translation_probe_ray_counts[active] += 1
+            self.translation_probe_completed_rays += 1
+        self.translation_probe_active = None
+        self.translation_probe_steps = 0
+        self.translation_probe_diagnostic = diagnostic
 
     def _select_local_relation_repair(
         self,
@@ -11529,6 +11666,29 @@ class EpistemicExplorer:
             ),
             "action_translation_cap_failure": (
                 self.translation_algebra.cap_failure
+            ),
+            "action_translation_orbit_probe_enabled": int(
+                self.action_translation_orbit_probe
+            ),
+            "action_translation_probe_selections": (
+                self.translation_probe_selections
+            ),
+            "action_translation_probe_completed_rays": (
+                self.translation_probe_completed_rays
+            ),
+            "action_translation_probe_progress_events": (
+                self.translation_probe_progress_events
+            ),
+            "action_translation_probe_current_steps": (
+                self.translation_probe_steps
+            ),
+            "action_translation_probe_active_action": (
+                self.translation_probe_active.action_id
+                if self.translation_probe_active is not None
+                else None
+            ),
+            "action_translation_probe_diagnostic": (
+                self.translation_probe_diagnostic
             ),
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),

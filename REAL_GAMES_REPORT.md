@@ -314,6 +314,36 @@ beat uniform probing or safely abstain on at least three games before it may
 affect control. Task promotion still requires deterministic progress on two
 structurally different games and exact preservation of v74.
 
+## V76 rejected action-translation orbit probe
+
+Generation-36 candidate `candidate-b584013b761549e7` made the v75 algebra
+operative only after an inverse generator pair gained same-episode authority.
+It traversed one generator in a bounded straight ray until contextual no-op,
+conflict, progress, or a frame-derived cap, then selected the least-tested
+inverse generator. It retained no game identity, fixed action mapping, goal,
+coordinate, color, or route.
+
+The preregistered four-game diagnostic falsified the task claim:
+
+| Game | Probe selections | Completed rays | Levels before | Levels after |
+| --- | ---: | ---: | ---: | ---: |
+| `dc22` | 198 | 65 | 0 | 0 |
+| `ls20` | 320 | 49 | 0 | 0 |
+| `re86` | 305 | 53 | 0 | 0 |
+| `tu93` | 8 | 7 | 0 | 0 |
+
+The mechanism was strongly operative on three games and weakly operative on
+the fourth, but it neither improved nor safely abstained. V76 is rejected,
+and no preservation or full-suite run was warranted. The result report is
+[`reports/official-isolated-v76-action-translation-orbit-targets-r1-400.json`](reports/official-isolated-v76-action-translation-orbit-targets-r1-400.json),
+SHA-256
+`0dfd4d42eeffe64547dcab50f3610a2a6890a828a802572566ae6a4ca98d00a3`.
+The candidate, cognition, and recording SHA-256 values are respectively
+`ef2e0a574abe1e43b1846372e12e45d1629dd36bb07b5f910b1767319b8201b5`,
+`a43fb2a8d3f854afcf17f96a1414832c83a622dae61fc0acb21d290a1e3bf9ef`,
+and
+`80426ef67e9bdfb59889a9c9ce226944e553798e426e756e1683aba0b0dfa36b`.
+
 ## Historical accepted v69 result
 
 Candidate: `candidate-2336bc12a0bc28de`

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from reflector.core.action_translation_algebra import (
     ActionIdentity,
     ActionTranslationAlgebra,
@@ -10,6 +12,7 @@ from reflector.core.exploration import (
     ActionToken,
     EpistemicExplorer,
 )
+from reflector.core.mind import MindConfig
 from reflector.core.perception import SceneTracker
 from reflector.core.symbolic import Observation, Scene
 
@@ -307,3 +310,62 @@ def test_explorer_integration_is_exact_off_and_traces_active_authority() -> None
     assert metrics["action_translation_last_diagnostic"] == (
         "prospectively-confirmed-translation-law"
     )
+
+
+def _seed_inverse_pair(explorer: EpistemicExplorer) -> None:
+    right = ActionIdentity(2)
+    left = ActionIdentity(3)
+    for sequence, (before, after) in enumerate(
+        (
+            (_frame((1, 2)), _frame((3, 2))),
+            (
+                _frame((2, 4), nuisance=1),
+                _frame((4, 4), nuisance=1),
+            ),
+        )
+    ):
+        explorer.translation_algebra.observe(
+            sequence=sequence,
+            action=right,
+            before=before,
+            after=after,
+        )
+        explorer.translation_algebra.observe(
+            sequence=sequence + 2,
+            action=left,
+            before=after,
+            after=before,
+        )
+
+
+def test_orbit_probe_runs_one_generator_until_contextual_noop() -> None:
+    explorer = EpistemicExplorer(
+        action_translation_algebra=True,
+        action_translation_orbit_probe=True,
+    )
+    _seed_inverse_pair(explorer)
+    before, before_scene = _observation(_frame((1, 2), nuisance=6))
+    explorer.observe(before, before_scene)
+
+    first = explorer.select(before, before_scene, (2, 3))
+    assert first.token.action_id == 2
+    moved, moved_scene = _observation(_frame((3, 2), nuisance=6))
+    explorer.observe(moved, moved_scene)
+
+    second = explorer.select(moved, moved_scene, (2, 3))
+    assert second.token.action_id == 2
+    explorer.observe(moved, moved_scene)
+
+    after_block = explorer.select(moved, moved_scene, (2, 3))
+    assert after_block.token.action_id == 3
+    telemetry = explorer.to_dict()
+    assert telemetry["action_translation_probe_completed_rays"] == 1
+    assert telemetry["action_translation_probe_selections"] == 3
+
+
+def test_orbit_probe_config_requires_translation_algebra() -> None:
+    with pytest.raises(
+        ValueError,
+        match="orbit probing requires",
+    ):
+        MindConfig(enable_action_translation_orbit_probe=True)

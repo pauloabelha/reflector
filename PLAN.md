@@ -2941,16 +2941,22 @@ cognitive streams gained prospective authority on all four games. This
 validates runtime observability and behavioral isolation only; it is not a
 score gain.
 
+The first operative child, v76 `candidate-b584013b761549e7`, traversed
+authoritative inverse generators in bounded straight rays. It was selected
+198 times on `dc22`, 320 on `ls20`, 305 on `re86`, and 8 on `tu93`, but all
+four games remained at zero levels. This falsifies undirected generator-ray
+coverage as a useful quotient. V76 is rejected without preservation or a full
+suite; the feature remains exact-off by default.
+
 Next:
 
 1. Keep v74 frozen as the preservation anchor. Before promotion, reproduce
    every accepted vector across the full suite.
-2. Let a law affect control only after same-episode prospective authority.
-   Construct a bounded relative-position quotient and choose probes by
-   elimination or unvisited abstract transitions; do not assume a goal.
-3. Run transformed synthetic controls, then isolated `ls20`, `re86`, `tu93`,
-   and `dc22` diagnostics. Reject the branch if it cannot beat uniform
-   exploration or safely abstain on at least three games.
+2. Do not retry undirected straight rays. Derive a relational event or
+   contact-sensitive quotient that can distinguish information-bearing
+   topology changes from mere orbit coverage.
+3. Preregister a smaller prospective control claim before another live run;
+   require either a causal event advantage or safe abstention.
 4. A task promotion still requires deterministic gains on two structurally
    different games, exact preservation, the full 25-game suite, export, and
    both offline smoke paths.

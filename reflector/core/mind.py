@@ -113,6 +113,7 @@ class MindConfig:
     enable_compact_component_frontier: bool = False
     enable_compact_component_nuisance_filter: bool = False
     enable_action_translation_algebra: bool = False
+    enable_action_translation_orbit_probe: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -191,6 +192,7 @@ class MindConfig:
             "enable_compact_component_frontier",
             "enable_compact_component_nuisance_filter",
             "enable_action_translation_algebra",
+            "enable_action_translation_orbit_probe",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")
@@ -201,6 +203,14 @@ class MindConfig:
             raise ValueError(
                 "compact component nuisance filtering requires the compact "
                 "component frontier"
+            )
+        if (
+            self.enable_action_translation_orbit_probe
+            and not self.enable_action_translation_algebra
+        ):
+            raise ValueError(
+                "action translation orbit probing requires the action "
+                "translation algebra"
             )
         if (
             self.enable_colored_stencil_secondary_planning
