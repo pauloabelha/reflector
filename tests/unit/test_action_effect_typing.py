@@ -136,6 +136,31 @@ def test_progress_role_match_ignores_color_when_shape_and_area_transfer() -> Non
     ) == 2
 
 
+def test_progress_path_start_is_rebound_after_retry() -> None:
+    explorer = EpistemicExplorer(shortest_progress_path_reuse=True)
+    tracker = SceneTracker()
+    active = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1,),
+        frame=_frame(((1, 2, 3),)),
+    )
+    failed = Observation.create(
+        state="GAME_OVER",
+        available_actions=(0,),
+        frame=active.frame,
+    )
+    first_scene, _events = tracker.perceive(active)
+    failed_scene, _events = tracker.perceive(failed)
+    retry_scene, _events = tracker.perceive(active)
+
+    first = explorer.observe(active, first_scene)
+    assert explorer.level_start_state == first
+    explorer.observe(failed, failed_scene)
+    assert explorer.level_start_state is None
+    retry = explorer.observe(active, retry_scene)
+    assert explorer.level_start_state == retry
+
+
 def test_one_positive_effect_proposes_and_distinct_source_confirms() -> None:
     typer = ProspectiveActionEffectTyper()
     action = ActionIdentity(5)

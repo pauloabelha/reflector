@@ -1148,6 +1148,7 @@ class EpistemicExplorer:
             self.shortest_progress_path_repetitions_left = 0
             self.shortest_progress_path_selections = 0
         elif observation.state == "GAME_OVER":
+            self.level_start_state = None
             self.episode_roles.clear()
             self.episode_groundings.clear()
             self.productive_groundings.clear()
@@ -1183,6 +1184,8 @@ class EpistemicExplorer:
             self._reset_action_effect_typing()
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
+        elif self.level_start_state is None:
+            self.level_start_state = state
         if state not in self.state_status:
             if len(self.visit_order) >= self.max_states:
                 self._forget_oldest_state()
