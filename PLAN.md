@@ -72,6 +72,10 @@ autonomously in 51 actions. Fresh scorecard
 `de35b8d9-75ae-470f-8063-80675a3d9662` is 3/7 at
 `[17,112,51,220,0,0,0]`, doubling the target score to
 21.428571428571427 while exactly preserving the first two level lengths.
+Fresh repeat `4ec56763-e47a-46f9-9c82-eafe5c1781a7` is exact. The inference
+source is frozen at `d73027d`; v98 `candidate-59010e6c00da94ac`, generation
+53, carries fingerprint
+`a692a9a9bbe29305abaa221327f38c79326847cd21df1445f059e5023a912e8f`.
 The result is provisional until preservation and full-suite gates pass.
 
 The diagnosis revealed three missing abstractions:
@@ -105,7 +109,7 @@ Implemented bounded offspring:
 
 Immediate gate sequence:
 
-1. exact fresh-process `ls20` repeat;
+1. ~~exact fresh-process `ls20` repeat~~ — passed;
 2. accepted-win preservation with exact non-target vector comparison;
 3. frozen-source 25-game isolated suite;
 4. full tests, Ruff, mypy, exact export, offline smoke, and prize audit;

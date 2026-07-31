@@ -52,6 +52,13 @@ unchanged v97 genome and 400-action bound. Fresh target scorecard
 exactly preserve v97, while level 3 completes in 51 autonomous actions. This
 is a target breakthrough, not yet an accepted 25-game score.
 
+An independent fresh-process repeat, scorecard
+`4ec56763-e47a-46f9-9c82-eafe5c1781a7`, is exact in score, vector, resets,
+action counts, and advisor counts. The deterministic target gate therefore
+passes. Frozen inference source `d73027d`, fingerprint
+`a692a9a9bbe29305abaa221327f38c79326847cd21df1445f059e5023a912e8f`,
+is packaged as v98 `candidate-59010e6c00da94ac`.
+
 The decisive accommodation is an observational quotient. Contact with one
 compact operator can partially occlude it, producing several exact pixel sets
 for one causal object. The planner now merges transitively overlapping views,
