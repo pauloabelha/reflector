@@ -26,6 +26,11 @@ from .connector_synthesis import (
     VariableSlot,
     synthesize_connector_program,
 )
+from .constellation_alignment import (
+    ConstellationAlignment,
+    ConstellationObject,
+    infer_constellation_alignment,
+)
 from .dihedral_analogy import infer_dihedral_analogy
 from .inheritance import SchemeLibrary
 from .lattice_csp import (
@@ -420,6 +425,7 @@ class EpistemicExplorer:
     finite_orbit_commit_exploration: bool = False
     dihedral_analogy_alignment: bool = False
     linear_track_navigation: bool = False
+    constellation_alignment: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -570,6 +576,26 @@ class EpistemicExplorer:
     track_selections: int = 0
     track_compilations: int = 0
     track_diagnostic: str = "exact-off"
+    constellation_move_actions: dict[int, tuple[int, int]] = field(
+        default_factory=dict,
+        repr=False,
+    )
+    constellation_switch_actions: set[int] = field(
+        default_factory=set,
+        repr=False,
+    )
+    constellation_quarantined_actions: set[int] = field(
+        default_factory=set,
+        repr=False,
+    )
+    constellation_last_layout: ConstellationAlignment | None = field(
+        default=None,
+        repr=False,
+    )
+    constellation_selections: int = 0
+    constellation_moves: int = 0
+    constellation_switches: int = 0
+    constellation_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -1037,6 +1063,8 @@ class EpistemicExplorer:
             order.append("committed-trajectory-planning")
         if self.shape_goal_translation:
             order.append("shape-goal-translation")
+        if self.constellation_alignment:
+            order.append("constellation-alignment")
         if self.linear_track_navigation:
             order.append("linear-track-navigation")
         if self.dihedral_analogy_alignment:
@@ -1078,6 +1106,8 @@ class EpistemicExplorer:
             if "committed-trajectory-planning" in selected_reason
             else "shape-goal-translation"
             if "shape-goal-translation" in selected_reason
+            else "constellation-alignment"
+            if "constellation-alignment" in selected_reason
             else "dihedral-analogy-alignment"
             if "dihedral-analogy-alignment" in selected_reason
             else "finite-orbit-commit-exploration"
@@ -1217,11 +1247,13 @@ class EpistemicExplorer:
             self._reset_finite_orbit(clear_trials=True)
             self._reset_dihedral_analogy(clear_controls=True)
             self._reset_linear_track()
+            self._reset_constellation_alignment(clear_controls=False)
         elif observation.state == "GAME_OVER":
             self.level_start_state = None
             self._reset_finite_orbit(clear_trials=False)
             self._reset_dihedral_analogy(clear_controls=False)
             self._reset_linear_track()
+            self._reset_constellation_alignment(clear_controls=False)
             self.episode_roles.clear()
             self.episode_groundings.clear()
             self.productive_groundings.clear()
@@ -1314,6 +1346,19 @@ class EpistemicExplorer:
             and not progressed
         ):
             self._observe_linear_track(
+                before,
+                after,
+                pending_token.action_id,
+            )
+        if (
+            self.constellation_alignment
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+            and not progressed
+        ):
+            self._observe_constellation_alignment(
                 before,
                 after,
                 pending_token.action_id,
@@ -5400,6 +5445,25 @@ class EpistemicExplorer:
                 scene,
             )
 
+        constellation = self._select_constellation_alignment(
+            observation,
+            tokens,
+        )
+        if constellation is not None:
+            self.last_scheme_components = (
+                "scheme:latent-constellation-alignment",
+                "relation:colored-landmark-incidence",
+                "operator:infer-orthogonal-line-intersection",
+                "operator:compose-grounded-object-translation",
+                "operator:transfer-control-between-movers",
+            )
+            return self._issue(
+                state,
+                constellation,
+                "epistemic-frontier:constellation-alignment",
+                scene,
+            )
+
         track_navigation = self._select_linear_track(
             observation,
             tokens,
@@ -5655,6 +5719,175 @@ class EpistemicExplorer:
             "epistemic-frontier:least-repeated-exhausted-state",
             scene,
         )
+
+    def _reset_constellation_alignment(self, *, clear_controls: bool) -> None:
+        self.constellation_selections = 0
+        self.constellation_last_layout = None
+        self.constellation_diagnostic = (
+            "not-grounded" if self.constellation_alignment else "exact-off"
+        )
+        if clear_controls:
+            self.constellation_move_actions.clear()
+            self.constellation_switch_actions.clear()
+            self.constellation_quarantined_actions.clear()
+            self.constellation_moves = 0
+            self.constellation_switches = 0
+
+    def _observe_constellation_alignment(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+    ) -> None:
+        source = infer_constellation_alignment(before)
+        destination = infer_constellation_alignment(after)
+        if source is None:
+            source = self.constellation_last_layout
+        if source is None:
+            self.constellation_diagnostic = "constellation-layout-not-grounded"
+            return
+        if destination is None:
+            displacement = self.constellation_move_actions.get(action_id)
+            if displacement is not None:
+                predicted = tuple(
+                    (
+                        ConstellationObject(
+                            item.color,
+                            (
+                                item.center[0] + displacement[0],
+                                item.center[1] + displacement[1],
+                            ),
+                            item.target,
+                        )
+                        if item.color == source.selected_color
+                        else item
+                    )
+                    for item in source.objects
+                )
+                self.constellation_last_layout = ConstellationAlignment(
+                    predicted,
+                    source.selected_color,
+                )
+                self.constellation_diagnostic = (
+                    "predicting-occluded-constellation-move"
+                )
+            else:
+                self.constellation_diagnostic = (
+                    "constellation-layout-not-grounded"
+                )
+            return
+        source_objects = {item.color: item for item in source.objects}
+        destination_objects = {item.color: item for item in destination.objects}
+        if (
+            source_objects.keys() != destination_objects.keys()
+            or any(
+                source_objects[color].target
+                != destination_objects[color].target
+                for color in source_objects
+            )
+        ):
+            self.constellation_quarantined_actions.add(action_id)
+            self.constellation_move_actions.pop(action_id, None)
+            self.constellation_switch_actions.discard(action_id)
+            self.constellation_diagnostic = "constellation-structure-changed"
+            return
+        self.constellation_last_layout = destination
+        moved = tuple(
+            color
+            for color in source_objects
+            if source_objects[color].center
+            != destination_objects[color].center
+        )
+        if (
+            not moved
+            and source.selected_color != destination.selected_color
+        ):
+            if action_id not in self.constellation_move_actions:
+                self.constellation_switch_actions.add(action_id)
+                self.constellation_diagnostic = "constellation-switch-grounded"
+            return
+        if (
+            moved == (source.selected_color,)
+            and source.selected_color == destination.selected_color
+        ):
+            color = moved[0]
+            old = source_objects[color].center
+            new = destination_objects[color].center
+            displacement = new[0] - old[0], new[1] - old[1]
+            previous = self.constellation_move_actions.get(action_id)
+            if previous is not None and previous != displacement:
+                self.constellation_quarantined_actions.add(action_id)
+                self.constellation_move_actions.pop(action_id, None)
+                self.constellation_diagnostic = "conflicting-constellation-move"
+                return
+            if displacement != (0, 0):
+                self.constellation_move_actions[action_id] = displacement
+                self.constellation_switch_actions.discard(action_id)
+                self.constellation_diagnostic = "constellation-move-grounded"
+
+    def _select_constellation_alignment(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        if not self.constellation_alignment:
+            return None
+        if self.constellation_selections >= 96:
+            self.constellation_diagnostic = "constellation-trial-cap"
+            return None
+        layout = infer_constellation_alignment(observation.frame)
+        if layout is not None:
+            self.constellation_last_layout = layout
+        else:
+            layout = self.constellation_last_layout
+        if layout is None:
+            self.constellation_diagnostic = "constellation-layout-not-grounded"
+            return None
+        available = {
+            token.action_id: token
+            for token in tokens
+            if not token.data
+            and token.action_id not in self.constellation_quarantined_actions
+        }
+        objects = {item.color: item for item in layout.objects}
+        active = objects[layout.selected_color]
+        if active.distance == 0:
+            if all(item.distance == 0 for item in layout.objects):
+                self.constellation_diagnostic = "constellation-satisfied"
+                return None
+            switches = tuple(
+                action_id
+                for action_id in sorted(self.constellation_switch_actions)
+                if action_id in available
+            )
+            if not switches:
+                self.constellation_diagnostic = "constellation-switch-incomplete"
+                return None
+            self.constellation_selections += 1
+            self.constellation_switches += 1
+            self.constellation_diagnostic = "switching-constellation-mover"
+            return available[switches[0]]
+        moves: list[tuple[int, int]] = []
+        for action_id, displacement in self.constellation_move_actions.items():
+            if action_id not in available:
+                continue
+            next_center = (
+                active.center[0] + displacement[0],
+                active.center[1] + displacement[1],
+            )
+            distance = abs(active.target[0] - next_center[0]) + abs(
+                active.target[1] - next_center[1]
+            )
+            if distance < active.distance:
+                moves.append((distance, action_id))
+        if not moves:
+            self.constellation_diagnostic = "constellation-controls-incomplete"
+            return None
+        _distance, action_id = min(moves)
+        self.constellation_selections += 1
+        self.constellation_moves += 1
+        self.constellation_diagnostic = "moving-to-latent-constellation-target"
+        return available[action_id]
 
     def _reset_linear_track(self) -> None:
         self.track_last_visible = None
@@ -12316,6 +12549,22 @@ class EpistemicExplorer:
             "linear_track_selections": self.track_selections,
             "linear_track_compilations": self.track_compilations,
             "linear_track_diagnostic": self.track_diagnostic,
+            "constellation_alignment_enabled": int(
+                self.constellation_alignment
+            ),
+            "constellation_move_actions": len(
+                self.constellation_move_actions
+            ),
+            "constellation_switch_actions": len(
+                self.constellation_switch_actions
+            ),
+            "constellation_quarantined_actions": len(
+                self.constellation_quarantined_actions
+            ),
+            "constellation_selections": self.constellation_selections,
+            "constellation_moves": self.constellation_moves,
+            "constellation_switches": self.constellation_switches,
+            "constellation_diagnostic": self.constellation_diagnostic,
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()

@@ -98,6 +98,9 @@ class SymbolicPolicy:
             linear_track_navigation=(
                 self.mind.config.enable_linear_track_navigation
             ),
+            constellation_alignment=(
+                self.mind.config.enable_constellation_alignment
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),
