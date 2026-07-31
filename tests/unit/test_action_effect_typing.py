@@ -161,6 +161,50 @@ def test_progress_path_start_is_rebound_after_retry() -> None:
     assert explorer.level_start_state == retry
 
 
+def test_progress_path_enumerates_ambiguous_role_bindings() -> None:
+    shape = ((0, 0), (0, 1), (1, 0), (1, 1))
+    frame = _frame(
+        (
+            (1, 1, 3),
+            (1, 2, 3),
+            (2, 1, 3),
+            (2, 2, 3),
+            (5, 1, 8),
+            (5, 2, 8),
+            (6, 1, 8),
+            (6, 2, 8),
+        )
+    )
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(6,),
+        frame=frame,
+    )
+    scene, _events = SceneTracker().perceive(observation)
+    explorer = EpistemicExplorer(shortest_progress_path_reuse=True)
+    explorer.shortest_progress_path = (
+        ProgressPathStep(
+            ActionRole(6, color=5, area=4, shape=shape),
+            2,
+        ),
+    )
+    state = (0, "NOT_FINISHED", "ambiguous")
+    tokens = explorer._tokens(observation, scene, (6,))
+
+    selections = tuple(
+        explorer._select_shortest_progress_path_role(
+            state,
+            tokens,
+            scene,
+        )
+        for _index in range(4)
+    )
+
+    assert selections[0] == selections[1]
+    assert selections[2] == selections[3]
+    assert selections[0] != selections[2]
+
+
 def test_one_positive_effect_proposes_and_distinct_source_confirms() -> None:
     typer = ProspectiveActionEffectTyper()
     action = ActionIdentity(5)

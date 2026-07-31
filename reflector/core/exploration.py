@@ -515,6 +515,8 @@ class EpistemicExplorer:
     shortest_progress_path_cursor: int = 0
     shortest_progress_path_bound_token: ActionToken | None = None
     shortest_progress_path_repetitions_left: int = 0
+    shortest_progress_path_variant_tokens: tuple[ActionToken, ...] = ()
+    shortest_progress_path_variant_repetitions: int = 0
     shortest_progress_path_selections: int = 0
     shortest_progress_path_compilations: int = 0
     shortest_progress_path_abstentions: int = 0
@@ -1146,6 +1148,8 @@ class EpistemicExplorer:
             self.shortest_progress_path_cursor = 0
             self.shortest_progress_path_bound_token = None
             self.shortest_progress_path_repetitions_left = 0
+            self.shortest_progress_path_variant_tokens = ()
+            self.shortest_progress_path_variant_repetitions = 0
             self.shortest_progress_path_selections = 0
         elif observation.state == "GAME_OVER":
             self.level_start_state = None
@@ -5680,6 +5684,20 @@ class EpistemicExplorer:
                 return self.shortest_progress_path_bound_token
             self.shortest_progress_path_bound_token = None
             self.shortest_progress_path_repetitions_left = 0
+        while self.shortest_progress_path_variant_tokens:
+            selected, *remaining = self.shortest_progress_path_variant_tokens
+            self.shortest_progress_path_variant_tokens = tuple(remaining)
+            if selected not in tokens:
+                continue
+            self.shortest_progress_path_bound_token = selected
+            self.shortest_progress_path_repetitions_left = (
+                self.shortest_progress_path_variant_repetitions - 1
+            )
+            self.shortest_progress_path_selections += 1
+            self.shortest_progress_path_diagnostic = (
+                "testing-ambiguous-progress-role-binding"
+            )
+            return selected
         while self.shortest_progress_path_cursor < len(
             self.shortest_progress_path
         ):
@@ -5707,10 +5725,24 @@ class EpistemicExplorer:
             )
             if score < 4:
                 continue
+            variants = tuple(
+                token
+                for candidate_score, token in sorted(
+                    ranked,
+                    key=lambda item: (
+                        -item[0],
+                        self.global_attempts[item[1]],
+                        item[1],
+                    ),
+                )
+                if candidate_score == score and token != selected
+            )
             self.shortest_progress_path_bound_token = selected
             self.shortest_progress_path_repetitions_left = (
                 step.repetitions - 1
             )
+            self.shortest_progress_path_variant_tokens = variants
+            self.shortest_progress_path_variant_repetitions = step.repetitions
             self.shortest_progress_path_selections += 1
             self.shortest_progress_path_diagnostic = (
                 "matched-progress-path-role"
