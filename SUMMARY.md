@@ -103,8 +103,16 @@ preferred target. The source-matched report is
 Its SHA-256 is
 `4b9a31ad697ec62f52489687e2ff8cc7f713d1142fbe21ea0a37790390c30fe2`.
 The minimal v94b amendment makes a selected reset an atomic bounded option
-until contact confirms the reset or the path is falsified. V92 remains the
-accepted score pending an autonomous v94b result and preservation.
+until contact confirms the reset or the path is falsified. That single
+accommodation succeeds autonomously: v94b
+`candidate-2d9cadd5859ce47d`, source `203fa2e`, advances `ls20` to **2/7**
+at `[17,240,143,0,0,0,0]` and a one-game score of
+**5.983258928571429**. The source-matched report is
+[`reports/experimental-v94b-atomic-resource-ls20-r1-400.json`](reports/experimental-v94b-atomic-resource-ls20-r1-400.json),
+SHA-256
+`04f73bcb95e5849e2afc6662802b809a5bc1593cf60a7fe9713d53916253e50a`.
+This is the first autonomous level-2 gain, but v92 remains accepted until v94b
+repeats and passes preservation/full-suite gates.
 
 ## New accepted mechanism: demonstrated analogy algebra
 

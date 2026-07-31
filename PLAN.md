@@ -678,6 +678,16 @@ must remain authoritative until its predicted reset occurs, its role
 disappears, or its bounded path is falsified. Evaluate v94b on `ls20`; only a
 second-level gain warrants repeat and preservation gates.
 
+The first source-frozen v94b run passes that target gate. Candidate
+`candidate-2d9cadd5859ce47d` at source `203fa2e` reaches 2/7 with
+`[17,240,143,0,0,0,0]`, improving the accepted parent by one level and
+finishing level 2 after 240 actions across bounded retries. Report
+`reports/experimental-v94b-atomic-resource-ls20-r1-400.json`, SHA-256
+`04f73bcb95e5849e2afc6662802b809a5bc1593cf60a7fe9713d53916253e50a`.
+Next run an exact target repeat. If it reproduces 2/7, run the accepted-win
+preservation suite against v92, followed by all 25 games, full quality gates,
+and exact Kaggle export.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

@@ -412,6 +412,12 @@ disappears, or no path remains. This preserves the composition of primitive
 translation arrows into the intended reset morphism while retaining explicit
 falsifiers and hard search bounds.
 
+The first isolated v94b run validates that execution constraint causally:
+the otherwise identical non-atomic v94 remains at one `ls20` level, while
+v94b reaches two. This establishes task utility for the finite product and its
+atomic option semantics on one target run; it does not yet establish
+cross-game preservation or hidden transfer.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

@@ -1759,3 +1759,19 @@ object and its compiled path until the reset postcondition is observed or a
 path/role falsifier fires. This is also the categorical coherence condition:
 primitive path arrows must compose to the chosen reset morphism rather than
 being reselected independently at every intermediate object.
+
+## 2026-07-31: atomic reset options produce the autonomous second-level gain
+
+V94b changes only the termination semantics of the temporal-resource option:
+once a reset role is selected, primitive translations continue to compose
+toward that object until reset evidence or an explicit falsifier terminates
+the option. In a source-frozen fresh process this advances `ls20` from the
+accepted 1/7 to 2/7 at `[17,240,143,0,0,0,0]`.
+
+This is a sharp causal result. V94 already perceived the four-cell action cost,
+21-action horizon, resource roles, operator phases, and terminal relation, but
+remained at 1/7. Preserving the selected option—without a new color,
+coordinate, route, horizon constant, or game identifier—was sufficient for
+the extra level. The Piagetian accommodation modified the smallest falsified
+scheme; the categorical reading is associativity of the compiled primitive
+path with its intended reset morphism; the HRL reading is option atomicity.
