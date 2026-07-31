@@ -504,6 +504,15 @@ architecture therefore treats dependent option layers separately: inherited
 translations can license navigation, while a temporal resource option must
 also have current-level evidence for the phase-changing operator it serves.
 
+Explicit same-level retry uses the same transport machinery with a distinct
+scope. `GAME_OVER` may retain a complete action algebra, evidence counts, and
+partition signature as a dormant `same-level-retry` hypothesis. It clears
+anchors, blocked edges, paths, displays, operator state, temporal meters,
+resources, and option commitments. The first stable post-reset motion must
+commute before activation. Retry confirmations and rejections are separate
+from cross-level telemetry, so conservation at an identity-like retry boundary
+cannot masquerade as evidence for broader presentation transfer.
+
 ## Development control plane
 
 `MindConfig` is the deployable genome. It contains bounded booleans, planner

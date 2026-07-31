@@ -111,6 +111,23 @@ planner through `GAME_OVER` and proves that only the inactive algebra survives.
 A recolored commuting post-reset motion then reactivates it with retry—not
 cross-level—authority. The focused 72-test gate, Ruff, and mypy pass.
 
+The first frozen isolated target is a material efficiency breakthrough. V97
+preserves 2/7 levels while changing `ls20` from accepted
+`[17,240,143,0,0,0,0]` to **`[17,112,271,0,0,0,0]`**. Level 2 is therefore
+completed 128 actions earlier, and the one-game score rises from
+5.983258928571429 to **10.714285714285714**. Report
+[`reports/experimental-v97-retry-action-algebra-ls20-r1-400.json`](reports/experimental-v97-retry-action-algebra-ls20-r1-400.json),
+SHA-256
+`897cf26a0c82d2f38f01dc21a684b9b97cfbed2f3ab98bf632be0cbfa56f8d33`.
+
+The causal trace matches the preregistration. The first level-2 retry still
+ends at action 83. After reset, one ordinary motion confirms the retry-scoped
+algebra at action 85; the planner observes a local operator effect before
+scheduling resources, uses both reset options, and advances at total action
+129. V94b required another complete 106-action failure and did not advance
+until action 257. V97 is provisional until an exact fresh-process repeat and
+wider preservation gates pass.
+
 ## New accepted mechanism: phase-topology product planning
 
 V92 `candidate-42dbfa39cba78041` is the first accepted gain after v84m.

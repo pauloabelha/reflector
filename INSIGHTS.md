@@ -109,6 +109,23 @@ different. A retry is identity in the level context, whereas a level change is
 a candidate presentation morphism. Both still require a prospective concrete
 square before authority.
 
+The first live result validates the stronger compression claim. V97 advances
+the same `ls20` level 2 in 112 rather than 240 actions, raising the target score
+to 10.714285714285714 and leaving 271 actions for level 3. The improvement is
+not merely “fewer probes.” It removes an entire failed retry: after the first
+failure at action 83, a single post-reset motion confirms the conserved
+algebra, and the unchanged phase/resource CSP completes the level at action
+129. V94b discarded that algebra, spent a 106-action retry reconstructing and
+misusing it, and completed only at action 257.
+
+This is Drescher-style scheme conservation with a measurable description and
+intervention benefit: four laws plus one partition signature replace repeated
+relearning. It is also a hierarchical-RL result: the reusable item is the
+option's primitive dynamics model, not its failed policy. The categorical
+scope tag prevents conflating identity-on-retry with presentation transport
+across levels. Exact repetition and preservation remain necessary before the
+gain can become accepted knowledge.
+
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 
 The strongest post-restart gain came from treating `tr87` as a visible algebra

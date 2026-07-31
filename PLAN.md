@@ -138,6 +138,23 @@ scene-discontinuity waiting, dependent resource authority, and the full
 `GAME_OVER` integration boundary. Run the full quality gate and one isolated
 target; promote to repeat only for a real level or efficiency gain.
 
+The first frozen target qualifies:
+
+- source commit: `b8677a2`;
+- quality: 504 passed, 3 skipped, Ruff and mypy clean;
+- `ls20`: 2/7 at `[17,112,271,0,0,0,0]`;
+- score: `10.714285714285714`;
+- accepted comparison: `[17,240,143,0,0,0,0]` and
+  `5.983258928571429`;
+- causal event: one retry-scoped confirmation, then level 2 completes on that
+  retry at total action 129.
+
+This is a 128-action level-2 efficiency gain, not a new level. Run an exact
+fresh-process repeat with recordings and cognitive telemetry. If it reproduces
+the vector and retry confirmation, run the 15-game accepted-win preservation
+gate, then the complete 25-game suite. Reject on any lost completion or target
+nondeterminism.
+
 ## Why the accepted agent wins what it wins
 
 | Mechanism | Causal real-game evidence |
