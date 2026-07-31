@@ -98,6 +98,7 @@ from .scheme_category import (
     translation_square,
 )
 from .symbolic import ObjectState, Observation, Scene
+from .terminal_viability import TerminalEdgeViability
 
 StateKey = tuple[int, str, str]
 ControllerForm = (
@@ -454,6 +455,7 @@ class EpistemicExplorer:
     action_effect_typing: bool = False
     positive_effect_family_fairness: bool = False
     shortest_progress_path_reuse: bool = False
+    terminal_edge_viability_credit: bool = False
     finite_orbit_commit_exploration: bool = False
     dihedral_analogy_alignment: bool = False
     linear_track_navigation: bool = False
@@ -550,9 +552,9 @@ class EpistemicExplorer:
     positive_effect_family_selections: int = 0
     positive_effect_family_abstentions: int = 0
     positive_effect_family_diagnostic: str = "exact-off"
-    edge_groundings: dict[
-        tuple[StateKey, ActionToken], GroundedRole
-    ] = field(default_factory=dict, repr=False)
+    edge_groundings: dict[tuple[StateKey, ActionToken], GroundedRole] = field(
+        default_factory=dict, repr=False
+    )
     level_start_state: StateKey | None = None
     shortest_progress_path: tuple[ProgressPathStep, ...] = ()
     shortest_progress_path_cursor: int = 0
@@ -564,6 +566,14 @@ class EpistemicExplorer:
     shortest_progress_path_compilations: int = 0
     shortest_progress_path_abstentions: int = 0
     shortest_progress_path_diagnostic: str = "exact-off"
+    terminal_viability: TerminalEdgeViability = field(
+        default_factory=TerminalEdgeViability,
+        repr=False,
+    )
+    terminal_viability_pending_generic: bool = False
+    terminal_viability_filtered_tokens: int = 0
+    terminal_viability_filter_selections: int = 0
+    terminal_viability_all_unsafe_abstentions: int = 0
     finite_orbit_generator: ActionToken | None = None
     finite_orbit_inverse: ActionToken | None = None
     finite_orbit_commit_tokens: tuple[ActionToken, ...] = ()
@@ -768,19 +778,15 @@ class EpistemicExplorer:
     )
     select_apply_diagnostic: str = "not-attempted"
     shape_translation_probes: set[int] = field(default_factory=set)
-    shape_translation_effects: dict[int, tuple[int, int]] = field(
-        default_factory=dict
-    )
-    shape_translation_effect_evidence: Counter[int] = field(
-        default_factory=Counter
-    )
+    shape_translation_effects: dict[int, tuple[int, int]] = field(default_factory=dict)
+    shape_translation_effect_evidence: Counter[int] = field(default_factory=Counter)
     shape_translation_invalid_actions: set[int] = field(default_factory=set)
-    shape_goal_mover_signature: (
-        tuple[int, int, tuple[tuple[int, int], ...]] | None
-    ) = None
-    shape_goal_target_signature: (
-        tuple[int, int, tuple[tuple[int, int], ...]] | None
-    ) = None
+    shape_goal_mover_signature: tuple[int, int, tuple[tuple[int, int], ...]] | None = (
+        None
+    )
+    shape_goal_target_signature: tuple[int, int, tuple[tuple[int, int], ...]] | None = (
+        None
+    )
     shape_translation_level_trials: int = 0
     shape_translation_application_trials: int = 0
     shape_translation_diagnostic: str = "not-attempted"
@@ -843,15 +849,9 @@ class EpistemicExplorer:
         tuple[tuple[int, int], int],
         int,
     ] = field(default_factory=dict)
-    trajectory_gate_refresh_actions: Counter[int] = field(
-        default_factory=Counter
-    )
-    trajectory_topology_nodes: set[tuple[int, int]] = field(
-        default_factory=set
-    )
-    trajectory_uncertain_nodes: set[tuple[int, int]] = field(
-        default_factory=set
-    )
+    trajectory_gate_refresh_actions: Counter[int] = field(default_factory=Counter)
+    trajectory_topology_nodes: set[tuple[int, int]] = field(default_factory=set)
+    trajectory_uncertain_nodes: set[tuple[int, int]] = field(default_factory=set)
     trajectory_topology_support_color: int | None = None
     trajectory_restore_tried: set[int] = field(default_factory=set)
     trajectory_macro_action: int | None = None
@@ -945,22 +945,18 @@ class EpistemicExplorer:
     paired_marker_pixels: frozenset[tuple[int, int]] = frozenset()
     paired_marker_support: int = 0
     paired_relation_candidates: int = 1
-    paired_relation_target: (
-        tuple[tuple[int, int], tuple[int, int]] | None
-    ) = None
+    paired_relation_target: tuple[tuple[int, int], tuple[int, int]] | None = None
     paired_relation_pending: tuple[str, int, int] | None = None
-    paired_rejected_relation_targets: set[
-        tuple[tuple[int, int], tuple[int, int]]
-    ] = field(default_factory=set)
+    paired_rejected_relation_targets: set[tuple[tuple[int, int], tuple[int, int]]] = (
+        field(default_factory=set)
+    )
     paired_relation_confirmations: int = 0
     paired_relation_falsifications: int = 0
     paired_relation_plan_length: int = 0
     paired_relation_search_expansions: int = 0
     paired_progress_action: int | None = None
     paired_occlusion_active: bool = False
-    paired_occlusion_entry: (
-        tuple[tuple[int, int], tuple[int, int]] | None
-    ) = None
+    paired_occlusion_entry: tuple[tuple[int, int], tuple[int, int]] | None = None
     paired_occlusion_entry_action: int | None = None
     paired_occlusion_actions: list[int] = field(default_factory=list)
     paired_occlusion_evidence: dict[
@@ -1010,9 +1006,7 @@ class EpistemicExplorer:
     paired_contextual_conflicts: int = 0
     paired_contextual_planner_uses: int = 0
     paired_transport_trigger_color: int | None = None
-    paired_transport_successor: (
-        tuple[tuple[int, int], tuple[int, int]] | None
-    ) = None
+    paired_transport_successor: tuple[tuple[int, int], tuple[int, int]] | None = None
     paired_transport_inductions: int = 0
     paired_transport_planner_uses: int = 0
     paired_post_accommodation_allowance: int = 0
@@ -1029,12 +1023,10 @@ class EpistemicExplorer:
     compact_component_frontier_retry_active: bool | None = None
     compact_component_frontier_retry_diagnostic: str = "not-evaluated"
     compact_component_frontier_previous_retry_active: bool | None = None
-    lattice_effect_transitions: list[ClickTransition] = field(
+    lattice_effect_transitions: list[ClickTransition] = field(default_factory=list)
+    lattice_effect_probe_contexts: list[tuple[tuple[int, int], ...]] = field(
         default_factory=list
     )
-    lattice_effect_probe_contexts: list[
-        tuple[tuple[int, int], ...]
-    ] = field(default_factory=list)
     lattice_effect_signature: tuple[object, ...] | None = None
     lattice_effect_model: ClickEffectModel | None = None
     lattice_effect_quarantined: bool = False
@@ -1044,19 +1036,19 @@ class EpistemicExplorer:
     lattice_effect_search_nodes: int = 0
     lattice_effect_diagnostic: str = "not-attempted"
     segmented_permutation_bounds: PermutationBounds = PermutationBounds()
-    segmented_permutation_proposals: dict[
-        ControllerForm, PermutationGenerator
-    ] = field(default_factory=dict)
+    segmented_permutation_proposals: dict[ControllerForm, PermutationGenerator] = field(
+        default_factory=dict
+    )
     segmented_permutation_generators: tuple[PermutationGenerator, ...] = ()
-    segmented_permutation_controller_effects: dict[
-        ControllerForm, str
-    ] = field(default_factory=dict)
+    segmented_permutation_controller_effects: dict[ControllerForm, str] = field(
+        default_factory=dict
+    )
     segmented_permutation_quarantined_forms: set[ControllerForm] = field(
         default_factory=set
     )
-    segmented_permutation_pending_prediction: (
-        _SegmentedPermutationPrediction | None
-    ) = None
+    segmented_permutation_pending_prediction: _SegmentedPermutationPrediction | None = (
+        None
+    )
     segmented_permutation_observations: int = 0
     segmented_permutation_predictions: int = 0
     segmented_permutation_confirmations: int = 0
@@ -1075,16 +1067,14 @@ class EpistemicExplorer:
     segmented_permutation_last_segmented_candidates: int = 0
     segmented_permutation_last_path_candidates: int = 0
     segmented_permutation_last_controller_context: tuple[str, ...] = ()
-    factored_orbit_proposals: dict[
-        ControllerForm, _FactoredOrbitProposal
-    ] = field(default_factory=dict)
-    factored_orbit_generators: tuple[FactoredOrbitGenerator, ...] = ()
-    factored_orbit_controller_effects: dict[
-        ControllerForm, str
-    ] = field(default_factory=dict)
-    factored_orbit_quarantined_forms: set[ControllerForm] = field(
-        default_factory=set
+    factored_orbit_proposals: dict[ControllerForm, _FactoredOrbitProposal] = field(
+        default_factory=dict
     )
+    factored_orbit_generators: tuple[FactoredOrbitGenerator, ...] = ()
+    factored_orbit_controller_effects: dict[ControllerForm, str] = field(
+        default_factory=dict
+    )
+    factored_orbit_quarantined_forms: set[ControllerForm] = field(default_factory=set)
     factored_orbit_unique_bindings: dict[
         tuple[ControllerForm, int | None], tuple[int, int]
     ] = field(default_factory=dict)
@@ -1114,10 +1104,7 @@ class EpistemicExplorer:
         fairness_active = self.hierarchical_action_fairness and (
             not self.failure_conditioned_fairness
             or self.level_failures >= 2
-            or (
-                self.boundary_nuisance_fairness
-                and bool(self.boundary_nuisance_sides)
-            )
+            or (self.boundary_nuisance_fairness and bool(self.boundary_nuisance_sides))
         )
         return fairness_active or self.starter_schemas
 
@@ -1244,9 +1231,7 @@ class EpistemicExplorer:
     def observe(self, observation: Observation, scene: Scene) -> StateKey:
         """Record the outcome of the last issued intervention exactly once."""
 
-        self.colored_stencil_planner.enabled = (
-            self.colored_stencil_primary_planning
-        )
+        self.colored_stencil_planner.enabled = self.colored_stencil_primary_planning
         self.colored_stencil_planner.secondary_enabled = (
             self.colored_stencil_secondary_planning
         )
@@ -1315,9 +1300,7 @@ class EpistemicExplorer:
             self.current_level = observation.levels_completed
             self.level_start_state = state
             self.level_failures = 0
-            self._reset_compact_component_frontier_retry(
-                retain_previous=False
-            )
+            self._reset_compact_component_frontier_retry(retain_previous=False)
             self._reset_action_translation_algebra()
             self._reset_action_effect_typing()
             self.shortest_progress_path_cursor = 0
@@ -1326,6 +1309,9 @@ class EpistemicExplorer:
             self.shortest_progress_path_variant_tokens = ()
             self.shortest_progress_path_variant_repetitions = 0
             self.shortest_progress_path_selections = 0
+            if self.terminal_edge_viability_credit:
+                self.terminal_viability.reset_level()
+            self.terminal_viability_pending_generic = False
             self._reset_finite_orbit(clear_trials=True)
             self._reset_dihedral_analogy(clear_controls=True)
             self._reset_linear_track()
@@ -1364,9 +1350,7 @@ class EpistemicExplorer:
             if not self.cross_retry_maturity:
                 self.level_interventions = 0
             self.level_failures += 1
-            self._reset_compact_component_frontier_retry(
-                retain_previous=True
-            )
+            self._reset_compact_component_frontier_retry(retain_previous=True)
             self._reset_action_translation_algebra()
             self._reset_action_effect_typing()
             if self.click_object_accommodation and self.level_failures == 1:
@@ -1390,11 +1374,22 @@ class EpistemicExplorer:
             self.pending_grounding = None
             self.pending_relational_scheme = None
             self.segmented_permutation_pending_prediction = None
+            self.terminal_viability_pending_generic = False
             return
         before = self.pending_frame
         after = observation.frame
         self.pending_frame = ()
         role = self.pending_role
+        if (
+            self.terminal_edge_viability_credit
+            and self.terminal_viability_pending_generic
+        ):
+            self.terminal_viability.observe(
+                frame=before,
+                role=role,
+                terminal=observation.state == "GAME_OVER",
+            )
+        self.terminal_viability_pending_generic = False
         pending_token = self.pending[1] if self.pending is not None else None
         self.pending_role = None
         grounding = self.pending_grounding
@@ -1410,8 +1405,7 @@ class EpistemicExplorer:
             self.dihedral_analogy_alignment
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
             and not progressed
         ):
             self._observe_dihedral_analogy(
@@ -1423,8 +1417,7 @@ class EpistemicExplorer:
             self.linear_track_navigation
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
             and not progressed
         ):
             self._observe_linear_track(
@@ -1436,8 +1429,7 @@ class EpistemicExplorer:
             self.constellation_alignment
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
             and not progressed
         ):
             self._observe_constellation_alignment(
@@ -1449,8 +1441,7 @@ class EpistemicExplorer:
             self.finite_orbit_commit_exploration
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
             and not progressed
             and len(self.finite_orbit_edges) < 128
         ):
@@ -1473,8 +1464,7 @@ class EpistemicExplorer:
             self.action_translation_algebra
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
             and not progressed
         ):
             before_predictions = self.translation_algebra.predictions
@@ -1504,12 +1494,8 @@ class EpistemicExplorer:
             if update.diagnostic == "prospectively-confirmed-translation-law":
                 self.translation_total_authority_events += 1
             self.translation_last_diagnostic = update.diagnostic
-            self.translation_last_predicted_displacement = (
-                update.predicted_displacement
-            )
-            self.translation_last_observed_displacement = (
-                update.observed_displacement
-            )
+            self.translation_last_predicted_displacement = update.predicted_displacement
+            self.translation_last_observed_displacement = update.observed_displacement
             if (
                 self.action_translation_orbit_probe
                 and self.translation_probe_active == update.action
@@ -1525,16 +1511,11 @@ class EpistemicExplorer:
             ):
                 if (
                     self.action_translation_contact_probe
-                    and update.diagnostic
-                    == "contextual-noop-preserves-hypothesis"
+                    and update.diagnostic == "contextual-noop-preserves-hypothesis"
                 ):
                     self.translation_contact_pending = True
-                    self.translation_contact_diagnostic = (
-                        "contact-affordance-pending"
-                    )
-                self._complete_action_translation_probe_ray(
-                    update.diagnostic
-                )
+                    self.translation_contact_diagnostic = "contact-affordance-pending"
+                self._complete_action_translation_probe_ray(update.diagnostic)
         elif (
             self.action_translation_orbit_probe
             and progressed
@@ -1546,8 +1527,7 @@ class EpistemicExplorer:
             self.action_effect_typing
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
             and not progressed
         ):
             before_positive = self.effect_typer.positive_observations
@@ -1586,8 +1566,7 @@ class EpistemicExplorer:
             self.committed_trajectory_planning
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
         ):
             self._observe_committed_trajectory(
                 before,
@@ -1599,8 +1578,7 @@ class EpistemicExplorer:
             self.shape_goal_translation
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
             and not progressed
             and self._observe_shape_translation_phase(
                 before,
@@ -1676,8 +1654,7 @@ class EpistemicExplorer:
             self.shape_goal_translation
             and pending_token is not None
             and not pending_token.data
-            and pending_token.action_id
-            not in {self.reset_action, self.complex_action}
+            and pending_token.action_id not in {self.reset_action, self.complex_action}
             and not progressed
             and not phase_changed
         ):
@@ -1774,9 +1751,7 @@ class EpistemicExplorer:
         self.compact_component_frontier_objects = 0
         self.compact_component_nuisance_filtered = 0
         self.compact_component_enclosure_candidates = 0
-        self.compact_component_frontier_diagnostic = (
-            "awaiting-retry-evaluation"
-        )
+        self.compact_component_frontier_diagnostic = "awaiting-retry-evaluation"
 
     def _reset_shape_translation_level(self) -> None:
         self.shape_translation_probes.clear()
@@ -1832,9 +1807,7 @@ class EpistemicExplorer:
         self.segmented_permutation_last_path_candidates = 0
         self.segmented_permutation_last_controller_context = ()
         self.segmented_permutation_diagnostic = (
-            "not-attempted"
-            if self.segmented_permutation_transport
-            else "exact-off"
+            "not-attempted" if self.segmented_permutation_transport else "exact-off"
         )
 
     def _reset_factored_orbit_level(self) -> None:
@@ -1880,14 +1853,10 @@ class EpistemicExplorer:
         self.translation_last_predicted_displacement = None
         self.translation_last_observed_displacement = None
         self.translation_probe_diagnostic = (
-            "not-attempted"
-            if self.action_translation_orbit_probe
-            else "exact-off"
+            "not-attempted" if self.action_translation_orbit_probe else "exact-off"
         )
         self.translation_contact_diagnostic = (
-            "not-attempted"
-            if self.action_translation_contact_probe
-            else "exact-off"
+            "not-attempted" if self.action_translation_contact_probe else "exact-off"
         )
 
     def _reset_action_effect_typing(self) -> None:
@@ -1899,9 +1868,7 @@ class EpistemicExplorer:
             "not-attempted" if self.action_effect_typing else "exact-off"
         )
         self.positive_effect_family_diagnostic = (
-            "not-attempted"
-            if self.positive_effect_family_fairness
-            else "exact-off"
+            "not-attempted" if self.positive_effect_family_fairness else "exact-off"
         )
 
     def _reset_repeated_form_events(self) -> None:
@@ -1937,9 +1904,7 @@ class EpistemicExplorer:
                 [],
             ).append(item.centroid)
         return {
-            key: tuple(
-                sorted(anchors, key=lambda point: (point[1], point[0]))
-            )
+            key: tuple(sorted(anchors, key=lambda point: (point[1], point[0])))
             for key, anchors in groups.items()
             if 2 <= len(anchors) <= 8
         }
@@ -2026,17 +1991,12 @@ class EpistemicExplorer:
                     else:
                         detected = True
                         self.repeated_form_event_detections += 1
-                        observed_nonzero = any(
-                            dx != 0 or dy != 0 for dx, dy in effect
-                        )
-                        expected_zero = all(
-                            dx == 0 and dy == 0 for dx, dy in expected
-                        )
+                        observed_nonzero = any(dx != 0 or dy != 0 for dx, dy in effect)
+                        expected_zero = all(dx == 0 and dy == 0 for dx, dy in expected)
                         actionable = actionable or (
                             observed_nonzero
                             and (
-                                self.repeated_form_event_mode
-                                == "confirm-discontinuity"
+                                self.repeated_form_event_mode == "confirm-discontinuity"
                                 or (
                                     self.repeated_form_event_mode
                                     in {
@@ -2058,27 +2018,16 @@ class EpistemicExplorer:
         ):
             self.repeated_form_affordance_role = represented_role
             self.repeated_form_affordance_trigger_token = token
-            self.repeated_form_event_diagnostic = (
-                "affordance-variation-preregistered"
-            )
-        elif (
-            actionable
-            and self.repeated_form_event_mode == "propagate-affordance"
-        ):
-            self.repeated_form_event_diagnostic = (
-                "affordance-variation-observed"
-            )
+            self.repeated_form_event_diagnostic = "affordance-variation-preregistered"
+        elif actionable and self.repeated_form_event_mode == "propagate-affordance":
+            self.repeated_form_event_diagnostic = "affordance-variation-observed"
         elif actionable and not confirmation_observation:
             self.repeated_form_confirmation_token = token
-            self.repeated_form_event_diagnostic = (
-                "confirmation-preregistered"
-            )
+            self.repeated_form_event_diagnostic = "confirmation-preregistered"
         elif actionable:
             self.repeated_form_event_diagnostic = "confirmation-observed"
         elif detected:
-            self.repeated_form_event_diagnostic = (
-                "context-change-observed"
-            )
+            self.repeated_form_event_diagnostic = "context-change-observed"
         elif self.repeated_form_effect_history:
             self.repeated_form_event_diagnostic = "effect-model-updated"
 
@@ -2129,9 +2078,7 @@ class EpistemicExplorer:
         after_sides = self._boundary_sides(after)
         if not before_sides or len(before_sides) != len(after_sides):
             return
-        for side_index, (left, right) in enumerate(
-            zip(before_sides, after_sides)
-        ):
+        for side_index, (left, right) in enumerate(zip(before_sides, after_sides)):
             if left == right:
                 continue
             left_background, left_pattern = self._boundary_pattern(left)
@@ -2147,11 +2094,9 @@ class EpistemicExplorer:
                 growth.clear()
                 continue
             translated = False
-            if (
-                len(left_pattern) == len(right_pattern)
-                and tuple(color for _index, color in left_pattern)
-                == tuple(color for _index, color in right_pattern)
-            ):
+            if len(left_pattern) == len(right_pattern) and tuple(
+                color for _index, color in left_pattern
+            ) == tuple(color for _index, color in right_pattern):
                 deltas = {
                     right_item[0] - left_item[0]
                     for left_item, right_item in zip(
@@ -2163,13 +2108,9 @@ class EpistemicExplorer:
                     delta = next(iter(deltas))
                     origin = left_pattern[0][0]
                     shape = tuple(
-                        (index - origin, color)
-                        for index, color in left_pattern
+                        (index - origin, color) for index, color in left_pattern
                     )
-                    if history and (
-                        history[-1][1] != delta
-                        or history[-1][2] != shape
-                    ):
+                    if history and (history[-1][1] != delta or history[-1][2] != shape):
                         history.clear()
                     history.append((action_id, delta, shape))
                     if len(history) > 8:
@@ -2215,11 +2156,9 @@ class EpistemicExplorer:
             return False
         left_indices = tuple(index for index, _color in left)
         right_indices = tuple(index for index, _color in right)
-        if (
-            left_indices != tuple(range(left_indices[0], left_indices[-1] + 1))
-            or right_indices
-            != tuple(range(right_indices[0], right_indices[-1] + 1))
-        ):
+        if left_indices != tuple(
+            range(left_indices[0], left_indices[-1] + 1)
+        ) or right_indices != tuple(range(right_indices[0], right_indices[-1] + 1)):
             return False
         if left_indices[-1] == right_indices[-1]:
             fixed_endpoint = 1
@@ -2232,9 +2171,7 @@ class EpistemicExplorer:
         if abs(delta) != 1:
             return False
         signature = (fixed_endpoint, next(iter(colors)))
-        if history and (
-            history[-1][1] != delta or history[-1][2] != signature
-        ):
+        if history and (history[-1][1] != delta or history[-1][2] != signature):
             history.clear()
         history.append((action_id, delta, signature))
         if len(history) > 8:
@@ -2349,21 +2286,11 @@ class EpistemicExplorer:
                 continue
             horizontal = (
                 items[0].centroid[1] == items[1].centroid[1]
-                and abs(
-                    items[0].centroid[0]
-                    + items[1].centroid[0]
-                    - (width - 1)
-                )
-                <= 2
+                and abs(items[0].centroid[0] + items[1].centroid[0] - (width - 1)) <= 2
             )
             vertical = (
                 items[0].centroid[0] == items[1].centroid[0]
-                and abs(
-                    items[0].centroid[1]
-                    + items[1].centroid[1]
-                    - (height - 1)
-                )
-                <= 2
+                and abs(items[0].centroid[1] + items[1].centroid[1] - (height - 1)) <= 2
             )
             if horizontal == vertical:
                 continue
@@ -2372,20 +2299,15 @@ class EpistemicExplorer:
                 sorted(
                     items,
                     key=lambda item: (
-                        item.centroid[0]
-                        if horizontal
-                        else item.centroid[1]
+                        item.centroid[0] if horizontal else item.centroid[1]
                     ),
                 )
             )
-            surrounding = [
-                cls._surrounding_colors(frame, item) for item in ordered
-            ]
+            surrounding = [cls._surrounding_colors(frame, item) for item in ordered]
             shared = {
                 color
                 for color in surrounding[0]
-                if surrounding[0][color] >= 2
-                and surrounding[1][color] >= 2
+                if surrounding[0][color] >= 2 and surrounding[1][color] >= 2
             }
             if len(shared) != 1:
                 continue
@@ -2431,9 +2353,7 @@ class EpistemicExplorer:
         horizontal = grounding.reflection_axis == "horizontal"
         ordered = sorted(
             matches,
-            key=lambda item: (
-                item.centroid[0] if horizontal else item.centroid[1]
-            ),
+            key=lambda item: (item.centroid[0] if horizontal else item.centroid[1]),
         )
         return (ordered[0].centroid, ordered[1].centroid)
 
@@ -2586,9 +2506,7 @@ class EpistemicExplorer:
         evidence = self.paired_occlusion_evidence.get(key)
         if not evidence:
             return None
-        confirmed = [
-            outcome for outcome, count in evidence.items() if count >= 2
-        ]
+        confirmed = [outcome for outcome, count in evidence.items() if count >= 2]
         return confirmed[0] if len(confirmed) == 1 else None
 
     @staticmethod
@@ -2650,8 +2568,7 @@ class EpistemicExplorer:
             colors.update(
                 frame[proposed[1] + dy][proposed[0] + dx]
                 for dx, dy in grounding.mask_offsets
-                if 0 <= proposed[0] + dx < width
-                and 0 <= proposed[1] + dy < height
+                if 0 <= proposed[0] + dx < width and 0 <= proposed[1] + dy < height
             )
         return frozenset(colors - excluded)
 
@@ -2676,18 +2593,11 @@ class EpistemicExplorer:
                 tuple[tuple[int, int], tuple[int, int]],
             ]
         ] = set()
-        for index, (left_key, left_successor, left_triggers) in enumerate(
-            confirmed
-        ):
+        for index, (left_key, left_successor, left_triggers) in enumerate(confirmed):
             if left_successor is None:
                 continue
-            for right_key, right_successor, right_triggers in confirmed[
-                index + 1 :
-            ]:
-                if (
-                    left_key == right_key
-                    or right_successor != left_successor
-                ):
+            for right_key, right_successor, right_triggers in confirmed[index + 1 :]:
+                if left_key == right_key or right_successor != left_successor:
                     continue
                 shared = left_triggers & right_triggers
                 if len(shared) == 1:
@@ -2814,12 +2724,8 @@ class EpistemicExplorer:
         right: tuple[int, int],
         offsets: tuple[tuple[int, int], ...],
     ) -> bool:
-        left_mask = {
-            (left[0] + dx, left[1] + dy) for dx, dy in offsets
-        }
-        right_mask = {
-            (right[0] + dx, right[1] + dy) for dx, dy in offsets
-        }
+        left_mask = {(left[0] + dx, left[1] + dy) for dx, dy in offsets}
+        right_mask = {(right[0] + dx, right[1] + dy) for dx, dy in offsets}
         if left_mask & right_mask:
             return True
         return any(
@@ -2920,9 +2826,7 @@ class EpistemicExplorer:
                     continue
                 by_color.setdefault(color, set()).add((x, y))
         minimum = max(8, len(grounding.mask_offsets))
-        candidates: list[
-            tuple[float, int, int, frozenset[tuple[int, int]]]
-        ] = []
+        candidates: list[tuple[float, int, int, frozenset[tuple[int, int]]]] = []
         for color, raw_points in by_color.items():
             points = frozenset(raw_points)
             if not minimum <= len(points) <= 512:
@@ -2931,9 +2835,7 @@ class EpistemicExplorer:
             fragmentation = fragments / len(points)
             if fragments < 4 or fragmentation < 0.75:
                 continue
-            candidates.append(
-                (fragmentation, len(points), -color, points)
-            )
+            candidates.append((fragmentation, len(points), -color, points))
         if not candidates:
             return False
         fragmentation, support, negative_color, points = max(candidates)
@@ -2952,8 +2854,7 @@ class EpistemicExplorer:
         if grounding is None:
             return 0
         return sum(
-            (anchor[0] + dx, anchor[1] + dy)
-            in self.paired_marker_pixels
+            (anchor[0] + dx, anchor[1] + dy) in self.paired_marker_pixels
             for dx, dy in grounding.mask_offsets
         )
 
@@ -2963,8 +2864,7 @@ class EpistemicExplorer:
         target: tuple[tuple[int, int], tuple[int, int]],
     ) -> int:
         return sum(
-            abs(anchor[0] - destination[0])
-            + abs(anchor[1] - destination[1])
+            abs(anchor[0] - destination[0]) + abs(anchor[1] - destination[1])
             for anchor, destination in zip(anchors, target, strict=True)
         )
 
@@ -2978,11 +2878,7 @@ class EpistemicExplorer:
             return
         relation, before, expected = pending
         target = self.paired_relation_target
-        if (
-            relation != "paired-marker-coverage"
-            or observed is None
-            or target is None
-        ):
+        if relation != "paired-marker-coverage" or observed is None or target is None:
             self.paired_relation_falsifications += 1
             return
         actual = self._paired_target_distance(observed, target)
@@ -2990,10 +2886,7 @@ class EpistemicExplorer:
             self.paired_relation_confirmations += 1
         elif actual != expected:
             self.paired_relation_falsifications += 1
-            if (
-                expected == 0
-                and len(self.paired_rejected_relation_targets) < 16
-            ):
+            if expected == 0 and len(self.paired_rejected_relation_targets) < 16:
                 self.paired_rejected_relation_targets.add(target)
 
     def _paired_marker_plan(
@@ -3029,9 +2922,7 @@ class EpistemicExplorer:
         def score(
             state: tuple[tuple[int, int], tuple[int, int]],
         ) -> tuple[int, int]:
-            coverage = tuple(
-                self._paired_marker_coverage(anchor) for anchor in state
-            )
+            coverage = tuple(self._paired_marker_coverage(anchor) for anchor in state)
             return min(coverage), sum(coverage)
 
         queue: deque[
@@ -3087,16 +2978,13 @@ class EpistemicExplorer:
                     contextual_key = (state, action_id)
                     if (
                         self.paired_contextual_transitions
-                        and contextual_key
-                        in self.paired_contextual_quarantined
+                        and contextual_key in self.paired_contextual_quarantined
                     ):
                         successor = state
                     elif self.paired_contextual_transitions:
-                        contextual = (
-                            self._paired_confirmed_contextual_successor(
-                                state,
-                                action_id,
-                            )
+                        contextual = self._paired_confirmed_contextual_successor(
+                            state,
+                            action_id,
                         )
                         if (
                             contextual is not None
@@ -3106,13 +2994,11 @@ class EpistemicExplorer:
                             successor = contextual
                             self.paired_contextual_planner_uses += 1
                         elif self.paired_transport_family:
-                            family_successor = (
-                                self._paired_transport_family_successor(
-                                    frame,
-                                    state,
-                                    self.paired_effects[action_id],
-                                    nodes,
-                                )
+                            family_successor = self._paired_transport_family_successor(
+                                frame,
+                                state,
+                                self.paired_effects[action_id],
+                                nodes,
                             )
                             if family_successor is not None:
                                 successor = family_successor
@@ -3191,16 +3077,13 @@ class EpistemicExplorer:
                     contextual_key = (state, action_id)
                     if (
                         self.paired_contextual_transitions
-                        and contextual_key
-                        in self.paired_contextual_quarantined
+                        and contextual_key in self.paired_contextual_quarantined
                     ):
                         successor = state
                     elif self.paired_contextual_transitions:
-                        contextual = (
-                            self._paired_confirmed_contextual_successor(
-                                state,
-                                action_id,
-                            )
+                        contextual = self._paired_confirmed_contextual_successor(
+                            state,
+                            action_id,
                         )
                         if (
                             contextual is not None
@@ -3210,13 +3093,11 @@ class EpistemicExplorer:
                             successor = contextual
                             self.paired_contextual_planner_uses += 1
                         elif self.paired_transport_family:
-                            family_successor = (
-                                self._paired_transport_family_successor(
-                                    frame,
-                                    state,
-                                    effect,
-                                    nodes,
-                                )
+                            family_successor = self._paired_transport_family_successor(
+                                frame,
+                                state,
+                                effect,
+                                nodes,
                             )
                             if family_successor is not None:
                                 successor = family_successor
@@ -3250,9 +3131,7 @@ class EpistemicExplorer:
         ):
             return None
         if self.paired_grounding is None:
-            self.paired_grounding = self._ground_paired_objects(
-                observation.frame
-            )
+            self.paired_grounding = self._ground_paired_objects(observation.frame)
             if self.paired_grounding is None:
                 self.paired_diagnostic = "no-unique-reflected-pair"
                 return None
@@ -3261,8 +3140,7 @@ class EpistemicExplorer:
             token
             for token in tokens
             if not token.data
-            and token.action_id
-            not in {self.reset_action, self.complex_action}
+            and token.action_id not in {self.reset_action, self.complex_action}
         )
         if self.paired_occlusion_active:
             if len(self.paired_occlusion_actions) >= 4:
@@ -3278,9 +3156,7 @@ class EpistemicExplorer:
                             if self.paired_progress_action is not None
                             else entry_action
                         )
-                    elif (
-                        self.paired_occlusion_procedure_mode == "canonical-probe"
-                    ):
+                    elif self.paired_occlusion_procedure_mode == "canonical-probe":
                         selected_action = plain[
                             len(self.paired_occlusion_actions) % len(plain)
                         ].action_id
@@ -3294,18 +3170,14 @@ class EpistemicExplorer:
                         ),
                         plain[0],
                     )
-                    self.paired_occlusion_actions.append(
-                        occlusion_token.action_id
-                    )
+                    self.paired_occlusion_actions.append(occlusion_token.action_id)
                     self.paired_pending = (
                         "occlusion",
                         occlusion_token.action_id,
                         entry,
                     )
                     self.paired_level_trials += 1
-                    self.paired_diagnostic = (
-                        "executing-occlusion-procedure"
-                    )
+                    self.paired_diagnostic = "executing-occlusion-procedure"
                     return occlusion_token
         if (
             self.paired_latent_contact
@@ -3389,9 +3261,7 @@ class EpistemicExplorer:
             self.paired_active_terminal_relation = "object-contact"
             self.paired_relation_target = None
         self._earn_paired_post_accommodation_allowance(length)
-        token = next(
-            item for item in plain if item.action_id == action_id
-        )
+        token = next(item for item in plain if item.action_id == action_id)
         self.paired_pending = ("plan", action_id, anchors)
         self.paired_level_trials += 1
         self.paired_plan_length = length
@@ -3523,7 +3393,8 @@ class EpistemicExplorer:
                     item is not mover
                     and item_width == mover_width + 2
                     and item_height == mover_height + 2
-                    and 2 * max(item_width, item_height) <= item.area
+                    and 2 * max(item_width, item_height)
+                    <= item.area
                     < item_width * item_height - 1
                     and hosted_markers(item)
                 ):
@@ -3537,8 +3408,10 @@ class EpistemicExplorer:
                     mover_anchor=mover.bbox[:2],
                     mover_color=mover.color,
                     target_anchor=(
-                        target.bbox[0] + (target.bbox[2] - target.bbox[0] + 1 - mover_width) // 2,
-                        target.bbox[1] + (target.bbox[3] - target.bbox[1] + 1 - mover_height) // 2,
+                        target.bbox[0]
+                        + (target.bbox[2] - target.bbox[0] + 1 - mover_width) // 2,
+                        target.bbox[1]
+                        + (target.bbox[3] - target.bbox[1] + 1 - mover_height) // 2,
                     ),
                     target_color=target.color,
                     receptacle_signature=cls._trajectory_signature(target),
@@ -3725,9 +3598,9 @@ class EpistemicExplorer:
         )
         height = len(frame)
         width = len(frame[0])
-        background = Counter(
-            value for row in frame for value in row
-        ).most_common(1)[0][0]
+        background = Counter(value for row in frame for value in row).most_common(1)[0][
+            0
+        ]
         footprint = tuple(
             (predicted[0] + local_x, predicted[1] + local_y)
             for local_x, local_y in signature[3]
@@ -3773,9 +3646,9 @@ class EpistemicExplorer:
         )
         if len(x_steps) != 1 or len(y_steps) != 1:
             return frozenset(), frozenset(), None
-        background = Counter(
-            value for row in frame for value in row
-        ).most_common(1)[0][0]
+        background = Counter(value for row in frame for value in row).most_common(1)[0][
+            0
+        ]
         height = len(frame)
         width = len(frame[0])
         interior = tuple(
@@ -3824,8 +3697,7 @@ class EpistemicExplorer:
         candidates = sorted(
             ((x, y) for y in ys for x in xs),
             key=lambda anchor: (
-                abs(anchor[0] - origin[0])
-                + abs(anchor[1] - origin[1]),
+                abs(anchor[0] - origin[0]) + abs(anchor[1] - origin[1]),
                 anchor,
             ),
         )[:128]
@@ -3838,13 +3710,8 @@ class EpistemicExplorer:
         }
         current = self.trajectory_current_anchor
         for anchor in candidates:
-            center_color = frame[anchor[1] + center_dy][
-                anchor[0] + center_dx
-            ]
-            if (
-                center_color == background
-                and anchor not in {origin, current, target}
-            ):
+            center_color = frame[anchor[1] + center_dy][anchor[0] + center_dx]
+            if center_color == background and anchor not in {origin, current, target}:
                 continue
             admitted.add(anchor)
             if (
@@ -3854,9 +3721,7 @@ class EpistemicExplorer:
             ):
                 uncertain.add(anchor)
         admitted.update(
-            anchor
-            for anchor in (origin, current, target)
-            if anchor is not None
+            anchor for anchor in (origin, current, target) if anchor is not None
         )
         return frozenset(admitted), frozenset(uncertain), support.color
 
@@ -3871,9 +3736,7 @@ class EpistemicExplorer:
             }
             and self.trajectory_macro_action is not None
         ):
-            self.trajectory_previous_failed_macro_action = (
-                self.trajectory_macro_action
-            )
+            self.trajectory_previous_failed_macro_action = self.trajectory_macro_action
         self.trajectory_disabled = True
         self.trajectory_pending = None
         self.trajectory_diagnostic = diagnostic
@@ -4036,9 +3899,7 @@ class EpistemicExplorer:
                 self.trajectory_diagnostic = "commit-no-phase-change"
                 return
             self.trajectory_commit_action = action_id
-            self.trajectory_committed_macro = tuple(
-                self.trajectory_enacted_path
-            )
+            self.trajectory_committed_macro = tuple(self.trajectory_enacted_path)
             self.trajectory_current_anchor = after_anchor
             self.trajectory_latent_anchor = after_anchor
             self.trajectory_replay_started = False
@@ -4084,12 +3945,9 @@ class EpistemicExplorer:
                         self.trajectory_replay_misses = 0
                     elif (
                         self.trajectory_committed_macro
-                        and self.trajectory_committed_macro[0]
-                        in other_anchors
+                        and self.trajectory_committed_macro[0] in other_anchors
                     ):
-                        first_replay_anchor = (
-                            self.trajectory_committed_macro[0]
-                        )
+                        first_replay_anchor = self.trajectory_committed_macro[0]
                         self.trajectory_replay_started = True
                         self.trajectory_replay_anchor = first_replay_anchor
                         self.trajectory_replay_cursor = 1
@@ -4224,7 +4082,10 @@ class EpistemicExplorer:
         self,
         frame: tuple[tuple[int, ...], ...],
     ) -> None:
-        if not self.relational_phase_translation or self.shape_translation_phase_blocked:
+        if (
+            not self.relational_phase_translation
+            or self.shape_translation_phase_blocked
+        ):
             return
         phase = self._relational_phase_signature(frame)
         if phase is None:
@@ -4247,7 +4108,10 @@ class EpistemicExplorer:
     ) -> bool:
         """Quarantine action semantics after an evidenced marker-host change."""
 
-        if not self.relational_phase_translation or self.shape_translation_phase_blocked:
+        if (
+            not self.relational_phase_translation
+            or self.shape_translation_phase_blocked
+        ):
             return False
         if self.shape_translation_occluded_action is not None:
             return False
@@ -4275,14 +4139,11 @@ class EpistemicExplorer:
         before_by_signature = {
             self._shape_signature(item): item for item in before_pair
         }
-        after_by_signature = {
-            self._shape_signature(item): item for item in after_pair
-        }
+        after_by_signature = {self._shape_signature(item): item for item in after_pair}
         if set(before_by_signature) != set(after_by_signature):
             return False
         if any(
-            before_by_signature[signature].bbox
-            != after_by_signature[signature].bbox
+            before_by_signature[signature].bbox != after_by_signature[signature].bbox
             for signature in before_by_signature
         ):
             return False
@@ -4381,14 +4242,10 @@ class EpistemicExplorer:
         ) = prediction
         objects = self._interior_shape_objects(after)
         movers = tuple(
-            item
-            for item in objects
-            if self._shape_signature(item) == mover_signature
+            item for item in objects if self._shape_signature(item) == mover_signature
         )
         targets = tuple(
-            item
-            for item in objects
-            if self._shape_signature(item) == target_signature
+            item for item in objects if self._shape_signature(item) == target_signature
         )
         expected = (
             mover_centroid[0] + effect[0],
@@ -4463,9 +4320,7 @@ class EpistemicExplorer:
             list[_FrameObject],
         ] = {}
         for item in after_objects:
-            after_by_signature.setdefault(self._shape_signature(item), []).append(
-                item
-            )
+            after_by_signature.setdefault(self._shape_signature(item), []).append(item)
 
         moved: list[tuple[_FrameObject, tuple[int, int]]] = []
         stationary: list[_FrameObject] = []
@@ -4530,9 +4385,7 @@ class EpistemicExplorer:
     ) -> ActionToken | None:
         """Probe, then compose only translations that approach an exact shape."""
 
-        if (
-            not self.shape_goal_translation
-        ):
+        if not self.shape_goal_translation:
             return None
         self._ensure_shape_translation_phase(observation.frame)
         if self.shape_translation_phase_blocked:
@@ -4557,14 +4410,12 @@ class EpistemicExplorer:
             movers = tuple(
                 item
                 for item in objects
-                if self._shape_signature(item)
-                == self.shape_goal_mover_signature
+                if self._shape_signature(item) == self.shape_goal_mover_signature
             )
             targets = tuple(
                 item
                 for item in objects
-                if self._shape_signature(item)
-                == self.shape_goal_target_signature
+                if self._shape_signature(item) == self.shape_goal_target_signature
             )
             if len(movers) == 1 and len(targets) == 1:
                 mover_origin = movers[0].bbox[:2]
@@ -4771,8 +4622,7 @@ class EpistemicExplorer:
                     dx, dy = effect
                     if (
                         action_id not in represented
-                        or action_id
-                        == self.trajectory_previous_failed_macro_action
+                        or action_id == self.trajectory_previous_failed_macro_action
                         or (dx != 0) == (dy != 0)
                     ):
                         continue
@@ -4803,13 +4653,12 @@ class EpistemicExplorer:
             if action_id not in represented or effect is None:
                 self._disable_trajectory("endpoint-action-unavailable")
                 return None
-            if (
-                len(self.trajectory_active_path) >= 2
-                and self._trajectory_structural_endpoint(
-                    observation.frame,
-                    current,
-                    effect,
-                )
+            if len(
+                self.trajectory_active_path
+            ) >= 2 and self._trajectory_structural_endpoint(
+                observation.frame,
+                current,
+                effect,
             ):
                 macro = tuple(self.trajectory_active_path)
                 if len(self.trajectory_endpoint_macros) >= 4:
@@ -4956,8 +4805,7 @@ class EpistemicExplorer:
         return frozenset(
             action_id
             for action_id, effect in self.trajectory_effects.items()
-            if effect != (0, 0)
-            and (effect[0] != 0) == (first_effect[0] != 0)
+            if effect != (0, 0) and (effect[0] != 0) == (first_effect[0] != 0)
         )
 
     def _trajectory_replay_forbidden_actions(
@@ -4967,15 +4815,11 @@ class EpistemicExplorer:
         """Prevent the fresh mover from merging with predicted replay."""
 
         forbidden = set(self._trajectory_replay_parallel_actions())
-        if (
-            not self.trajectory_replay_started
-            or self.trajectory_replay_cursor
-            >= len(self.trajectory_committed_macro)
+        if not self.trajectory_replay_started or self.trajectory_replay_cursor >= len(
+            self.trajectory_committed_macro
         ):
             return frozenset(forbidden)
-        replay_next = self.trajectory_committed_macro[
-            self.trajectory_replay_cursor
-        ]
+        replay_next = self.trajectory_committed_macro[self.trajectory_replay_cursor]
         forbidden.update(
             action_id
             for action_id, effect in self.trajectory_effects.items()
@@ -5005,9 +4849,7 @@ class EpistemicExplorer:
                 action_id not in represented
                 or action_id in self.trajectory_invalid_actions
                 or effect == (0, 0)
-                or self.trajectory_contextual_blocks.get(
-                    (start, action_id), 0
-                )
+                or self.trajectory_contextual_blocks.get((start, action_id), 0)
             ):
                 continue
             next_anchor = (
@@ -5042,14 +4884,10 @@ class EpistemicExplorer:
         if start == target:
             return None
         x_steps = [
-            abs(effect[0])
-            for effect in self.trajectory_effects.values()
-            if effect[0]
+            abs(effect[0]) for effect in self.trajectory_effects.values() if effect[0]
         ]
         y_steps = [
-            abs(effect[1])
-            for effect in self.trajectory_effects.values()
-            if effect[1]
+            abs(effect[1]) for effect in self.trajectory_effects.values() if effect[1]
         ]
 
         def heuristic(anchor: tuple[int, int]) -> int:
@@ -5067,9 +4905,9 @@ class EpistemicExplorer:
             )
             return x_cost + y_cost
 
-        queue: list[
-            tuple[int, int, tuple[int, int], int | None]
-        ] = [(heuristic(start), 0, start, None)]
+        queue: list[tuple[int, int, tuple[int, int], int | None]] = [
+            (heuristic(start), 0, start, None)
+        ]
         visited = {start}
         expanded = 0
         while queue and expanded < 64:
@@ -5085,25 +4923,13 @@ class EpistemicExplorer:
                     and (depth > 0 or action_id not in forbidden_first)
                     and action_id not in self.trajectory_invalid_actions
                     and effect != (0, 0)
-                    and self.trajectory_contextual_blocks.get(
-                        (anchor, action_id), 0
-                    )
+                    and self.trajectory_contextual_blocks.get((anchor, action_id), 0)
                     == 0
                 ),
                 key=lambda action_id: (
-                    abs(
-                        target[0]
-                        - (
-                            anchor[0]
-                            + self.trajectory_effects[action_id][0]
-                        )
-                    )
+                    abs(target[0] - (anchor[0] + self.trajectory_effects[action_id][0]))
                     + abs(
-                        target[1]
-                        - (
-                            anchor[1]
-                            + self.trajectory_effects[action_id][1]
-                        )
+                        target[1] - (anchor[1] + self.trajectory_effects[action_id][1])
                     ),
                     action_id,
                 ),
@@ -5117,16 +4943,11 @@ class EpistemicExplorer:
                 if (
                     not 0 <= next_anchor[0] < frame_width
                     or not 0 <= next_anchor[1] < frame_height
-                    or (
-                        allowed_nodes is not None
-                        and next_anchor not in allowed_nodes
-                    )
+                    or (allowed_nodes is not None and next_anchor not in allowed_nodes)
                     or next_anchor in visited
                 ):
                     continue
-                next_first = (
-                    action_id if first_action is None else first_action
-                )
+                next_first = action_id if first_action is None else first_action
                 if next_anchor == target:
                     return next_first
                 visited.add(next_anchor)
@@ -5184,9 +5005,7 @@ class EpistemicExplorer:
         if stencil_choice is not None:
             token = ActionToken(stencil_choice.action_id, stencil_choice.data)
             if token in tokens:
-                secondary = "secondary" in (
-                    self.colored_stencil_planner.diagnostic
-                )
+                secondary = "secondary" in (self.colored_stencil_planner.diagnostic)
                 self.last_scheme_components = (
                     (
                         "scheme:projected-edge-stencil-composition"
@@ -5216,14 +5035,9 @@ class EpistemicExplorer:
                     scene,
                 )
             self.colored_stencil_planner.quarantined = True
-            self.colored_stencil_planner.diagnostic = (
-                "grounded-token-not-represented"
-            )
+            self.colored_stencil_planner.diagnostic = "grounded-token-not-represented"
 
-        if (
-            pragmatic_disequilibrium
-            and self.repeated_form_affordance_role is not None
-        ):
+        if pragmatic_disequilibrium and self.repeated_form_affordance_role is not None:
             role = self.repeated_form_affordance_role
             trigger = self.repeated_form_affordance_trigger_token
             self.repeated_form_affordance_role = None
@@ -5238,9 +5052,7 @@ class EpistemicExplorer:
             if variations:
                 affordance_variation = min(variations)
                 self.repeated_form_affordance_variations += 1
-                self.repeated_form_affordance_observation_token = (
-                    affordance_variation
-                )
+                self.repeated_form_affordance_observation_token = affordance_variation
                 self.repeated_form_event_diagnostic = (
                     "executing-disequilibrium-affordance-variation"
                 )
@@ -5264,21 +5076,13 @@ class EpistemicExplorer:
             pending_confirmation = self.repeated_form_confirmation_token
             self.repeated_form_confirmation_token = None
             confirmation = next(
-                (
-                    token
-                    for token in tokens
-                    if token == pending_confirmation
-                ),
+                (token for token in tokens if token == pending_confirmation),
                 None,
             )
             if confirmation is not None:
                 self.repeated_form_event_replays += 1
-                self.repeated_form_confirmation_observation_token = (
-                    confirmation
-                )
-                self.repeated_form_event_diagnostic = (
-                    "executing-event-confirmation"
-                )
+                self.repeated_form_confirmation_observation_token = confirmation
+                self.repeated_form_event_diagnostic = "executing-event-confirmation"
                 self.last_scheme_components = (
                     "scheme:action-effect-context-change",
                     "operator:confirm-unexpected-structural-effect",
@@ -5361,34 +5165,41 @@ class EpistemicExplorer:
         if select_apply is not None:
             self.select_apply_level_trials += 1
             self.last_scheme_components = (
-                "scheme:parameterized-select-apply-commit",
-                "operator:bind-attribute",
-                "operator:select",
-                "operator:apply",
-                "operator:commit",
-            ) + (
-                ("operator:nested-container-traversal",)
-                if self.nested_target_plan_active
-                else ()
-            ) + (
-                ("operator:nested-source-flattening",)
-                if self.nested_source_plan_active
-                else ()
-            ) + (
-                ("operator:relocate-connector",)
-                if self.connector_relocation_plan_active
-                else ()
-            ) + (
-                ("operator:construct-connector-from-fixed-payload",)
-                if self.constructive_connector_plan_active
-                else ()
-            ) + (
                 (
-                    "operator:synthesize-connector-graph",
-                    "state:finite-reference-horizon",
+                    "scheme:parameterized-select-apply-commit",
+                    "operator:bind-attribute",
+                    "operator:select",
+                    "operator:apply",
+                    "operator:commit",
                 )
-                if self.connector_graph_plan_active
-                else ()
+                + (
+                    ("operator:nested-container-traversal",)
+                    if self.nested_target_plan_active
+                    else ()
+                )
+                + (
+                    ("operator:nested-source-flattening",)
+                    if self.nested_source_plan_active
+                    else ()
+                )
+                + (
+                    ("operator:relocate-connector",)
+                    if self.connector_relocation_plan_active
+                    else ()
+                )
+                + (
+                    ("operator:construct-connector-from-fixed-payload",)
+                    if self.constructive_connector_plan_active
+                    else ()
+                )
+                + (
+                    (
+                        "operator:synthesize-connector-graph",
+                        "state:finite-reference-horizon",
+                    )
+                    if self.connector_graph_plan_active
+                    else ()
+                )
             )
             return self._issue(
                 state,
@@ -5466,14 +5277,12 @@ class EpistemicExplorer:
                 scene,
             )
 
-        committed_constellation = (
-            self.reference_constellation_cursor
-            < len(self.reference_constellation_plan)
-            or (
-                self.composite_reference_plan is not None
-                and len(self.composite_reference_completed)
-                < len(self.composite_reference_plan.options)
-            )
+        committed_constellation = self.reference_constellation_cursor < len(
+            self.reference_constellation_plan
+        ) or (
+            self.composite_reference_plan is not None
+            and len(self.composite_reference_completed)
+            < len(self.composite_reference_plan.options)
         )
         if self.constellation_alignment and committed_constellation:
             constellation = self._select_constellation_alignment(
@@ -5683,14 +5492,11 @@ class EpistemicExplorer:
         )
         if inherited is not None:
             token, scheme_id = inherited
-            self.last_scheme_components = (
-                f"scheme:inherited:{scheme_id}",
-            )
+            self.last_scheme_components = (f"scheme:inherited:{scheme_id}",)
             return self._issue(
                 state,
                 token,
-                "epistemic-frontier:inherited-scheme-intervention:"
-                f"{scheme_id}",
+                f"epistemic-frontier:inherited-scheme-intervention:{scheme_id}",
                 scene,
             )
 
@@ -5765,9 +5571,11 @@ class EpistemicExplorer:
                 scene,
             )
 
+        viable_tokens = self._viability_filtered_generic_tokens(tokens, scene)
+
         if self.uses_action_family_schema:
             _index, balanced = min(
-                enumerate(tokens),
+                enumerate(viable_tokens),
                 key=lambda item: (
                     self.global_family_attempts[item[1].action_id],
                     self.family_attempts[(state, item[1].action_id)],
@@ -5784,7 +5592,9 @@ class EpistemicExplorer:
                 scene,
             )
 
-        untried = tuple(token for token in tokens if self.attempts[(state, token)] == 0)
+        untried = tuple(
+            token for token in viable_tokens if self.attempts[(state, token)] == 0
+        )
         if untried:
             _index, novel = min(
                 enumerate(untried),
@@ -5802,7 +5612,7 @@ class EpistemicExplorer:
             )
 
         navigation = self._path_to_frontier(state)
-        if navigation:
+        if navigation and navigation[0] in viable_tokens:
             return self._issue(
                 state,
                 navigation[0],
@@ -5811,7 +5621,7 @@ class EpistemicExplorer:
             )
 
         fallback = min(
-            tokens,
+            viable_tokens,
             key=lambda token: (
                 (
                     self.family_attempts[(state, token.action_id)]
@@ -5894,9 +5704,7 @@ class EpistemicExplorer:
         return next(
             (
                 candidate
-                for candidate, effect in sorted(
-                    self.constellation_move_actions.items()
-                )
+                for candidate, effect in sorted(self.constellation_move_actions.items())
                 if effect == inverse
             ),
             None,
@@ -5971,9 +5779,7 @@ class EpistemicExplorer:
                     return
                 self.factor_constellation_goals = goals
                 self.factor_constellation_focus_index = 0
-                self.factor_constellation_diagnostic = (
-                    "factor-exact-cover-grounded"
-                )
+                self.factor_constellation_diagnostic = "factor-exact-cover-grounded"
                 return
             if selector in self.factor_constellation_anchors:
                 self.factor_constellation_diagnostic = "factor-cycle-ambiguous"
@@ -6019,13 +5825,9 @@ class EpistemicExplorer:
                     ),
                     predicted.focus,
                 )
-                self.constellation_diagnostic = (
-                    "predicting-occluded-constellation-move"
-                )
+                self.constellation_diagnostic = "predicting-occluded-constellation-move"
             else:
-                self.constellation_diagnostic = (
-                    "constellation-layout-not-grounded"
-                )
+                self.constellation_diagnostic = "constellation-layout-not-grounded"
             return
         source_objects = {item.color: item for item in source.objects}
         destination_objects = {item.color: item for item in destination.objects}
@@ -6039,16 +5841,12 @@ class EpistemicExplorer:
                 self._constellation_rewrite_object(source),
                 TranslationMorphism(action_id, known_displacement),
             )
-            observed_focus = destination_objects[
-                source.selected_color
-            ].center
+            observed_focus = destination_objects[source.selected_color].center
             if observed_focus != predicted.focused.value:
                 self.constellation_commuting_conflicts += 1
                 self.constellation_quarantined_actions.add(action_id)
                 self.constellation_move_actions.pop(action_id, None)
-                self.constellation_diagnostic = (
-                    "constellation-focused-effect-conflict"
-                )
+                self.constellation_diagnostic = "constellation-focused-effect-conflict"
                 return
             self.constellation_last_layout = ConstellationAlignment(
                 tuple(
@@ -6063,8 +5861,7 @@ class EpistemicExplorer:
             )
             self.constellation_commuting_confirmations += 1
             if any(
-                source_objects[color].targets
-                != destination_objects[color].targets
+                source_objects[color].targets != destination_objects[color].targets
                 or (
                     color != source.selected_color
                     and source_objects[color].center
@@ -6106,13 +5903,9 @@ class EpistemicExplorer:
             self.constellation_commuting_confirmations += 1
             self.constellation_diagnostic = "constellation-focus-confirmed"
             return
-        if (
-            source_objects.keys() != destination_objects.keys()
-            or any(
-                source_objects[color].targets
-                != destination_objects[color].targets
-                for color in source_objects
-            )
+        if source_objects.keys() != destination_objects.keys() or any(
+            source_objects[color].targets != destination_objects[color].targets
+            for color in source_objects
         ):
             self.constellation_quarantined_actions.add(action_id)
             self.constellation_move_actions.pop(action_id, None)
@@ -6123,13 +5916,9 @@ class EpistemicExplorer:
         moved = tuple(
             color
             for color in source_objects
-            if source_objects[color].center
-            != destination_objects[color].center
+            if source_objects[color].center != destination_objects[color].center
         )
-        if (
-            not moved
-            and source.selected_color != destination.selected_color
-        ):
+        if not moved and source.selected_color != destination.selected_color:
             if action_id not in self.constellation_move_actions:
                 morphism = FocusMorphism(
                     action_id,
@@ -6169,9 +5958,7 @@ class EpistemicExplorer:
                 self.constellation_commuting_conflicts += 1
                 self.constellation_quarantined_actions.add(action_id)
                 self.constellation_move_actions.pop(action_id, None)
-                self.constellation_diagnostic = (
-                    "constellation-naturality-conflict"
-                )
+                self.constellation_diagnostic = "constellation-naturality-conflict"
                 return
             self.constellation_commuting_confirmations += 1
             previous = self.constellation_move_actions.get(action_id)
@@ -6222,9 +6009,7 @@ class EpistemicExplorer:
             self.factor_constellation_selections += 1
             return available[switches[0]]
         if not self.factor_constellation_goals:
-            known_homes = {
-                mask.home_anchor for mask in self.factor_constellation_masks
-            }
+            known_homes = {mask.home_anchor for mask in self.factor_constellation_masks}
             home = self.factor_constellation_home_anchor
             if home is None or home in known_homes:
                 self.factor_constellation_diagnostic = "factor-discovery-stalled"
@@ -6236,14 +6021,9 @@ class EpistemicExplorer:
                         self.constellation_move_actions.items()
                     )
                     if action_id in available
-                    and self._inverse_constellation_action(action_id)
-                    is not None
-                    and 0 <= selector[0] + displacement[0] < len(
-                        observation.frame[0]
-                    )
-                    and 0 <= selector[1] + displacement[1] < len(
-                        observation.frame
-                    )
+                    and self._inverse_constellation_action(action_id) is not None
+                    and 0 <= selector[0] + displacement[0] < len(observation.frame[0])
+                    and 0 <= selector[1] + displacement[1] < len(observation.frame)
                 ),
                 None,
             )
@@ -6279,9 +6059,9 @@ class EpistemicExplorer:
             if not switches:
                 self.factor_constellation_diagnostic = "factor-switch-unavailable"
                 return None
-            self.factor_constellation_focus_index = (
-                index + 1
-            ) % len(self.factor_constellation_goals)
+            self.factor_constellation_focus_index = (index + 1) % len(
+                self.factor_constellation_goals
+            )
             self.factor_constellation_selections += 1
             self.factor_constellation_diagnostic = "switching-product-factor"
             return available[switches[0]]
@@ -6319,10 +6099,7 @@ class EpistemicExplorer:
         observation: Observation,
         available: dict[int, ActionToken],
     ) -> ActionToken | None:
-        if (
-            self.reference_constellation_cursor
-            < len(self.reference_constellation_plan)
-        ):
+        if self.reference_constellation_cursor < len(self.reference_constellation_plan):
             action_id = self.reference_constellation_plan[
                 self.reference_constellation_cursor
             ]
@@ -6442,10 +6219,7 @@ class EpistemicExplorer:
             if not plan.options:
                 return None
             self.composite_reference_plan = plan
-        options = {
-            option.source_color: option
-            for option in plan.options
-        }
+        options = {option.source_color: option for option in plan.options}
         active_color = self.composite_reference_active_color
         if active_color is not None:
             active = options[active_color]
@@ -6477,35 +6251,26 @@ class EpistemicExplorer:
             (
                 option
                 for option in plan.options
-                if option.source_color
-                not in self.composite_reference_completed
+                if option.source_color not in self.composite_reference_completed
                 and option.home_anchor == selector
             ),
             None,
         )
         if selected is None:
             if switch_action not in available:
-                self.composite_reference_diagnostic = (
-                    "composite-switch-unavailable"
-                )
+                self.composite_reference_diagnostic = "composite-switch-unavailable"
                 return None
             self.composite_reference_selections += 1
-            self.composite_reference_diagnostic = (
-                "switching-composite-reference-mover"
-            )
+            self.composite_reference_diagnostic = "switching-composite-reference-mover"
             return available[switch_action]
         self.composite_reference_active_color = selected.source_color
         self.composite_reference_cursor = 1
         action_id = selected.actions[0]
         if action_id not in available:
-            self.composite_reference_diagnostic = (
-                "composite-plan-action-unavailable"
-            )
+            self.composite_reference_diagnostic = "composite-plan-action-unavailable"
             return None
         self.composite_reference_selections += 1
-        self.composite_reference_diagnostic = (
-            "executing-composite-reference-option"
-        )
+        self.composite_reference_diagnostic = "executing-composite-reference-option"
         return available[action_id]
 
     def _select_constellation_alignment(
@@ -6587,9 +6352,7 @@ class EpistemicExplorer:
             else:
                 self.constellation_retained_option_programs.add(option.actions)
                 self.constellation_retained_options += 1
-                self.constellation_compression_savings += (
-                    option.compression_utility
-                )
+                self.constellation_compression_savings += option.compression_utility
         action_id = option.actions[0]
         self.constellation_selections += 1
         self.constellation_moves += 1
@@ -6607,9 +6370,7 @@ class EpistemicExplorer:
         self.track_macro_cursor = 0
         self.track_selections = 0
         self.track_diagnostic = (
-            "not-grounded"
-            if self.linear_track_navigation
-            else "exact-off"
+            "not-grounded" if self.linear_track_navigation else "exact-off"
         )
 
     def _observe_linear_track(
@@ -6666,8 +6427,7 @@ class EpistemicExplorer:
             token.action_id: token
             for token in tokens
             if not token.data
-            and token.action_id
-            not in {self.reset_action, self.complex_action}
+            and token.action_id not in {self.reset_action, self.complex_action}
         }
         action_id = self.track_macro[self.track_macro_cursor]
         if action_id not in available:
@@ -6676,16 +6436,10 @@ class EpistemicExplorer:
             self.track_diagnostic = "track-macro-action-unavailable"
             return None
         layout = infer_linear_track(observation.frame)
-        if (
-            self.track_macro_cursor == 0
-            and layout is not None
-            and layout.distance == 0
-        ):
+        if self.track_macro_cursor == 0 and layout is not None and layout.distance == 0:
             self.track_diagnostic = "linear-track-target-reached"
             return None
-        self.track_macro_cursor = (
-            self.track_macro_cursor + 1
-        ) % len(self.track_macro)
+        self.track_macro_cursor = (self.track_macro_cursor + 1) % len(self.track_macro)
         self.track_selections += 1
         self.track_diagnostic = "replaying-distance-decreasing-track-macro"
         return available[action_id]
@@ -6693,9 +6447,7 @@ class EpistemicExplorer:
     def _reset_dihedral_analogy(self, *, clear_controls: bool) -> None:
         self.analogy_mutation_attempts.clear()
         self.analogy_diagnostic = (
-            "not-grounded"
-            if self.dihedral_analogy_alignment
-            else "exact-off"
+            "not-grounded" if self.dihedral_analogy_alignment else "exact-off"
         )
         if clear_controls:
             self.analogy_move_actions.clear()
@@ -6719,13 +6471,9 @@ class EpistemicExplorer:
         destination = infer_dihedral_analogy(after)
         if source is not None and destination is not None:
             source_groups = tuple((tile,) for tile in source.answer_tiles)
-            destination_groups = tuple(
-                (tile,) for tile in destination.answer_tiles
-            )
+            destination_groups = tuple((tile,) for tile in destination.answer_tiles)
             source_targets = tuple((target,) for target in source.targets)
-            destination_targets = tuple(
-                (target,) for target in destination.targets
-            )
+            destination_targets = tuple((target,) for target in destination.targets)
             source_selected = source.selected_index
             destination_selected = destination.selected_index
         else:
@@ -6762,10 +6510,7 @@ class EpistemicExplorer:
             )
             if left != right
         )
-        if (
-            not changed
-            and source_selected != destination_selected
-        ):
+        if not changed and source_selected != destination_selected:
             size = len(source_groups)
             delta = (destination_selected - source_selected) % size
             previous = self.analogy_move_actions.get(action_id)
@@ -6778,10 +6523,7 @@ class EpistemicExplorer:
             self.analogy_mutation_actions.discard(action_id)
             self.analogy_diagnostic = "analogy-move-grounded"
             return
-        if (
-            source_selected == destination_selected
-            and changed == (source_selected,)
-        ):
+        if source_selected == destination_selected and changed == (source_selected,):
             if action_id not in self.analogy_move_actions:
                 self.analogy_mutation_actions.add(action_id)
                 self.analogy_diagnostic = "analogy-mutation-grounded"
@@ -6868,10 +6610,7 @@ class EpistemicExplorer:
         action_id, _delta = min(
             move_actions,
             key=lambda item: (
-                min(
-                    (target - (current + item[1])) % size
-                    for target in unsatisfied
-                ),
+                min((target - (current + item[1])) % size for target in unsatisfied),
                 item[0],
             ),
         )
@@ -6886,9 +6625,7 @@ class EpistemicExplorer:
         self.finite_orbit_commit_tokens = ()
         self.finite_orbit_expanded_states.clear()
         self.finite_orbit_diagnostic = (
-            "not-grounded"
-            if self.finite_orbit_commit_exploration
-            else "exact-off"
+            "not-grounded" if self.finite_orbit_commit_exploration else "exact-off"
         )
         if clear_trials:
             self.finite_orbit_selections = 0
@@ -6913,9 +6650,7 @@ class EpistemicExplorer:
             if not token.data
             and token.action_id not in {self.reset_action, self.complex_action}
         )
-        orbit_state = self._compact_component_state_digest(
-            self.selection_frame
-        )
+        orbit_state = self._compact_component_state_digest(self.selection_frame)
         if self.finite_orbit_generator is None:
             groundings: list[
                 tuple[
@@ -6925,9 +6660,7 @@ class EpistemicExplorer:
                 ]
             ] = []
             for generator in represented:
-                destination = self.finite_orbit_edges.get(
-                    (orbit_state, generator)
-                )
+                destination = self.finite_orbit_edges.get((orbit_state, generator))
                 if destination is None or destination == orbit_state:
                     continue
                 for inverse in represented:
@@ -6958,15 +6691,10 @@ class EpistemicExplorer:
             self.finite_orbit_commit_tokens = commits
             self.finite_orbit_diagnostic = "finite-orbit-grounded"
         for commit in self.finite_orbit_commit_tokens:
-            if (
-                commit in represented
-                and self.attempts[(state, commit)] == 0
-            ):
+            if commit in represented and self.attempts[(state, commit)] == 0:
                 self.finite_orbit_selections += 1
                 self.finite_orbit_commit_trials += 1
-                self.finite_orbit_diagnostic = (
-                    "testing-silent-control-at-orbit-state"
-                )
+                self.finite_orbit_diagnostic = "testing-silent-control-at-orbit-state"
                 return commit
         if orbit_state in self.finite_orbit_expanded_states:
             self.finite_orbit_diagnostic = "finite-orbit-closed"
@@ -6999,9 +6727,7 @@ class EpistemicExplorer:
         )
         if len(represented) < 2:
             self.positive_effect_family_abstentions += 1
-            self.positive_effect_family_diagnostic = (
-                "insufficient-plain-actions"
-            )
+            self.positive_effect_family_diagnostic = "insufficient-plain-actions"
             return None
         type_map: dict[ActionIdentity, set[str]] = {}
         for effect_type in self.effect_typer.authoritative_types():
@@ -7055,9 +6781,9 @@ class EpistemicExplorer:
             self.shortest_progress_path_abstentions += 1
             self.shortest_progress_path_diagnostic = "reset-caused-progress"
             return
-        queue: deque[
-            tuple[StateKey, tuple[tuple[StateKey, ActionToken], ...]]
-        ] = deque([(self.level_start_state, ())])
+        queue: deque[tuple[StateKey, tuple[tuple[StateKey, ActionToken], ...]]] = deque(
+            [(self.level_start_state, ())]
+        )
         seen = {self.level_start_state}
         path: tuple[tuple[StateKey, ActionToken], ...] | None = None
         while queue:
@@ -7091,18 +6817,14 @@ class EpistemicExplorer:
                 )
         if path is None or not path:
             self.shortest_progress_path_abstentions += 1
-            self.shortest_progress_path_diagnostic = (
-                "no-bounded-progress-path"
-            )
+            self.shortest_progress_path_diagnostic = "no-bounded-progress-path"
             return
         roles: list[ActionRole] = []
         for edge in path:
             grounding = self.edge_groundings.get(edge)
             if grounding is None:
                 self.shortest_progress_path_abstentions += 1
-                self.shortest_progress_path_diagnostic = (
-                    "missing-edge-grounding"
-                )
+                self.shortest_progress_path_diagnostic = "missing-edge-grounding"
                 return
             roles.append(grounding.role)
         compressed: list[ProgressPathStep] = []
@@ -7117,9 +6839,7 @@ class EpistemicExplorer:
                 compressed.append(ProgressPathStep(role, 1))
         self.shortest_progress_path = tuple(compressed)
         self.shortest_progress_path_compilations += 1
-        self.shortest_progress_path_diagnostic = (
-            "compiled-shortest-progress-path"
-        )
+        self.shortest_progress_path_diagnostic = "compiled-shortest-progress-path"
 
     @staticmethod
     def _progress_role_similarity(expected: ActionRole, actual: ActionRole) -> int:
@@ -7166,9 +6886,7 @@ class EpistemicExplorer:
             if self.shortest_progress_path_bound_token in tokens:
                 self.shortest_progress_path_repetitions_left -= 1
                 self.shortest_progress_path_selections += 1
-                self.shortest_progress_path_diagnostic = (
-                    "repeating-bound-progress-role"
-                )
+                self.shortest_progress_path_diagnostic = "repeating-bound-progress-role"
                 return self.shortest_progress_path_bound_token
             self.shortest_progress_path_bound_token = None
             self.shortest_progress_path_repetitions_left = 0
@@ -7186,12 +6904,8 @@ class EpistemicExplorer:
                 "testing-ambiguous-progress-role-binding"
             )
             return selected
-        while self.shortest_progress_path_cursor < len(
-            self.shortest_progress_path
-        ):
-            step = self.shortest_progress_path[
-                self.shortest_progress_path_cursor
-            ]
+        while self.shortest_progress_path_cursor < len(self.shortest_progress_path):
+            step = self.shortest_progress_path[self.shortest_progress_path_cursor]
             self.shortest_progress_path_cursor += 1
             ranked = tuple(
                 (
@@ -7226,15 +6940,11 @@ class EpistemicExplorer:
                 if candidate_score == score and token != selected
             )
             self.shortest_progress_path_bound_token = selected
-            self.shortest_progress_path_repetitions_left = (
-                step.repetitions - 1
-            )
+            self.shortest_progress_path_repetitions_left = step.repetitions - 1
             self.shortest_progress_path_variant_tokens = variants
             self.shortest_progress_path_variant_repetitions = step.repetitions
             self.shortest_progress_path_selections += 1
-            self.shortest_progress_path_diagnostic = (
-                "matched-progress-path-role"
-            )
+            self.shortest_progress_path_diagnostic = "matched-progress-path-role"
             return selected
         self.shortest_progress_path_abstentions += 1
         self.shortest_progress_path_diagnostic = "no-matching-progress-role"
@@ -7270,8 +6980,7 @@ class EpistemicExplorer:
             self.translation_contact_diagnostic = "contact-signature-cap"
             return None
         generators = {
-            law.action
-            for law in self.translation_algebra.authoritative_laws()
+            law.action for law in self.translation_algebra.authoritative_laws()
         }
         candidates = tuple(
             token
@@ -7282,9 +6991,7 @@ class EpistemicExplorer:
         )
         if not candidates:
             self.translation_contact_abstentions += 1
-            self.translation_contact_diagnostic = (
-                "no-nongenerator-contact-affordance"
-            )
+            self.translation_contact_diagnostic = "no-nongenerator-contact-affordance"
             return None
         self.translation_contact_signatures.add(signature)
         selected = min(
@@ -7329,9 +7036,8 @@ class EpistemicExplorer:
             self.translation_probe_steps = 0
             self.translation_probe_diagnostic = "no-authoritative-inverse-pair"
             return None
-        if (
-            self.action_translation_contact_probe
-            and all(self.translation_probe_ray_counts[action] >= 1 for action in laws)
+        if self.action_translation_contact_probe and all(
+            self.translation_probe_ray_counts[action] >= 1 for action in laws
         ):
             self.translation_probe_active = None
             self.translation_probe_steps = 0
@@ -7550,10 +7256,7 @@ class EpistemicExplorer:
             if len(color_set) != size:
                 continue
             selector_layouts = list(rows)
-            if (
-                self.connector_relocation
-                or self.constructive_connector_placement
-            ):
+            if self.connector_relocation or self.constructive_connector_placement:
                 selector_layouts.extend(
                     self._rectangular_selector_variants(
                         objects,
@@ -7580,13 +7283,14 @@ class EpistemicExplorer:
                         )
                     )
                 for targets in target_layouts:
-                    if len(targets) != size or len({item.color for item in targets}) != 1:
+                    if (
+                        len(targets) != size
+                        or len({item.color for item in targets}) != 1
+                    ):
                         continue
                     target_y = targets[0].centroid[1]
                     if not (
-                        reference[0].centroid[1]
-                        < target_y
-                        < selectors[0].centroid[1]
+                        reference[0].centroid[1] < target_y < selectors[0].centroid[1]
                     ):
                         continue
                     commit_actions = sorted(
@@ -7597,9 +7301,7 @@ class EpistemicExplorer:
                     if not commit_actions:
                         continue
                     target_orders: tuple[tuple[_FrameObject, ...], ...] = (targets,)
-                    is_multiline = len(
-                        {item.centroid[1] for item in targets}
-                    ) > 1
+                    is_multiline = len({item.centroid[1] for item in targets}) > 1
                     nested_plan = False
                     connector_plan = False
                     constructive_connector_plan = False
@@ -7621,22 +7323,15 @@ class EpistemicExplorer:
                             nested_order is None
                             and self.constructive_connector_placement
                         ):
-                            nested_order = (
-                                self._constructive_connector_order(
-                                    observation.frame,
-                                    targets,
-                                    objects,
-                                    reference_colors,
-                                    selectors,
-                                )
+                            nested_order = self._constructive_connector_order(
+                                observation.frame,
+                                targets,
+                                objects,
+                                reference_colors,
+                                selectors,
                             )
-                            constructive_connector_plan = (
-                                nested_order is not None
-                            )
-                        if (
-                            nested_order is None
-                            and self.connector_relocation
-                        ):
+                            constructive_connector_plan = nested_order is not None
+                        if nested_order is None and self.connector_relocation:
                             relocation = self._relocated_connector_order(
                                 observation.frame,
                                 targets,
@@ -7672,9 +7367,7 @@ class EpistemicExplorer:
                         actions = list(relocation_prefix)
                         for source, target in zip(reference, target_order):
                             selector = selector_by_color[source.color]
-                            selector_x, selector_y = self._object_click_point(
-                                selector
-                            )
+                            selector_x, selector_y = self._object_click_point(selector)
                             actions.extend(
                                 (
                                     ActionToken(
@@ -7764,7 +7457,10 @@ class EpistemicExplorer:
                                 "nested-source-topology-unresolved"
                             )
                             continue
-                        if tuple(item.color for item in source_order) != reference_colors:
+                        if (
+                            tuple(item.color for item in source_order)
+                            != reference_colors
+                        ):
                             self.select_apply_diagnostic = (
                                 "nested-source-reference-mismatch"
                             )
@@ -7804,14 +7500,13 @@ class EpistemicExplorer:
                         )
                         if missing_actions:
                             self.select_apply_diagnostic = (
-                                "nested-source-unrepresented:"
-                                f"{len(missing_actions)}"
+                                f"nested-source-unrepresented:{len(missing_actions)}"
                             )
                             continue
                         actions.append(ActionToken(commit_actions[0]))
-                        source_y = sum(
-                            item.centroid[1] for item in sources
-                        ) // len(sources)
+                        source_y = sum(item.centroid[1] for item in sources) // len(
+                            sources
+                        )
                         candidates.append(
                             _SelectApplyCandidate(
                                 rank=(
@@ -7946,7 +7641,9 @@ class EpistemicExplorer:
         pairs.sort(key=lambda pair: pair[0].centroid)
         wrappers = tuple(wrapper for _target, wrapper in pairs)
 
-        def form(item: _FrameObject) -> tuple[
+        def form(
+            item: _FrameObject,
+        ) -> tuple[
             int,
             tuple[tuple[int, int], ...],
             int,
@@ -7999,8 +7696,7 @@ class EpistemicExplorer:
             len(grounding.reference) % len(reference_colors)
             or len(grounding.reference) // len(reference_colors) < 2
             or grounding.reference
-            != reference_colors
-            * (len(grounding.reference) // len(reference_colors))
+            != reference_colors * (len(grounding.reference) // len(reference_colors))
             or len(grounding.destinations) <= len(candidate.targets)
             or len(set(grounding.destinations)) != len(grounding.destinations)
             or set(grounding.destinations) != set(grounding.neutral_slots)
@@ -8027,9 +7723,7 @@ class EpistemicExplorer:
         columns = tuple(sorted({item.centroid[0] for item in targets}))
         if not 3 <= len(columns) <= 8:
             return None
-        pitches = {
-            right - left for left, right in zip(columns, columns[1:])
-        }
+        pitches = {right - left for left, right in zip(columns, columns[1:])}
         if len(pitches) != 1:
             return None
         pitch = pitches.pop()
@@ -8075,9 +7769,7 @@ class EpistemicExplorer:
                 return None
             smallest_area = min(container.area for container in enclosing)
             smallest = tuple(
-                container
-                for container in enclosing
-                if container.area == smallest_area
+                container for container in enclosing if container.area == smallest_area
             )
             if len(smallest) != 1:
                 return None
@@ -8133,8 +7825,7 @@ class EpistemicExplorer:
                 children = tuple(
                     candidate
                     for candidate in containers
-                    if candidate != container
-                    and candidate.color == connector_color
+                    if candidate != container and candidate.color == connector_color
                 )
                 if len(children) != 1:
                     return None
@@ -8181,14 +7872,12 @@ class EpistemicExplorer:
 
         min_x, min_y, _max_x, _max_y = item.bbox
         points = tuple(
-            (min_x + local_x, min_y + local_y)
-            for local_x, local_y in item.shape
+            (min_x + local_x, min_y + local_y) for local_x, local_y in item.shape
         )
         return min(
             points,
             key=lambda point: (
-                abs(point[0] - item.centroid[0])
-                + abs(point[1] - item.centroid[1]),
+                abs(point[0] - item.centroid[0]) + abs(point[1] - item.centroid[1]),
                 point[1],
                 point[0],
             ),
@@ -8215,9 +7904,7 @@ class EpistemicExplorer:
                 and 3 <= width <= 6
                 and width == height
             ):
-                grouped.setdefault((item.centroid[1], width, height), []).append(
-                    item
-                )
+                grouped.setdefault((item.centroid[1], width, height), []).append(item)
         variants = []
         for items in grouped.values():
             if (
@@ -8272,11 +7959,7 @@ class EpistemicExplorer:
 
         def is_filled_rectangle(item: _FrameObject) -> bool:
             width, height = dimensions(item)
-            return (
-                2 <= width <= 8
-                and 2 <= height <= 8
-                and item.area == width * height
-            )
+            return 2 <= width <= 8 and 2 <= height <= 8 and item.area == width * height
 
         def is_outline_rectangle(item: _FrameObject) -> bool:
             width, height = dimensions(item)
@@ -8334,9 +8017,7 @@ class EpistemicExplorer:
             valid = True
             for target in targets:
                 enclosing = tuple(
-                    container
-                    for container in containers
-                    if encloses(container, target)
+                    container for container in containers if encloses(container, target)
                 )
                 if not enclosing:
                     valid = False
@@ -8352,9 +8033,7 @@ class EpistemicExplorer:
             if not valid or any(len(items) < 2 for items in assigned.values()):
                 continue
             canonical_assigned = {
-                container: tuple(
-                    sorted(items, key=lambda item: item.centroid)
-                )
+                container: tuple(sorted(items, key=lambda item: item.centroid))
                 for container, items in assigned.items()
             }
             target_candidates.append(
@@ -8445,9 +8124,7 @@ class EpistemicExplorer:
                 continue
             smallest_area = min(container.area for container in enclosing)
             smallest = tuple(
-                container
-                for container in enclosing
-                if container.area == smallest_area
+                container for container in enclosing if container.area == smallest_area
             )
             if len(smallest) != 1:
                 self.connector_graph_diagnostic = "ambiguous-fixed-payload-host"
@@ -8459,22 +8136,10 @@ class EpistemicExplorer:
             for index, container in enumerate(containers)
         }
         corner_shapes = {
-            frozenset(
-                {(x, 0) for x in range(3)}
-                | {(0, y) for y in range(3)}
-            ),
-            frozenset(
-                {(x, 0) for x in range(3)}
-                | {(2, y) for y in range(3)}
-            ),
-            frozenset(
-                {(x, 2) for x in range(3)}
-                | {(0, y) for y in range(3)}
-            ),
-            frozenset(
-                {(x, 2) for x in range(3)}
-                | {(2, y) for y in range(3)}
-            ),
+            frozenset({(x, 0) for x in range(3)} | {(0, y) for y in range(3)}),
+            frozenset({(x, 0) for x in range(3)} | {(2, y) for y in range(3)}),
+            frozenset({(x, 2) for x in range(3)} | {(0, y) for y in range(3)}),
+            frozenset({(x, 2) for x in range(3)} | {(2, y) for y in range(3)}),
         }
         corners_by_color: dict[int, list[_FrameObject]] = {}
         for item in objects:
@@ -8496,9 +8161,7 @@ class EpistemicExplorer:
             if (
                 len(corner_x) != 2
                 or len(corner_y) != 2
-                or {
-                    item.centroid for item in corners
-                }
+                or {item.centroid for item in corners}
                 != {(x, y) for x in corner_x for y in corner_y}
             ):
                 continue
@@ -8516,9 +8179,7 @@ class EpistemicExplorer:
                 ):
                     bracketed_roots.add(container)
         root_candidates = (
-            tuple(bracketed_roots)
-            if len(bracketed_roots) == 1
-            else containers
+            tuple(bracketed_roots) if len(bracketed_roots) == 1 else containers
         )
         containers_by_color: dict[int, list[_FrameObject]] = {}
         for container in containers:
@@ -8535,9 +8196,7 @@ class EpistemicExplorer:
                 continue
             matches = containers_by_color.get(item.color, [])
             if len(matches) == 1:
-                external_connectors.append(
-                    (item, container_ids[matches[0]])
-                )
+                external_connectors.append((item, container_ids[matches[0]]))
         external_connectors.sort(
             key=lambda item: (
                 item[0].centroid[1],
@@ -8586,12 +8245,8 @@ class EpistemicExplorer:
                 tuple(sorted(rows[y], key=lambda item: item.centroid[0]))
                 for y in sorted(rows)
             )
-            reference = tuple(
-                item.color for row in ordered_rows for item in row
-            )
-            reference_objects = tuple(
-                item for row in ordered_rows for item in row
-            )
+            reference = tuple(item.color for row in ordered_rows for item in row)
+            reference_objects = tuple(item for row in ordered_rows for item in row)
             if not 3 <= len(reference) <= 32:
                 continue
             reference_candidates.append(
@@ -8664,9 +8319,7 @@ class EpistemicExplorer:
                         )
                     )
                     slot_objects[(container_id, index)] = member
-            container_specs.append(
-                ContainerSpec(container_id, tuple(specs))
-            )
+            container_specs.append(ContainerSpec(container_id, tuple(specs)))
         if not pitches:
             self.connector_graph_diagnostic = "slot-pitch-unobserved"
             return ()
@@ -8683,8 +8336,7 @@ class EpistemicExplorer:
                     root=container_ids[root],
                     payloads=tuple(item.color for item in payloads),
                     connectors=tuple(
-                        Connector(target)
-                        for _item, target in external_connectors
+                        Connector(target) for _item, target in external_connectors
                     ),
                 )
             )
@@ -8720,13 +8372,9 @@ class EpistemicExplorer:
                 )
             return ()
         result = unique_results[0]
-        self.connector_graph_diagnostic = (
-            f"{result.status.value}:{result.diagnostic}"
-        )
+        self.connector_graph_diagnostic = f"{result.status.value}:{result.diagnostic}"
         assert result.plan is not None
-        self.connector_graph_unused_payloads = len(
-            result.plan.unused_payloads
-        )
+        self.connector_graph_unused_payloads = len(result.plan.unused_payloads)
 
         payload_pool: dict[int, list[_FrameObject]] = {}
         for item in payloads:
@@ -8736,9 +8384,7 @@ class EpistemicExplorer:
             connector_pool.setdefault(target_id, []).append(connector_object)
         actions: list[ActionToken] = []
         for binding in result.plan.bindings:
-            destination = slot_objects.get(
-                (binding.container_id, binding.slot_index)
-            )
+            destination = slot_objects.get((binding.container_id, binding.slot_index))
             if destination is None:
                 self.connector_graph_diagnostic = "binding-target-unrepresented"
                 return ()
@@ -8833,11 +8479,7 @@ class EpistemicExplorer:
             min_x, min_y, max_x, max_y = item.bbox
             width = max_x - min_x + 1
             height = max_y - min_y + 1
-            return (
-                width >= 2
-                and height >= 2
-                and item.area == width * height
-            )
+            return width >= 2 and height >= 2 and item.area == width * height
 
         def encloses(container: _FrameObject, item: _FrameObject) -> bool:
             min_x, min_y, max_x, max_y = container.bbox
@@ -8864,9 +8506,7 @@ class EpistemicExplorer:
                 return None
             smallest_area = min(container.area for container in enclosing)
             smallest = tuple(
-                container
-                for container in enclosing
-                if container.area == smallest_area
+                container for container in enclosing if container.area == smallest_area
             )
             if len(smallest) != 1:
                 return None
@@ -8875,9 +8515,7 @@ class EpistemicExplorer:
             return None
 
         columns = tuple(sorted({item.centroid[0] for item in targets}))
-        pitches = {
-            right - left for left, right in zip(columns, columns[1:])
-        }
+        pitches = {right - left for left, right in zip(columns, columns[1:])}
         if len(pitches) != 1:
             return None
         pitch = pitches.pop()
@@ -8909,8 +8547,7 @@ class EpistemicExplorer:
                 for item in selectors
                 if item.color == child.color
                 and is_outline_rectangle(item)
-                and item.bbox[2] - item.bbox[0]
-                == item.bbox[3] - item.bbox[1]
+                and item.bbox[2] - item.bbox[0] == item.bbox[3] - item.bbox[1]
                 and not any(encloses(container, item) for container in containers)
             )
             if len(external_connectors) != 1:
@@ -8933,11 +8570,9 @@ class EpistemicExplorer:
             child_x = tuple(item.centroid[0] for item in child_slots)
             parent_x = tuple(item.centroid[0] for item in parent_slots)
             if any(
-                right - left != pitch
-                for left, right in zip(child_x, child_x[1:])
+                right - left != pitch for left, right in zip(child_x, child_x[1:])
             ) or any(
-                right - left != pitch
-                for left, right in zip(parent_x, parent_x[1:])
+                right - left != pitch for left, right in zip(parent_x, parent_x[1:])
             ):
                 continue
 
@@ -8955,9 +8590,7 @@ class EpistemicExplorer:
                     for index, item in enumerate(traversal)
                     if item == fixed_payload
                 )
-                if fixed_indexes != (
-                    reference_colors.index(fixed_payload.color),
-                ):
+                if fixed_indexes != (reference_colors.index(fixed_payload.color),):
                     continue
                 if any(
                     reference_colors[index] != fixed_payload.color
@@ -8965,8 +8598,7 @@ class EpistemicExplorer:
                 ):
                     continue
                 target_order = tuple(
-                    destination if item == fixed_payload else item
-                    for item in traversal
+                    destination if item == fixed_payload else item for item in traversal
                 )
                 if (
                     len(set(target_order)) != len(target_order)
@@ -9029,9 +8661,7 @@ class EpistemicExplorer:
                 return None
             smallest_area = min(container.area for container in enclosing)
             smallest = tuple(
-                container
-                for container in enclosing
-                if container.area == smallest_area
+                container for container in enclosing if container.area == smallest_area
             )
             if len(smallest) != 1:
                 return None
@@ -9040,9 +8670,7 @@ class EpistemicExplorer:
             return None
 
         columns = tuple(sorted({item.centroid[0] for item in targets}))
-        pitches = {
-            right - left for left, right in zip(columns, columns[1:])
-        }
+        pitches = {right - left for left, right in zip(columns, columns[1:])}
         if len(pitches) != 1:
             return None
         pitch = pitches.pop()
@@ -9064,8 +8692,7 @@ class EpistemicExplorer:
                 and item.color == child.color
                 and encloses(child, item)
                 and item.area
-                == (item.bbox[2] - item.bbox[0] + 1)
-                * (item.bbox[3] - item.bbox[1] + 1)
+                == (item.bbox[2] - item.bbox[0] + 1) * (item.bbox[3] - item.bbox[1] + 1)
             )
             for marker in child_markers:
                 destinations = tuple(
@@ -9088,15 +8715,11 @@ class EpistemicExplorer:
         if any(right - left != pitch for left, right in zip(child_x, child_x[1:])):
             return None
 
-        parent_slots = tuple(
-            sorted(assigned[parent], key=lambda item: item.centroid)
-        )
+        parent_slots = tuple(sorted(assigned[parent], key=lambda item: item.centroid))
         if len({item.centroid[1] for item in parent_slots}) != 1:
             return None
         parent_x = tuple(item.centroid[0] for item in parent_slots)
-        if any(
-            right - left != pitch for left, right in zip(parent_x, parent_x[1:])
-        ):
+        if any(right - left != pitch for left, right in zip(parent_x, parent_x[1:])):
             return None
 
         ordered: list[_FrameObject] = []
@@ -9128,14 +8751,10 @@ class EpistemicExplorer:
         if any(len(row) < 2 for row in target_rows.values()):
             return None
 
-        columns = tuple(
-            sorted({x for row in target_rows.values() for x in row})
-        )
+        columns = tuple(sorted({x for row in target_rows.values() for x in row}))
         if not 3 <= len(columns) <= 8:
             return None
-        pitches = {
-            right - left for left, right in zip(columns, columns[1:])
-        }
+        pitches = {right - left for left, right in zip(columns, columns[1:])}
         if len(pitches) != 1:
             return None
         pitch = pitches.pop()
@@ -9273,9 +8892,13 @@ class EpistemicExplorer:
             if len({item.centroid for item in items}) != size:
                 continue
             layouts.append(
-                tuple(sorted(items, key=lambda item: (item.centroid[1], item.centroid[0])))
+                tuple(
+                    sorted(items, key=lambda item: (item.centroid[1], item.centroid[0]))
+                )
             )
-        return tuple(sorted(layouts, key=lambda items: tuple(item.centroid for item in items)))
+        return tuple(
+            sorted(layouts, key=lambda items: tuple(item.centroid for item in items))
+        )
 
     @staticmethod
     def _spatial_target_orderings(
@@ -9339,9 +8962,13 @@ class EpistemicExplorer:
             if any(count < 2 for count in row_counts.values()):
                 continue
             layouts.append(
-                tuple(sorted(items, key=lambda item: (item.centroid[1], item.centroid[0])))
+                tuple(
+                    sorted(items, key=lambda item: (item.centroid[1], item.centroid[0]))
+                )
             )
-        return tuple(sorted(layouts, key=lambda items: tuple(item.centroid for item in items)))
+        return tuple(
+            sorted(layouts, key=lambda items: tuple(item.centroid for item in items))
+        )
 
     def _issue(
         self,
@@ -9387,6 +9014,16 @@ class EpistemicExplorer:
         self.pending_frame = self.selection_frame
         self.pending_role = grounding.role
         self.pending_grounding = grounding
+        self.terminal_viability_pending_generic = (
+            self.terminal_edge_viability_credit
+            and reason
+            in {
+                "epistemic-frontier:hierarchical-action-family",
+                "epistemic-frontier:untried-current-state",
+                "epistemic-frontier:navigate-known-state-graph",
+                "epistemic-frontier:least-repeated-exhausted-state",
+            }
+        )
         self.edge_groundings[(state, token)] = grounding
         self._register_segmented_permutation_prediction(grounding)
         self._register_factored_orbit_prediction(grounding)
@@ -9526,9 +9163,7 @@ class EpistemicExplorer:
         )
         if search_exhausted:
             self.factored_orbit_factorization_search_exhausted = True
-            self.factored_orbit_diagnostic = (
-                "factorization-search-bound-exceeded"
-            )
+            self.factored_orbit_diagnostic = "factorization-search-bound-exceeded"
         return represented
 
     @staticmethod
@@ -9685,8 +9320,7 @@ class EpistemicExplorer:
             for module_index in sorted(required_modules)
         )
         ambiguous_slots = sum(
-            len(candidates) > 1
-            for candidates in local_by_binding.values()
+            len(candidates) > 1 for candidates in local_by_binding.values()
         )
         controller_bases = {
             (
@@ -9703,8 +9337,7 @@ class EpistemicExplorer:
         ] = {}
         for token, grounding in grounded:
             if (
-                self._factored_local_controller_form(grounding, domain)
-                is not None
+                self._factored_local_controller_form(grounding, domain) is not None
                 or grounding.centroid is None
             ):
                 continue
@@ -9746,9 +9379,7 @@ class EpistemicExplorer:
         )
         self.factored_orbit_ambiguous_controller_slots = ambiguous_slots
         self.factored_orbit_unique_bindings = {
-            (candidate.controller_form, candidate.module_index): (
-                candidate.controller
-            )
+            (candidate.controller_form, candidate.module_index): (candidate.controller)
             for candidate in output
         }
         return output
@@ -9845,19 +9476,14 @@ class EpistemicExplorer:
             return
         controller_form, module_index = resolved
         binding = (controller_form, module_index)
-        if (
-            self.factored_orbit_unique_bindings.get(binding)
-            != grounding.centroid
-        ):
+        if self.factored_orbit_unique_bindings.get(binding) != grounding.centroid:
             if pending is not None:
                 self._quarantine_factored_controller(
                     pending.controller_form,
                     "controller-binding-changed-before-response",
                 )
             else:
-                self.factored_orbit_diagnostic = (
-                    "controller-binding-not-unique"
-                )
+                self.factored_orbit_diagnostic = "controller-binding-not-unique"
             return
         after_represented = self._ground_factored_domain(after)
         if self.factored_orbit_factorization_search_exhausted:
@@ -9938,21 +9564,13 @@ class EpistemicExplorer:
                         "provisional-effect-conflict",
                     )
                     return
-                if (
-                    module_index is not None
-                    and proposal.module_index == module_index
-                ):
+                if module_index is not None and proposal.module_index == module_index:
                     self.factored_orbit_diagnostic = (
                         "confirmation-module-not-independent"
                     )
                     return
-                if (
-                    module_index is None
-                    and proposal.controller != grounding.centroid
-                ):
-                    self.factored_orbit_diagnostic = (
-                        "interface-controller-not-repeated"
-                    )
+                if module_index is None and proposal.controller != grounding.centroid:
+                    self.factored_orbit_diagnostic = "interface-controller-not-repeated"
                     return
             elif (
                 self.factored_orbit_controller_effects.get(controller_form)
@@ -9982,9 +9600,9 @@ class EpistemicExplorer:
                 )
                 return
             self.factored_orbit_generators = generators
-            self.factored_orbit_controller_effects[controller_form] = (
-                matching[0].effect_id
-            )
+            self.factored_orbit_controller_effects[controller_form] = matching[
+                0
+            ].effect_id
             if proposal is not None:
                 self.factored_orbit_proposals.pop(controller_form, None)
                 self.factored_orbit_confirmations += 1
@@ -10008,9 +9626,7 @@ class EpistemicExplorer:
             controller_form in self.factored_orbit_proposals
             or controller_form in self.factored_orbit_controller_effects
         ):
-            self.factored_orbit_diagnostic = (
-                "matching-response-not-preregistered"
-            )
+            self.factored_orbit_diagnostic = "matching-response-not-preregistered"
             return
         self.factored_orbit_proposals[controller_form] = _FactoredOrbitProposal(
             controller_form=controller_form,
@@ -10043,34 +9659,22 @@ class EpistemicExplorer:
         if controller_form in self.factored_orbit_quarantined_forms:
             return
         if (
-            self.factored_orbit_unique_bindings.get(
-                (controller_form, module_index)
-            )
+            self.factored_orbit_unique_bindings.get((controller_form, module_index))
             != grounding.centroid
         ):
             return
         proposal = self.factored_orbit_proposals.get(controller_form)
         generator: FactoredOrbitGenerator | None
         if proposal is not None:
-            if (
-                module_index is not None
-                and proposal.module_index == module_index
-            ):
+            if module_index is not None and proposal.module_index == module_index:
                 return
-            if (
-                module_index is None
-                and proposal.controller != grounding.centroid
-            ):
+            if module_index is None and proposal.controller != grounding.centroid:
                 return
             generator = proposal.generator
         else:
-            effect_id = self.factored_orbit_controller_effects.get(
-                controller_form
-            )
+            effect_id = self.factored_orbit_controller_effects.get(controller_form)
             generator = (
-                self._factored_generator(effect_id)
-                if effect_id is not None
-                else None
+                self._factored_generator(effect_id) if effect_id is not None else None
             )
         if generator is None:
             return
@@ -10149,9 +9753,7 @@ class EpistemicExplorer:
                 ).token
 
         local_candidates = tuple(
-            candidate
-            for candidate in candidates
-            if candidate.module_index is not None
+            candidate for candidate in candidates if candidate.module_index is not None
         )
         local_forms = {candidate.controller_form for candidate in local_candidates}
         for controller_form in sorted(local_forms, key=repr):
@@ -10214,14 +9816,12 @@ class EpistemicExplorer:
         generators = tuple(
             generator
             for generator in self.factored_orbit_generators
-            if generator.support >= 2
-            and generator.effect_id in represented_effects
+            if generator.support >= 2 and generator.effect_id in represented_effects
         )
         plan = plan_factored_orbit_transport(
             observation.frame,
             tuple(
-                MarkerTarget(anchor.point, anchor.marker_color)
-                for anchor in anchors
+                MarkerTarget(anchor.point, anchor.marker_color) for anchor in anchors
             ),
             domain,
             generators,
@@ -10543,9 +10143,7 @@ class EpistemicExplorer:
                     "prediction-domain-mismatch",
                 )
             else:
-                self.segmented_permutation_diagnostic = (
-                    "token-domain-not-conserved"
-                )
+                self.segmented_permutation_diagnostic = "token-domain-not-conserved"
             return
         segmented_candidates = infer_segmented_permutations(
             before,
@@ -10565,9 +10163,7 @@ class EpistemicExplorer:
             if self.path_cycle_transport
             else ()
         )
-        self.segmented_permutation_last_segmented_candidates = len(
-            segmented_candidates
-        )
+        self.segmented_permutation_last_segmented_candidates = len(segmented_candidates)
         self.segmented_permutation_last_path_candidates = len(path_candidates)
         candidates = tuple(
             {
@@ -10813,7 +10409,6 @@ class EpistemicExplorer:
                 token,
             ),
         )
-
 
     def _observe_cyclic_transition(
         self,
@@ -11542,10 +11137,7 @@ class EpistemicExplorer:
         if self.cross_retry_maturity:
             if self.level_failures == 1:
                 return None
-            if (
-                self.level_failures == 0
-                and not self.pragmatic_disequilibrium_active
-            ):
+            if self.level_failures == 0 and not self.pragmatic_disequilibrium_active:
                 return None
         elif self.level_failures < 2 and not self.pragmatic_disequilibrium_active:
             return None
@@ -12088,6 +11680,44 @@ class EpistemicExplorer:
             )
         return (self.global_attempts[token], stable_index)
 
+    def _viability_filtered_generic_tokens(
+        self,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+    ) -> tuple[ActionToken, ...]:
+        """Remove only prospectively confirmed terminal generic choices."""
+
+        if not self.terminal_edge_viability_credit:
+            return tokens
+        source = structural_source_signature(self.selection_frame)
+        if source is None:
+            self.terminal_viability.last_diagnostic = (
+                "unrepresentable-current-structural-source"
+            )
+            return tokens
+        viable = tuple(
+            token
+            for token in tokens
+            if not self.terminal_viability.authoritative_edge(
+                (source, self._role(token, scene))
+            )
+        )
+        filtered = len(tokens) - len(viable)
+        if filtered == 0:
+            return tokens
+        self.terminal_viability_filtered_tokens += filtered
+        if not viable:
+            self.terminal_viability_all_unsafe_abstentions += 1
+            self.terminal_viability.last_diagnostic = (
+                "all-generic-choices-predicted-terminal"
+            )
+            return tokens
+        self.terminal_viability_filter_selections += 1
+        self.terminal_viability.last_diagnostic = (
+            "filtered-prospectively-terminal-generic-choice"
+        )
+        return viable
+
     def _path_to_frontier(
         self,
         start: StateKey,
@@ -12149,9 +11779,7 @@ class EpistemicExplorer:
         """Represent object hypotheses first, then a bounded coarse scan."""
 
         if self._uses_compact_component_frontier(observation, scene):
-            compact_candidates = self._compact_component_candidates(
-                observation.frame
-            )
+            compact_candidates = self._compact_component_candidates(observation.frame)
             self.compact_component_frontier_candidates = len(compact_candidates)
             return compact_candidates[: self.max_click_candidates]
 
@@ -12356,8 +11984,7 @@ class EpistemicExplorer:
                 if area < 2 or area * 4 > max(1, height * width):
                     continue
                 if self.compact_component_nuisance_filter and all(
-                    y in nuisance_rows or x in nuisance_columns
-                    for x, y in region
+                    y in nuisance_rows or x in nuisance_columns for x, y in region
                 ):
                     filtered += 1
                     continue
@@ -12365,24 +11992,18 @@ class EpistemicExplorer:
                 ys = tuple(point[1] for point in region)
                 min_x, max_x = min(xs), max(xs)
                 min_y, max_y = min(ys), max(ys)
-                box_area = (
-                    (max_x - min_x + 1)
-                    * (max_y - min_y + 1)
-                )
+                box_area = (max_x - min_x + 1) * (max_y - min_y + 1)
                 regularity = area * 1000 // box_area
                 centroid = (sum(xs) // area, sum(ys) // area)
                 target = min(
                     region,
                     key=lambda point: (
-                        abs(point[0] - centroid[0])
-                        + abs(point[1] - centroid[1]),
+                        abs(point[0] - centroid[0]) + abs(point[1] - centroid[1]),
                         point[1],
                         point[0],
                     ),
                 )
-                ranked.append(
-                    (regularity, area, color, target[1], target[0])
-                )
+                ranked.append((regularity, area, color, target[1], target[0]))
                 if (
                     self.compact_component_nuisance_filter
                     and max_x - min_x >= 2
@@ -12404,9 +12025,7 @@ class EpistemicExplorer:
                             center[0],
                         )
                     )
-        ranked.sort(
-            key=lambda item: (-item[0], -item[1], -item[2], item[3], item[4])
-        )
+        ranked.sort(key=lambda item: (-item[0], -item[1], -item[2], item[3], item[4]))
         enclosure_forms = Counter(
             (width, height, area)
             for width, height, _box, area, _color, _y, _x in enclosures
@@ -12424,11 +12043,7 @@ class EpistemicExplorer:
         self.compact_component_nuisance_filtered = filtered
         self.compact_component_enclosure_candidates = len(enclosures)
         ordered = (
-            *(
-                (x, y)
-                for _width, _height, _box, _area, _color, y, x
-                in enclosures
-            ),
+            *((x, y) for _width, _height, _box, _area, _color, y, x in enclosures),
             *((x, y) for _regularity, _area, _color, y, x in ranked),
         )
         return tuple(dict.fromkeys(ordered))
@@ -12459,9 +12074,9 @@ class EpistemicExplorer:
                 for y in range(height):
                     grid[y][x] = background
         normalized = tuple(tuple(row) for row in grid)
-        return "compact-component-" + hashlib.sha256(
-            repr(normalized).encode()
-        ).hexdigest()
+        return (
+            "compact-component-" + hashlib.sha256(repr(normalized).encode()).hexdigest()
+        )
 
     def _lattice_effect_grounding(
         self,
@@ -12551,14 +12166,9 @@ class EpistemicExplorer:
                     key=lambda item: (item.bbox[1], item.bbox[0]),
                 )
             )
-            if (
-                not 8 <= len(nodes) <= 64
-                or len({item.shape for item in nodes}) != 1
-            ):
+            if not 8 <= len(nodes) <= 64 or len({item.shape for item in nodes}) != 1:
                 continue
-            origins = {
-                (item.bbox[0], item.bbox[1]): item for item in nodes
-            }
+            origins = {(item.bbox[0], item.bbox[1]): item for item in nodes}
             if len(origins) != len(nodes):
                 continue
 
@@ -12587,11 +12197,7 @@ class EpistemicExplorer:
                             clue.append(next(iter(values)))
                         if not uniform:
                             break
-                    if (
-                        not uniform
-                        or len(clue) != 9
-                        or len(set(clue)) < 2
-                    ):
+                    if not uniform or len(clue) != 9 or len(set(clue)) < 2:
                         continue
                     center_color = clue[4]
                     local_constraints = 0
@@ -12631,11 +12237,7 @@ class EpistemicExplorer:
                 if unsupported_relation:
                     break
 
-            if (
-                unsupported_relation
-                or clue_count < 1
-                or len(constraints) < 4
-            ):
+            if unsupported_relation or clue_count < 1 or len(constraints) < 4:
                 continue
             ordered_constraints = tuple(
                 sorted(
@@ -12647,13 +12249,8 @@ class EpistemicExplorer:
                     ),
                 )
             )
-            state = LatticeState.create(
-                {item.centroid: item.color for item in nodes}
-            )
-            action_regions = tuple(
-                (item.centroid, item.bbox)
-                for item in nodes
-            )
+            state = LatticeState.create({item.centroid: item.color for item in nodes})
+            action_regions = tuple((item.centroid, item.bbox) for item in nodes)
             signature: tuple[object, ...] = (
                 size,
                 step,
@@ -12693,8 +12290,7 @@ class EpistemicExplorer:
         matches = tuple(
             anchor
             for anchor, (min_x, min_y, max_x, max_y) in grounding.action_regions
-            if min_x <= action_point[0] <= max_x
-            and min_y <= action_point[1] <= max_y
+            if min_x <= action_point[0] <= max_x and min_y <= action_point[1] <= max_y
         )
         if len(matches) != 1:
             return None
@@ -12804,9 +12400,7 @@ class EpistemicExplorer:
         if not changed_pairs:
             self.lattice_effect_diagnostic = "grounded-action-had-no-effect"
             return
-        cycle_values = {
-            value for pair in changed_pairs for value in pair
-        }
+        cycle_values = {value for pair in changed_pairs for value in pair}
         if len(cycle_values) != 2 or any(
             left == right or {left, right} != cycle_values
             for left, right in changed_pairs
@@ -12852,10 +12446,7 @@ class EpistemicExplorer:
             self.lattice_effect_diagnostic = "no-unique-marked-lattice"
             return None
         model = self.lattice_effect_model
-        if (
-            model is None
-            or self.lattice_effect_signature != grounding.signature
-        ):
+        if model is None or self.lattice_effect_signature != grounding.signature:
             if self.lattice_effect_diagnostic == "not-attempted":
                 self.lattice_effect_diagnostic = "awaiting-effect-evidence"
             return None
@@ -13217,9 +12808,12 @@ class EpistemicExplorer:
                 if 3 in self.boundary_nuisance_sides:
                     for row in normalized:
                         row[width - 1] = -1
-                digest = "boundary-normalized-" + hashlib.sha256(
-                    repr(tuple(tuple(row) for row in normalized)).encode()
-                ).hexdigest()
+                digest = (
+                    "boundary-normalized-"
+                    + hashlib.sha256(
+                        repr(tuple(tuple(row) for row in normalized)).encode()
+                    ).hexdigest()
+                )
         if (
             self.repeated_form_event_mode == "phase-segment"
             and self.repeated_form_event_phase
@@ -13261,12 +12855,8 @@ class EpistemicExplorer:
             "action_families": len(self.global_family_attempts),
             "successful_program_length": len(self.successful_program),
             "program_cursor": self.program_cursor,
-            "shortest_progress_path_enabled": int(
-                self.shortest_progress_path_reuse
-            ),
-            "shortest_progress_path_steps": len(
-                self.shortest_progress_path
-            ),
+            "shortest_progress_path_enabled": int(self.shortest_progress_path_reuse),
+            "shortest_progress_path_steps": len(self.shortest_progress_path),
             "shortest_progress_path_selections": (
                 self.shortest_progress_path_selections
             ),
@@ -13279,27 +12869,47 @@ class EpistemicExplorer:
             "shortest_progress_path_diagnostic": (
                 self.shortest_progress_path_diagnostic
             ),
-            "finite_orbit_commit_enabled": int(
-                self.finite_orbit_commit_exploration
+            "terminal_viability_enabled": int(self.terminal_edge_viability_credit),
+            "terminal_viability_observations": (self.terminal_viability.observations),
+            "terminal_viability_terminal_observations": (
+                self.terminal_viability.terminal_observations
             ),
-            "finite_orbit_grounded": int(
-                self.finite_orbit_generator is not None
+            "terminal_viability_proposals": (self.terminal_viability.proposals),
+            "terminal_viability_predictions": (self.terminal_viability.predictions),
+            "terminal_viability_confirmations": (self.terminal_viability.confirmations),
+            "terminal_viability_contradictions": (
+                self.terminal_viability.contradictions
             ),
-            "finite_orbit_states": len(
-                self.finite_orbit_expanded_states
+            "terminal_viability_hypotheses": len(
+                self.terminal_viability.terminal_sources
             ),
+            "terminal_viability_quarantined_edges": len(
+                self.terminal_viability.quarantined_edges
+            ),
+            "terminal_viability_filtered_tokens": (
+                self.terminal_viability_filtered_tokens
+            ),
+            "terminal_viability_filter_selections": (
+                self.terminal_viability_filter_selections
+            ),
+            "terminal_viability_all_unsafe_abstentions": (
+                self.terminal_viability_all_unsafe_abstentions
+            ),
+            "terminal_viability_diagnostic": (
+                self.terminal_viability.last_diagnostic
+                if self.terminal_edge_viability_credit
+                else "exact-off"
+            ),
+            "terminal_viability_cap_failure": (self.terminal_viability.cap_failure),
+            "finite_orbit_commit_enabled": int(self.finite_orbit_commit_exploration),
+            "finite_orbit_grounded": int(self.finite_orbit_generator is not None),
+            "finite_orbit_states": len(self.finite_orbit_expanded_states),
             "finite_orbit_selections": self.finite_orbit_selections,
             "finite_orbit_commit_trials": self.finite_orbit_commit_trials,
             "finite_orbit_diagnostic": self.finite_orbit_diagnostic,
-            "dihedral_analogy_enabled": int(
-                self.dihedral_analogy_alignment
-            ),
-            "dihedral_analogy_move_actions": len(
-                self.analogy_move_actions
-            ),
-            "dihedral_analogy_mutation_actions": len(
-                self.analogy_mutation_actions
-            ),
+            "dihedral_analogy_enabled": int(self.dihedral_analogy_alignment),
+            "dihedral_analogy_move_actions": len(self.analogy_move_actions),
+            "dihedral_analogy_mutation_actions": len(self.analogy_mutation_actions),
             "dihedral_analogy_quarantined_actions": len(
                 self.analogy_quarantined_actions
             ),
@@ -13312,15 +12922,9 @@ class EpistemicExplorer:
             "linear_track_selections": self.track_selections,
             "linear_track_compilations": self.track_compilations,
             "linear_track_diagnostic": self.track_diagnostic,
-            "constellation_alignment_enabled": int(
-                self.constellation_alignment
-            ),
-            "constellation_move_actions": len(
-                self.constellation_move_actions
-            ),
-            "constellation_switch_actions": len(
-                self.constellation_switch_actions
-            ),
+            "constellation_alignment_enabled": int(self.constellation_alignment),
+            "constellation_move_actions": len(self.constellation_move_actions),
+            "constellation_switch_actions": len(self.constellation_switch_actions),
             "constellation_quarantined_actions": len(
                 self.constellation_quarantined_actions
             ),
@@ -13336,38 +12940,22 @@ class EpistemicExplorer:
             "constellation_option_compilations": (
                 self.constellation_option_compilations
             ),
-            "constellation_retained_options": (
-                self.constellation_retained_options
-            ),
+            "constellation_retained_options": (self.constellation_retained_options),
             "constellation_reused_options": self.constellation_reused_options,
             "constellation_compression_savings": (
                 self.constellation_compression_savings
             ),
-            "constellation_last_option_length": (
-                self.constellation_last_option_length
-            ),
-            "constellation_search_expansions": (
-                self.constellation_search_expansions
-            ),
+            "constellation_last_option_length": (self.constellation_last_option_length),
+            "constellation_search_expansions": (self.constellation_search_expansions),
             "constellation_diagnostic": self.constellation_diagnostic,
-            "factor_constellation_masks": len(
-                self.factor_constellation_masks
-            ),
-            "factor_constellation_goals": len(
-                self.factor_constellation_goals
-            ),
-            "factor_constellation_selections": (
-                self.factor_constellation_selections
-            ),
-            "factor_constellation_diagnostic": (
-                self.factor_constellation_diagnostic
-            ),
+            "factor_constellation_masks": len(self.factor_constellation_masks),
+            "factor_constellation_goals": len(self.factor_constellation_goals),
+            "factor_constellation_selections": (self.factor_constellation_selections),
+            "factor_constellation_diagnostic": (self.factor_constellation_diagnostic),
             "reference_constellation_plan_length": len(
                 self.reference_constellation_plan
             ),
-            "reference_constellation_cursor": (
-                self.reference_constellation_cursor
-            ),
+            "reference_constellation_cursor": (self.reference_constellation_cursor),
             "reference_constellation_selections": (
                 self.reference_constellation_selections
             ),
@@ -13379,16 +12967,10 @@ class EpistemicExplorer:
                 if self.composite_reference_plan is not None
                 else 0
             ),
-            "composite_reference_completed": len(
-                self.composite_reference_completed
-            ),
+            "composite_reference_completed": len(self.composite_reference_completed),
             "composite_reference_cursor": self.composite_reference_cursor,
-            "composite_reference_selections": (
-                self.composite_reference_selections
-            ),
-            "composite_reference_diagnostic": (
-                self.composite_reference_diagnostic
-            ),
+            "composite_reference_selections": (self.composite_reference_selections),
+            "composite_reference_diagnostic": (self.composite_reference_diagnostic),
             "deformable_constellation_compilations": (
                 self.deformable_constellation_compilations
             ),
@@ -13428,21 +13010,15 @@ class EpistemicExplorer:
             "segmented_permutation_confirmations": (
                 self.segmented_permutation_confirmations
             ),
-            "segmented_permutation_conflicts": (
-                self.segmented_permutation_conflicts
-            ),
-            "segmented_permutation_plan_steps": (
-                self.segmented_permutation_plan_steps
-            ),
+            "segmented_permutation_conflicts": (self.segmented_permutation_conflicts),
+            "segmented_permutation_plan_steps": (self.segmented_permutation_plan_steps),
             "segmented_permutation_last_plan_length": (
                 self.segmented_permutation_last_plan_length
             ),
             "segmented_permutation_search_states": (
                 self.segmented_permutation_search_states
             ),
-            "segmented_permutation_diagnostic": (
-                self.segmented_permutation_diagnostic
-            ),
+            "segmented_permutation_diagnostic": (self.segmented_permutation_diagnostic),
             "segmented_permutation_total_observations": (
                 self.segmented_permutation_total_observations
             ),
@@ -13481,17 +13057,13 @@ class EpistemicExplorer:
             "factored_orbit_quarantined_forms": len(
                 self.factored_orbit_quarantined_forms
             ),
-            "factored_orbit_unique_bindings": len(
-                self.factored_orbit_unique_bindings
-            ),
+            "factored_orbit_unique_bindings": len(self.factored_orbit_unique_bindings),
             "factored_orbit_observations": self.factored_orbit_observations,
             "factored_orbit_predictions": self.factored_orbit_predictions,
             "factored_orbit_confirmations": self.factored_orbit_confirmations,
             "factored_orbit_conflicts": self.factored_orbit_conflicts,
             "factored_orbit_plan_steps": self.factored_orbit_plan_steps,
-            "factored_orbit_last_plan_length": (
-                self.factored_orbit_last_plan_length
-            ),
+            "factored_orbit_last_plan_length": (self.factored_orbit_last_plan_length),
             "factored_orbit_search_states": self.factored_orbit_search_states,
             "factored_orbit_module_count": self.factored_orbit_module_count,
             "factored_orbit_factor_shape": (
@@ -13515,42 +13087,28 @@ class EpistemicExplorer:
             "factored_orbit_total_observations": (
                 self.factored_orbit_total_observations
             ),
-            "factored_orbit_total_predictions": (
-                self.factored_orbit_total_predictions
-            ),
+            "factored_orbit_total_predictions": (self.factored_orbit_total_predictions),
             "factored_orbit_total_confirmations": (
                 self.factored_orbit_total_confirmations
             ),
-            "factored_orbit_total_conflicts": (
-                self.factored_orbit_total_conflicts
-            ),
-            "factored_orbit_total_plan_steps": (
-                self.factored_orbit_total_plan_steps
-            ),
+            "factored_orbit_total_conflicts": (self.factored_orbit_total_conflicts),
+            "factored_orbit_total_plan_steps": (self.factored_orbit_total_plan_steps),
             "select_apply_program_length": len(self.select_apply_program),
             "select_apply_cursor": self.select_apply_cursor,
             "select_apply_level_trials": self.select_apply_level_trials,
             "select_apply_diagnostic": self.select_apply_diagnostic,
-            "connector_graph_plan_active": int(
-                self.connector_graph_plan_active
-            ),
+            "connector_graph_plan_active": int(self.connector_graph_plan_active),
             "connector_graph_explored_assignments": (
                 self.connector_graph_explored_assignments
             ),
-            "connector_graph_unused_payloads": (
-                self.connector_graph_unused_payloads
-            ),
+            "connector_graph_unused_payloads": (self.connector_graph_unused_payloads),
             "connector_graph_diagnostic": self.connector_graph_diagnostic,
             "lattice_effect_observations": self.lattice_effect_observations,
             "lattice_effect_probe_contexts": len(
                 set(self.lattice_effect_probe_contexts)
             ),
-            "lattice_effect_model_grounded": int(
-                self.lattice_effect_model is not None
-            ),
-            "lattice_effect_quarantined": int(
-                self.lattice_effect_quarantined
-            ),
+            "lattice_effect_model_grounded": int(self.lattice_effect_model is not None),
+            "lattice_effect_quarantined": int(self.lattice_effect_quarantined),
             "lattice_effect_prediction_mismatches": (
                 self.lattice_effect_prediction_mismatches
             ),
@@ -13569,18 +13127,12 @@ class EpistemicExplorer:
                 self.shape_goal_mover_signature is not None
                 and self.shape_goal_target_signature is not None
             ),
-            "shape_translation_level_trials": (
-                self.shape_translation_level_trials
-            ),
+            "shape_translation_level_trials": (self.shape_translation_level_trials),
             "shape_translation_application_trials": (
                 self.shape_translation_application_trials
             ),
-            "shape_translation_occluded_steps": (
-                self.shape_translation_occluded_steps
-            ),
-            "shape_translation_phases": len(
-                self.shape_translation_phase_models
-            ),
+            "shape_translation_occluded_steps": (self.shape_translation_occluded_steps),
+            "shape_translation_phases": len(self.shape_translation_phase_models),
             "shape_translation_phase_transitions": (
                 self.shape_translation_phase_transition_count
             ),
@@ -13593,41 +13145,25 @@ class EpistemicExplorer:
             "trajectory_latent_anchor": self.trajectory_latent_anchor,
             "trajectory_target_anchor": self.trajectory_target_anchor,
             "trajectory_effects": len(self.trajectory_effects),
-            "trajectory_effect_evidence": sum(
-                self.trajectory_effect_evidence.values()
-            ),
+            "trajectory_effect_evidence": sum(self.trajectory_effect_evidence.values()),
             "trajectory_probes": len(self.trajectory_probes),
             "trajectory_endpoint_macros": len(self.trajectory_endpoint_macros),
-            "trajectory_contextual_blocks": len(
-                self.trajectory_contextual_blocks
-            ),
-            "trajectory_gate_failures": sum(
-                self.trajectory_gate_failures.values()
-            ),
-            "trajectory_gate_cooldowns": len(
-                self.trajectory_gate_cooldowns
-            ),
+            "trajectory_contextual_blocks": len(self.trajectory_contextual_blocks),
+            "trajectory_gate_failures": sum(self.trajectory_gate_failures.values()),
+            "trajectory_gate_cooldowns": len(self.trajectory_gate_cooldowns),
             "trajectory_gate_refresh_action_roles": len(
                 self.trajectory_gate_refresh_actions
             ),
             "trajectory_topology_nodes": len(self.trajectory_topology_nodes),
-            "trajectory_uncertain_nodes": len(
-                self.trajectory_uncertain_nodes
-            ),
+            "trajectory_uncertain_nodes": len(self.trajectory_uncertain_nodes),
             "trajectory_topology_support_grounded": int(
                 self.trajectory_topology_support_color is not None
             ),
-            "trajectory_committed_macro_length": len(
-                self.trajectory_committed_macro
-            ),
-            "trajectory_enacted_path_length": len(
-                self.trajectory_enacted_path
-            ),
+            "trajectory_committed_macro_length": len(self.trajectory_committed_macro),
+            "trajectory_enacted_path_length": len(self.trajectory_enacted_path),
             "trajectory_replay_cursor": self.trajectory_replay_cursor,
             "trajectory_replay_started": int(self.trajectory_replay_started),
-            "trajectory_replay_validations": (
-                self.trajectory_replay_validations
-            ),
+            "trajectory_replay_validations": (self.trajectory_replay_validations),
             "trajectory_causal_states": len(self.trajectory_causal_states),
             "trajectory_causal_edges": len(self.trajectory_causal_edges),
             "trajectory_boundary_nuisance_evidenced": int(
@@ -13636,27 +13172,19 @@ class EpistemicExplorer:
             "boundary_nuisance_evidence": sum(
                 len(items) for items in self.boundary_nuisance_motion.values()
             )
-            + sum(
-                len(items) for items in self.boundary_nuisance_growth.values()
-            ),
+            + sum(len(items) for items in self.boundary_nuisance_growth.values()),
             "boundary_nuisance_sides": sorted(self.boundary_nuisance_sides),
-            "repeated_form_event_predictions": (
-                self.repeated_form_event_predictions
-            ),
+            "repeated_form_event_predictions": (self.repeated_form_event_predictions),
             "repeated_form_event_confirmations": (
                 self.repeated_form_event_confirmations
             ),
-            "repeated_form_event_detections": (
-                self.repeated_form_event_detections
-            ),
+            "repeated_form_event_detections": (self.repeated_form_event_detections),
             "repeated_form_event_replays": self.repeated_form_event_replays,
             "repeated_form_affordance_variations": (
                 self.repeated_form_affordance_variations
             ),
             "repeated_form_event_phase": self.repeated_form_event_phase,
-            "repeated_form_event_diagnostic": (
-                self.repeated_form_event_diagnostic
-            ),
+            "repeated_form_event_diagnostic": (self.repeated_form_event_diagnostic),
             "paired_object_grounded": int(self.paired_grounding is not None),
             "paired_joint_effects": len(self.paired_effects),
             "paired_probes": len(self.paired_probes),
@@ -13666,23 +13194,15 @@ class EpistemicExplorer:
             "paired_plan_length": self.paired_plan_length,
             "paired_contact_continuations": self.paired_contact_continuations,
             "paired_latent_contact": int(self.paired_latent_contact),
-            "paired_active_terminal_relation": (
-                self.paired_active_terminal_relation
-            ),
-            "paired_terminal_relation_candidates": (
-                self.paired_relation_candidates
-            ),
+            "paired_active_terminal_relation": (self.paired_active_terminal_relation),
+            "paired_terminal_relation_candidates": (self.paired_relation_candidates),
             "paired_marker_support": self.paired_marker_support,
             "paired_relation_plan_length": self.paired_relation_plan_length,
             "paired_relation_search_expansions": (
                 self.paired_relation_search_expansions
             ),
-            "paired_relation_confirmations": (
-                self.paired_relation_confirmations
-            ),
-            "paired_relation_falsifications": (
-                self.paired_relation_falsifications
-            ),
+            "paired_relation_confirmations": (self.paired_relation_confirmations),
+            "paired_relation_falsifications": (self.paired_relation_falsifications),
             "paired_rejected_relation_targets": len(
                 self.paired_rejected_relation_targets
             ),
@@ -13691,38 +13211,27 @@ class EpistemicExplorer:
             ),
             "paired_occlusion_active": int(self.paired_occlusion_active),
             "paired_occlusion_proposals": self.paired_occlusion_proposals,
-            "paired_occlusion_confirmations": (
-                self.paired_occlusion_confirmations
-            ),
+            "paired_occlusion_confirmations": (self.paired_occlusion_confirmations),
             "paired_occlusion_conflicts": self.paired_occlusion_conflicts,
             "paired_occlusion_macros": sum(
                 self._confirmed_paired_occlusion_macro(*key) is not None
                 for key in self.paired_occlusion_evidence
             ),
-            "paired_occlusion_planner_uses": (
-                self.paired_occlusion_planner_uses
-            ),
+            "paired_occlusion_planner_uses": (self.paired_occlusion_planner_uses),
             "paired_contextual_proposals": self.paired_contextual_proposals,
-            "paired_contextual_confirmations": (
-                self.paired_contextual_confirmations
-            ),
+            "paired_contextual_confirmations": (self.paired_contextual_confirmations),
             "paired_contextual_conflicts": self.paired_contextual_conflicts,
             "paired_contextual_edges": sum(
                 1
                 for key in self.paired_contextual_evidence
-                if self._paired_confirmed_contextual_successor(*key)
-                is not None
+                if self._paired_confirmed_contextual_successor(*key) is not None
             ),
-            "paired_contextual_planner_uses": (
-                self.paired_contextual_planner_uses
-            ),
+            "paired_contextual_planner_uses": (self.paired_contextual_planner_uses),
             "paired_transport_inductions": self.paired_transport_inductions,
             "paired_transport_family_grounded": int(
                 self.paired_transport_successor is not None
             ),
-            "paired_transport_planner_uses": (
-                self.paired_transport_planner_uses
-            ),
+            "paired_transport_planner_uses": (self.paired_transport_planner_uses),
             "paired_post_accommodation_allowance": (
                 self.paired_post_accommodation_allowance
             ),
@@ -13745,13 +13254,10 @@ class EpistemicExplorer:
                 if self.starter_schemas
                 else []
             ),
-            "inherited_scheme_count": len(
-                self.inherited_scheme_library.definitions
-            ),
+            "inherited_scheme_count": len(self.inherited_scheme_library.definitions),
             "inherited_scheme_root": self.inherited_scheme_library.root,
             "inherited_scheme_ids": [
-                item.scheme_id
-                for item in self.inherited_scheme_library.definitions
+                item.scheme_id for item in self.inherited_scheme_library.definitions
             ],
             "inherited_scheme_selections": self.inherited_scheme_selections,
             "inherited_scheme_trials": dict(
@@ -13779,18 +13285,10 @@ class EpistemicExplorer:
             "compact_component_frontier_diagnostic": (
                 self.compact_component_frontier_diagnostic
             ),
-            "action_translation_algebra_enabled": int(
-                self.action_translation_algebra
-            ),
-            "action_translation_observations": (
-                self.translation_total_observations
-            ),
-            "action_translation_predictions": (
-                self.translation_total_predictions
-            ),
-            "action_translation_confirmations": (
-                self.translation_total_confirmations
-            ),
+            "action_translation_algebra_enabled": int(self.action_translation_algebra),
+            "action_translation_observations": (self.translation_total_observations),
+            "action_translation_predictions": (self.translation_total_predictions),
+            "action_translation_confirmations": (self.translation_total_confirmations),
             "action_translation_conflicts": self.translation_total_conflicts,
             "action_translation_contextual_noops": (
                 self.translation_total_contextual_noops
@@ -13804,41 +13302,31 @@ class EpistemicExplorer:
             "action_translation_inverse_pairs": len(
                 self.translation_algebra.inverse_pairs()
             ),
-            "action_translation_last_diagnostic": (
-                self.translation_last_diagnostic
-            ),
+            "action_translation_last_diagnostic": (self.translation_last_diagnostic),
             "action_translation_last_predicted_displacement": (
                 self.translation_last_predicted_displacement
             ),
             "action_translation_last_observed_displacement": (
                 self.translation_last_observed_displacement
             ),
-            "action_translation_cap_failure": (
-                self.translation_algebra.cap_failure
-            ),
+            "action_translation_cap_failure": (self.translation_algebra.cap_failure),
             "action_translation_orbit_probe_enabled": int(
                 self.action_translation_orbit_probe
             ),
-            "action_translation_probe_selections": (
-                self.translation_probe_selections
-            ),
+            "action_translation_probe_selections": (self.translation_probe_selections),
             "action_translation_probe_completed_rays": (
                 self.translation_probe_completed_rays
             ),
             "action_translation_probe_progress_events": (
                 self.translation_probe_progress_events
             ),
-            "action_translation_probe_current_steps": (
-                self.translation_probe_steps
-            ),
+            "action_translation_probe_current_steps": (self.translation_probe_steps),
             "action_translation_probe_active_action": (
                 self.translation_probe_active.action_id
                 if self.translation_probe_active is not None
                 else None
             ),
-            "action_translation_probe_diagnostic": (
-                self.translation_probe_diagnostic
-            ),
+            "action_translation_probe_diagnostic": (self.translation_probe_diagnostic),
             "action_translation_contact_probe_enabled": int(
                 self.action_translation_contact_probe
             ),
@@ -13861,9 +13349,7 @@ class EpistemicExplorer:
             "action_effect_typing_positive_observations": (
                 self.effect_typing_total_positive_observations
             ),
-            "action_effect_typing_predictions": (
-                self.effect_typing_total_predictions
-            ),
+            "action_effect_typing_predictions": (self.effect_typing_total_predictions),
             "action_effect_typing_confirmations": (
                 self.effect_typing_total_confirmations
             ),
@@ -13871,17 +13357,12 @@ class EpistemicExplorer:
                 self.effect_typing_total_contextual_noops
             ),
             "action_effect_typing_current_types": len(effect_types),
-            "action_effect_typing_current_actions": len(
-                effect_type_signatures
-            ),
+            "action_effect_typing_current_actions": len(effect_type_signatures),
             "action_effect_typing_current_kinds": len(
                 {item.kind for item in effect_types}
             ),
             "action_effect_typing_distinct_action_signatures": len(
-                {
-                    tuple(sorted(kinds))
-                    for kinds in effect_type_signatures.values()
-                }
+                {tuple(sorted(kinds)) for kinds in effect_type_signatures.values()}
             ),
             "action_effect_typing_last_kind": self.effect_typing_last_kind,
             "action_effect_typing_last_diagnostic": (

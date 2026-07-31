@@ -378,6 +378,17 @@ edges, fails to activate on repeated-death games, or regresses any accepted
 completion. It targets viability, not goal inference, so reduced failures
 without progress are diagnostic evidence rather than a promotion.
 
+The exact-off integration and synthetic falsifier now pass. Frozen v86
+candidate `candidate-11e6748f184d5586`, inference fingerprint
+`613927c833304db2c92cc8e7e8d1c3b7c54f608ac6c2d3a905aa82995226d79d`,
+changes one config bit. One terminal transition only proposes an edge; an
+exactly repeated concrete predecessor cannot confirm it; a second concretely
+distinct but color/global-translation-equivalent source can; and a safe
+counterexample quarantines it. The filter is evaluated only after all grounded
+specialists abstain. The next gate is a repeated-death game set with cognitive
+telemetry; require real prospective confirmations before interpreting any
+behavior change.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

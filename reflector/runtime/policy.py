@@ -59,9 +59,7 @@ class SymbolicPolicy:
                 self.mind.config.enable_click_object_accommodation
             ),
             productive_role_reuse=self.mind.config.enable_productive_role_reuse,
-            cross_retry_maturity=(
-                self.mind.config.enable_cross_retry_maturity
-            ),
+            cross_retry_maturity=(self.mind.config.enable_cross_retry_maturity),
             deep_failure_productive_reuse=(
                 self.mind.config.enable_deep_failure_productive_reuse
             ),
@@ -80,14 +78,15 @@ class SymbolicPolicy:
             action_translation_contact_probe=(
                 self.mind.config.enable_action_translation_contact_probe
             ),
-            action_effect_typing=(
-                self.mind.config.enable_action_effect_typing
-            ),
+            action_effect_typing=(self.mind.config.enable_action_effect_typing),
             positive_effect_family_fairness=(
                 self.mind.config.enable_positive_effect_family_fairness
             ),
             shortest_progress_path_reuse=(
                 self.mind.config.enable_shortest_progress_path_reuse
+            ),
+            terminal_edge_viability_credit=(
+                self.mind.config.enable_terminal_edge_viability_credit
             ),
             finite_orbit_commit_exploration=(
                 self.mind.config.enable_finite_orbit_commit_exploration
@@ -95,12 +94,8 @@ class SymbolicPolicy:
             dihedral_analogy_alignment=(
                 self.mind.config.enable_dihedral_analogy_alignment
             ),
-            linear_track_navigation=(
-                self.mind.config.enable_linear_track_navigation
-            ),
-            constellation_alignment=(
-                self.mind.config.enable_constellation_alignment
-            ),
+            linear_track_navigation=(self.mind.config.enable_linear_track_navigation),
+            constellation_alignment=(self.mind.config.enable_constellation_alignment),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),
@@ -113,9 +108,7 @@ class SymbolicPolicy:
             paired_contextual_transitions=(
                 self.mind.config.enable_paired_contextual_transitions
             ),
-            paired_transport_family=(
-                self.mind.config.enable_paired_transport_family
-            ),
+            paired_transport_family=(self.mind.config.enable_paired_transport_family),
             paired_post_accommodation_plan=(
                 self.mind.config.enable_paired_post_accommodation_plan
             ),
@@ -125,9 +118,7 @@ class SymbolicPolicy:
             paired_occlusion_procedure_mode=(
                 self.mind.config.paired_occlusion_procedure_mode
             ),
-            repeated_form_event_mode=(
-                self.mind.config.repeated_form_event_mode
-            ),
+            repeated_form_event_mode=(self.mind.config.repeated_form_event_mode),
             local_relation_solver=self.mind.config.enable_local_relation_solver,
             constraint_first_role_replay=(
                 self.mind.config.enable_constraint_first_role_replay
@@ -151,45 +142,27 @@ class SymbolicPolicy:
             parameterized_select_apply_commit=(
                 self.mind.config.enable_parameterized_select_apply_commit
             ),
-            multiline_target_binding=(
-                self.mind.config.enable_multiline_target_binding
-            ),
-            spatial_order_variation=(
-                self.mind.config.enable_spatial_order_variation
-            ),
-            nested_target_traversal=(
-                self.mind.config.enable_nested_target_traversal
-            ),
-            nested_source_traversal=(
-                self.mind.config.enable_nested_source_traversal
-            ),
+            multiline_target_binding=(self.mind.config.enable_multiline_target_binding),
+            spatial_order_variation=(self.mind.config.enable_spatial_order_variation),
+            nested_target_traversal=(self.mind.config.enable_nested_target_traversal),
+            nested_source_traversal=(self.mind.config.enable_nested_source_traversal),
             enclosure_target_traversal=(
                 self.mind.config.enable_enclosure_target_traversal
             ),
-            connector_relocation=(
-                self.mind.config.enable_connector_relocation
-            ),
+            connector_relocation=(self.mind.config.enable_connector_relocation),
             constructive_connector_placement=(
                 self.mind.config.enable_constructive_connector_placement
             ),
             connector_graph_synthesis=(
                 self.mind.config.enable_connector_graph_synthesis
             ),
-            lattice_effect_planning=(
-                self.mind.config.enable_lattice_effect_planning
-            ),
+            lattice_effect_planning=(self.mind.config.enable_lattice_effect_planning),
             segmented_permutation_transport=(
                 self.mind.config.enable_segmented_permutation_transport
             ),
-            path_cycle_transport=(
-                self.mind.config.enable_path_cycle_transport
-            ),
-            factored_orbit_transport=(
-                self.mind.config.enable_factored_orbit_transport
-            ),
-            shape_goal_translation=(
-                self.mind.config.enable_shape_goal_translation
-            ),
+            path_cycle_transport=(self.mind.config.enable_path_cycle_transport),
+            factored_orbit_transport=(self.mind.config.enable_factored_orbit_transport),
+            shape_goal_translation=(self.mind.config.enable_shape_goal_translation),
             relational_phase_translation=(
                 self.mind.config.enable_relational_phase_translation
             ),

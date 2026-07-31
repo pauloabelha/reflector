@@ -118,6 +118,7 @@ class MindConfig:
     enable_action_effect_typing: bool = False
     enable_positive_effect_family_fairness: bool = False
     enable_shortest_progress_path_reuse: bool = False
+    enable_terminal_edge_viability_credit: bool = False
     enable_finite_orbit_commit_exploration: bool = False
     enable_dihedral_analogy_alignment: bool = False
     enable_linear_track_navigation: bool = False
@@ -205,6 +206,7 @@ class MindConfig:
             "enable_action_effect_typing",
             "enable_positive_effect_family_fairness",
             "enable_shortest_progress_path_reuse",
+            "enable_terminal_edge_viability_credit",
             "enable_finite_orbit_commit_exploration",
             "enable_dihedral_analogy_alignment",
             "enable_linear_track_navigation",
@@ -260,13 +262,8 @@ class MindConfig:
             raise ValueError(
                 "failure-conditioned fairness requires hierarchical fairness"
             )
-        if (
-            self.enable_cross_retry_maturity
-            and not self.enable_productive_role_reuse
-        ):
-            raise ValueError(
-                "cross-retry maturity requires productive role reuse"
-            )
+        if self.enable_cross_retry_maturity and not self.enable_productive_role_reuse:
+            raise ValueError("cross-retry maturity requires productive role reuse")
         if self.enable_boundary_nuisance_fairness and not (
             self.enable_boundary_nuisance_state_key
             and self.enable_hierarchical_action_fairness
@@ -280,24 +277,21 @@ class MindConfig:
             and not self.enable_paired_object_contact_planning
         ):
             raise ValueError(
-                "paired contextual transitions require paired object "
-                "contact planning"
+                "paired contextual transitions require paired object contact planning"
             )
         if (
             self.enable_paired_transport_family
             and not self.enable_paired_contextual_transitions
         ):
             raise ValueError(
-                "paired transport family requires paired contextual "
-                "transitions"
+                "paired transport family requires paired contextual transitions"
             )
         if (
             self.enable_paired_post_accommodation_plan
             and not self.enable_paired_transport_family
         ):
             raise ValueError(
-                "paired post-accommodation plan requires paired transport "
-                "family"
+                "paired post-accommodation plan requires paired transport family"
             )
         if self.paired_terminal_relation_mode not in {
             "contact-only",
@@ -313,8 +307,7 @@ class MindConfig:
             and not self.enable_paired_object_contact_planning
         ):
             raise ValueError(
-                "paired terminal relation hypotheses require paired object "
-                "planning"
+                "paired terminal relation hypotheses require paired object planning"
             )
         if self.paired_occlusion_procedure_mode not in {
             "off",
@@ -396,9 +389,7 @@ class MindConfig:
             self.enable_nested_source_traversal
             and not self.enable_nested_target_traversal
         ):
-            raise ValueError(
-                "nested source traversal requires nested target traversal"
-            )
+            raise ValueError("nested source traversal requires nested target traversal")
         if (
             self.enable_enclosure_target_traversal
             and not self.enable_nested_target_traversal
@@ -410,16 +401,13 @@ class MindConfig:
             self.enable_connector_relocation
             and not self.enable_enclosure_target_traversal
         ):
-            raise ValueError(
-                "connector relocation requires enclosure target traversal"
-            )
+            raise ValueError("connector relocation requires enclosure target traversal")
         if (
             self.enable_constructive_connector_placement
             and not self.enable_enclosure_target_traversal
         ):
             raise ValueError(
-                "constructive connector placement requires enclosure target "
-                "traversal"
+                "constructive connector placement requires enclosure target traversal"
             )
         if (
             self.enable_connector_graph_synthesis
@@ -459,12 +447,9 @@ class MindConfig:
             if not math.isfinite(value) or not 0.0 <= value <= 100.0:
                 raise ValueError(f"{name} must be finite and between 0 and 100")
         if type(self.inherited_scheme_definitions) is not tuple or any(
-            not isinstance(item, str)
-            for item in self.inherited_scheme_definitions
+            not isinstance(item, str) for item in self.inherited_scheme_definitions
         ):
-            raise ValueError(
-                "inherited_scheme_definitions must be a tuple of strings"
-            )
+            raise ValueError("inherited_scheme_definitions must be a tuple of strings")
         if type(self.inherited_scheme_root) is not str:
             raise ValueError("inherited_scheme_root must be a string")
         for name in (
@@ -478,9 +463,7 @@ class MindConfig:
                 or any(character not in "0123456789abcdef" for character in value)
             ):
                 raise ValueError(f"{name} must be a SHA-256 hash")
-        library = SchemeLibrary.from_json_definitions(
-            self.inherited_scheme_definitions
-        )
+        library = SchemeLibrary.from_json_definitions(self.inherited_scheme_definitions)
         if library.json_definitions() != self.inherited_scheme_definitions:
             raise ValueError(
                 "inherited scheme definitions must be sorted by content hash"
@@ -490,16 +473,13 @@ class MindConfig:
                 "inherited_scheme_root does not match inherited definitions"
             )
         if self.enable_inherited_scheme_library and not library.definitions:
-            raise ValueError(
-                "enabled inherited scheme library must not be empty"
-            )
+            raise ValueError("enabled inherited scheme library must not be empty")
         if (
             self.enable_inherited_scheme_library
             and not self.enable_preregistered_structural_credit
         ):
             raise ValueError(
-                "inherited scheme library requires preregistered "
-                "structural credit"
+                "inherited scheme library requires preregistered structural credit"
             )
         if (
             self.enable_general_reasoning_prior_library
@@ -518,10 +498,7 @@ class MindConfig:
                 self.inherited_scheme_root,
                 self.inherited_evidence_root,
             )
-            if (
-                self.inherited_common_sense_root
-                != expected_common_sense_root
-            ):
+            if self.inherited_common_sense_root != expected_common_sense_root:
                 raise ValueError(
                     "inherited_common_sense_root does not bind library and "
                     "evidence roots"
@@ -532,9 +509,7 @@ class MindConfig:
         # The genome's authoritative wire form is JSON, where arrays are
         # lists. Returning that form here keeps process-isolation cross-talk
         # checks and candidate identities identical before and after encoding.
-        value["inherited_scheme_definitions"] = list(
-            self.inherited_scheme_definitions
-        )
+        value["inherited_scheme_definitions"] = list(self.inherited_scheme_definitions)
         return value
 
     @classmethod

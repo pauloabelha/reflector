@@ -229,6 +229,20 @@ objects; missing bindings cause abstention, equal bindings become bounded
 discriminating variants, and execution stops after 64 selections. This is
 operative retrospective credit only when enabled by a candidate.
 
+Terminal-edge viability credit represents the complementary partiality
+structure. A generic intervention is a candidate morphism that may be
+undefined on part of its initiation domain. The learner quotients the current
+scene by color and global translation, pairs that structural source with a
+grounded action role, and treats a terminal result as a proposed forbidden CSP
+assignment. One observation cannot authorize policy. A second terminal result
+must come from a distinct concrete frame with the same quotient key; an exact
+retry is not confirmation. Any nonterminal counterexample quarantines the
+abstract edge. Confirmed edges may filter only generic exploration after every
+grounded specialist has abstained, and all evidence resets at a level change.
+Thus the mechanism learns a bounded unsafe boundary for an option initiation
+set without inventing a goal or overwriting an independently supported
+controller.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;
