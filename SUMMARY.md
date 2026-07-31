@@ -442,3 +442,20 @@ space: after specialists abstain, select the locally untried legal role with
 maximum expected donor-hypothesis elimination, observe its effect, and refine
 the partition. This is information-seeking causal learning, not an asserted
 task reward.
+
+V90 performs that operation online. It selected 80 queries across `ar25`,
+`g50t`, `sc25`, `sk48`, and `tu93`, represented 470 donor hypotheses, and
+eliminated 217 (**46.17%**). Four games changed action distributions, while
+all eight gate scores, level counts, completed-level action vectors, and total
+action counts exactly matched v84m. `lp85` and `sp80` remained exact
+sentinels. Report
+[`reports/experimental-v90-causal-discrimination-r1-400.json`](reports/experimental-v90-causal-discrimination-r1-400.json),
+SHA-256
+`9a8b2a967f8d9142f96d7a3b4689fcdd1b0ef961019126d7dc7194eff4ef8fa2`.
+
+V90 is not promoted: information gain alone does not change the downstream
+generic policy. The next compression hypothesis is to stop retesting a
+state/role intervention whose outcome is already uniquely supported by
+multiple compatible donor states, while retaining ambiguous and unpredicted
+roles as the abstract intervention frontier. This would make the quotient an
+operative coverage structure rather than another advisor.

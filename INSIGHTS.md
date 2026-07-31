@@ -461,6 +461,22 @@ construction, Piagetian accommodation, CSP/CEGIS, and intrinsic-reward HRL in
 one bounded operation. Its claim remains epistemic efficiency until a live
 offspring improves task progress.
 
+V90 confirms that the information metric is real online: 80 interventions
+eliminated 46.17% of their represented causal hypotheses. It also confirms
+that intrinsic information gain is not automatically useful under a fixed
+400-action horizon. The refined profile currently changes only later
+predictions; the generic controller still treats every raw frame/action pair
+as new. No level or efficiency changed.
+
+This suggests a sharper role for compression. A uniquely predicted
+state/role outcome is not an epistemic frontier merely because the pixels are
+new. If two compatible donors support the same effect, repeating it spends an
+action to relearn an equivalence-class member. Ambiguous and unsupported roles
+remain experiments; uniquely supported roles become redundant coverage unless
+all legal choices are redundant. In category language, exploration should
+cover morphisms of the quotient, not every concrete presentation. In HRL
+language, this is state-action abstraction before option discovery.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

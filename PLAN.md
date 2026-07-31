@@ -522,6 +522,25 @@ is that v88 sibling. It requires four current-level confirmations at at least
 75% prospective precision, caps queries at 16 per level, and records both
 represented and eliminated donor hypotheses.
 
+The eight-game gate validates v90's causal attribution but withholds task
+promotion. It selected 80 queries, represented 470 compatible donor
+hypotheses, and eliminated 217 (46.17%). Action distributions changed on four
+games; every score, level count, completed-level action vector, and total
+action count exactly matched v84m. Report
+`reports/experimental-v90-causal-discrimination-r1-400.json`, SHA-256
+`9a8b2a967f8d9142f96d7a3b4689fcdd1b0ef961019126d7dc7194eff4ef8fa2`.
+Keep v90 exact-off in accepted candidates.
+
+The next child should consume the learned compression, not collect more
+information for its own sake. Audit and implement bounded abstract
+intervention coverage: after specialists abstain and the quotient is
+predictively mature, deprioritize only locally untried roles whose unique
+outcome is supported by at least two compatible donor states. Preserve
+ambiguous roles, unsupported roles, locally observed roles needed for
+navigation, and exact fallback when every legal role is redundant. Reject any
+accepted-vector regression; measure whether the saved redundant tests increase
+distinct abstract frontier coverage or task progress.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

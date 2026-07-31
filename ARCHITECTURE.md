@@ -310,6 +310,15 @@ bisimulation. The advisor needs four current-level confirmations and at least
 hypotheses eliminated by the observed effect, so information gain is measured
 rather than inferred from action count.
 
+The v90 gate confirms that telemetry: 217/470 represented hypotheses were
+eliminated by 80 live queries, with exact accepted-vector preservation. It
+does not promote the advisor because the refined partition has no downstream
+coverage or planning consumer. The next admissible consumer is quotient
+coverage: after predictive maturity, a locally untried role uniquely supported
+by multiple compatible donors may be deprioritized as already characterized.
+Ambiguous, unsupported, and locally observed navigation roles remain
+available, and an all-redundant legal set falls back exactly.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;
