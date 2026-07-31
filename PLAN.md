@@ -480,6 +480,23 @@ fingerprint
 implements exactly that single additional advisor. Its parent is trace-only
 v88, so an exact v88 comparison isolates selection from representation.
 
+The eight-game gate rejects v89. It made 22 causal-frontier selections across
+five games and changed `ls20`'s action distribution, but every score, level
+count, completed-level action vector, and total action count exactly matched
+v88. V89 recorded 285 confirmations from 309 predictions and 24 conflicts;
+the changed `ls20` sequence introduced a conflict absent from v88. Report
+`reports/experimental-v89-abstract-causal-frontier-r1-400.json`, SHA-256
+`a8c55547d17ad70937c942b7577cfbe11fcbc6431a960ac5559af16f6b923154`.
+Keep the control bit exact-off and retain v88 only as a trace substrate.
+
+Do not retry generic “positive effect” ordering. The next bounded audit should
+compare two uses of the quotient: (a) CEGIS-style selection of an untried role
+whose compatible donors predict different outcomes, measuring version-space
+elimination; and (b) progress-backed abstract potential learned only from
+completed trajectories. Implement control only if the offline chronological
+audit shows that the proposed signal predicts information gain or progress
+better than v84m's generic novelty rank.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

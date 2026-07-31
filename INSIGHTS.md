@@ -422,6 +422,23 @@ Piagetian assimilation/accommodation and a cautious HRL initiation rule:
 reuse a causal schema while it predicts, then split the abstraction at the
 first disequilibrium.
 
+The first control offspring then separated prediction from value. V89 used
+only uniquely predicted positive structural effects and changed 22 decisions,
+but gained no level or efficiency. On `ls20`, the reordered intervention
+created the first quotient conflict in a previously 42/42 trace. This is the
+right kind of accommodation—the controller revoked authority—but it also
+falsifies the objective: “causes a component or relation to change” is not a
+task potential.
+
+The quotient should next serve epistemic action selection, where its semantics
+are native. If compatible donor profiles disagree about an untried role, that
+role is a CEGIS query: its observed outcome eliminates causal hypotheses and
+refines the partition. Alternatively, completed trajectories can label
+abstract states with distance-to-progress, but only if a chronological audit
+shows the label transports under the quotient. These are respectively causal
+identification and HRL value learning; neither should be conflated with a
+generic preference for visible change.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

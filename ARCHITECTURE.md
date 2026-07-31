@@ -279,6 +279,14 @@ family fairness, untried-state choice, and graph navigation. Its scheme trace
 names the quotient, commuting role/effect transfer, positive frontier goal,
 and partition-conflict falsifier explicitly.
 
+The v89 gate rejects the final term in that scheme trace: predicted structural
+change is not a task goal. The partition machinery behaved correctly—one
+changed ordering produced a new conflict and revoked current-level control—but
+22 selections yielded no level or efficiency gain. The operative bit remains
+exact-off. Future descendants may consume the quotient as a CEGIS version
+space or a progress-labeled abstract graph; they may not treat effect
+positivity itself as value.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

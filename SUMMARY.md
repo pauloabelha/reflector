@@ -408,3 +408,19 @@ counterexamples. The next offspring may use the abstract causal frontier only
 after eight flawless current-level prospective predictions, must disable that
 control after any conflict, and must yield to every grounded specialist.
 V84m remains the accepted 20.418940161588477/100 parent.
+
+V89 tested that minimal control rule and is rejected. The advisor selected 22
+actions across five of the eight games, including 15 on `ls20`, where it
+changed the action distribution from v88. Nevertheless, all eight scores,
+level counts, completed-level action vectors, and total action counts remained
+identical. The changed `ls20` ordering also introduced one quotient conflict
+where v88 had confirmed 42/42 predictions. Across the gate v89 confirmed
+285/309 predictions with 24 conflicts. Report
+[`reports/experimental-v89-abstract-causal-frontier-r1-400.json`](reports/experimental-v89-abstract-causal-frontier-r1-400.json),
+SHA-256
+`a8c55547d17ad70937c942b7577cfbe11fcbc6431a960ac5559af16f6b923154`.
+
+The quotient remains valuable as a learned world-model compression, but
+positive structural change is not a reward. The next use should select a
+discriminating intervention over competing causal hypotheses or derive a
+progress-backed potential; it must not simply prefer component change.
