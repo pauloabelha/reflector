@@ -304,6 +304,19 @@ reuses the previously learned selector/mutation controls unchanged. A derived
 compiler grounds the real frame uniquely and abstains on malformed partition
 controls; autonomous evidence is the next falsifier.
 
+The first autonomous v84m run passed that falsifier. It completed the grouped
+level in 55 actions and reached `tr87` 5/6, without retaining the diagnostic
+19-action string. The extra actions are the bounded cost of discovering and
+traversing the mutation orbits prospectively; efficiency still saturates the
+level cap. The result supports a useful HRL principle: transporting a learned
+controller over an isomorphic object partition can preserve its causal
+semantics even when primitive efficiency is not optimal.
+
+An independent process reproduced the exact action vector. This matters more
+than the nominal score: it shows the lifted controller is a deterministic
+consequence of perception and retained causal operators, rather than a lucky
+mutation-orbit traversal.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

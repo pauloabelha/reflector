@@ -263,6 +263,27 @@ partition-sum, ordering, and selector-uniqueness abstention gates. Synthetic
 isomorphic and malformed controls, Ruff, mypy, and the Kaggle contract pass.
 Autonomous target repetition and suite preservation remain pending.
 
+V84m passed its first autonomous target gate. Frozen candidate
+`candidate-07d24ee8acf946c9`, inference fingerprint
+`53729246c43ad6aadcc4fa4ba95a08510f0b200c83d08bd9ea3518816803e36d`,
+reached `tr87` **5/6** at `[56,45,44,38,55,162]`, score
+**71.42857142857143**, and 400 actions. The grouped compiler completed level 5
+in **55 actions**, safely below the 66-action efficiency cap. Report
+[`reports/experimental-v84m-grouped-tr87-r1-400.json`](reports/experimental-v84m-grouped-tr87-r1-400.json),
+SHA-256
+`792ba1d27c432e8c7c704afed86a6db9e42cecbeb572a8982bd3c31ea9499674`.
+Combining this measured target result with the unchanged v82f suite and v84l
+`re86` result projects to about **20.4189401616 / 100**. Independent repetition
+and the full suite remain mandatory.
+
+An independent fresh-process v84m rerun reproduced the exact score and vector.
+Report
+[`reports/experimental-v84m-grouped-tr87-r2-400.json`](reports/experimental-v84m-grouped-tr87-r2-400.json),
+SHA-256
+`3fdc513156c80b8a1d1437b3f173fd97cd64bbe21271e931228850528a004bb3`.
+The grouped gain is deterministic twice. The full 25-game process-isolated
+preservation run is now the only remaining score gate.
+
 ## Rejected branch
 
 V83 tested distance-decreasing replay on an inferred one-dimensional track.
@@ -274,9 +295,8 @@ negative result and is disabled in v82f/v84 candidates.
 
 The verified score remains **16.3554480981 / 100**. V84l's deterministic
 `re86` gain projects to **19.4665592092 / 100**, still short by
-**0.5334407908**. If the grouped-dihedral compiler autonomously completes
-`tr87` level 5 within 66 actions, its efficiency contribution is capped and
-the unchanged-suite projection becomes about **20.5617973044 / 100**.
-Freeze the offspring, reproduce that target gain twice, and then run the full
-25-game preservation gate. The exact accepted package is submitted to Kaggle
-using `KAGGLE.md` only after the measured aggregate reaches 20.
+**0.5334407908**. The grouped-dihedral compiler has now completed `tr87`
+level 5 in 55 actions; the measured unchanged-suite projection is about
+**20.4189401616 / 100**. Reproduce that target gain, then run the full 25-game
+preservation gate. The exact accepted package is submitted to Kaggle using
+`KAGGLE.md` only after the measured aggregate reaches 20.

@@ -265,14 +265,29 @@ ambiguous selectors abstain. The real held-out frame grounds uniquely as group
 lengths `[1,1,1,2,2,1,1,1]` with seven unsatisfied groups; synthetic positive
 and negative controls and static checks pass.
 
+V84m passed the first autonomous target run. Frozen
+`candidate-07d24ee8acf946c9` reached `tr87` 5/6 at
+`[56,45,44,38,55,162]`, score 71.4285714286. Level 5 took 55 actions, below
+the preregistered 66-action cap. Report
+`reports/experimental-v84m-grouped-tr87-r1-400.json`, SHA-256
+`792ba1d27c432e8c7c704afed86a6db9e42cecbeb572a8982bd3c31ea9499674`.
+With v84l's measured `re86` gain, the unchanged-suite projection is
+20.4189401616. Repeat in a fresh process before the full suite.
+
+The second fresh-process target run exactly reproduced
+`[56,45,44,38,55,162]` and score 71.4285714286. Report
+`reports/experimental-v84m-grouped-tr87-r2-400.json`, SHA-256
+`3fdc513156c80b8a1d1437b3f173fd97cd64bbe21271e931228850528a004bb3`.
+The target-repeat gate passes. Run the full 25-game process-isolated suite and
+compare every non-target vector with v82f before promotion.
+
 Required gates are:
 
-1. freeze v84m and reproduce the autonomous `tr87` level-5 gain twice;
-2. reject it if the grouped compiler uses more than 66 level actions or fails
-   any structural abstention;
-3. exact preservation of the v82f suite outside `re86` and `tr87`;
-4. full 25-game score of at least 20 before Kaggle submission;
-5. exact export, offline smoke tests, and submission through `KAGGLE.md`.
+1. exact preservation of the v82f suite outside `re86` and `tr87`;
+2. full 25-game score of at least 20 before Kaggle submission;
+3. all tests, Ruff, and mypy;
+4. exact export and both offline smoke paths;
+5. submission through `KAGGLE.md`.
 
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
