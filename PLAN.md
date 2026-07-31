@@ -565,6 +565,25 @@ actions by whether their evidenced effects reduce a selected predicate's
 violation count. Require the predicate to distinguish progress from failure
 and no-op before it can define a subgoal option.
 
+The first target diagnosis validates exactly such a predicate. A black-box
+19-action `ls20` level-1 solve factors into:
+
+1. learn a four-generator translation action on a rigid multicolor 5×5 body;
+2. plan on its free-anchor graph to a small relational operator;
+3. observe the operator-induced transition of a coarse 3×3 display;
+4. compare that display to a separate invariant goal glyph;
+5. plan through the terminal corridor only after display equality.
+
+Report `reports/ls20-black-box-phase-topology-v1.json`, SHA-256
+`96d5b13bee6b50c659f19dccc5bfccdd925d6ce1effc01a757cb357946777efd`.
+Do not encode its coordinates, action sequence, colors, or game ID. Implement a general bounded
+phase-topology substrate with synthetic transformations first: translation
+and color permutation invariance, multicolor rigid-body conservation,
+coarse-grid display extraction, operator-induced phase transition, BFS/CSP on
+`anchor × phase`, and immediate quarantine if a predicted body displacement
+or display transition fails. Then run `ls20` as the causal target and at least
+two translation/phase sentinels for preservation.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

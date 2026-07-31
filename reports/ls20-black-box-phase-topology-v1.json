@@ -1,0 +1,37 @@
+{
+  "format": "reflector-black-box-phase-topology-diagnosis-v1",
+  "game": "ls20",
+  "evaluation_surface": "manual legal-action black-box development diagnosis",
+  "level": 0,
+  "actions": [3, 3, 3, 1, 1, 1, 2, 2, 2, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1],
+  "actions_used": 19,
+  "levels_completed": 1,
+  "observations": {
+    "plain_action_displacement": 5,
+    "rigid_multicolor_body_shape": [5, 5],
+    "phase_operator_anchor": [19, 30],
+    "phase_before": ["111", "100", "101"],
+    "phase_after": ["111", "001", "101"],
+    "goal_display": ["111", "001", "101"],
+    "terminal_anchor": [34, 10]
+  },
+  "decomposition": [
+    {
+      "option": "navigate-to-phase-operator",
+      "actions": [3, 3, 3, 1, 1, 1],
+      "termination": "coarse display phase changes"
+    },
+    {
+      "option": "return-to-terminal-column",
+      "actions": [2, 2, 2, 4, 4, 4],
+      "termination": "rigid-body anchor aligned with terminal corridor"
+    },
+    {
+      "option": "enter-goal-chamber",
+      "actions": [1, 1, 1, 1, 1, 1, 1],
+      "termination": "level advances when current display equals goal display"
+    }
+  ],
+  "general_hypothesis": "Plan over the bounded product of rigid-body free-space anchors and an observed symbolic display phase; use operator contacts as phase transitions and display equality as the terminal predicate.",
+  "claim_boundary": "This is a black-box development solve, not an autonomous candidate result and not a Kaggle score."
+}

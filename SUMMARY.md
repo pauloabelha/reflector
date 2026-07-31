@@ -476,3 +476,23 @@ effects, causal information gain, and quotient coverage can all change
 behavior without supplying a task terminal predicate. The next work must
 induce a goal/subgoal constraint from relational invariants, phase changes,
 and progress evidence, then plan to it; more breadth is not the leap.
+
+That step back produced a concrete breakthrough on a previously zero-progress
+game. A legal-action black-box diagnosis solves `ls20` level 1 in 19 actions:
+`3,3,3,1,1,1,2,2,2,4,4,4,1,1,1,1,1,1,1`. The sequence is not a policy.
+It exposes a general factorization: four actions translate one rigid
+multicolor body on a 2-D free-anchor graph; exact overlap with a relational
+operator changes a coarse 3×3 symbolic phase; a separate fixed 3×3 glyph is
+the goal; the terminal chamber accepts the body only when current phase equals
+goal phase.
+
+The appropriate agent is a bounded product-state planner over
+`(rigid-body anchor, symbolic phase)`. It compiles navigation-to-operator,
+phase-update, and navigation-to-terminal as hierarchical options, learns all
+effects from black-box transitions, and uses display equality as a falsifiable
+CSP goal predicate. Report
+[`reports/ls20-black-box-phase-topology-v1.json`](reports/ls20-black-box-phase-topology-v1.json),
+SHA-256
+`96d5b13bee6b50c659f19dccc5bfccdd925d6ce1effc01a757cb357946777efd`.
+This is development evidence only; v84m remains the accepted autonomous
+20.418940161588477/100 agent.

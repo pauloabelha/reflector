@@ -493,6 +493,30 @@ be evaluated by predicted reduction of predicate violations. This is where
 CSP planning and HRL meet: the predicate defines an option termination
 condition, and the causal quotient supplies its abstract transition model.
 
+The `ls20` black-box solve supplies the missing positive example. The state is
+not merely a frame or a causal-effect profile. It factors as a product:
+
+- a rigid multicolor body's anchor in a 2-D configuration space;
+- a symbolic 3×3 display phase;
+- an invariant goal display;
+- a small spatial operator whose exact overlap induces a phase morphism.
+
+Navigation alone reaches the terminal chamber but is rejected while the phase
+is wrong. Phase equality alone is insufficient until the body enters the
+chamber. The successful procedure therefore composes two kinds of morphism:
+spatial translations in the fiber and an operator-induced transition in the
+base. This is a useful categorical picture—a finite fibration rather than one
+flat state graph—and a concrete HRL picture: navigate-to-operator, apply,
+navigate-to-terminal.
+
+Piagetian accommodation appears at the right scale. The four translation laws
+are conserved across the phase change; only the display-state factor changes.
+Drescher's schema is
+`operator-overlap + current-display -> next-display`. CSP planning searches
+the product without replaying a public route. A synthetic gate must now prove
+that the same compiler survives translation, recoloring, changed corridor
+layout, and a different phase cycle before it receives live authority.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

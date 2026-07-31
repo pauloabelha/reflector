@@ -334,6 +334,32 @@ goal-predicate version space must distinguish progress from terminal failure
 and no-op, after which the quotient may support CSP search toward decreasing
 predicate violation.
 
+## Phase-conditioned configuration-space options
+
+The `ls20` black-box diagnosis establishes a new bounded product-state
+substrate. A rigid multicolor body is represented by a translation-invariant
+colored mask and an anchor. Observed plain-action displacements generate a
+finite free-anchor graph. Independently, a coarse symbolic display is
+extracted up to translation and scale; a second stationary display defines an
+equality goal. Exact body/operator overlap supplies a preregistered phase
+transition.
+
+The planner state is `(anchor, phase)`, not a rendered frame. Spatial actions
+change only the anchor while a confirmed operator contact changes the phase.
+The compiled hierarchy is:
+
+1. shortest safe navigation to a phase operator;
+2. one confirmed phase-transition application;
+3. repeat only while display inequality decreases within the finite cycle;
+4. shortest safe navigation to the terminal chamber;
+5. quarantine the option on any displacement, phase, or terminal-predicate
+   falsification.
+
+Colors, coordinates, routes, game IDs, and public solutions are not retained.
+The compiler must derive masks, graph nodes, display factors, and transition
+effects from current observations and pass translated, recolored, layout-
+changed, and phase-cycle synthetic tests before live control.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;
