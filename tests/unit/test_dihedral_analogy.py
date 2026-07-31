@@ -119,6 +119,51 @@ def _sequence_panel() -> Frame:
     return tuple(tuple(row) for row in grid)
 
 
+def _sequence_to_sequence_panel() -> Frame:
+    grid = [[2 for _x in range(64)] for _y in range(30)]
+    for y in range(15, 30):
+        grid[y] = [3 for _x in range(64)]
+    inputs = (
+        _mask("##.", "...", "..."),
+        _mask("#..", "##.", "..."),
+        _mask("###", "...", "..."),
+        _mask("###", ".#.", "..."),
+    )
+    outputs = (
+        _mask("#..", "#..", "..."),
+        _mask("##.", "#..", "..."),
+        _mask("#..", "#..", "#.."),
+        _mask(".#.", "###", "..."),
+    )
+    demonstrations = (
+        (((inputs[0],), (outputs[0],)), ((inputs[1], inputs[2]), (outputs[1], outputs[2]))),
+        (((inputs[3],), (outputs[3], outputs[0])), ((inputs[0], inputs[1]), (outputs[2],))),
+    )
+    for y, groups in zip((1, 7), demonstrations, strict=True):
+        x = 1
+        for sources, targets in groups:
+            for source in sources:
+                _draw_tile(grid, x, y, 10, source)
+                x += 6
+            for target in targets:
+                _draw_tile(grid, x, y, 7, target)
+                x += 6
+            x += 3
+    transform = 2
+    query_masks = tuple(
+        dihedral_variants(mask)[transform]
+        for mask in (inputs[1], inputs[2], inputs[3])
+    )
+    for index, query in enumerate(query_masks):
+        _draw_tile(grid, 12 + index * 6, 16, 10, query)
+    arbitrary = _mask(".#.", "...", "...")
+    for index in range(4):
+        _draw_tile(grid, 12 + index * 6, 23, 7, arbitrary)
+    grid[22][12] = 0
+    grid[28][12] = 0
+    return tuple(tuple(row) for row in grid)
+
+
 def test_infers_dihedral_targets_and_selected_slot() -> None:
     arbitrary = _mask(".#.", "...", "...")
     layout = infer_dihedral_analogy(
@@ -155,6 +200,15 @@ def test_concatenates_variable_length_demonstrated_outputs() -> None:
     assert layout is not None
     assert len(layout.query_tiles) == 2
     assert len(layout.answer_tiles) == len(layout.targets) == 3
+    assert layout.selected_index == 0
+
+
+def test_segments_and_substitutes_demonstrated_glyph_sequences() -> None:
+    layout = infer_dihedral_analogy(_sequence_to_sequence_panel())
+
+    assert layout is not None
+    assert len(layout.query_tiles) == 3
+    assert len(layout.answer_tiles) == len(layout.targets) == 4
     assert layout.selected_index == 0
 
 

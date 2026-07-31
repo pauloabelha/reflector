@@ -129,7 +129,9 @@ def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
                 or answer[0].color == query[0].color
             ):
                 continue
-            relevant: list[tuple[GlyphTile, tuple[GlyphTile, ...]]] = []
+            relevant: list[
+                tuple[tuple[GlyphTile, ...], tuple[GlyphTile, ...]]
+            ] = []
             malformed = False
             for row in mixed_rows:
                 if any(item.size != query[0].size for item in row):
@@ -139,57 +141,72 @@ def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
                     answer[0].color,
                 }:
                     continue
-                current_source: GlyphTile | None = None
-                current_outputs: list[GlyphTile] = []
+                runs: list[list[GlyphTile]] = []
                 for item in row:
-                    if item.color == query[0].color:
-                        if current_source is not None:
-                            if not current_outputs:
-                                malformed = True
-                                break
-                            relevant.append(
-                                (current_source, tuple(current_outputs))
-                            )
-                        current_source = item
-                        current_outputs = []
-                    elif current_source is None:
-                        malformed = True
-                        break
+                    if not runs or runs[-1][0].color != item.color:
+                        runs.append([item])
                     else:
-                        current_outputs.append(item)
-                if malformed:
+                        runs[-1].append(item)
+                if (
+                    len(runs) % 2
+                    or any(
+                        run[0].color
+                        != (
+                            query[0].color
+                            if index % 2 == 0
+                            else answer[0].color
+                        )
+                        for index, run in enumerate(runs)
+                    )
+                ):
+                    malformed = True
                     break
-                if current_source is not None:
-                    if not current_outputs:
-                        malformed = True
-                        break
-                    relevant.append((current_source, tuple(current_outputs)))
+                relevant.extend(
+                    (tuple(runs[index]), tuple(runs[index + 1]))
+                    for index in range(0, len(runs), 2)
+                )
             if malformed:
                 continue
             if len(relevant) < 4:
                 continue
-            target_groups: list[tuple[frozenset[Mask], ...]] = []
-            valid = True
-            for query_tile in query:
-                matching_outputs: list[tuple[GlyphTile, ...]] = []
-                for source, outputs in relevant:
-                    if query_tile.mask in dihedral_variants(source.mask):
-                        matching_outputs.append(outputs)
-                if len(matching_outputs) != 1:
-                    valid = False
-                    break
-                target_groups.append(
-                    tuple(
-                        frozenset(dihedral_variants(output.mask))
-                        for output in matching_outputs[0]
+            target_sequences: set[tuple[frozenset[Mask], ...]] = set()
+            frontier: list[tuple[int, tuple[frozenset[Mask], ...]]] = [
+                (0, ())
+            ]
+            expansions = 0
+            while frontier and expansions < 128:
+                position, compiled = frontier.pop()
+                if position == len(query):
+                    target_sequences.add(compiled)
+                    continue
+                for sources, outputs in relevant:
+                    destination = position + len(sources)
+                    if destination > len(query):
+                        continue
+                    if not all(
+                        query_tile.mask in dihedral_variants(source.mask)
+                        for query_tile, source in zip(
+                            query[position:destination],
+                            sources,
+                            strict=True,
+                        )
+                    ):
+                        continue
+                    frontier.append(
+                        (
+                            destination,
+                            compiled
+                            + tuple(
+                                frozenset(dihedral_variants(output.mask))
+                                for output in outputs
+                            ),
+                        )
                     )
-                )
-            targets = tuple(
-                target
-                for group in target_groups
-                for target in group
-            )
-            if not valid or len(targets) != len(answer):
+                    expansions += 1
+            if len(target_sequences) != 1:
+                continue
+            targets = next(iter(target_sequences))
+            if len(targets) != len(answer):
                 continue
             background = Counter(
                 cell for row in frame[answer[0].y :] for cell in row
