@@ -1,6 +1,6 @@
 # Reflector research insights and handoff
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 This is the conceptual handoff for the next research agent. It complements,
 but does not replace, `PLAN.md` (the authoritative continuation state) and
@@ -11,18 +11,17 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v82f, frozen source/candidate commit
-  `79a872ca0ed3fa40a98b185b3217e304d81dc68f`.
-- Accepted candidate: `candidate-40b2dad207199755`.
-- Local known-public-development score: **16.355448098096414 / 100**.
-- Progress: **39 / 183 levels across the 25 public-development games**.
+- Accepted agent: v84m.
+- Accepted candidate: `candidate-07d24ee8acf946c9`.
+- Local known-public-development score: **20.418940161588477 / 100**.
+- Progress: **47 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
 - Total actions: **9,185**.
-- Kaggle submissions: **1 pending** (`55113224`, frozen v65b).
-- Kaggle public score: **pending; not yet returned**.
+- Kaggle submissions: v65b `55113224` complete and v74 `55123277` pending.
+- Kaggle public score: **0.02 for frozen v65b only**.
 - Kaggle private score: **unavailable**.
-- V82f is accepted. Relative to v74, it changes only `tr87`, advancing that
-  game from 0/6 to 4/6 while exactly preserving every other outcome.
+- V84m is accepted. Relative to v82f, only `re86` and `tr87` change; all 23
+  other score/action vectors are exactly preserved.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem
@@ -340,6 +339,23 @@ re-grounded, the agent abstains instead of forcing a route. If it can, exact
 progress or contradiction supplies pragmatic credit. Failure avoidance is not
 folded into the same mutation because progress transport and viability
 learning have different falsifiers.
+
+The v85 experiment falsified that proposed naturality. The role-compressed
+word activated broadly and even improved `lp85`, but no game gained a level
+and `ft09` regressed sharply when an old successful word was rebound into a
+different phase. The 14-game mean fell from 36.4623931457 to 35.9812800045.
+Syntactic transport of a morphism is therefore weaker than a natural
+transformation: the required commuting square must include goal/phase
+semantics, not merely matching action roles.
+
+This negative result sharpens the next Piaget/Drescher move. Conserve the
+supported causal operators, but accommodate a small viability predicate from
+repeated terminal consequences. In hierarchical-RL terms, learn the initiation
+set's unsafe boundary before learning another option policy. In CSP terms,
+terminal edges become prospectively evidenced forbidden assignments. In
+causal-learning terms, authority requires repeated consequences across
+distinct concrete contexts, and specialist plans remain upstream of the
+avoidance filter.
 
 ## 2026-07-30 — clean restart and v75 translation algebra
 

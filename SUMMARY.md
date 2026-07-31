@@ -1,6 +1,6 @@
 # Reflector current summary
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 ## Best verified result
 
@@ -315,7 +315,7 @@ allowance had already been consumed by v74 submission `55123277`, which is
 submission `55113224` is now `COMPLETE` with Kaggle public score **0.02**;
 its private score remains unavailable.
 
-## Current experiment: compressed backward progress credit
+## Rejected experiment: compressed backward progress credit
 
 A new immutable audit of all 25 v84m cognitive streams records 43 observable
 level transitions and 75 failure/reset events. All failures followed generic
@@ -327,11 +327,26 @@ untried selections (34 failures). Report
 SHA-256
 `c5dd2d22b0fc21ac5652be900745da835ff23e09a39f4f1923aa5c1bd07b9614`.
 
-The next minimal offspring activates the existing exact-off shortest-progress
-compiler. After a level advance it finds only the shortest observed non-reset
+V85 activated the existing exact-off shortest-progress compiler. After a level
+advance it found only the shortest observed non-reset
 path, replaces consecutive identical grounded action roles with repetition
 counts, and may transport that bounded option into the next level for at most
 64 actions. It stores no game identifier, frame, coordinate route, or public
-solution. The falsifier is strict: it must shorten or extend progress without
-regressing any accepted vector. Failure-conditioned avoidance remains a
-separate future hypothesis.
+solution.
+
+The 14-game isolated falsifier rejected it. No game gained a completed level
+and the mean fell from **36.4623931457** to **35.9812800045**. `lp85`
+improved from 38.7914456145 to 41.8310410985, but `ft09` regressed from
+99.0037508892 to 89.2285714286 as its fifth level expanded from 94 to 250
+actions. `tr87` retained its score but changed its action vector. The feature
+was genuinely operative: several games reached the 64-selection cap, including
+`ft09`. V85 is rejected and v84m remains accepted. Report
+[`reports/experimental-v85-progress-path-targeted-r1-400.json`](reports/experimental-v85-progress-path-targeted-r1-400.json),
+SHA-256
+`be3f766396ef938ad7bb724078283ad32c806a255220cf1ce893a21bd8a3366f`.
+
+The causal lesson is that a successful morphism word is not automatically a
+natural transformation across levels: role-level rebinding preserved syntax
+but not the changed goal or phase. Failure-conditioned viability learning
+remains a separate hypothesis and must be keyed to prospectively repeated
+terminal transitions, not inferred from this rejected replay.

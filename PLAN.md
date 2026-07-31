@@ -1,6 +1,6 @@
 # Reflector persistent plan
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 Conceptual research handoff: read `INSIGHTS.md` after this plan and before
 starting the next experiment. It records the current external ARC-AGI-3
@@ -318,7 +318,7 @@ Required gates are:
 2. record notebook version, submission ID, and pending/terminal state;
 3. keep local, Kaggle public, and Kaggle private scores separate.
 
-## Current experiment: v85 compressed progress-path transport
+## Rejected experiment: v85 compressed progress-path transport
 
 The immutable v84m cognitive audit contains 43 observed progress events and 75
 failure/reset events across all 25 games. Generic exploration owns every
@@ -344,6 +344,39 @@ ID, frame, fixed coordinate, or offline replay enters the candidate. First run
 partially solved games plus complete preservation sentinels. Reject on any
 accepted score/action regression. Do not combine failure avoidance with this
 offspring; that remains a distinct causal hypothesis.
+
+The 14-game isolated gate rejected v85. It added no completed level, reduced
+the gate mean from **36.4623931457** to **35.9812800045**, and regressed
+`ft09` from `[4,7,14,16,94,27]` to `[4,7,14,16,250,26]`. The mechanism was
+not inert: `ft09`, `lf52`, `lp85`, and `tn36` reached the 64-selection cap.
+`lp85` improved locally to 41.8310410985 and `tr87` changed its action vector
+at equal score, but neither compensates for an accepted regression. Immutable
+report `reports/experimental-v85-progress-path-targeted-r1-400.json`,
+SHA-256
+`be3f766396ef938ad7bb724078283ad32c806a255220cf1ce893a21bd8a3366f`.
+Keep `enable_shortest_progress_path_reuse` exact-off.
+
+## Next experiment: terminal-edge viability credit
+
+The audit's strongest independent signal remains the 75 failures owned by
+generic exploration. Test a bounded, prospective failure model rather than
+another successful-route replay:
+
+1. observe terminal predecessor/action transitions without changing policy;
+2. quotient only by an existing nuisance-normalized structural state and a
+   grounded action role;
+3. require the same abstract terminal edge in at least two distinct concrete
+   predecessor states before it gains avoidance authority;
+4. retire or scope authority at level change and cap retained evidence;
+5. use the model only to reject an otherwise generic exploration proposal,
+   never to preempt a grounded specialist option;
+6. validate exact-off preservation and synthetic alias/contradiction controls
+   before a real-game gate.
+
+The hypothesis is falsified if the abstraction aliases safe and terminal
+edges, fails to activate on repeated-death games, or regresses any accepted
+completion. It targets viability, not goal inference, so reduced failures
+without progress are diagnostic evidence rather than a promotion.
 
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
