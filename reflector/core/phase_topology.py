@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict, deque
 from dataclasses import dataclass, field
+from heapq import heappop, heappush
 from math import gcd
 from typing import Iterable, Literal
 
 type Frame = tuple[tuple[int, ...], ...]
 type Point = tuple[int, int]
 type Pattern = tuple[int, int, tuple[Point, ...]]
+type BBox = tuple[int, int, int, int]
 type ResourceKey = tuple[int, tuple[int, int, int, int], tuple[Point, ...]]
 type MaskSignature = tuple[tuple[int, int, int], ...]
 type RetentionScope = Literal["cross-level", "same-level-retry"]
@@ -263,6 +265,112 @@ def embedded_patterns(frame: Frame) -> tuple[EmbeddedPattern, ...]:
     )
 
 
+def _bbox_contains(outer: BBox, inner: BBox) -> bool:
+    return (
+        outer[0] <= inner[0]
+        and outer[1] <= inner[1]
+        and outer[2] >= inner[2]
+        and outer[3] >= inner[3]
+    )
+
+
+def _bboxes_overlap(left: BBox, right: BBox) -> bool:
+    return (
+        left[0] <= right[2]
+        and right[0] <= left[2]
+        and left[1] <= right[3]
+        and right[1] <= left[3]
+    )
+
+
+def _complementary_display_pairs(
+    patterns: Iterable[EmbeddedPattern],
+) -> tuple[tuple[EmbeddedPattern, EmbeddedPattern], ...]:
+    """Find exact color-dual presentations of one bounded binary partition."""
+
+    items = tuple(patterns)
+    pairs = []
+    for index, left in enumerate(items):
+        for right in items[index + 1 :]:
+            width, height = left.pattern[:2]
+            if (
+                left.scale != right.scale
+                or right.pattern[:2] != (width, height)
+                or left.host_color != right.glyph_color
+                or left.glyph_color != right.host_color
+                or not (
+                    _bbox_contains(left.host_bbox, right.host_bbox)
+                    or _bbox_contains(right.host_bbox, left.host_bbox)
+                )
+            ):
+                continue
+            left_cells = set(left.pattern[2])
+            right_cells = set(right.pattern[2])
+            logical_grid = {
+                (x, y) for y in range(height) for x in range(width)
+            }
+            if left_cells.isdisjoint(right_cells) and (
+                left_cells | right_cells
+            ) == logical_grid:
+                pairs.append((left, right))
+    return tuple(pairs)
+
+
+def _select_partition_view(
+    patterns: dict[BBox, EmbeddedPattern],
+    hosts: tuple[BBox, ...],
+    goal: EmbeddedPattern,
+) -> EmbeddedPattern | None:
+    """Choose one presentation by a unique structural CSP optimum."""
+
+    candidates = tuple(
+        patterns[host]
+        for host in hosts
+        if (
+            host in patterns
+            and patterns[host].pattern[:2] == goal.pattern[:2]
+            and patterns[host].host_color == goal.host_color
+        )
+    )
+    if len(candidates) != 1:
+        return None
+    return candidates[0]
+
+
+def _ground_complementary_display(
+    patterns: Iterable[EmbeddedPattern],
+) -> tuple[tuple[BBox, ...], EmbeddedPattern, EmbeddedPattern] | None:
+    """Ground a unique current binary partition against one external target."""
+
+    items = tuple(patterns)
+    pairs = _complementary_display_pairs(items)
+    if len(pairs) != 1:
+        return None
+    pair = pairs[0]
+    pair_hosts = tuple(sorted(item.host_bbox for item in pair))
+    arity = pair[0].pattern[:2]
+    external = tuple(
+        item
+        for item in items
+        if item.host_bbox not in pair_hosts
+        and item.pattern[:2] == arity
+        and all(
+            not _bboxes_overlap(item.host_bbox, host) for host in pair_hosts
+        )
+    )
+    if len(external) != 1:
+        return None
+    goal = external[0]
+    current = _select_partition_view(
+        {item.host_bbox: item for item in pair},
+        pair_hosts,
+        goal,
+    )
+    if current is None:
+        return None
+    return pair_hosts, current, goal
+
+
 def _covers(anchor: Point, mask: tuple[Point, ...], cells: Iterable[Point]) -> bool:
     occupied = {(anchor[0] + x, anchor[1] + y) for x, y in mask}
     return set(cells) <= occupied
@@ -378,6 +486,7 @@ class PhaseTopologyPlanner:
     current_anchor: Point | None = None
     traversable_colors: set[int] = field(default_factory=set)
     current_host: tuple[int, int, int, int] | None = None
+    current_view_hosts: tuple[BBox, ...] = ()
     current_pattern: Pattern | None = None
     current_glyph_color: int | None = None
     goal_host: tuple[int, int, int, int] | None = None
@@ -398,6 +507,8 @@ class PhaseTopologyPlanner:
     pending_anchor: Point | None = None
     pending_source: Point | None = None
     pending_action: int | None = None
+    pending_resource_back_edge: tuple[Point, int] | None = None
+    resource_exit_edges: set[tuple[Point, int]] = field(default_factory=set)
     operator_applications: int = 0
     contextual_transitions: int = 0
     budget_color: int | None = None
@@ -410,6 +521,7 @@ class PhaseTopologyPlanner:
     consumed_resources: set[ResourceKey] = field(default_factory=set)
     active_resource: ResourceKey | None = None
     pending_resource: ResourceKey | None = None
+    resource_rearm_cells: tuple[Point, ...] = ()
     resource_resets: int = 0
     horizon_resets: int = 0
     selections: int = 0
@@ -458,6 +570,7 @@ class PhaseTopologyPlanner:
         self.current_anchor = None
         self.traversable_colors.clear()
         self.current_host = None
+        self.current_view_hosts = ()
         self.current_pattern = None
         self.current_glyph_color = None
         self.goal_host = None
@@ -475,6 +588,8 @@ class PhaseTopologyPlanner:
         self.pending_anchor = None
         self.pending_source = None
         self.pending_action = None
+        self.pending_resource_back_edge = None
+        self.resource_exit_edges.clear()
         self.operator_applications = 0
         self.contextual_transitions = 0
         self.budget_color = None
@@ -487,6 +602,7 @@ class PhaseTopologyPlanner:
         self.consumed_resources.clear()
         self.active_resource = None
         self.pending_resource = None
+        self.resource_rearm_cells = ()
         self.resource_resets = 0
         self.horizon_resets = 0
         self.selections = 0
@@ -723,6 +839,7 @@ class PhaseTopologyPlanner:
                 if len(contacted) == 1:
                     contacted_key = _resource_key(contacted[0])
                     self.consumed_resources.add(contacted_key)
+                    self.resource_rearm_cells = contacted[0].cells
                     if self.active_resource == contacted_key:
                         self.active_resource = None
                     self.resource_resets += 1
@@ -731,6 +848,22 @@ class PhaseTopologyPlanner:
                     self.horizon_resets += 1
                     self.consumed_resources.clear()
                     self.active_resource = None
+                    self.resource_rearm_cells = ()
+        after_resource_keys = {
+            _resource_key(item) for item in after_resources
+        }
+        if (
+            not horizon_reset
+            and self.consumed_resources
+            and self.consumed_resources <= after_resource_keys
+        ):
+            horizon_reset = True
+            self.horizon_resets += 1
+            self.consumed_resources.clear()
+            self.active_resource = None
+            self.resource_rearm_cells = ()
+            self.resource_exit_edges.clear()
+            self.pending_resource_back_edge = None
         self.resource_candidates = tuple(
             item
             for item in after_resources
@@ -766,11 +899,17 @@ class PhaseTopologyPlanner:
         horizon_reset = self._observe_temporal_resources(before, after, motion)
         if horizon_reset:
             self.goal_latched = False
+            self.active_operator = None
+            self.operator_applications = 0
+            self.selections = 0
+            self.resource_exit_edges.clear()
+            self.pending_resource_back_edge = None
         if progressed:
             self.confirmations += int(self.pending_action is not None)
             self.pending_anchor = None
             self.pending_source = None
             self.pending_action = None
+            self.pending_resource_back_edge = None
             self.diagnostic = "terminal-predicate-confirmed"
             return
         predicted_transition = (
@@ -829,6 +968,13 @@ class PhaseTopologyPlanner:
                 self.diagnostic = "predicted-anchor-transition-blocked"
             else:
                 self.confirmations += 1
+        if self.pending_resource_back_edge is not None:
+            if (
+                predicted_transition
+                and len(self.resource_exit_edges) < self.max_resources
+            ):
+                self.resource_exit_edges.add(self.pending_resource_back_edge)
+            self.pending_resource_back_edge = None
         self.pending_anchor = None
         self.pending_source = None
         self.pending_action = None
@@ -887,6 +1033,19 @@ class PhaseTopologyPlanner:
         before_patterns = {item.host_bbox: item for item in embedded_patterns(before)}
         after_patterns = {item.host_bbox: item for item in embedded_patterns(after)}
         self.pattern_candidates = tuple(after_patterns.values())
+        if self.current_host is None or self.goal_host is None:
+            grounding = _ground_complementary_display(after_patterns.values())
+            if grounding is not None:
+                view_hosts, current, goal = grounding
+                self.current_view_hosts = view_hosts
+                self.current_host = current.host_bbox
+                self.current_pattern = current.pattern
+                self.current_glyph_color = current.glyph_color
+                self.goal_host = goal.host_bbox
+                self.goal_pattern = goal.pattern
+                self.goal_glyph_color = goal.glyph_color
+                self.goal_cells = goal.glyph_cells
+                self.diagnostic = "complementary-display-bundle-grounded"
         changed = tuple(
             (before_patterns[host], after_patterns[host])
             for host in set(before_patterns) & set(after_patterns)
@@ -906,6 +1065,38 @@ class PhaseTopologyPlanner:
             ...,
         ]
         if (
+            self.current_view_hosts
+            and self.goal_host in after_patterns
+            and (
+                previous_view := _select_partition_view(
+                    before_patterns,
+                    self.current_view_hosts,
+                    after_patterns[self.goal_host],
+                )
+            )
+            is not None
+            and (
+                next_view := _select_partition_view(
+                    after_patterns,
+                    self.current_view_hosts,
+                    after_patterns[self.goal_host],
+                )
+            )
+            is not None
+            and (
+                previous_view.pattern != next_view.pattern
+                or previous_view.glyph_color != next_view.glyph_color
+                or previous_view.host_color != next_view.host_color
+            )
+        ):
+            qualified_changes = (
+                (
+                    previous_view,
+                    next_view,
+                    after_patterns[self.goal_host],
+                ),
+            )
+        elif (
             stable_factor_bundle
             and self.current_host in before_patterns
             and self.current_host in after_patterns
@@ -973,6 +1164,24 @@ class PhaseTopologyPlanner:
                     self.active_operator = None
             self.operator_applications += 1
             self.diagnostic = "operator-induced-factor-transition"
+        elif self.current_view_hosts and self.goal_host in after_patterns:
+            goal = after_patterns[self.goal_host]
+            current_view = _select_partition_view(
+                after_patterns,
+                self.current_view_hosts,
+                goal,
+            )
+            if current_view is not None:
+                self.current_host = current_view.host_bbox
+                self.current_pattern = current_view.pattern
+                self.current_glyph_color = current_view.glyph_color
+                self.goal_pattern = goal.pattern
+                self.goal_glyph_color = goal.glyph_color
+                self.goal_cells = goal.glyph_cells
+                self.goal_latched = self.goal_latched or (
+                    current_view.pattern == goal.pattern
+                    and current_view.glyph_color == goal.glyph_color
+                )
         elif self.current_host in after_patterns:
             current = after_patterns[self.current_host]
             self.current_pattern = current.pattern
@@ -1073,7 +1282,27 @@ class PhaseTopologyPlanner:
                 sorted(cell for index in group for cell in small[index].cells)
             )
             colors = {small[index].color for index in group}
-            if 2 <= len(cells) < len(self.mask) and len(colors) >= 2:
+            logical_arity = (
+                self.goal_pattern[:2] if self.goal_pattern is not None else None
+            )
+            sparse_factor_morphism = False
+            if (
+                factored_scene
+                and len(colors) == 1
+                and logical_arity is not None
+            ):
+                width = max(x for x, _y in cells) - min(x for x, _y in cells) + 1
+                height = max(y for _x, y in cells) - min(
+                    y for _x, y in cells
+                ) + 1
+                sparse_factor_morphism = (
+                    (width, height) == logical_arity
+                    and len(cells) < width * height
+                )
+            if (
+                2 <= len(cells) < len(self.mask)
+                and (len(colors) >= 2 or sparse_factor_morphism)
+            ):
                 groups.append(cells)
         discovered = tuple(sorted(set(groups)))
         if factored_scene and discovered:
@@ -1115,6 +1344,30 @@ class PhaseTopologyPlanner:
         )
         return self.current_pattern == self.goal_pattern and palette_equal
 
+    def _is_sparse_arity_candidate(
+        self,
+        frame: Frame,
+        candidate: tuple[Point, ...],
+    ) -> bool:
+        if not candidate or self.goal_pattern is None:
+            return False
+        width = max(x for x, _y in candidate) - min(
+            x for x, _y in candidate
+        ) + 1
+        height = max(y for _x, y in candidate) - min(
+            y for _x, y in candidate
+        ) + 1
+        visible_colors = {
+            frame[y][x]
+            for x, y in candidate
+            if 0 <= y < len(frame) and 0 <= x < len(frame[y])
+        }
+        return (
+            (width, height) == self.goal_pattern[:2]
+            and len(candidate) < width * height
+            and len(visible_colors) == 1
+        )
+
     def _select_operator_candidate(self, frame: Frame) -> None:
         if not self.operator_candidates:
             return
@@ -1139,6 +1392,7 @@ class PhaseTopologyPlanner:
         )
         if needed_role == "complete":
             return
+        both_factors_differ = not palette_equal and not shape_equal
         eligible = []
         for candidate in self.operator_candidates:
             effects = self.operator_effects.get(candidate, frozenset())
@@ -1159,12 +1413,24 @@ class PhaseTopologyPlanner:
                 self.current_anchor is not None
                 and _covers(self.current_anchor, self.mask, candidate)
             ):
-                eligible.append((len(path), candidate))
+                sparse_arity_hypothesis = (
+                    bool(self.current_view_hosts)
+                    and both_factors_differ
+                    and not effects
+                    and self._is_sparse_arity_candidate(frame, candidate)
+                )
+                eligible.append(
+                    (
+                        int(not sparse_arity_hypothesis),
+                        len(path),
+                        candidate,
+                    )
+                )
         if eligible:
             self.operator_cells = min(
                 eligible,
-                key=lambda item: (item[0], item[1]),
-            )[1]
+                key=lambda item: (item[0], item[1], item[2]),
+            )[2]
 
     def _target_anchors(self, cells: tuple[Point, ...]) -> tuple[Point, ...]:
         if not cells or not self.mask or self.current_anchor is None:
@@ -1236,8 +1502,56 @@ class PhaseTopologyPlanner:
         start: Point,
         targets: set[Point],
         special_cells: frozenset[Point] = frozenset(),
+        prefer_fewer_contextual: bool = False,
     ) -> tuple[int, ...]:
         if not targets:
+            return ()
+        if prefer_fewer_contextual:
+            risk_queue: list[tuple[int, int, tuple[int, ...], Point]] = [
+                (0, 0, (), start)
+            ]
+            best = {start: (0, 0)}
+            expansions = 0
+            while risk_queue and expansions < self.max_anchors:
+                contextual_cost, length, path, anchor = heappop(risk_queue)
+                if best.get(anchor) != (contextual_cost, length):
+                    continue
+                expansions += 1
+                if anchor in targets:
+                    self.search_expansions += expansions
+                    return path
+                for action_id, (dx, dy) in sorted(self.action_effects.items()):
+                    key = anchor, action_id
+                    contextual = self.contextual_edges.get(key)
+                    if key in self.resource_exit_edges or (
+                        contextual is None and key in self.blocked_edges
+                    ):
+                        continue
+                    neighbor = (
+                        contextual
+                        if contextual is not None
+                        else (anchor[0] + dx, anchor[1] + dy)
+                    )
+                    if not self._valid_anchor(
+                        frame,
+                        neighbor,
+                        special_cells=special_cells,
+                    ):
+                        continue
+                    cost = (
+                        contextual_cost + int(contextual is not None),
+                        length + 1,
+                    )
+                    if cost >= best.get(neighbor, (1_000_000, 1_000_000)):
+                        continue
+                    best[neighbor] = cost
+                    heappush(
+                        risk_queue,
+                        (*cost, (*path, action_id), neighbor),
+                    )
+            self.search_expansions += expansions
+            if expansions >= self.max_anchors:
+                self.cap_failure = "anchor-search-cap"
             return ()
         queue: deque[tuple[Point, tuple[int, ...]]] = deque([(start, ())])
         seen = {start}
@@ -1250,7 +1564,10 @@ class PhaseTopologyPlanner:
                 return path
             for action_id, (dx, dy) in sorted(self.action_effects.items()):
                 contextual = self.contextual_edges.get((anchor, action_id))
-                if contextual is None and (anchor, action_id) in self.blocked_edges:
+                if (anchor, action_id) in self.resource_exit_edges or (
+                    contextual is None
+                    and (anchor, action_id) in self.blocked_edges
+                ):
                     continue
                 neighbor = (
                     contextual
@@ -1304,6 +1621,11 @@ class PhaseTopologyPlanner:
             start=source,
             targets=targets,
             special_cells=frozenset(special_cells),
+            prefer_fewer_contextual=(
+                bool(self.current_view_hosts)
+                and bool(self.resource_exit_edges)
+                and not self.resource_candidates
+            ),
         )
 
     def _endpoint(self, start: Point, path: tuple[int, ...]) -> Point:
@@ -1334,6 +1656,7 @@ class PhaseTopologyPlanner:
             if (
                 action_id not in legal_action_ids
                 or (self.current_anchor, action_id) in self.blocked_edges
+                or (self.current_anchor, action_id) in self.resource_exit_edges
                 or not self._valid_anchor(frame, neighbor)
                 or _covers(neighbor, self.mask, self.operator_cells)
             ):
@@ -1349,6 +1672,38 @@ class PhaseTopologyPlanner:
             return ()
         return min(candidates, key=lambda path: (len(path), path))
 
+    def _leave_contact_path(
+        self,
+        frame: Frame,
+        cells: tuple[Point, ...],
+        legal_action_ids: tuple[int, ...],
+    ) -> tuple[int, ...]:
+        if self.current_anchor is None:
+            return ()
+        candidates = []
+        for action_id, (dx, dy) in sorted(self.action_effects.items()):
+            contextual = self.contextual_edges.get(
+                (self.current_anchor, action_id)
+            )
+            neighbor = (
+                contextual
+                if contextual is not None
+                else (
+                    self.current_anchor[0] + dx,
+                    self.current_anchor[1] + dy,
+                )
+            )
+            if (
+                action_id not in legal_action_ids
+                or (self.current_anchor, action_id) in self.blocked_edges
+                or (self.current_anchor, action_id) in self.resource_exit_edges
+                or not self._valid_anchor(frame, neighbor)
+                or _covers(neighbor, self.mask, cells)
+            ):
+                continue
+            candidates.append((action_id,))
+        return min(candidates) if candidates else ()
+
     def _resource_option(
         self,
         frame: Frame,
@@ -1356,6 +1711,7 @@ class PhaseTopologyPlanner:
         *,
         remaining: int,
         horizon: int,
+        prefer_nearest: bool = False,
     ) -> tuple[Component, tuple[int, ...]] | None:
         """Choose the latest reachable reset whose post-reset suffix is feasible."""
 
@@ -1381,7 +1737,7 @@ class PhaseTopologyPlanner:
         resource, path, _suffix = min(
             feasible,
             key=lambda item: (
-                -len(item[1]),
+                len(item[1]) if prefer_nearest else -len(item[1]),
                 len(item[2]),
                 item[0].bbox,
             ),
@@ -1440,6 +1796,20 @@ class PhaseTopologyPlanner:
         path: tuple[int, ...]
         selected_resource: Component | None = None
 
+        resource_rearm_active = (
+            bool(self.resource_rearm_cells)
+            and bool(self.current_view_hosts)
+            and bool(self.operator_effects)
+            and self.contextual_transitions > 0
+            and self.current_anchor is not None
+            and _covers(
+                self.current_anchor,
+                self.mask,
+                self.resource_rearm_cells,
+            )
+        )
+        if self.resource_rearm_cells and not resource_rearm_active:
+            self.resource_rearm_cells = ()
         active = next(
             (
                 resource
@@ -1448,11 +1818,19 @@ class PhaseTopologyPlanner:
             ),
             None,
         )
-        if self.active_resource is not None and active is None:
+        if resource_rearm_active:
+            target_cells = self.resource_rearm_cells
+            path = self._leave_contact_path(
+                frame,
+                target_cells,
+                legal_action_ids,
+            )
+            mode = "resource-rearm"
+        elif self.active_resource is not None and active is None:
             self.active_resource = None
             self.diagnostic = "active-resource-role-disappeared"
             return None
-        if active is not None:
+        elif active is not None:
             selected_resource = active
             target_cells = active.cells
             path = self._path(frame, target_cells)
@@ -1520,11 +1898,34 @@ class PhaseTopologyPlanner:
             else:
                 path = self._path(frame, target_cells)
                 mode = "operator"
-                unknown_factor_target = (
-                    len(self.operator_candidates) > 1
+                sparse_information_probe = (
+                    bool(self.current_view_hosts)
+                    and self.current_pattern is not None
+                    and self.goal_pattern is not None
+                    and self.current_pattern != self.goal_pattern
+                    and self.current_glyph_color is not None
+                    and self.goal_glyph_color is not None
+                    and self.current_glyph_color != self.goal_glyph_color
                     and target_cells not in self.operator_effects
-                    and bounded_remaining < bounded_horizon
+                    and self._is_sparse_arity_candidate(frame, target_cells)
+                )
+                contextual_resource_chain = (
+                    bool(self.current_view_hosts)
+                    and bool(self.operator_effects)
+                    and target_cells not in self.operator_effects
+                    and self.contextual_transitions > 0
+                )
+                unknown_factor_target = (
+                    target_cells not in self.operator_effects
                     and self.active_operator is None
+                    and not sparse_information_probe
+                    and (
+                        (
+                            len(self.operator_candidates) > 1
+                            and bounded_remaining < bounded_horizon
+                        )
+                        or contextual_resource_chain
+                    )
                 )
                 if (
                     temporal_grounded
@@ -1540,6 +1941,7 @@ class PhaseTopologyPlanner:
                             self.operator_cells,
                             remaining=bounded_remaining,
                             horizon=bounded_horizon,
+                            prefer_nearest=contextual_resource_chain,
                         )
                     )
                     is not None
@@ -1575,6 +1977,18 @@ class PhaseTopologyPlanner:
             ),
         )
         self.pending_action = action_id
+        self.pending_resource_back_edge = None
+        if mode == "resource-rearm":
+            inverse_actions = tuple(
+                candidate
+                for candidate, effect in self.action_effects.items()
+                if effect == (-displacement[0], -displacement[1])
+            )
+            if len(inverse_actions) == 1:
+                self.pending_resource_back_edge = (
+                    self.pending_anchor,
+                    inverse_actions[0],
+                )
         self.pending_resource = (
             _resource_key(selected_resource) if selected_resource is not None else None
         )

@@ -5,37 +5,27 @@ Last updated: 2026-07-31
 ## Best verified result
 
 Reflector's best complete, process-isolated 25-game public-development result is
-**21.276083018731335 / 100**.
+**21.632592714022195 / 100**. This is the verified v99k inference result;
+candidate freezing and package validation are still in progress.
 
-- Candidate: `candidate-59010e6c00da94ac` (`v98`)
-- Frozen inference source: `d73027d`
-- Frozen candidate commit: `00c0039`
+- Candidate: v99k candidate identity pending freeze
+- Accepted parent: `candidate-59010e6c00da94ac` (`v98`)
 - Coverage: 25/25 games
-- Levels: **50/183**
+- Levels: **51/183**
 - Games with progress: **15/25**
 - Complete games: **3/25**
 - Actions: **9,185**
-- Report:
-  [`reports/official-isolated-v98-fibered-factored-quotient-400.json`](reports/official-isolated-v98-fibered-factored-quotient-400.json)
-- Candidate:
-  [`candidates/v98-fibered-factored-quotient-400.json`](candidates/v98-fibered-factored-quotient-400.json)
 - Report SHA-256:
-  `2860c7146a5dd5bffed0739ad013f1f302c87b3dcc49383b5b06a6f8346e7927`
+  `5e9d81c5f76a9e7124ff5abff96f8ac4cce106c51ba12350d4594a2f5524f82f`
 
-Relative to accepted v97, v98 changes exactly one game. `ls20` advances from
-2/7 at `[17,112,271,0,0,0,0]` to
-**3/7 at `[17,112,51,220,0,0,0]`**; all other 24 score/action/reset vectors
-and the 9,185-action total are exactly preserved. The aggregate gain is
-**+0.42857142857142705 points**. Target repeat, accepted-progress preservation,
-the complete-suite gate, and the quality gate pass. Exact export reproduces
-byte-for-byte, both network-disabled smoke paths pass, and the prize audit
-reports `technical_ready: true`. V98 is the accepted local package.
-Exact artifact SHA-256 values are candidate
-`cc4a7709d841cbab3f76b63562013b9d3c7f9f81750946171963667af6b6d0e9`,
-overlay
-`e4352d7faf21c41f67f5009952c5381e3a083a2fc086e511185b73432d9c7d0a`,
-and notebook
-`98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`.
+Relative to accepted v98, v99k changes exactly one game. `ls20` advances from
+3/7 at `[17,112,51,220,0,0,0]` to
+**4/7 at `[17,112,51,133,87,0,0]`**; all other 24 complete
+score/level/action/reset signatures and the 9,185-action total are exactly
+preserved. The aggregate gain is **+0.3565096952908604 points** and one level.
+Target repeat, accepted-progress preservation, and the complete-suite gate
+pass. V98 remains the accepted frozen package only until v99k clears the
+quality, exact-export, smoke, technical-audit, and Kaggle packaging gates.
 
 Kaggle submissions `55113224` (v65b) and `55123277` (v74) are complete at
 public score **0.02** each. Private v97 notebook version 1 completed but has no
@@ -46,6 +36,47 @@ and emitted a 2,648-byte `submission.parquet`, SHA-256
 Its competition submission request returned HTTP 400 under the same daily
 quota, so Kaggle created no v98 submission ID. Submit this completed version
 unchanged after the allowance resets.
+
+## Verified v99k full-suite breakthrough: complementary-display accommodation
+
+The first fresh-process v99k target run autonomously advances `ls20` through
+level 4. It scores **30.341313810842898** for that game at **4/7** levels with
+vector **`[17,112,51,133,87,0,0]`**. The accepted first three level lengths are
+exactly preserved; level 4 completes in 133 actions, and the remaining 87
+actions reach level 5.
+
+The new representation quotients two nested, color-dual 3×3 views into one
+binary-partition display while preserving the target's host/background role.
+A sparse same-arity glyph becomes an information hypothesis—not an assigned
+effect—and contact alone types it as a shape morphism. A separate multicolor
+operator is then learned as the palette morphism.
+
+The decisive control loop is hierarchical and causal:
+
+1. learn shape without spending a reset;
+2. order lower then upper reset resources in the contextual fiber;
+3. require confirmed resource exit and forbid its immediate inverse;
+4. minimize contextual-edge risk after the resource chain;
+5. when a failed terminal portal restores all consumed resources, recognize a
+   relational horizon reset and retry with the learned counterexample.
+
+On the second attempt, the agent retains contextual laws but restarts bounded
+option counters and completes the level. Focused transformed/ambiguity,
+resource-order, rearm, risk-search, and horizon-reset controls pass, as do
+focused Ruff and mypy. An independent fresh-process target repeat is exact at
+the same score, level vector, and 400 actions, so the deterministic target gate
+passes. The 15-game accepted-progress preservation gate also passes at
+**36.05432119003699**, **51 levels**, and **5,185 actions**: all fourteen
+non-`ls20` score/action/reset signatures are exact versus v98, and `ls20`
+alone gains level 4.
+
+The complete 25-game process-isolated suite also passes at
+**21.632592714022195/100**, **51/183 levels**, 15 games with progress, 3 games
+complete, and 9,185 actions. Its SHA-256 is
+`5e9d81c5f76a9e7124ff5abff96f8ac4cce106c51ba12350d4594a2f5524f82f`.
+All 24 non-target score/level/action/reset signatures are byte-for-value exact
+versus v98. Only quality, freezing, exact packaging, smoke/audit, and Kaggle
+remain before v99k becomes the accepted reproducible package.
 
 ## Provisional autonomous breakthrough: `ls20` level 3
 

@@ -68,6 +68,214 @@ generalization.
   `reflector/runtime/`, `reflector/research/`, and `reflector/evolution/`.
   Legacy top-level imports remain compatibility aliases.
 
+## Active experiment: v99 complementary-display quotient (preregistered)
+
+Parent v98 remains frozen and accepted. A public-wrapper-only diagnosis of
+`ls20` level 4 has isolated a representation failure, not an action-tuning
+failure:
+
+- the mutable display is exposed twice, as nested color-dual 3×3 views whose
+  occupied logical cells are disjoint and jointly cover the grid;
+- those two views are therefore presentations of one binary partition, not two
+  independent state variables;
+- a sparse single-color 3×3 glyph is a shape morphism, while the already
+  detected multicolor glyph is a palette morphism;
+- one shape contact followed by three palette contacts makes one presentation
+  exactly equal the unique fixed target in both normalized shape and glyph
+  color.
+
+This diagnosis used legal actions and the public game wrapper only. It did not
+inspect game implementation source and receives no score attribution.
+
+Pre-target specification:
+
+1. quotient a pair only when it is uniquely nested, has equal scale and logical
+   arity, swaps host/glyph colors, and its masks are exact complements;
+2. ground it against exactly one external same-arity display and require
+   exactly one presentation whose host/background color equals the external
+   display's host/background color;
+3. retain that host role and the quotient's host set across interventions,
+   rather than changing presentations merely because another mask becomes
+   shape-nearer to the goal;
+4. in that already grounded factored scene only, admit a sparse one-color
+   operator when its bounded pixel box equals the display's logical arity;
+5. abstain on multiple complementary pairs, multiple external goals, a tied
+   assignment, non-complementary masks, arity mismatch, or any existing cap;
+6. type shape and palette effects only after observed contact; do not infer an
+   effect from appearance.
+
+Falsifiers before any new target evaluation:
+
+- translated and bijectively recolored complementary displays ground to the
+  same structural relation;
+- changing the complementary mask cannot change the preserved host role or
+  manufacture a palette effect;
+- incomplete, overlapping, non-dual, and ambiguous presentations abstain;
+- a matching sparse stencil is proposed only inside the grounded factored
+  scene, while a wrong-arity stencil and the same glyph in an unfactored scene
+  are rejected;
+- existing phase-topology tests, exact-off behavior, Ruff, and focused mypy
+  remain clean.
+
+Accepted-trace cluster audit: `ls20` is the only one of 25 v98 games with both
+grounded phase and operative phase-topology selections (96 selections);
+`ka59` observes display changes without a grounded mover/operator, and the
+other 23 games never ground the phase. The new authority is therefore guarded
+by a conjunction absent from every non-target accepted trace. Promotion still
+requires a fresh target repeat, exact accepted-progress preservation, and the
+full process-isolated suite.
+
+The first v99 target run was exact v98 preservation at 3/7 and
+`[17,112,51,220,0,0,0]`, so it is not a breakthrough. Its trace falsified the
+original minimum-shape-distance representative: after a shape contact, the
+minimum changed from one complementary presentation to the other and a pure
+shape transition was mis-typed as both `shape` and `palette`. The host-role
+naturality rule above is the bounded v99a correction. It was specified before
+a v99a target run and must pass the same ambiguity, transformation, exact-off,
+and preservation gates.
+
+V99a again preserved 3/7 exactly, but it validated the revised causal model:
+one contact was typed `shape` only, three later contacts were typed `palette`,
+both resources were scheduled, and exact display equality was latched with no
+conflict. It arrived there with only six budget units and therefore failed the
+terminal route. The trace identifies eleven avoidable actions: the generic
+unknown-factor heuristic consumed a reset before probing a directly reachable
+operator. V99b preregisters one narrow HRL/CSP correction: for a grounded
+complementary display, an affordable path to an untyped operator is an
+information option and executes before a resource reset. Known typed options,
+infeasible paths, terminal options, non-complementary scenes, and all existing
+caps keep their prior scheduling. A synthetic control must show the direct
+probe winning over an otherwise feasible reset before another target run.
+
+V99b also preserved 3/7 exactly. It correctly delayed the reset, but proximity
+selected the multicolor candidate first. The predicted short path crossed
+several not-yet-known contextual portals and required 66 actions before the
+first effect, while the arity-matched sparse candidate had reached its first
+effect in 20 actions in v99a. V99c therefore preregisters a structural
+information prior, not an effect label: only while both display factors are
+wrong, both candidates are untyped, and a complementary display is grounded,
+prefer a uniquely single-color sparse candidate whose bounding box equals the
+logical display arity. Its role remains unknown until contact. If the cue is
+absent or ambiguous, retain bounded path-length selection. A transformed
+control must prove color-renaming invariance and that observed effect typing
+still overrides this prior.
+
+V99c preserved 3/7 but validated the sparse prior exactly: the first shape
+effect occurred at level action 21 with 21 budget units and zero resets, the
+same efficient prefix as the black-box diagnosis. The remaining failure
+falsified v99b's exemption breadth. It also let the later multicolor candidate
+bypass the resource CSP, producing a 49-action contextual-portal detour.
+V99d narrows the exemption to the sparse arity-matched information probe
+itself. Once that probe is typed—or when the selected unknown is not sparse—
+the original reset-before-unknown rule regains authority. A paired synthetic
+control must show direct execution for the sparse probe and reset scheduling
+for the subsequent untyped multicolor candidate.
+
+V99d again reached shape at level action 21, restored reset authority for the
+palette, and preserved 3/7. It still consumed only one of two resources. After
+that reset the scalar budget was full, so the CSP trusted an anchor-only route
+whose learned contextual portals were not Markovian in resource phase; the
+palette took 45 actions and equality arrived with two units. V99e
+preregisters the missing fiber: after one factor is causally typed and at
+least one contextual transition is known, keep chaining feasible remaining
+resources before an untyped second-factor option even when the scalar meter is
+full. This is bounded by the existing resource cap and requires a grounded
+complementary display, a learned first-factor effect, an untyped target, and
+directly observed contextual nonstationarity. Typed, non-contextual, and
+unfactored scenes retain the old scalar-budget rule.
+
+V99e used both resources but preserved 3/7 because it ordered them
+farther-first. The generic CSP deliberately chooses the latest reachable
+reset, which is sound under a stationary anchor graph; here it maximized
+exposure to phase-dependent portals and left a long lower-resource-to-palette
+suffix. V99f preregisters nearest-first ordering only for the contextual
+resource-chain branch. The ordinary scalar-budget CSP retains latest-first.
+The synthetic paired-resource control must distinguish the two rules by
+resource identity, not merely by the first action.
+
+V99f learned the intended shape, used lower then upper resources, and learned
+all three palette transitions, but equality still arrived with two units. The
+trace isolates an HRL option-boundary error: after the upper reset the next
+palette option started while the body still covered the consumed resource.
+The successful composition first leaves that contact downward. V99g
+preregisters a one-step resource-rearm suboption: direct observation of a
+unique consumed resource stores its cells; before any next option, leave the
+contact by the shortest valid primitive and clear the obligation once
+coverage ends. This mirrors the existing operator rearm, adds no game
+identity, and abstains if no valid exit exists. A synthetic control must prove
+the boundary action precedes the next factor option.
+
+V99g is rejected for preservation: unconditional resource rearm changed level
+2 from 112 to 114 actions and the run fell from 3/7 to 2/7. V99h restricts the
+boundary suboption to the evidence-bearing fiber that motivated it: a grounded
+complementary display, at least one learned factor effect, and at least one
+observed contextual transition. Otherwise any stale rearm obligation is
+cleared and v98 scheduling is exact. The focused control now includes those
+premises explicitly; the target must restore `[17,112,51,…]` before a level-4
+gain can count.
+
+V99h restores exact `[17,112,51,220,…]` preservation and executes the upper
+resource exit downward, but the next shortest-path plan immediately applies
+the inverse action and re-enters the consumed anchor. V99i preregisters a
+planner-only option constraint: after a resource exit is prospectively
+confirmed, forbid its exact destination/inverse-action back-edge for the
+remainder of that level. This is not learned as a causal obstacle, is stored
+separately from observed blocked edges, and is capped by `max_resources`.
+Failed exits add nothing. A synthetic transition control must confirm the
+constraint only after the predicted exit and show that the next option cannot
+immediately undo it.
+
+V99i confirms the forbidden inverse edge: after upper-resource exit the
+palette suffix begins with the diagnostic's `right, up, right, right`.
+Receding-horizon search then chooses a shorter contextual portal at `(34,15)`
+and re-enters the long loop. V99j preregisters lexicographic risk-aware search
+only after the grounded complementary resource chain is exhausted: minimize
+the number of contextual edges first, then primitive length. Ordinary
+pre-resource and non-complementary searches remain shortest-path BFS. This is
+a finite hierarchical cost algebra, not a coordinate rule. A synthetic graph
+must choose a longer all-ordinary path over a one-step contextual shortcut
+only when the risk flag is active.
+
+V99j still preserves 3/7 because the `(34,15), down` portal was genuinely
+unknown on first use. Crucially, that failure restores the initial display,
+full meter, and both consumed resources, but the scalar meter detector misses
+the reset when its connected-component topology changes. The planner then
+keeps zero resource candidates and 83/96 spent selections. V99k
+preregisters a relational horizon-reset witness: if every previously consumed
+resource identity visibly reappears together, clear consumption, resource
+exit constraints, active options, and per-horizon selection/application
+counters while retaining observed action and contextual laws. Partial
+reappearance abstains. This gives Piagetian accommodation a second attempt
+with the counterexample, still under the global 400-action and local caps.
+
+V99k passes the first target gate. Fresh-process `ls20` scores
+30.341313810842898 at 4/7 with
+`[17,112,51,133,87,0,0]`: all three accepted level lengths are exact, level 4
+completes in 133 actions, and the run reaches level 5. The relational
+resource-reappearance witness fires once, resets per-horizon option counters,
+retains the first attempt's contextual counterexample, and enables the
+successful second attempt. This is provisional target evidence. Next: exact
+target repeat, accepted-progress preservation with exact non-target vectors,
+the complete process-isolated suite, quality/export/package audit, then
+promotion and Kaggle submission of only the frozen artifact.
+
+The independent target repeat is exact at 30.341313810842898,
+`[17,112,51,133,87,0,0]`, and 400 actions. The deterministic target gate
+passes. The 15-game accepted-progress gate also passes at
+36.05432119003699, 51 levels, and 5,185 actions. Every non-`ls20`
+score/action/reset signature is exact versus v98; only the target gains level
+4.
+
+The complete 25-game process-isolated suite passes at
+**21.632592714022195/100**, 51/183 levels, 15 games with progress, 3 games
+complete, and 9,185 actions. Exactly one complete signature changes versus
+v98: `ls20` advances from 3/7 at `[17,112,51,220,0,0,0]` to 4/7 at
+`[17,112,51,133,87,0,0]`; all other 24 score/level/action/reset signatures are
+exact. Report SHA-256:
+`5e9d81c5f76a9e7124ff5abff96f8ac4cce106c51ba12350d4594a2f5524f82f`.
+The active gates are full quality, candidate freeze, exact export,
+network-disabled smoke, technical audit, and Kaggle submission.
+
 ## Active breakthrough: compile `ls20` level 3 as a fibered product CSP
 
 A legal public-wrapper diagnosis advances level 3 in 49 actions after the v97
