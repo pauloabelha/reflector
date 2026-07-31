@@ -20,32 +20,33 @@ service, database, or web server.
 Last verified: 2026-07-31
 
 > **Plain-language result:** Reflector has fully beaten **3 of 25 games**.
-> It has solved **49 of 183 levels across 15 games**. All 25 games were
+> It has solved **50 of 183 levels across 15 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | v97 full-suite result |
+| Metric | v98 full-suite result |
 | --- | ---: |
 | Complete games beaten | **3 / 25** |
 | Games with at least one solved level | **15 / 25** |
-| Levels solved | **49 / 183** |
-| Official local score | **20.847511590159908 / 100** |
+| Levels solved | **50 / 183** |
+| Official local score | **21.276083018731335 / 100** |
 | Games evaluated | **25 / 25** |
 | Total actions | **9,185** |
-| Frozen inference source | `b8677a2` |
-| Frozen candidate commit | `b8677a2` |
-| Candidate | `candidate-e59a92e72fbd1aef` |
+| Frozen inference source | `d73027d` |
+| Frozen candidate commit | `00c0039` |
+| Candidate | `candidate-59010e6c00da94ac` |
 | Kaggle submissions | **2**: `55113224` complete; `55123277` pending |
 | Kaggle public score | **0.02** for frozen v65b only |
 | Kaggle private score | **unavailable** |
 
-The score is about **20.85% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. Relative to v94b,
-v97 conserves a complete primitive action algebra across an explicit
-same-level retry only after a fresh commuting transition. This removes one
-failed `ls20` retry and improves level 2 from 240 to 112 actions. All other 24
-score/action/reset vectors are exactly preserved. The clean
+The score is about **21.28% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. Relative to v97,
+v98 learns sparse context-conditioned anchor morphisms, factors display state
+into palette and shape, and quotients overlapping cropped/full observations
+into one causal operator identity. This autonomously adds `ls20` level 3 in
+51 actions. All other 24 score/action/reset vectors are exactly preserved. The
+clean
 process-isolated result is in
-[the v97 public-development report](reports/official-isolated-v97-retry-action-algebra-400.json).
+[the v98 public-development report](reports/official-isolated-v98-fibered-factored-quotient-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -68,12 +69,13 @@ No v92 or v94b submission ID exists yet. The exact accepted v97 artifact is
 committed as private notebook `pauloabelha/reflector-arc-agi-3-v97` version 1,
 which completed and emitted `submission.parquet`. Its competition submission
 request returned HTTP 400 while v74 remains pending, so no v97 submission ID
-exists yet.
+exists yet. The exact accepted v98 artifact passes deterministic export and
+network-disabled smoke and is ready for its own Kaggle notebook commit.
 Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
-do not report the local 20.85 score as a Kaggle public or private score.
+do not report the local 21.28 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object

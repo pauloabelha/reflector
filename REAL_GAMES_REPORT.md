@@ -6,36 +6,37 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 3 of 25 public-development games.**
-> It has solved 49 of 183 levels across 15 games. The suite ran all 25 games,
+> It has solved 50 of 183 levels across 15 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | v97 full-suite result | Meaning |
+| Outcome metric | v98 full-suite result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **3 / 25** | `sb26`, `ft09`, and `cd82` were solved through their final levels. |
 | Games with progress | **15 / 25** | At least one level was solved in fifteen games. |
-| Levels solved | **49 / 183** | Eight in `sb26`; seven in `re86`; six each in `ft09`, `cd82`, and `lp85`; five in `tr87`; two each in `ar25` and `ls20`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **20.8475115902 / 100** | About **20.85%** of the 100-point scale on the known public-development games. |
+| Levels solved | **50 / 183** | Eight in `sb26`; seven in `re86`; six each in `ft09`, `cd82`, and `lp85`; five in `tr87`; three in `ls20`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **21.2760830187 / 100** | About **21.28%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
 | Kaggle submissions | **2** | V65b `55113224` is complete at public score **0.02**; v74 `55123277` is pending. V84m has a completed notebook but no submission ID due to the daily quota. |
 
 The current process-isolated result is
-[`reports/official-isolated-v97-retry-action-algebra-400.json`](reports/official-isolated-v97-retry-action-algebra-400.json),
+[`reports/official-isolated-v98-fibered-factored-quotient-400.json`](reports/official-isolated-v98-fibered-factored-quotient-400.json),
 SHA-256
-`918090d57d8a7547285d1b91dfebd968732482c076f055c7eecc5d003da9caee`.
-It identifies report source commit `872b1b6`, frozen inference/candidate commit
-`b8677a2`, candidate `candidate-e59a92e72fbd1aef`, and inference fingerprint
-`b06553316290d3e83db6d2d72c0c0c54daf16ecda152a571d25368d84f10f258`.
-The complete quality gate passes with 504 tests, 3 skips, Ruff, and mypy.
+`2860c7146a5dd5bffed0739ad013f1f302c87b3dcc49383b5b06a6f8346e7927`.
+It identifies report source commit `9f103af`, frozen inference source `d73027d`,
+candidate commit `00c0039`, candidate `candidate-59010e6c00da94ac`, and
+inference fingerprint
+`a692a9a9bbe29305abaa221327f38c79326847cd21df1445f059e5023a912e8f`.
+The complete quality gate passes with 507 tests, 3 skips, Ruff, and mypy.
 Two exact exports reproduce byte-for-byte, both network-disabled smoke paths
 pass, and the technical prize audit reports `technical_ready: true`. Exact
 SHA-256 values are candidate
-`2af160b278eaf5e00d374957c792fac7f45315550939d0ea68fc1fa864919841`,
+`cc4a7709d841cbab3f76b63562013b9d3c7f9f81750946171963667af6b6d0e9`,
 overlay
-`50563ae0c0bd29042c574abc0792c6c9c2381b1ea3dc68c6b4664fc539c11ab0`,
+`e4352d7faf21c41f67f5009952c5381e3a083a2fc086e511185b73432d9c7d0a`,
 and notebook
-`5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`.
-V97 is accepted.
+`98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`.
+V98 is accepted.
 
 ## Evaluation surfaces
 
@@ -56,8 +57,9 @@ V97 is accepted.
 | Target-only `ls20` run | v93 contextual phase/topology morphism, rejected | **3.5714285714 for one game** | exact accepted 1/7 vector `[17,383,0,0,0,0,0]`; 109 contextual-planner selections and two observed contextual transitions | representation improved, but latched display-host terminal predicate was false; no second level |
 | Black-box `ls20` level-2 diagnosis | temporal-resource option CSP, not a candidate | — | legal 45-action sequence advances level 2 after two delayed budget resets and three operator phases | falsifies v93's topology attribution and validates resource-constrained hierarchical scheduling; no autonomous score attribution |
 | Black-box `ls20` level-3 diagnosis | fibered product CSP, not a candidate | — | legal 49-action sequence advances level 3 after the v97 prefix: contextual teleport, R2, palette operator, R1, shape operator twice, terminal | proves the level factors anchor context, palette, shape, and temporal resources; autonomous validation pending |
-| Target-only `ls20` reruns | v98 observational-quotient offspring, provisional | **21.4285714286 for one game** | exact **3/7** at `[17,112,51,220,0,0,0]` twice; first two level lengths preserve v97; level 3 completes autonomously in 51 actions | deterministic target gate passes; overlapping cropped/full operator views are one causal identity; preservation pending |
-| Process-isolated accepted-progress preservation gate | v98 observational-quotient offspring, promotion candidate | **35.4601383646 gate mean** | 50 levels in 5,185 actions; all 14 non-`ls20` score/level/action/reset vectors exactly preserve v97 | target attribution and non-regression pass; complete 25-game run pending |
+| Target-only `ls20` reruns | v98 observational-quotient offspring, accepted | **21.4285714286 for one game** | exact **3/7** at `[17,112,51,220,0,0,0]` twice; first two level lengths preserve v97; level 3 completes autonomously in 51 actions | deterministic target gate passes; overlapping cropped/full operator views are one causal identity |
+| Process-isolated accepted-progress preservation gate | v98 observational-quotient offspring, accepted | **35.4601383646 gate mean** | 50 levels in 5,185 actions; all 14 non-`ls20` score/level/action/reset vectors exactly preserve v97 | target attribution and non-regression pass |
+| Complete process-isolated 25-game suite | v98 fibered/factored observational quotient, accepted | **21.2760830187 / 100** | 50/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v97 | all promotion, quality, exact-export, smoke, and technical-audit gates pass |
 | Target-only `ls20` run | v94 temporal-resource CSP, rejected | **3.5714285714 for one game** | exact accepted 1/7 vector `[17,383,0,0,0,0,0]`; learned four-cell cost, 21-action horizon, and two reset roles | causal model grounded, but receding-horizon replanning abandoned a selected reset option; v94b adds only bounded option atomicity |
 | Target-only `ls20` reruns | v94b atomic temporal-resource option, provisional gain | **5.9832589286 for one game** | **2/7** at exact `[17,240,143,0,0,0,0]` twice, with four resets each | deterministic first autonomous level-2 gain; preservation pending |
 | Process-isolated accepted-win preservation gate | v94b atomic temporal-resource option, promotion candidate | **34.4304508646 gate mean** | 49 levels in 5,185 actions; all 14 non-`ls20` vectors exactly preserve v92, while `ls20` alone gains level 2 | target attribution and non-regression pass; complete 25-game run pending |

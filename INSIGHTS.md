@@ -11,17 +11,17 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Fully artifact-gated accepted agent: v97
-  `candidate-e59a92e72fbd1aef`.
-- Local known-public-development score: **20.847511590159908 / 100**.
-- Progress: **49 / 183 levels across the 25 public-development games**.
+- Fully artifact-gated accepted agent: v98
+  `candidate-59010e6c00da94ac`.
+- Local known-public-development score: **21.276083018731335 / 100**.
+- Progress: **50 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
 - Total actions: **9,185**.
 - Kaggle submissions: v65b `55113224` complete and v74 `55123277` pending.
 - Kaggle public score: **0.02 for frozen v65b only**.
 - Kaggle private score: **unavailable**.
-- V97 passes target repeat, preservation, and the full suite. Relative to v94b,
-  only `ls20` changes; all 24 other
+- V98 passes target repeat, preservation, the full suite, quality, and exact
+  deployment gates. Relative to v97, only `ls20` changes; all 24 other
   score/action vectors are exactly preserved.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
@@ -56,7 +56,10 @@ forces accommodation.
 This produced a fresh autonomous `ls20` result of 3/7 with
 `[17,112,51,220,0,0,0]`, versus accepted v97's
 `[17,112,271,0,0,0,0]`. The target score doubled to 21.428571428571427.
-It remains provisional pending repeat and preservation gates.
+The result repeats exactly, preserves every non-target vector in both the
+15-game gate and complete suite, and lifts the 25-game score to
+21.276083018731335 with 50/183 levels. It remains provisional only until the
+quality and exact-deployment gates pass.
 
 ## 2026-07-31 — level 3: naturality is local and task state is factored
 

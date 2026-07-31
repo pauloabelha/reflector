@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ACCEPTED_REPORT = (
     ROOT
     / "reports"
-    / "official-isolated-v94b-atomic-temporal-resource-400.json"
+    / "official-isolated-v98-fibered-factored-quotient-400.json"
 )
 V69_ACCEPTED_REPORT = (
     ROOT

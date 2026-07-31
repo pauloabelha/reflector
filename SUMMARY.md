@@ -5,37 +5,37 @@ Last updated: 2026-07-31
 ## Best verified result
 
 Reflector's best complete, process-isolated 25-game public-development result is
-**20.847511590159908 / 100**.
+**21.276083018731335 / 100**.
 
-- Candidate: `candidate-e59a92e72fbd1aef` (`v97`)
-- Frozen inference source: `b8677a2`
-- Frozen candidate commit: `b8677a2`
+- Candidate: `candidate-59010e6c00da94ac` (`v98`)
+- Frozen inference source: `d73027d`
+- Frozen candidate commit: `00c0039`
 - Coverage: 25/25 games
-- Levels: **49/183**
+- Levels: **50/183**
 - Games with progress: **15/25**
 - Complete games: **3/25**
 - Actions: **9,185**
 - Report:
-  [`reports/official-isolated-v97-retry-action-algebra-400.json`](reports/official-isolated-v97-retry-action-algebra-400.json)
+  [`reports/official-isolated-v98-fibered-factored-quotient-400.json`](reports/official-isolated-v98-fibered-factored-quotient-400.json)
 - Candidate:
-  [`candidates/v97-retry-action-algebra-400.json`](candidates/v97-retry-action-algebra-400.json)
+  [`candidates/v98-fibered-factored-quotient-400.json`](candidates/v98-fibered-factored-quotient-400.json)
 - Report SHA-256:
-  `918090d57d8a7547285d1b91dfebd968732482c076f055c7eecc5d003da9caee`
+  `2860c7146a5dd5bffed0739ad013f1f302c87b3dcc49383b5b06a6f8346e7927`
 
-Relative to accepted v94b, v97 changes exactly one game. `ls20` remains 2/7
-but improves from `[17,240,143,0,0,0,0]` to
-**`[17,112,271,0,0,0,0]`**; all other 24 score/action/reset vectors and the
-9,185-action total are exactly preserved. The aggregate gain is
-**+0.18924107142857594 points**. Target repeat, accepted-win preservation, the
-complete-suite gate, and the 504-test quality gate pass. Exact export
-reproduces byte-for-byte, both network-disabled smoke paths pass, and the prize
-audit reports `technical_ready: true`. V97 is the accepted local package.
+Relative to accepted v97, v98 changes exactly one game. `ls20` advances from
+2/7 at `[17,112,271,0,0,0,0]` to
+**3/7 at `[17,112,51,220,0,0,0]`**; all other 24 score/action/reset vectors
+and the 9,185-action total are exactly preserved. The aggregate gain is
+**+0.42857142857142705 points**. Target repeat, accepted-progress preservation,
+the complete-suite gate, and the quality gate pass. Exact export reproduces
+byte-for-byte, both network-disabled smoke paths pass, and the prize audit
+reports `technical_ready: true`. V98 is the accepted local package.
 Exact artifact SHA-256 values are candidate
-`2af160b278eaf5e00d374957c792fac7f45315550939d0ea68fc1fa864919841`,
+`cc4a7709d841cbab3f76b63562013b9d3c7f9f81750946171963667af6b6d0e9`,
 overlay
-`50563ae0c0bd29042c574abc0792c6c9c2381b1ea3dc68c6b4664fc539c11ab0`,
+`e4352d7faf21c41f67f5009952c5381e3a083a2fc086e511185b73432d9c7d0a`,
 and notebook
-`5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`.
+`98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`.
 
 Private Kaggle notebook `pauloabelha/reflector-arc-agi-3-v97` version 1
 completed and emitted `submission.parquet`. The competition submission request
@@ -79,7 +79,18 @@ Report
 [`reports/experimental-v98-preservation-15games.json`](reports/experimental-v98-preservation-15games.json),
 SHA-256
 `7105c21fa79737d69f7f311cce978046f266ef85f6140ff8e67b78e4579e5828`.
-The complete 25-game gate is next.
+The complete 25-game process-isolated gate also passes at
+**21.276083018731335 / 100**, **50/183 levels**, 15/25 games with progress,
+3/25 complete games, and 9,185 actions. Coverage is complete at 25/25. The
+exact v97 comparison has only one difference: `ls20` changes from
+`[17,112,271,0,0,0,0]` to `[17,112,51,220,0,0,0]`; the other 24 complete
+score/action/reset vectors are identical. Report
+[`reports/official-isolated-v98-fibered-factored-quotient-400.json`](reports/official-isolated-v98-fibered-factored-quotient-400.json),
+SHA-256
+`2860c7146a5dd5bffed0739ad013f1f302c87b3dcc49383b5b06a6f8346e7927`.
+The complete quality gate passes with **507 tests and 3 skips**, Ruff and mypy
+clean. Two exact exports are byte-identical, both network-disabled smoke paths
+pass, and the prize audit reports `technical_ready: true`. V98 is accepted.
 
 ## New level-3 breakthrough: a product of contextual, palette, and shape morphisms
 

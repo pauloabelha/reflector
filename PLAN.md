@@ -24,27 +24,27 @@ generalization.
 - Branch: `codex/v74-fresh`
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
-- Last pushed participant-remote commit: `0e0f700`
-- Accepted candidate: `candidate-e59a92e72fbd1aef`
-- Accepted agent: Reflector v97
-- Frozen inference source commit: `b8677a2`
-- Frozen candidate commit: `b8677a2`
+- Last pushed participant-remote commit: `8c021be`
+- Accepted candidate: `candidate-59010e6c00da94ac`
+- Accepted agent: Reflector v98
+- Frozen inference source commit: `d73027d`
+- Frozen candidate commit: `00c0039`
 - Inference fingerprint:
-  `b06553316290d3e83db6d2d72c0c0c54daf16ecda152a571d25368d84f10f258`
+  `a692a9a9bbe29305abaa221327f38c79326847cd21df1445f059e5023a912e8f`
 - Verified public-development report:
-  `reports/official-isolated-v97-retry-action-algebra-400.json`
-- Verified score: `20.847511590159908`
+  `reports/official-isolated-v98-fibered-factored-quotient-400.json`
+- Verified score: `21.276083018731335`
 - Accepted coverage: 25/25 games, 9,185 actions
-- Verified completions: 49/183 levels across 15 games; 3/25 games complete
-- V97 complete-suite result:
-  `20.847511590159908`, 49/183 levels, 25/25 coverage, 9,185 actions;
-  all 24 non-target vectors exact versus v94b
-- V97 exact export hashes: candidate
-  `2af160b278eaf5e00d374957c792fac7f45315550939d0ea68fc1fa864919841`,
+- Verified completions: 50/183 levels across 15 games; 3/25 games complete
+- V98 complete-suite result:
+  `21.276083018731335`, 50/183 levels, 25/25 coverage, 9,185 actions;
+  all 24 non-target vectors exact versus v97
+- V98 exact export hashes: candidate
+  `cc4a7709d841cbab3f76b63562013b9d3c7f9f81750946171963667af6b6d0e9`,
   overlay
-  `50563ae0c0bd29042c574abc0792c6c9c2381b1ea3dc68c6b4664fc539c11ab0`,
+  `e4352d7faf21c41f67f5009952c5381e3a083a2fc086e511185b73432d9c7d0a`,
   notebook
-  `5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`
+  `98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`
 - Kaggle submissions: v65b `55113224` complete at public score `0.02`; v74
   `55123277` pending
 - V84m Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v84m`, version 1,
@@ -112,11 +112,22 @@ Immediate gate sequence:
 1. ~~exact fresh-process `ls20` repeat~~ — passed;
 2. ~~accepted-win preservation with exact non-target vector comparison~~ —
    passed: 50 levels, 5,185 actions, fourteen non-target vectors exact;
-3. frozen-source 25-game isolated suite;
-4. full tests, Ruff, mypy, exact export, offline smoke, and prize audit;
-5. promote and submit the exact Kaggle artifact only if every gate passes.
+3. ~~frozen-source 25-game isolated suite~~ — passed at
+   21.276083018731335, 50/183 levels, 25/25 coverage, 9,185 actions; all 24
+   non-target vectors exact;
+4. ~~full tests, Ruff, mypy, exact export, offline smoke, and prize audit~~ —
+   passed: 507 tests, 3 skips; Ruff/mypy clean; byte-identical exports; both
+   smoke paths and technical audit pass;
+5. promote and submit the exact Kaggle artifact only if every gate passes —
+   promoted; Kaggle publication is next.
 
-The accepted v97 package and score remain unchanged until that gate passes.
+V98 is accepted at 21.276083018731335/100.
+
+Full-suite report:
+`reports/official-isolated-v98-fibered-factored-quotient-400.json`, SHA-256
+`2860c7146a5dd5bffed0739ad013f1f302c87b3dcc49383b5b06a6f8346e7927`.
+No further gameplay mutation is permitted before the exact Kaggle artifact is
+committed and its submission attempt is recorded.
 
 ## Rejected experiment: v95 confirmed cross-level action algebra
 
