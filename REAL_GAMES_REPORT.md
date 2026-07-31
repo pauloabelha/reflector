@@ -6,41 +6,42 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 3 of 25 public-development games.**
-> It has solved 47 of 183 levels across 14 games. The suite ran all 25 games,
+> It has solved 48 of 183 levels across 15 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v84m result | Meaning |
+| Outcome metric | Accepted v92 result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **3 / 25** | `sb26`, `ft09`, and `cd82` were solved through their final levels. |
-| Games with progress | **14 / 25** | At least one level was solved in fourteen games. |
-| Levels solved | **47 / 183** | Eight in `sb26`; seven in `re86`; six each in `ft09`, `cd82`, and `lp85`; five in `tr87`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **20.4189401616 / 100** | About **20.42%** of the 100-point scale on the known public-development games. |
+| Games with progress | **15 / 25** | At least one level was solved in fifteen games. |
+| Levels solved | **48 / 183** | Eight in `sb26`; seven in `re86`; six each in `ft09`, `cd82`, and `lp85`; five in `tr87`; two in `ar25`; one each in `g50t`, `lf52`, `ls20`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **20.5617973044 / 100** | About **20.56%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
 | Kaggle submissions | **2** | V65b `55113224` is complete at public score **0.02**; v74 `55123277` is pending. V84m has a completed notebook but no submission ID due to the daily quota. |
 
 The current process-isolated result is
-[`reports/official-isolated-v84m-grouped-dihedral-400.json`](reports/official-isolated-v84m-grouped-dihedral-400.json),
+[`reports/official-isolated-v92-phase-topology-400.json`](reports/official-isolated-v92-phase-topology-400.json),
 SHA-256
-`4823d8a358e7798293887ec8eaafd96041b4a5655f7b4da9154b7a7894bfc7c7`.
+`0caf5a52474ac7f89703861fa81b52528b45f4f806ba623d689362fb852d4f9a`.
 It identifies frozen source commit
-`5be5c9c`, frozen candidate commit `f1232e6`, candidate
-`candidate-07d24ee8acf946c9`, and inference fingerprint
-`53729246c43ad6aadcc4fa4ba95a08510f0b200c83d08bd9ea3518816803e36d`.
-The complete quality gate passes with 461 tests, 3 skips, Ruff, and mypy.
-Both network-disabled smoke paths pass and the technical prize audit reports
+`89b6aa4`, frozen inference/candidate commit `e03fb30`, candidate
+`candidate-42dbfa39cba78041`, and inference fingerprint
+`32462ddff38fa9ba86691e66601adcef93a9147e0b02e5f219433435f9f54c1f`.
+The complete quality gate passes with 493 tests, 3 skips, Ruff, and mypy.
+The network-disabled smoke passes and the technical prize audit reports
 `technical_ready: true`. Exact export SHA-256 values are candidate
-`b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54`,
+`6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4`,
 overlay
-`7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19`,
+`7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731`,
 and notebook
-`875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064`.
+`c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`.
 
 ## Evaluation surfaces
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
-| Process-isolated official local suite | v84m accepted | **20.4189401616 / 100** | 3 games beaten; 47/183 levels across 14 games; 9,185 actions | full quality/export gates and exact v82f preservation on 23/23 non-target games; 25/25 coverage |
+| Process-isolated official local suite | v92 accepted | **20.5617973044 / 100** | 3 games beaten; 48/183 levels across 15 games; 9,185 actions | exact v84m preservation on 24/24 non-target games; full quality/export/smoke gates; 25/25 coverage |
+| Process-isolated official local suite | v84m former accepted parent | **20.4189401616 / 100** | 3 games beaten; 47/183 levels across 14 games; 9,185 actions | historical accepted checkpoint; superseded by v92 |
 | Process-isolated 14-game falsifier | v85 compressed progress-path transport, rejected | **35.9812800045 gate mean** | no added level; `lp85` improved, `ft09` regressed 99.0037508892→89.2285714286 | operative but rejected; accepted v84m remains unchanged |
 | Process-isolated 16-game failure gate | v86 whole-scene terminal viability, inert | **0.8455034772 gate mean** | exact v84m score/action preservation; 65 terminal proposals, 0 confirmations, 0 filters | representation too specific; not promoted |
 | Process-isolated 7-game causal gate | v87 grounded-role terminal viability, rejected | **0.0272981285 gate mean** | 4 confirmations and 7 filtered opportunities; exact v84m score/level-action vectors and failure counts | operative constraint with no goal gradient; not promoted |

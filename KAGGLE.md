@@ -1,17 +1,17 @@
 # Kaggle contract
 
-Audit date: 2026-07-27.
+Audit date: 2026-07-31.
 
-Current accepted export: v84m
-`candidate-07d24ee8acf946c9`, local public-development score
-`20.418940161588477 / 100`. Exact SHA-256 values:
+Current accepted export: v92
+`candidate-42dbfa39cba78041`, local public-development score
+`20.561797304445623 / 100`. Exact SHA-256 values:
 
 - candidate:
-  `b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54`;
+  `6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4`;
 - overlay:
-  `7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19`;
+  `7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731`;
 - notebook:
-  `875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064`.
+  `c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`.
 
 This is local evidence, not a Kaggle public or private score.
 
@@ -22,6 +22,8 @@ Submission status, 2026-07-31 UTC:
 - its competition submission request returned HTTP 400 because v74 submission
   `55123277` had already consumed the one-per-day allowance and is pending;
 - no v84m competition submission ID exists yet;
+- v92 is now the accepted local package and its exact notebook is ready for a
+  new Kaggle commit/submission when the daily allowance permits;
 - historical v65b submission `55113224` is complete with Kaggle public score
   `0.02`; the private score remains unavailable.
 

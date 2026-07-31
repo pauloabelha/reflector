@@ -11,17 +11,17 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v84m.
-- Accepted candidate: `candidate-07d24ee8acf946c9`.
-- Local known-public-development score: **20.418940161588477 / 100**.
-- Progress: **47 / 183 levels across the 25 public-development games**.
+- Accepted agent: v92.
+- Accepted candidate: `candidate-42dbfa39cba78041`.
+- Local known-public-development score: **20.561797304445623 / 100**.
+- Progress: **48 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
 - Total actions: **9,185**.
 - Kaggle submissions: v65b `55113224` complete and v74 `55123277` pending.
 - Kaggle public score: **0.02 for frozen v65b only**.
 - Kaggle private score: **unavailable**.
-- V84m is accepted. Relative to v82f, only `re86` and `tr87` change; all 23
-  other score/action vectors are exactly preserved.
+- V92 is accepted. Relative to v84m, only `ls20` changes; all 24 other
+  score/action vectors are exactly preserved.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
 one-level accommodations on known public games. The central unsolved problem

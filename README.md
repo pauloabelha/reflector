@@ -17,34 +17,34 @@ service, database, or web server.
 
 ## Live score status
 
-Last verified: 2026-07-30
+Last verified: 2026-07-31
 
 > **Plain-language result:** Reflector has fully beaten **3 of 25 games**.
-> It has solved **47 of 183 levels across 14 games**. All 25 games were
+> It has solved **48 of 183 levels across 15 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v84m result |
+| Metric | Accepted v92 result |
 | --- | ---: |
 | Complete games beaten | **3 / 25** |
-| Games with at least one solved level | **14 / 25** |
-| Levels solved | **47 / 183** |
-| Official local score | **20.418940161588477 / 100** |
+| Games with at least one solved level | **15 / 25** |
+| Levels solved | **48 / 183** |
+| Official local score | **20.561797304445623 / 100** |
 | Games evaluated | **25 / 25** |
 | Total actions | **9,185** |
-| Frozen inference source | `5be5c9c` |
-| Frozen candidate commit | `f1232e6` |
-| Candidate | `candidate-07d24ee8acf946c9` |
+| Frozen inference source | `e03fb30` |
+| Frozen candidate commit | `e03fb30` |
+| Candidate | `candidate-42dbfa39cba78041` |
 | Kaggle submissions | **2**: `55113224` complete; `55123277` pending |
 | Kaggle public score | **0.02** for frozen v65b only |
 | Kaggle private score | **unavailable** |
 
-The score is about **20.42% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. Relative to v82f,
-v84m adds seven `re86` levels through categorical factor-bundle options and
-one `tr87` level by transporting dihedral goals through an editable run
-partition. All 23 non-target score/action vectors are exactly preserved. The
-clean process-isolated result is in
-[the v84m public-development report](reports/official-isolated-v84m-grouped-dihedral-400.json).
+The score is about **20.56% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. Relative to v84m,
+v92 adds `ls20` level 1 in 17 actions by planning over the product of a
+learned rigid-body anchor and a scale-normalized symbolic display phase. All
+other 24 score/action vectors are exactly preserved. The clean
+process-isolated result is in
+[the v92 public-development report](reports/official-isolated-v92-phase-topology-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 

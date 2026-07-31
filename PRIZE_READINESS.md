@@ -1,6 +1,6 @@
 # ARC Prize 2026 readiness
 
-Engineering audit updated: 2026-07-30. The machine-readable rules snapshot is
+Engineering audit updated: 2026-07-31. The machine-readable rules snapshot is
 dated 2026-07-27 and remains within its 14-day freshness gate. This is an
 engineering compliance review, not legal advice. The binding source is the
 current
@@ -19,9 +19,9 @@ distinct symbolic thesis, an operative implementation, deterministic traces,
 ablation machinery, and explicit approximations. It does **not** yet have
 enough multi-game evidence for a prize-quality paper.
 
-The current accepted v68 public-development result is
-`9.684019526667843/100`: 28/183 levels across 11/25 games, with `sb26` and
-`ft09` fully completed. This is materially stronger than fixture-only
+The current accepted v92 public-development result is
+`20.561797304445623/100`: 48/183 levels across 15/25 games, with `sb26`,
+`ft09`, and `cd82` fully completed. This is materially stronger than fixture-only
 compatibility but remains known-public development evidence, not a Kaggle
 leaderboard result or a competitive hidden-game claim.
 
@@ -79,21 +79,21 @@ Reflector:
 - separates third-party MIT starter code from dual-licensed contributions;
 - discloses that the symbolic model has parameters but no weights.
 
-The accepted package is frozen at source/candidate commit
-`59daf6171026b986c1e26aaa5fa1f56e2ef03269`, candidate
-`candidate-35de85c4fe395c3a`. Its exact 25-game scorecard has complete 25/25
+The accepted inference package is frozen at source/candidate commit
+`e03fb30`, candidate `candidate-42dbfa39cba78041`. Its exact 25-game
+scorecard has complete 25/25
 coverage; its target repeats, eleven-game preservation gate, full suite,
 pytest, Ruff, mypy, direct export, both network-disabled smoke paths, and
 technical prize audit pass. Exact current artifact hashes are:
 
 - candidate:
-  `032aeab81e10976858e335ba1467240cd241a0a9ed65a2d707841c68950c95e6`;
+  `6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4`;
 - Kaggle overlay:
-  `a3c747d23da9444843df36c7c6057866907befb5ebf6700840e0054314705164`;
+  `7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731`;
 - Kaggle notebook:
-  `f83b6f2ea405f7a196a0084d3a21a34e4fc1f6ba07609cf20b2cd91e8f7ec56e`;
+  `c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`;
 - accepted 25-game report:
-  `604c195c42b8510fb0390c738dc8cd0bd39bd6a9561df0d195d236c14acbd6ab`.
+  `0caf5a52474ac7f89703861fa81b52528b45f4f806ba623d689362fb852d4f9a`.
 
 `technical_ready` is true. `prize_ready` remains false because the account,
 publication, and committed Kaggle-rerun gates below are manual.

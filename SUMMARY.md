@@ -5,34 +5,34 @@ Last updated: 2026-07-31
 ## Best verified result
 
 Reflector's best complete, process-isolated 25-game public-development result is
-**20.418940161588477 / 100**.
+**20.561797304445623 / 100**.
 
-- Candidate: `candidate-07d24ee8acf946c9` (`v84m`)
-- Frozen inference source: `5be5c9c`
-- Frozen candidate commit: `f1232e6`
+- Candidate: `candidate-42dbfa39cba78041` (`v92`)
+- Frozen inference source: `e03fb30`
+- Frozen candidate commit: `e03fb30`
 - Coverage: 25/25 games
-- Levels: **47/183**
-- Games with progress: **14/25**
+- Levels: **48/183**
+- Games with progress: **15/25**
 - Complete games: **3/25**
 - Actions: **9,185**
 - Report:
-  [`reports/official-isolated-v84m-grouped-dihedral-400.json`](reports/official-isolated-v84m-grouped-dihedral-400.json)
+  [`reports/official-isolated-v92-phase-topology-400.json`](reports/official-isolated-v92-phase-topology-400.json)
 - Candidate:
-  [`candidates/v84m-grouped-dihedral-analogy-400.json`](candidates/v84m-grouped-dihedral-analogy-400.json)
+  [`candidates/v92-phase-topology-product-400.json`](candidates/v92-phase-topology-product-400.json)
 - Report SHA-256:
-  `4823d8a358e7798293887ec8eaafd96041b4a5655f7b4da9154b7a7894bfc7c7`
+  `0caf5a52474ac7f89703861fa81b52528b45f4f806ba623d689362fb852d4f9a`
 
-Relative to accepted v82f, v84m changes exactly two games. `re86` advances
-from 0/8 to **7/8** at `[24,36,56,44,63,57,120,0]`; `tr87` advances from 4/6
-to **5/6** at `[56,45,44,38,55,162]`. All other 23 score/action vectors are
-exactly preserved. The aggregate gain is **+4.063492063492063 points**.
-The promotion gates pass: 461 tests pass with 3 skips, Ruff and mypy are clean,
-both network-disabled smoke paths pass, and the prize audit reports technical
-readiness. V84m is the accepted local candidate.
+Relative to accepted v84m, v92 changes exactly one game. `ls20` advances from
+0/7 at `[400,0,0,0,0,0,0]` to **1/7** at
+`[17,383,0,0,0,0,0]`; all other 24 score/action vectors are exactly
+preserved. The aggregate gain is **+0.142857142857146 points**. The promotion
+gates pass: 493 tests pass with 3 skips, Ruff and mypy are clean, exact export
+passes, and the network-disabled official-toolkit smoke passes. V92 is the
+accepted local candidate.
 
-## Promotion candidate: phase-topology product planning
+## New accepted mechanism: phase-topology product planning
 
-V92 `candidate-42dbfa39cba78041` is the first autonomous gain after v84m.
+V92 `candidate-42dbfa39cba78041` is the first accepted gain after v84m.
 It learns a multicolor rigid body and four translation morphisms from rendered
 transitions, normalizes embedded displays across scale, treats exact contact
 with a unique small operator as a symbolic phase transition, and runs bounded
@@ -48,9 +48,14 @@ report is
 SHA-256
 `3e5ecefb295342a18f883da0ee30fc07bd1c3012f592739ab81fbc16d4790b84`.
 
-This is target-repeat and preservation evidence, not yet the new accepted
-25-game score. Promotion now requires the complete 25-game run, full quality
-suite, exact export, and offline Kaggle smoke.
+The complete 25-game process-isolated run confirms the gain at
+**20.561797304445623/100**, with 48/183 levels across 15 games. Exact artifact
+hashes are candidate
+`6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4`,
+overlay
+`7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731`,
+and notebook
+`c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`.
 
 ## New accepted mechanism: demonstrated analogy algebra
 
@@ -319,13 +324,13 @@ negative result and is disabled in v82f/v84 candidates.
 
 ## Immediate objective
 
-The verified score is now **20.418940161588477 / 100** with full coverage and
+The verified score is now **20.561797304445623 / 100** with full coverage and
 exact non-target preservation. The exact Kaggle export hashes are candidate
-`b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54`,
+`6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4`,
 overlay
-`7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19`,
+`7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731`,
 and notebook
-`875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064`.
+`c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`.
 Submit this exact candidate using `KAGGLE.md`; do not attribute the resulting
 hidden score until Kaggle returns one.
 
@@ -429,7 +434,7 @@ partial action/effect profiles compress raw frames while retaining explicit
 counterexamples. The next offspring may use the abstract causal frontier only
 after eight flawless current-level prospective predictions, must disable that
 control after any conflict, and must yield to every grounded specialist.
-V84m remains the accepted 20.418940161588477/100 parent.
+V84m remained the accepted control at this stage and is now superseded by v92.
 
 V89 tested that minimal control rule and is rejected. The advisor selected 22
 actions across five of the eight games, including 15 on `ls20`, where it
@@ -516,5 +521,6 @@ CSP goal predicate. Report
 [`reports/ls20-black-box-phase-topology-v1.json`](reports/ls20-black-box-phase-topology-v1.json),
 SHA-256
 `96d5b13bee6b50c659f19dccc5bfccdd925d6ce1effc01a757cb357946777efd`.
-This is development evidence only; v84m remains the accepted autonomous
-20.418940161588477/100 agent.
+V92 subsequently converted this diagnosis into an accepted autonomous gain:
+the level advances in 17 actions twice and the complete suite reaches
+20.561797304445623/100 with all 24 non-target vectors preserved.

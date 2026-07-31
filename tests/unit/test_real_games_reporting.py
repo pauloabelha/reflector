@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ACCEPTED_REPORT = (
     ROOT
     / "reports"
-    / "official-isolated-v84m-grouped-dihedral-400.json"
+    / "official-isolated-v92-phase-topology-400.json"
 )
 V69_ACCEPTED_REPORT = (
     ROOT

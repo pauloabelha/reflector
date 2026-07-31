@@ -25,23 +25,25 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last known participant-remote commit: `27f5ac5`
-- Accepted candidate: `candidate-07d24ee8acf946c9`
-- Accepted agent: Reflector v84m
-- Frozen inference source commit: `5be5c9c`
-- Frozen candidate commit: `f1232e6`
+- Accepted candidate: `candidate-42dbfa39cba78041`
+- Accepted agent: Reflector v92
+- Frozen inference source commit: `e03fb30`
+- Frozen candidate commit: `e03fb30`
 - Inference fingerprint:
-  `53729246c43ad6aadcc4fa4ba95a08510f0b200c83d08bd9ea3518816803e36d`
+  `32462ddff38fa9ba86691e66601adcef93a9147e0b02e5f219433435f9f54c1f`
 - Verified public-development report:
-  `reports/official-isolated-v84m-grouped-dihedral-400.json`
-- Verified score: `20.418940161588477`
+  `reports/official-isolated-v92-phase-topology-400.json`
+- Verified score: `20.561797304445623`
 - Accepted coverage: 25/25 games, 9,185 actions
-- Verified completions: 47/183 levels across 14 games; 3/25 games complete
+- Verified completions: 48/183 levels across 15 games; 3/25 games complete
 - Kaggle submissions: v65b `55113224` complete at public score `0.02`; v74
   `55123277` pending
 - V84m Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v84m`, version 1,
   complete with `submission.parquet`; competition submission blocked by the
   already-consumed daily allowance, so no v84m submission ID exists
-- Kaggle public score: `0.02` for v65b only; v74 pending; v84m unsubmitted
+- V92 Kaggle artifact: exact export and offline smoke pass; submission pending
+  the daily quota workflow in `KAGGLE.md`
+- Kaggle public score: `0.02` for v65b only; v74 pending; v92 unsubmitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
 - Maintenance state: canonical code is organized under `reflector/core/`,
@@ -594,12 +596,20 @@ Report `reports/experimental-v92-accepted-win-preservation-r1-400.json`,
 SHA-256
 `3e5ecefb295342a18f883da0ee30fc07bd1c3012f592739ab81fbc16d4790b84`.
 
-Next, run the complete 25-game process-isolated suite from `e03fb30`. Promote
-only if coverage is 25/25, no zero-progress game regresses an accepted result,
-the aggregate score increases, the full test/Ruff/mypy gate passes, and the
-same candidate passes exact export plus network-disabled Kaggle smoke. If
-promoted, update every score document and submit that exact notebook subject
-to Kaggle's daily quota.
+That complete gate passes. The 25-game score is
+**20.561797304445623/100**, with 48/183 levels across 15 games, 3 complete
+games, and 9,185 actions. Only `ls20` changes from v84m; all 24 non-target
+vectors are exact. Report
+`reports/official-isolated-v92-phase-topology-400.json`, SHA-256
+`0caf5a52474ac7f89703861fa81b52528b45f4f806ba623d689362fb852d4f9a`.
+The quality gate passes with 493 tests and 3 skips, Ruff and mypy are clean,
+and exact export plus network-disabled smoke pass. V92 is accepted.
+
+Submit the exact v92 notebook subject to Kaggle's daily quota. Then diagnose
+`ls20` level 2 from the post-progress public observation without weakening the
+accepted initiation set. The next accommodation should support a bounded
+version space of multiple operators or phase cycles only if each transition
+is prospectively confirmed; preserve v92 as the new exact-off control.
 
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the

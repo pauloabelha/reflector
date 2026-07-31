@@ -162,13 +162,13 @@ sha256sum \
 The verified 2026-07-30 hashes are:
 
 ```text
-b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54  candidate
-7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19  overlay
-875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064  notebook
+6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4  candidate
+7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731  overlay
+c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d  notebook
 ```
 
 The accepted local public-development result bound to that inference source is
-`20.418940161588477/100`, 47/183 levels, 3/25 complete games, and 25/25
+`20.561797304445623/100`, 48/183 levels, 3/25 complete games, and 25/25
 coverage. It is not a Kaggle score.
 
 ## Browser submission workflow
