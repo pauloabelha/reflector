@@ -202,6 +202,28 @@ option is a semi-Markov action with an initiation set and termination
 condition, not a loose suggestion queue. Arbitration must preserve that
 atomicity unless a causal prediction fails or an action becomes unavailable.
 
+V84j enforced that option boundary and solved level 5 autonomously in exactly
+63 actions. The result is unusually clean: the manually predicted program
+length, compiled program length, and observed level-transition length agree.
+`re86` reached 5/8 at `[24,36,56,44,63]`, score 41.6666666667. This validates
+the full chain from causal occlusion belief through coproduct/exact-cover
+inference, paint-state planning, observed focus-cycle binding, and
+semi-Markov execution.
+
+Level 6 initially looked like a new deformation ontology, but conservation
+compressed it. The 49-pixel plus is the product of two 25-pixel line factors
+sharing one pixel and one action. Collision with a fixed obstacle can block
+one line while the other translates, so the obstacle is a differential
+actuator. The four plus landmarks require horizontal and vertical factors
+whose centers differ by `(-9,+9)`. A sequence derived from obstacle width,
+lattice step, and target line constraints creates that relative state.
+
+The 72-pixel square likewise starts as a 19×19 perimeter and targets the four
+corners of a 10×28 perimeter, also length 72. Obstacle contact transfers three
+pixels of width into height per action. Composing these two factored options
+solved level 6 in 57 public-wrapper actions. This is hierarchical planning in
+a causal product configuration space, not a memorized deformation route.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

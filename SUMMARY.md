@@ -148,6 +148,25 @@ therefore remained 4/8. The active correction gives a committed hierarchical
 option arbitration priority until completion, preserving its atomic
 semi-Markov semantics.
 
+V84j validates both accommodations end to end. Frozen candidate
+`candidate-fd6a1798e5f36721` autonomously solved level 5 in exactly the
+predicted **63 actions**, reaching `re86` **5/8**, target score
+**41.66666666666667**, and full vector
+`[24,36,56,44,63,177,0,0]`. The report is
+[`reports/experimental-v84j-committed-composite-re86-r1-400.json`](reports/experimental-v84j-committed-composite-re86-r1-400.json),
+SHA-256
+`90a5b9ed938a63e63ff7004b26969b28b419cf39d6b7e6c834ee3cb387c4a24a`.
+This remains experimental pending repetition and preservation.
+
+Level 6 has also yielded a compositional black-box solution. Its apparent
+deformation is a factored product: a plus consists of two conserved 25-pixel
+segments under one shared action, while obstacle contact can hold one factor
+and move the other; the 72-pixel square is a conserved-perimeter loop. The
+landmarks specify a relative segment offset `(-9,+9)` and a 10×28 loop, both
+derived from visible constraints. A 57-action program—35 cross-factor actions,
+two focus transfers, and 20 loop actions—solved level 6 through the public
+wrapper. Autonomous compilation is the active target.
+
 ## Rejected branch
 
 V83 tested distance-decreasing replay on an inferred one-dimensional track.
@@ -163,7 +182,8 @@ level 5 as the next relational falsifier and continue composing the learned
 operators. The immediate implementation target is the newly validated joint
 placement/paint/occlusion CSP for level 5. If no other game changes, v84h's
 present target gain would imply only **17.4665592092 / 100**, still below the
-gate. A complete `re86` would
+gate; v84j's five-level result would imply about **18.0221147648 / 100**. A
+complete `re86` would
 imply about **20.3554480981 / 100**. Reproduce every gain, then run
 preservation/full-suite gates. The exact accepted package is submitted to
 Kaggle using `KAGGLE.md` only after the verified aggregate reaches 20.

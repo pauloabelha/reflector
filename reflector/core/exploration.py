@@ -31,6 +31,7 @@ from .constellation_alignment import (
     ConstellationObject,
     infer_constellation_alignment,
 )
+from .deformable_constellation import compile_deformable_constellation_plan
 from .dihedral_analogy import infer_dihedral_analogy
 from .factored_constellation import (
     FactorGoal,
@@ -669,6 +670,8 @@ class EpistemicExplorer:
     composite_reference_cursor: int = 0
     composite_reference_selections: int = 0
     composite_reference_diagnostic: str = "not-grounded"
+    deformable_constellation_compilations: int = 0
+    deformable_constellation_diagnostic: str = "not-grounded"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -5845,6 +5848,8 @@ class EpistemicExplorer:
         self.composite_reference_cursor = 0
         self.composite_reference_selections = 0
         self.composite_reference_diagnostic = "not-grounded"
+        self.deformable_constellation_compilations = 0
+        self.deformable_constellation_diagnostic = "not-grounded"
         self.constellation_diagnostic = (
             "not-grounded" if self.constellation_alignment else "exact-off"
         )
@@ -6348,11 +6353,36 @@ class EpistemicExplorer:
         )
         self.reference_constellation_diagnostic = plan.status
         if not plan.actions:
-            return self._select_composite_reference_constellation(
+            composite = self._select_composite_reference_constellation(
                 observation,
                 available,
                 switches[0],
             )
+            if composite is not None:
+                return composite
+            deformable = compile_deformable_constellation_plan(
+                observation.frame,
+                tuple(
+                    TranslationMorphism(action_id, displacement)
+                    for action_id, displacement in sorted(
+                        self.constellation_move_actions.items()
+                    )
+                    if action_id in available
+                ),
+                switch_action=switches[0],
+            )
+            self.deformable_constellation_diagnostic = deformable.status
+            if not deformable.actions:
+                return None
+            self.deformable_constellation_compilations += 1
+            self.reference_constellation_plan = deformable.actions
+            action_id = deformable.actions[0]
+            self.reference_constellation_cursor = 1
+            self.reference_constellation_selections += 1
+            self.reference_constellation_diagnostic = (
+                "executing-deformable-constellation-option"
+            )
+            return available[action_id]
         self.reference_constellation_plan = plan.actions
         action_id = plan.actions[0]
         self.reference_constellation_cursor = 1
@@ -13278,6 +13308,12 @@ class EpistemicExplorer:
             ),
             "composite_reference_diagnostic": (
                 self.composite_reference_diagnostic
+            ),
+            "deformable_constellation_compilations": (
+                self.deformable_constellation_compilations
+            ),
+            "deformable_constellation_diagnostic": (
+                self.deformable_constellation_diagnostic
             ),
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(

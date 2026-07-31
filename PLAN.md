@@ -167,6 +167,24 @@ offspring enforces standard hierarchical-RL option atomicity: once a bounded
 reference option is committed, lower-level advisors cannot interrupt it before
 termination or an unavailable-action failure.
 
+V84j passed the autonomous gate. Frozen candidate
+`candidate-fd6a1798e5f36721` reached 5/8 at
+`[24,36,56,44,63,177,0,0]`, target score 41.6666666667. Level 5 matched the
+black-box prediction exactly at 63 actions. Report
+`reports/experimental-v84j-committed-composite-re86-r1-400.json`, SHA-256
+`90a5b9ed938a63e63ff7004b26969b28b419cf39d6b7e6c834ee3cb387c4a24a`.
+Level 6 is now the concrete falsifier.
+
+Black-box interventions identify level 6 as a product configuration-space
+problem. The plus is two conserved 25-pixel segments; the shared translation
+acts diagonally on their product, while the neutral obstacle can block one
+factor and thereby create the target relative offset `(-9,+9)`. The square is
+a 72-pixel loop whose target 10×28 perimeter also has length 72; pushing it
+around the same obstacle changes width and height while conserving perimeter.
+A geometry-derived 57-action program solved the level. Implement a bounded
+factor/obstacle option compiler and require autonomous reproduction; do not
+retain the watched action string.
+
 Required gates are:
 
 1. integrate and validate the general joint CSP on level 5;
