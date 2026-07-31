@@ -86,6 +86,24 @@ v94b temporal CSP. A paired unit control proves that the same low-budget scene
 selects direct operator navigation before local evidence and the feasible
 resource immediately afterward.
 
+The isolated v96 target is safe but not promoted. It exactly restores the
+accepted v94b result: **5.983258928571429**, 2/7, and
+`[17,240,143,0,0,0,0]`. Report
+[`reports/experimental-v96-fibered-action-authority-ls20-r1-400.json`](reports/experimental-v96-fibered-action-authority-ls20-r1-400.json),
+SHA-256
+`3687b34a096760f997535aeb14fa6ac537f8f104b94fdba9610fc424f694d5ed`.
+The gate eliminates v95's premature reset and uses inherited laws for direct
+operator navigation, but the first retry still terminates at the same absolute
+action 83. The explicit retry then clears the algebra; the following
+106-action failure and 68-action success are baseline-identical. V94b remains
+accepted.
+
+The next compression target follows directly: an explicit same-level retry
+should conserve a complete primitive algebra as another inactive hypothesis.
+The level identity is unchanged, but one prospective post-reset motion must
+still confirm the law before use. Phase, resource, anchor, route, and terminal
+state remain cleared, and the v96 dependent resource gate remains in force.
+
 ## New accepted mechanism: phase-topology product planning
 
 V92 `candidate-42dbfa39cba78041` is the first accepted gain after v84m.

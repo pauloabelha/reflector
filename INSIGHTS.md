@@ -86,6 +86,21 @@ tests the narrow causal claim exposed by v95: early navigation was useful
 knowledge, while early reset scheduling was an illegitimate lift of that
 knowledge into a dependent option layer.
 
+The live result confirms the safety claim but not a task gain. V96 exactly
+matches v94b's `[17,240,143,0,0,0,0]`. It reaches operator planning earlier,
+yet the temporal horizon makes the first retry end at the same absolute action.
+The key loss of compression occurs one hierarchy boundary later:
+`GAME_OVER` clears a fully confirmed algebra even though the agent is about to
+retry the same level. The subsequent failed and successful retries are exact
+baseline paths.
+
+This sharpens the Piagetian conservation rule. Level change deserves a
+presentation-invariant hypothesis; retry of the same level deserves at least
+the same, not less. It remains a hypothesis because reset can expose a changed
+scene or action semantics, so one post-reset commuting square is still
+required. What may persist is only the compressed primitive law, never the
+failed route or option state.
+
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 
 The strongest post-restart gain came from treating `tr87` as a visible algebra

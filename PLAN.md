@@ -109,6 +109,26 @@ authority condition changed. Focused tests pass, including a paired
 before/after-local-effect resource-scheduling control. Run the full quality
 gate, freeze the source commit, then evaluate one isolated `ls20` target.
 
+V96 source commit `8e8628e` passes 502 tests with 3 skips, Ruff, and mypy.
+Its isolated target exactly reproduces accepted v94b at 2/7 and
+`[17,240,143,0,0,0,0]`. It is not promoted because the safe authority
+separation changes no task metric.
+
+Trace decomposition:
+
+- cross-level transfer confirms and navigates directly to the operator;
+- no reset resource is selected before the first local operator effect;
+- the first retry nevertheless ends at the same action 83 as v94b;
+- `GAME_OVER` clears the primitive algebra;
+- the next 106-action failure and final 68-action success are exact baseline
+  trajectories.
+
+Next minimal hypothesis: call the same prospective algebra-retention operation
+on explicit same-level retry. The reset must clear all operative task state and
+leave only a dormant primitive hypothesis. One ordinary post-reset transition
+must commute before activation, and v96's local-operator prerequisite must
+still guard resource scheduling.
+
 ## Why the accepted agent wins what it wins
 
 | Mechanism | Causal real-game evidence |
