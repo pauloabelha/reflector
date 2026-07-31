@@ -126,6 +126,13 @@ scope tag prevents conflating identity-on-retry with presentation transport
 across levels. Exact repetition and preservation remain necessary before the
 gain can become accepted knowledge.
 
+The second isolated run reproduces the entire causal signature exactly. This
+rules out a favorable exploration accident: both runs eliminate the same
+failed retry and complete level 2 at action 129. The result now earns
+target-level knowledge but not yet cross-game safety; the dormant hypothesis
+can arise on other phase-topology scenes, so exact preservation remains the
+next falsifier.
+
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 
 The strongest post-restart gain came from treating `tr87` as a visible algebra

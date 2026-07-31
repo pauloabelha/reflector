@@ -155,6 +155,14 @@ the vector and retry confirmation, run the 15-game accepted-win preservation
 gate, then the complete 25-game suite. Reject on any lost completion or target
 nondeterminism.
 
+The exact repeat passes all preregistered target conditions: identical score,
+level vector, reset count, two cross-level confirmations, one retry
+confirmation, and zero rejections. Proceed to the 15-game accepted-win gate:
+`ar25`, `cd82`, `ft09`, `g50t`, `lf52`, `lp85`, `ls20`, `m0r0`, `r11l`,
+`re86`, `sb26`, `sp80`, `tn36`, `tr87`, and `vc33`. Require all fourteen
+non-target score/action vectors to match v94b exactly and the repeated `ls20`
+gain to remain exact.
+
 ## Why the accepted agent wins what it wins
 
 | Mechanism | Causal real-game evidence |

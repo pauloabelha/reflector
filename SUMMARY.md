@@ -128,6 +128,15 @@ scheduling resources, uses both reset options, and advances at total action
 until action 257. V97 is provisional until an exact fresh-process repeat and
 wider preservation gates pass.
 
+The second fresh-process target is exact: score
+`10.714285714285714`, vector `[17,112,271,0,0,0,0]`, five resets, two
+cross-level confirmations, one retry confirmation, and zero transfer
+rejections all reproduce. Repeat report
+[`reports/experimental-v97-retry-action-algebra-ls20-r2-400.json`](reports/experimental-v97-retry-action-algebra-ls20-r2-400.json),
+SHA-256
+`0e90ba3b7a2b0fc666f60ca278fae3ce67b008d5f6dc7cab1607b56ad6a1532e`.
+Target determinism passes; accepted-win preservation is next.
+
 ## New accepted mechanism: phase-topology product planning
 
 V92 `candidate-42dbfa39cba78041` is the first accepted gain after v84m.
