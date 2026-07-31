@@ -37,6 +37,7 @@ OVERLAY_FILES = (
     "reflector/core/action_translation_algebra.py",
     "reflector/core/terminal_viability.py",
     "reflector/core/partial_bisimulation.py",
+    "reflector/core/phase_topology.py",
     "reflector/core/action_effect_typing.py",
     "reflector/core/dihedral_analogy.py",
     "reflector/core/linear_track.py",

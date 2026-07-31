@@ -105,6 +105,7 @@ class MindConfig:
     enable_factored_orbit_transport: bool = False
     enable_shape_goal_translation: bool = False
     enable_relational_phase_translation: bool = False
+    enable_phase_topology_planning: bool = False
     enable_committed_trajectory_planning: bool = False
     enable_colored_stencil_primary_planning: bool = False
     enable_colored_stencil_secondary_planning: bool = False
@@ -198,6 +199,7 @@ class MindConfig:
             "enable_factored_orbit_transport",
             "enable_shape_goal_translation",
             "enable_relational_phase_translation",
+            "enable_phase_topology_planning",
             "enable_committed_trajectory_planning",
             "enable_colored_stencil_primary_planning",
             "enable_colored_stencil_secondary_planning",

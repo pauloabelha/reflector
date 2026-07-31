@@ -85,6 +85,7 @@ from .permutation_transport import (
     plan_factored_orbit_transport,
     plan_marker_transport,
 )
+from .phase_topology import PhaseTopologyPlanner
 from .reference_constellation import (
     CompositeReferencePlan,
     compile_composite_reference_plan,
@@ -503,11 +504,16 @@ class EpistemicExplorer:
     factored_orbit_transport: bool = False
     shape_goal_translation: bool = False
     relational_phase_translation: bool = False
+    phase_topology_planning: bool = False
     committed_trajectory_planning: bool = False
     colored_stencil_primary_planning: bool = False
     colored_stencil_secondary_planning: bool = False
     colored_stencil_planner: PrimaryStencilPlanner = field(
         default_factory=PrimaryStencilPlanner,
+        repr=False,
+    )
+    phase_topology_planner: PhaseTopologyPlanner = field(
+        default_factory=PhaseTopologyPlanner,
         repr=False,
     )
     translation_algebra: ActionTranslationAlgebra = field(
@@ -1158,6 +1164,8 @@ class EpistemicExplorer:
             order.append("paired-object-contact-planning")
         if self.committed_trajectory_planning:
             order.append("committed-trajectory-planning")
+        if self.phase_topology_planning:
+            order.append("phase-topology-planning")
         if self.shape_goal_translation:
             order.append("shape-goal-translation")
         if self.constellation_alignment:
@@ -1373,12 +1381,16 @@ class EpistemicExplorer:
             self._reset_dihedral_analogy(clear_controls=True)
             self._reset_linear_track()
             self._reset_constellation_alignment(clear_controls=False)
+            if self.phase_topology_planning:
+                self.phase_topology_planner.reset_level()
         elif observation.state == "GAME_OVER":
             self.level_start_state = None
             self._reset_finite_orbit(clear_trials=False)
             self._reset_dihedral_analogy(clear_controls=False)
             self._reset_linear_track()
             self._reset_constellation_alignment(clear_controls=False)
+            if self.phase_topology_planning:
+                self.phase_topology_planner.reset_level()
             self.episode_roles.clear()
             self.episode_groundings.clear()
             self.productive_groundings.clear()
@@ -1462,6 +1474,19 @@ class EpistemicExplorer:
             self.current_level is not None
             and observation.levels_completed > self.current_level
         )
+        if (
+            self.phase_topology_planning
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+        ):
+            self.phase_topology_planner.observe(
+                before,
+                after,
+                action_id=pending_token.action_id,
+                progressed=progressed,
+            )
         if (
             self.partial_bisimulation
             and pending_token is not None
@@ -5419,6 +5444,54 @@ class EpistemicExplorer:
                 paired,
                 "epistemic-frontier:paired-object-contact-planning",
                 scene,
+            )
+
+        phase_action_id = (
+            self.phase_topology_planner.select(
+                observation.frame,
+                tuple(
+                    sorted(
+                        {
+                            token.action_id
+                            for token in tokens
+                            if not token.data
+                            and token.action_id
+                            not in {self.reset_action, self.complex_action}
+                        }
+                    )
+                ),
+            )
+            if self.phase_topology_planning
+            else None
+        )
+        if phase_action_id is not None:
+            phase_token = next(
+                (
+                    token
+                    for token in tokens
+                    if token.action_id == phase_action_id and not token.data
+                ),
+                None,
+            )
+            if phase_token is not None:
+                self.last_scheme_components = (
+                    "scheme:phase-conditioned-configuration-space",
+                    "operator:rigid-body-anchor-translation",
+                    "operator:relational-phase-transition",
+                    "goal:display-equality-and-terminal-entry",
+                    "falsifier:predicted-anchor-or-phase-conflict",
+                )
+                return self._issue(
+                    state,
+                    phase_token,
+                    "epistemic-frontier:phase-topology-planning",
+                    scene,
+                )
+            self.phase_topology_planner.cap_failure = (
+                "grounded-token-not-represented"
+            )
+            self.phase_topology_planner.diagnostic = (
+                "fail-closed:grounded-token-not-represented"
             )
 
         trajectory = self._select_committed_trajectory(
@@ -13355,6 +13428,42 @@ class EpistemicExplorer:
             "linear_track_selections": self.track_selections,
             "linear_track_compilations": self.track_compilations,
             "linear_track_diagnostic": self.track_diagnostic,
+            "phase_topology_enabled": int(self.phase_topology_planning),
+            "phase_topology_grounded_actions": len(
+                self.phase_topology_planner.action_effects
+            ),
+            "phase_topology_body_grounded": int(
+                bool(self.phase_topology_planner.colored_mask)
+            ),
+            "phase_topology_operator_grounded": int(
+                bool(self.phase_topology_planner.operator_cells)
+            ),
+            "phase_topology_phase_grounded": int(
+                self.phase_topology_planner.current_pattern is not None
+            ),
+            "phase_topology_operator_applications": (
+                self.phase_topology_planner.operator_applications
+            ),
+            "phase_topology_selections": self.phase_topology_planner.selections,
+            "phase_topology_compilations": self.phase_topology_planner.compilations,
+            "phase_topology_confirmations": (
+                self.phase_topology_planner.confirmations
+            ),
+            "phase_topology_conflicts": self.phase_topology_planner.conflicts,
+            "phase_topology_search_expansions": (
+                self.phase_topology_planner.search_expansions
+            ),
+            "phase_topology_last_plan_length": (
+                self.phase_topology_planner.last_plan_length
+            ),
+            "phase_topology_diagnostic": (
+                self.phase_topology_planner.diagnostic
+                if self.phase_topology_planning
+                else "exact-off"
+            ),
+            "phase_topology_cap_failure": (
+                self.phase_topology_planner.cap_failure
+            ),
             "constellation_alignment_enabled": int(self.constellation_alignment),
             "constellation_move_actions": len(self.constellation_move_actions),
             "constellation_switch_actions": len(self.constellation_switch_actions),

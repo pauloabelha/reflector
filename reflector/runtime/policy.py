@@ -181,6 +181,9 @@ class SymbolicPolicy:
             relational_phase_translation=(
                 self.mind.config.enable_relational_phase_translation
             ),
+            phase_topology_planning=(
+                self.mind.config.enable_phase_topology_planning
+            ),
             committed_trajectory_planning=(
                 self.mind.config.enable_committed_trajectory_planning
             ),
