@@ -64,6 +64,55 @@ generalization.
   `reflector/runtime/`, `reflector/research/`, and `reflector/evolution/`.
   Legacy top-level imports remain compatibility aliases.
 
+## Active breakthrough: compile `ls20` level 3 as a fibered product CSP
+
+A legal public-wrapper diagnosis advances level 3 in 49 actions after the v97
+prefix. The current live source has now reproduced the composition
+autonomously in 51 actions. Fresh scorecard
+`de35b8d9-75ae-470f-8063-80675a3d9662` is 3/7 at
+`[17,112,51,220,0,0,0]`, doubling the target score to
+21.428571428571427 while exactly preserving the first two level lengths.
+The result is provisional until preservation and full-suite gates pass.
+
+The diagnosis revealed three missing abstractions:
+
+1. a context-conditioned action can preserve the rigid body while transporting
+   its anchor from `(9,10)` to `(34,5)`, so it is an edge between anchor fibers
+   rather than a reason to invalidate the global primitive;
+2. one compact object is a palette morphism and another is a shape morphism,
+   so roles must be induced from display-factor effects;
+3. the valid 21-action order is
+   `R2 → palette → R1 → shape² → terminal`, with segment costs
+   `16/reset, 5, 7/reset, 10, 2, 9`.
+
+A horizon-reset control restored the original unsolved display, proving that
+equality cannot be latched across that boundary.
+
+Implemented bounded offspring:
+
+- preserve the ordinary translations when a conserved mask undergoes one
+  context-conditioned displacement;
+- store the exceptional `(source anchor, action) → destination anchor` edge
+  only after direct observation, with a hard cap and exact mask check;
+- represent display state as at least `(palette, normalized shape)` and admit
+  compact candidates whose colors overlap those factors;
+- type candidates only from observed factor-specific effects;
+- solve the resource/order CSP over typed options and require autonomous
+  target advancement before preservation evaluation;
+- quotient transitively overlapping partial views into one operator identity,
+  preserve learned effects under that quotient, and keep a grounded
+  current→goal display bundle stable through unrelated occlusion patterns.
+
+Immediate gate sequence:
+
+1. exact fresh-process `ls20` repeat;
+2. accepted-win preservation with exact non-target vector comparison;
+3. frozen-source 25-game isolated suite;
+4. full tests, Ruff, mypy, exact export, offline smoke, and prize audit;
+5. promote and submit the exact Kaggle artifact only if every gate passes.
+
+The accepted v97 package and score remain unchanged until that gate passes.
+
 ## Rejected experiment: v95 confirmed cross-level action algebra
 
 Parent: accepted v94b `candidate-2d9cadd5859ce47d`.

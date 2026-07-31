@@ -513,6 +513,46 @@ commute before activation. Retry confirmations and rejections are separate
 from cross-level telemetry, so conservation at an identity-like retry boundary
 cannot masquerade as evidence for broader presentation transfer.
 
+## Fibered action graphs and factored display operators
+
+The level-3 `ls20` diagnosis refines the planner product. A primitive action
+algebra may be natural only within local anchor fibers. When a transition
+preserves the exact colored body but differs from the ordinary displacement,
+the planner should preserve the primitive and learn a bounded contextual edge
+`(source anchor, action) → destination anchor`. That edge has no authority at
+another source until independently evidenced.
+
+Operator induction must likewise be effect-typed rather than
+appearance-unique. The observed level contains a palette operator, a shape
+operator, temporal reset resources, and a horizon reset that restores both
+anchor and unsolved display state. Candidate objects may therefore share
+colors with the body or displays; they become authoritative only after contact
+changes one grounded factor.
+
+The abstract state becomes a dependent product
+`(anchor fiber, palette, shape, budget, resources)`. The HRL compiler searches
+over typed options such as `navigate(contextual edge)`, `reset(resource)`,
+`set-palette`, `advance-shape`, and `enter-terminal`, while a CSP checks every
+suffix against the current horizon. The diagnosed composition is
+`teleport ; R2 ; palette ; R1 ; shape ; shape ; terminal`, but deployed code
+must infer every role, edge, and cost online and retain no game identity,
+coordinate, color, or fixed action sequence.
+
+Exact pixel sets are presentations, not object identities. Partial contact can
+occlude an operator and yield several overlapping cell sets for the same
+cause. The planner computes a bounded transitive-overlap quotient, chooses the
+largest view as canonical representative, and transports observed
+palette/shape effects from every class member to that representative. This
+prevents observational fragmentation from manufacturing new causal choices.
+
+Grounded display bindings obey the same conservation law. Once the planner
+has identified a current display and its goal display, later same-arity glyphs
+cannot replace that bundle. The equality predicate is monotone through
+ordinary movement and occlusion, while an evidenced temporal horizon reset is
+the explicit morphism that clears it. Together these rules let terminal
+options operate on stable equivalence classes rather than volatile frame
+components.
+
 ## Development control plane
 
 `MindConfig` is the deployable genome. It contains bounded booleans, planner

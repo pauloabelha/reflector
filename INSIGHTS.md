@@ -30,6 +30,62 @@ is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
 
+## 2026-07-31 — observational quotients turn perception into causal identity
+
+The first autonomous level-3 run failed even after learning the correct
+palette effect. Contact partially occluded the compact operator, so exact
+pixel-set identity represented one physical cause as a full view and one or
+more cropped views. The policy then treated a cropped view as an unknown
+operator and repeatedly revisited the already-understood cause.
+
+The successful accommodation quotients transitively overlapping views into
+one object, selects the most complete representative, and transports all
+observed factor effects to it. This is useful knowledge compression rather
+than cosmetic deduplication: it changes the HRL choice from another palette
+contact to the still-unknown shape operator.
+
+A second identity law applies to displays. Once a current→goal factor bundle
+is grounded, unrelated embedded patterns created by body occlusion cannot
+rebind it. Equality is monotone under ordinary observation changes and is
+cleared only by an evidenced temporal reset. In categorical language, the
+planner now reasons over equivalence classes of presentations while preserving
+the causal arrow and its terminal predicate. In Piagetian terms, multiple
+percepts assimilate to one conserved object; only a reset-level contradiction
+forces accommodation.
+
+This produced a fresh autonomous `ls20` result of 3/7 with
+`[17,112,51,220,0,0,0]`, versus accepted v97's
+`[17,112,271,0,0,0,0]`. The target score doubled to 21.428571428571427.
+It remains provisional pending repeat and preservation gates.
+
+## 2026-07-31 — level 3: naturality is local and task state is factored
+
+The `ls20` level-3 diagnosis exposes why the accepted planner loops despite
+having the correct primitive translations. The same upward action realizes
+seven ordinary translations and then, at a special boundary, preserves the
+body while transporting it from `(9,10)` to `(34,5)`. The right abstraction is
+a base translation plus a sparse contextual edge, not one globally
+inconsistent action.
+
+The symbolic state also factors. A compact palette operator changes display
+color while preserving normalized shape; a second compact operator changes
+shape while preserving palette. Their feasibility depends on two consumable
+temporal resets. This gives a concrete categorical and HRL interpretation:
+
+- ordinary translations are morphisms within an anchor fiber;
+- the teleport is a morphism between anchor fibers;
+- palette and shape interventions transform different display factors;
+- resource contacts reset the temporal fiber;
+- CSP planning selects a composition whose suffixes fit each 21-action fiber.
+
+The 49-action public-wrapper solution is
+`teleport → R2 → palette → R1 → shape² → terminal`. A horizon-reset control
+restored the original unsolved display, proving that equality is not conserved
+across that boundary. Piagetian accommodation should therefore be minimal:
+retain the ordinary algebra, add one evidenced contextual edge, split the
+display scheme into palette and shape factors, and keep reset semantics
+causally scoped.
+
 ## 2026-07-31 — v95: knowledge compression must remain prospective
 
 The next useful abstraction is not another object type. It is conservation of

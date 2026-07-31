@@ -312,12 +312,52 @@ def _bbox_union(
     )
 
 
+def _overlap_classes(
+    candidates: Iterable[tuple[Point, ...]],
+) -> tuple[tuple[tuple[Point, ...], tuple[tuple[Point, ...], ...]], ...]:
+    """Quotient partially occluded cell sets by transitive spatial overlap."""
+
+    remaining = set(candidates)
+    classes = []
+    while remaining:
+        seed = remaining.pop()
+        members = {seed}
+        occupied = set(seed)
+        changed = True
+        while changed:
+            changed = False
+            for candidate in tuple(remaining):
+                if occupied.isdisjoint(candidate):
+                    continue
+                remaining.remove(candidate)
+                members.add(candidate)
+                occupied.update(candidate)
+                changed = True
+        representative = min(
+            members,
+            key=lambda cells: (-len(cells), cells),
+        )
+        classes.append((representative, tuple(sorted(members))))
+    return tuple(
+        sorted(
+            classes,
+            key=lambda item: (
+                min(y for _x, y in item[0]),
+                min(x for x, _y in item[0]),
+                item[0],
+            ),
+        )
+    )
+
+
 @dataclass(slots=True)
 class PhaseTopologyPlanner:
     """Learn bounded options over anchor × phase × temporal-resource state."""
 
     max_anchors: int = 512
     max_operator_applications: int = 16
+    max_contextual_edges: int = 16
+    max_operator_candidates: int = 8
     max_plan_selections: int = 96
     max_resources: int = 8
     min_budget_evidence: int = 2
@@ -339,14 +379,22 @@ class PhaseTopologyPlanner:
     traversable_colors: set[int] = field(default_factory=set)
     current_host: tuple[int, int, int, int] | None = None
     current_pattern: Pattern | None = None
+    current_glyph_color: int | None = None
     goal_host: tuple[int, int, int, int] | None = None
     goal_pattern: Pattern | None = None
+    goal_glyph_color: int | None = None
     goal_cells: tuple[Point, ...] = ()
     # Equality remains valid under later visual occlusion until a causal reset.
     goal_latched: bool = False
     operator_cells: tuple[Point, ...] = ()
+    operator_candidates: tuple[tuple[Point, ...], ...] = ()
+    operator_effects: dict[tuple[Point, ...], frozenset[str]] = field(
+        default_factory=dict
+    )
+    active_operator: tuple[Point, ...] | None = None
     pattern_candidates: tuple[EmbeddedPattern, ...] = ()
     blocked_edges: set[tuple[Point, int]] = field(default_factory=set)
+    contextual_edges: dict[tuple[Point, int], Point] = field(default_factory=dict)
     pending_anchor: Point | None = None
     pending_source: Point | None = None
     pending_action: int | None = None
@@ -411,13 +459,19 @@ class PhaseTopologyPlanner:
         self.traversable_colors.clear()
         self.current_host = None
         self.current_pattern = None
+        self.current_glyph_color = None
         self.goal_host = None
         self.goal_pattern = None
+        self.goal_glyph_color = None
         self.goal_cells = ()
         self.goal_latched = False
         self.operator_cells = ()
+        self.operator_candidates = ()
+        self.operator_effects.clear()
+        self.active_operator = None
         self.pattern_candidates = ()
         self.blocked_edges.clear()
+        self.contextual_edges.clear()
         self.pending_anchor = None
         self.pending_source = None
         self.pending_action = None
@@ -725,6 +779,18 @@ class PhaseTopologyPlanner:
             and motion.after_anchor == self.pending_anchor
             and action_id == self.pending_action
         )
+        ordinary_effect = self.action_effects.get(action_id)
+        contextual_transition = (
+            motion is not None
+            and ordinary_effect is not None
+            and motion.displacement != ordinary_effect
+            and not horizon_reset
+            and not scene_discontinuity
+            and (
+                not self.colored_mask
+                or motion.colored_mask == self.colored_mask
+            )
+        )
         if self.pending_action is not None:
             if horizon_reset or scene_discontinuity:
                 self.confirmations += 1
@@ -733,6 +799,29 @@ class PhaseTopologyPlanner:
                     if horizon_reset
                     else "scene-transition-bootstrap"
                 )
+            elif contextual_transition and motion is not None:
+                if self.pending_source is not None:
+                    self.blocked_edges.add((self.pending_source, action_id))
+                if (
+                    self.pending_source is not None
+                    and len(self.contextual_edges) < self.max_contextual_edges
+                ):
+                    key = self.pending_source, action_id
+                    previous_destination = self.contextual_edges.get(key)
+                    if previous_destination in {None, motion.after_anchor}:
+                        self.contextual_edges[key] = motion.after_anchor
+                        self.contextual_transitions += int(
+                            previous_destination is None
+                        )
+                        self.confirmations += 1
+                        self.diagnostic = "contextual-anchor-edge-observed"
+                    else:
+                        self.conflicts += 1
+                        self.contextual_edges.pop(key, None)
+                        self.diagnostic = "contextual-anchor-edge-conflict"
+                else:
+                    self.conflicts += 1
+                    self.diagnostic = "contextual-anchor-edge-cap"
             elif not predicted_transition:
                 if self.pending_source is not None:
                     self.blocked_edges.add((self.pending_source, action_id))
@@ -753,6 +842,7 @@ class PhaseTopologyPlanner:
             if (
                 not horizon_reset
                 and not scene_discontinuity
+                and not contextual_transition
                 and (not had_pending or predicted_transition)
             ):
                 self._consider_inherited_action_algebra(
@@ -767,6 +857,20 @@ class PhaseTopologyPlanner:
                 elif action_id not in self.invalid_actions:
                     self.action_effects[action_id] = motion.displacement
                     self.action_evidence[action_id] += 1
+            elif contextual_transition and not had_pending:
+                key = motion.before_anchor, action_id
+                previous_destination = self.contextual_edges.get(key)
+                if (
+                    previous_destination in {None, motion.after_anchor}
+                    and (
+                        previous_destination is not None
+                        or len(self.contextual_edges) < self.max_contextual_edges
+                    )
+                ):
+                    self.contextual_edges[key] = motion.after_anchor
+                    self.blocked_edges.add(key)
+                    self.contextual_transitions += int(previous_destination is None)
+                    self.diagnostic = "contextual-anchor-edge-observed"
             protected_cells = set(self.operator_cells)
             for resource in self.resource_candidates:
                 protected_cells.update(resource.cells)
@@ -786,55 +890,107 @@ class PhaseTopologyPlanner:
         changed = tuple(
             (before_patterns[host], after_patterns[host])
             for host in set(before_patterns) & set(after_patterns)
-            if before_patterns[host].pattern != after_patterns[host].pattern
-        )
-        qualified_changes = tuple(
-            (previous_phase, next_phase, stationary[0])
-            for previous_phase, next_phase in changed
-            if len(
-                stationary := tuple(
-                    item
-                    for host, item in after_patterns.items()
-                    if host != next_phase.host_bbox
-                    and item.pattern[:2] == next_phase.pattern[:2]
-                )
+            if (
+                before_patterns[host].pattern != after_patterns[host].pattern
+                or before_patterns[host].glyph_color
+                != after_patterns[host].glyph_color
+                or before_patterns[host].host_color
+                != after_patterns[host].host_color
             )
-            == 1
         )
+        stable_factor_bundle = (
+            self.current_host is not None and self.goal_host is not None
+        )
+        qualified_changes: tuple[
+            tuple[EmbeddedPattern, EmbeddedPattern, EmbeddedPattern],
+            ...,
+        ]
+        if (
+            stable_factor_bundle
+            and self.current_host in before_patterns
+            and self.current_host in after_patterns
+            and self.goal_host in after_patterns
+            and any(
+                next_phase.host_bbox == self.current_host
+                for _previous_phase, next_phase in changed
+            )
+        ):
+            qualified_changes = (
+                (
+                    before_patterns[self.current_host],
+                    after_patterns[self.current_host],
+                    after_patterns[self.goal_host],
+                ),
+            )
+        elif stable_factor_bundle:
+            # A learned current→goal factor bundle is an object identity, not
+            # whichever same-arity glyph happens to change next.  In
+            # particular, moving-body occlusion can transiently manufacture
+            # unrelated embedded patterns while the terminal option executes.
+            qualified_changes = ()
+        else:
+            qualified_changes = tuple(
+                (previous_phase, next_phase, stationary[0])
+                for previous_phase, next_phase in changed
+                if len(
+                    stationary := tuple(
+                        item
+                        for host, item in after_patterns.items()
+                        if host != next_phase.host_bbox
+                        and item.pattern[:2] == next_phase.pattern[:2]
+                    )
+                )
+                == 1
+            )
         if (
             len(qualified_changes) == 1
             and not horizon_reset
             and not scene_discontinuity
         ):
-            _previous_phase, next_phase, goal = qualified_changes[0]
+            previous_phase, next_phase, goal = qualified_changes[0]
             self.current_host = next_phase.host_bbox
             self.current_pattern = next_phase.pattern
+            self.current_glyph_color = next_phase.glyph_color
             self.goal_host = goal.host_bbox
             self.goal_pattern = goal.pattern
+            self.goal_glyph_color = goal.glyph_color
             self.goal_cells = goal.glyph_cells
-            self.goal_latched = next_phase.pattern == goal.pattern
+            self.goal_latched = self.goal_latched or (
+                next_phase.pattern == goal.pattern
+                and next_phase.glyph_color == goal.glyph_color
+            )
+            effects = set(self.operator_effects.get(self.operator_cells, ()))
+            if previous_phase.pattern != next_phase.pattern:
+                effects.add("shape")
+            if (
+                previous_phase.glyph_color != next_phase.glyph_color
+                or previous_phase.host_color != next_phase.host_color
+            ):
+                effects.add("palette")
+            if self.operator_cells and effects:
+                self.operator_effects[self.operator_cells] = frozenset(effects)
+                if self.active_operator == self.operator_cells:
+                    self.active_operator = None
             self.operator_applications += 1
-            self.diagnostic = "operator-induced-phase-transition"
+            self.diagnostic = "operator-induced-factor-transition"
         elif self.current_host in after_patterns:
             current = after_patterns[self.current_host]
             self.current_pattern = current.pattern
+            self.current_glyph_color = current.glyph_color
             if self.goal_host in after_patterns:
                 goal = after_patterns[self.goal_host]
                 self.goal_pattern = goal.pattern
+                self.goal_glyph_color = goal.glyph_color
                 self.goal_cells = goal.glyph_cells
                 self.goal_latched = self.goal_latched or (
                     current.pattern == goal.pattern
+                    and current.glyph_color == goal.glyph_color
                 )
         self._refresh_operator(before)
 
     def _refresh_operator(self, frame: Frame) -> None:
         if not self.colored_mask or not self.traversable_colors:
             return
-        excluded = set(self.body_colors) | self.traversable_colors
-        if self.budget_color is not None:
-            excluded.add(self.budget_color)
-        for item in self.pattern_candidates:
-            excluded.update((item.host_color, item.glyph_color))
         body_cells = (
             {
                 (
@@ -846,6 +1002,38 @@ class PhaseTopologyPlanner:
             if self.current_anchor is not None
             else set()
         )
+        visible_displays = tuple(
+            item
+            for item in self.pattern_candidates
+            if not any(
+                min_x <= x <= max_x and min_y <= y <= max_y
+                for x, y in body_cells
+                for min_x, min_y, max_x, max_y in (item.host_bbox,)
+            )
+        )
+        nested_display = any(
+            outer.host_bbox[0] <= inner.host_bbox[0]
+            and outer.host_bbox[1] <= inner.host_bbox[1]
+            and outer.host_bbox[2] >= inner.host_bbox[2]
+            and outer.host_bbox[3] >= inner.host_bbox[3]
+            and outer.host_bbox != inner.host_bbox
+            for outer in visible_displays
+            for inner in visible_displays
+        )
+        comparable_display = any(
+            left.host_bbox != right.host_bbox
+            and left.pattern[:2] == right.pattern[:2]
+            for left in visible_displays
+            for right in visible_displays
+        )
+        factored_scene = nested_display and comparable_display
+        excluded = set(self.traversable_colors)
+        if not factored_scene:
+            excluded.update(self.body_colors)
+            for item in self.pattern_candidates:
+                excluded.update((item.host_color, item.glyph_color))
+        if self.budget_color is not None:
+            excluded.add(self.budget_color)
         small = [
             item
             for item in components(frame)
@@ -885,10 +1073,98 @@ class PhaseTopologyPlanner:
                 sorted(cell for index in group for cell in small[index].cells)
             )
             colors = {small[index].color for index in group}
-            if 2 <= len(cells) <= len(self.mask) and len(colors) >= 2:
+            if 2 <= len(cells) < len(self.mask) and len(colors) >= 2:
                 groups.append(cells)
-        if len(groups) == 1:
-            self.operator_cells = groups[0]
+        discovered = tuple(sorted(set(groups)))
+        if factored_scene and discovered:
+            classes = _overlap_classes(
+                set((*self.operator_candidates, *discovered))
+            )
+            canonical: dict[tuple[Point, ...], tuple[Point, ...]] = {}
+            for representative, members in classes:
+                effects: set[str] = set()
+                for member in members:
+                    canonical[member] = representative
+                    effects.update(self.operator_effects.pop(member, ()))
+                if effects:
+                    self.operator_effects[representative] = frozenset(effects)
+            self.operator_cells = canonical.get(
+                self.operator_cells,
+                self.operator_cells,
+            )
+            if self.active_operator is not None:
+                self.active_operator = canonical.get(
+                    self.active_operator,
+                    self.active_operator,
+                )
+            self.operator_candidates = tuple(
+                representative for representative, _members in classes
+            )[: self.max_operator_candidates]
+        elif not factored_scene:
+            self.operator_candidates = discovered if len(discovered) == 1 else ()
+        if len(self.operator_candidates) == 1:
+            self.operator_cells = self.operator_candidates[0]
+
+    def _display_factors_equal(self) -> bool:
+        if self.current_pattern is None or self.goal_pattern is None:
+            return False
+        palette_equal = (
+            self.current_glyph_color is None
+            or self.goal_glyph_color is None
+            or self.current_glyph_color == self.goal_glyph_color
+        )
+        return self.current_pattern == self.goal_pattern and palette_equal
+
+    def _select_operator_candidate(self, frame: Frame) -> None:
+        if not self.operator_candidates:
+            return
+        palette_equal = (
+            self.current_glyph_color is not None
+            and self.goal_glyph_color is not None
+            and self.current_glyph_color == self.goal_glyph_color
+        )
+        shape_equal = (
+            self.current_pattern is not None
+            and self.goal_pattern is not None
+            and self.current_pattern == self.goal_pattern
+        )
+        needed_role = (
+            None
+            if self.current_pattern is None or self.goal_pattern is None
+            else "palette"
+            if not palette_equal
+            else "shape"
+            if not shape_equal
+            else "complete"
+        )
+        if needed_role == "complete":
+            return
+        eligible = []
+        for candidate in self.operator_candidates:
+            effects = self.operator_effects.get(candidate, frozenset())
+            if needed_role is None:
+                if effects:
+                    continue
+            elif effects and needed_role not in effects:
+                continue
+            path = (
+                ()
+                if (
+                    self.current_anchor is not None
+                    and _covers(self.current_anchor, self.mask, candidate)
+                )
+                else self._path(frame, candidate)
+            )
+            if path or (
+                self.current_anchor is not None
+                and _covers(self.current_anchor, self.mask, candidate)
+            ):
+                eligible.append((len(path), candidate))
+        if eligible:
+            self.operator_cells = min(
+                eligible,
+                key=lambda item: (item[0], item[1]),
+            )[1]
 
     def _target_anchors(self, cells: tuple[Point, ...]) -> tuple[Point, ...]:
         if not cells or not self.mask or self.current_anchor is None:
@@ -973,9 +1249,14 @@ class PhaseTopologyPlanner:
                 self.search_expansions += expansions
                 return path
             for action_id, (dx, dy) in sorted(self.action_effects.items()):
-                if (anchor, action_id) in self.blocked_edges:
+                contextual = self.contextual_edges.get((anchor, action_id))
+                if contextual is None and (anchor, action_id) in self.blocked_edges:
                     continue
-                neighbor = anchor[0] + dx, anchor[1] + dy
+                neighbor = (
+                    contextual
+                    if contextual is not None
+                    else (anchor[0] + dx, anchor[1] + dy)
+                )
                 if neighbor in seen:
                     continue
                 if not self._valid_anchor(
@@ -1028,9 +1309,13 @@ class PhaseTopologyPlanner:
     def _endpoint(self, start: Point, path: tuple[int, ...]) -> Point:
         x, y = start
         for action_id in path:
-            dx, dy = self.action_effects[action_id]
-            x += dx
-            y += dy
+            contextual = self.contextual_edges.get(((x, y), action_id))
+            if contextual is not None:
+                x, y = contextual
+            else:
+                dx, dy = self.action_effects[action_id]
+                x += dx
+                y += dy
         return x, y
 
     def _operator_rearm_path(
@@ -1123,6 +1408,10 @@ class PhaseTopologyPlanner:
             self.diagnostic = "awaiting-rigid-translation-algebra"
             return None
         self._refresh_operator(frame)
+        if self.active_operator is not None:
+            self.operator_cells = self.active_operator
+        else:
+            self._select_operator_candidate(frame)
         on_operator = (
             self.current_anchor is not None
             and bool(self.operator_cells)
@@ -1132,10 +1421,7 @@ class PhaseTopologyPlanner:
                 self.operator_cells,
             )
         )
-        phase_equal = self.goal_latched or (
-            self.current_pattern is not None
-            and self.current_pattern == self.goal_pattern
-        )
+        phase_equal = self.goal_latched or self._display_factors_equal()
         remaining = self.remaining_budget
         horizon = self.budget_horizon
         bounded_remaining = remaining if remaining is not None else 0
@@ -1148,6 +1434,7 @@ class PhaseTopologyPlanner:
         resource_scheduling_grounded = (
             not self.transferred_action_algebra_active
             or self.operator_applications > 0
+            or self.contextual_transitions > 0
         )
         target_cells: tuple[Point, ...]
         path: tuple[int, ...]
@@ -1233,11 +1520,20 @@ class PhaseTopologyPlanner:
             else:
                 path = self._path(frame, target_cells)
                 mode = "operator"
+                unknown_factor_target = (
+                    len(self.operator_candidates) > 1
+                    and target_cells not in self.operator_effects
+                    and bounded_remaining < bounded_horizon
+                    and self.active_operator is None
+                )
                 if (
                     temporal_grounded
                     and resource_scheduling_grounded
                     and path
-                    and len(path) >= bounded_remaining
+                    and (
+                        len(path) >= bounded_remaining
+                        or unknown_factor_target
+                    )
                     and (
                         option := self._resource_option(
                             frame,
@@ -1251,10 +1547,18 @@ class PhaseTopologyPlanner:
                     selected_resource, path = option
                     target_cells = selected_resource.cells
                     mode = "resource-reset"
+                elif (
+                    len(self.operator_candidates) > 1
+                    and target_cells not in self.operator_effects
+                    and resource_scheduling_grounded
+                ):
+                    self.active_operator = target_cells
         else:
             self.diagnostic = "missing-phase-goal-or-operator"
             return None
         if not path:
+            if mode == "operator" and self.active_operator == target_cells:
+                self.active_operator = None
             self.diagnostic = f"no-{mode}-path"
             return None
         action_id = path[0]
@@ -1263,9 +1567,12 @@ class PhaseTopologyPlanner:
             return None
         displacement = self.action_effects[action_id]
         self.pending_source = self.current_anchor
-        self.pending_anchor = (
-            self.current_anchor[0] + displacement[0],
-            self.current_anchor[1] + displacement[1],
+        self.pending_anchor = self.contextual_edges.get(
+            (self.current_anchor, action_id),
+            (
+                self.current_anchor[0] + displacement[0],
+                self.current_anchor[1] + displacement[1],
+            ),
         )
         self.pending_action = action_id
         self.pending_resource = (

@@ -3,6 +3,7 @@ from collections import Counter
 from reflector.core.mind import MindConfig
 from reflector.core.phase_topology import (
     PhaseTopologyPlanner,
+    _overlap_classes,
     components,
     embedded_patterns,
     infer_rigid_translation,
@@ -107,6 +108,20 @@ def test_embedded_patterns_compress_scale_but_preserve_relations() -> None:
     assert {item.pattern[:2] for item in matching} == {(3, 3)}
 
 
+def test_operator_observations_are_quotiented_across_partial_occlusion() -> None:
+    full = ((10, 8), (11, 8), (10, 9), (11, 9))
+    left_view = ((10, 8), (10, 9))
+    top_view = ((10, 8), (11, 8))
+    separate = ((30, 4), (31, 4))
+
+    classes = _overlap_classes((left_view, separate, full, top_view))
+
+    assert classes == (
+        (separate, (separate,)),
+        (full, (left_view, top_view, full)),
+    )
+
+
 def test_observed_operator_change_binds_current_phase_to_goal() -> None:
     previous = ((0, 0), (1, 0), (2, 0), (0, 1), (0, 2), (2, 2))
     goal = ((0, 0), (1, 0), (2, 0), (2, 1), (0, 2), (2, 2))
@@ -129,7 +144,81 @@ def test_observed_operator_change_binds_current_phase_to_goal() -> None:
     assert planner.current_host == (1, 1, 10, 10)
     assert planner.goal_host == (18, 1, 24, 7)
     assert planner.operator_applications == 1
-    assert planner.diagnostic == "operator-induced-phase-transition"
+    assert planner.diagnostic == "operator-induced-factor-transition"
+
+
+def test_bound_factor_bundle_latches_goal_under_matching_transition() -> None:
+    previous = ((0, 0), (0, 2), (1, 0), (2, 0), (2, 1), (2, 2))
+    goal = ((0, 0), (0, 1), (0, 2), (1, 2), (2, 0), (2, 2))
+    before = _frame(42, 18)
+    after = _frame(42, 18)
+    _paint_display(before, (1, 1, 10, 10), previous, scale=2)
+    _paint_display(after, (1, 1, 10, 10), goal, scale=2)
+    _paint_display(before, (24, 1, 30, 7), goal, scale=1)
+    _paint_display(after, (24, 1, 30, 7), goal, scale=1)
+    planner = PhaseTopologyPlanner(
+        current_host=(1, 1, 10, 10),
+        current_pattern=(3, 3, tuple(sorted(previous))),
+        current_glyph_color=9,
+        goal_host=(24, 1, 30, 7),
+        goal_pattern=(3, 3, tuple(sorted(goal))),
+        goal_glyph_color=9,
+        operator_cells=((35, 12), (36, 12)),
+        active_operator=((35, 12), (36, 12)),
+    )
+
+    planner.observe(
+        _freeze(before),
+        _freeze(after),
+        action_id=3,
+        progressed=False,
+    )
+
+    assert planner.current_host == (1, 1, 10, 10)
+    assert planner.goal_host == (24, 1, 30, 7)
+    assert planner.current_pattern == planner.goal_pattern
+    assert planner.goal_latched
+    assert planner.operator_applications == 1
+    assert planner.operator_effects[planner.operator_cells] == frozenset({"shape"})
+    assert planner.active_operator is None
+
+
+def test_bound_factor_bundle_ignores_unrelated_occlusion_pattern() -> None:
+    solved = ((0, 0), (0, 1), (0, 2), (1, 2), (2, 0), (2, 2))
+    transient_before = ((0, 0), (1, 1))
+    transient_after = ((0, 0), (0, 1), (1, 1))
+    before = _frame(58, 18)
+    after = _frame(58, 18)
+    for frame in (before, after):
+        _paint_display(frame, (1, 1, 10, 10), solved, scale=2)
+        _paint_display(frame, (20, 1, 26, 7), solved, scale=1)
+        _paint_display(frame, (46, 1, 51, 6), transient_after, scale=1)
+    _paint_display(before, (34, 1, 39, 6), transient_before, scale=1)
+    _paint_display(after, (34, 1, 39, 6), transient_after, scale=1)
+    solved_pattern = (3, 3, tuple(sorted(solved)))
+    planner = PhaseTopologyPlanner(
+        current_host=(1, 1, 10, 10),
+        current_pattern=solved_pattern,
+        current_glyph_color=9,
+        goal_host=(20, 1, 26, 7),
+        goal_pattern=solved_pattern,
+        goal_glyph_color=9,
+        goal_latched=True,
+    )
+
+    planner.observe(
+        _freeze(before),
+        _freeze(after),
+        action_id=2,
+        progressed=False,
+    )
+
+    assert planner.current_host == (1, 1, 10, 10)
+    assert planner.goal_host == (20, 1, 26, 7)
+    assert planner.current_pattern == solved_pattern
+    assert planner.goal_pattern == solved_pattern
+    assert planner.goal_latched
+    assert planner.operator_applications == 0
 
 
 def test_phase_equal_planner_compiles_shortest_terminal_option() -> None:
@@ -160,7 +249,7 @@ def test_phase_equal_planner_compiles_shortest_terminal_option() -> None:
     assert planner.diagnostic == "executing-terminal-option"
 
 
-def test_unexplained_operator_teleport_does_not_invent_contextual_rule() -> None:
+def test_conserved_body_teleport_adds_sparse_contextual_edge() -> None:
     before = _frame(24, 20, color=3)
     after = _frame(24, 20, color=3)
     _paint_body(before, (10, 10))
@@ -190,11 +279,20 @@ def test_unexplained_operator_teleport_does_not_invent_contextual_rule() -> None
     assert planner.action_effects == {4: (5, 0)}
     assert planner.current_anchor == (2, 10)
     assert planner.operator_applications == 0
-    assert planner.contextual_transitions == 0
+    assert planner.contextual_transitions == 1
+    assert planner.contextual_edges == {((10, 10), 4): (2, 10)}
+    assert ((10, 10), 4) in planner.blocked_edges
     assert not planner.goal_latched
-    assert planner.confirmations == 0
-    assert planner.conflicts == 1
-    assert planner.diagnostic == "predicted-anchor-transition-blocked"
+    assert planner.confirmations == 1
+    assert planner.conflicts == 0
+    assert planner.diagnostic == "contextual-anchor-edge-observed"
+
+    planner.current_anchor = (10, 10)
+    assert planner._search_path(
+        _freeze(before),
+        start=(10, 10),
+        targets={(2, 10)},
+    ) == (4,)
 
 
 def test_operator_rearm_leaves_before_reapplying_contact_transition() -> None:

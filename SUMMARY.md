@@ -43,6 +43,53 @@ returned HTTP 400 because pending v74 submission `55123277` still occupies the
 daily allowance. Kaggle created no v97 submission ID. The exact completed
 version should be resubmitted unchanged when the quota clears.
 
+## Provisional autonomous breakthrough: `ls20` level 3
+
+The live source now autonomously advances `ls20` through level 3 under the
+unchanged v97 genome and 400-action bound. Fresh target scorecard
+`de35b8d9-75ae-470f-8063-80675a3d9662` reports **21.428571428571427**,
+3/7 levels, and level vector **`[17,112,51,220,0,0,0]`**. Levels 1 and 2
+exactly preserve v97, while level 3 completes in 51 autonomous actions. This
+is a target breakthrough, not yet an accepted 25-game score.
+
+The decisive accommodation is an observational quotient. Contact with one
+compact operator can partially occlude it, producing several exact pixel sets
+for one causal object. The planner now merges transitively overlapping views,
+keeps the most complete representative, and transports learned palette/shape
+effects to that representative. A grounded current→goal display bundle also
+retains its identity across unrelated embedded-pattern changes, and equality
+remains latched until a causal horizon reset. Eighteen focused controls pass,
+with Ruff and focused mypy clean.
+
+Next gates are an exact target repeat, accepted-win preservation, the full
+25-game process-isolated suite, and the complete quality/export package.
+
+## New level-3 breakthrough: a product of contextual, palette, and shape morphisms
+
+A public-wrapper-only diagnosis now advances `ls20` level 3 in **49 legal
+actions** after the accepted v97 two-level prefix. The autonomous planner now
+realizes the same causal composition in 51 actions; this diagnostic remains
+the minimal explanatory trace.
+
+The inherited four-action algebra is only locally natural. Seven ordinary
+upward translations move the conserved 25-cell body from anchor `(9,45)` to
+`(9,10)`, but the next upward action preserves the body and transports it to
+`(34,5)`. This contextual teleport is a morphism between anchor fibers, not an
+inconsistent primitive action.
+
+The level also factors its symbolic state. One compact operator preserves
+shape but changes the nested display palette from 12 to target palette 9.
+Another preserves palette but changes the outer 3×3 pattern. Two
+leave/re-enter applications make that pattern equal to the fixed target.
+
+The successful temporal CSP is
+`contextual teleport → R2 reset → palette morphism → R1 reset → shape
+morphism² → terminal`, with segment costs `16 → reset`, `5`, `7 → reset`,
+`10`, `2`, and `9`. The final suffix exactly consumes the 21-action horizon.
+A contrasting probe proved that a horizon reset after equality restores the
+unsolved display. The next offspring must learn these roles and contextual
+edges online; no scripted trace receives score attribution.
+
 ## Rejected offspring: cross-level algebra was natural but not sufficient
 
 V95 `candidate-304a6d8e5158b3ae` is a frozen experimental child of v94b.
