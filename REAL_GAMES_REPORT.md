@@ -9,7 +9,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 > It has solved 51 of 183 levels across 15 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | v99k verified full-suite result | Meaning |
+| Outcome metric | v99l accepted full-suite result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **3 / 25** | `sb26`, `ft09`, and `cd82` were solved through their final levels. |
 | Games with progress | **15 / 25** | At least one level was solved in fifteen games. |
@@ -19,36 +19,38 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
 | Kaggle submissions | **2** | V65b `55113224` and v74 `55123277` are complete at public score **0.02** each. V98 notebook version 1 is complete but its competition request hit the daily quota, so it has no submission ID. |
 
-The current verified v99k process-isolated result is
-[`reports/official-isolated-v99k-complementary-display-resource-horizon-400.json`](reports/official-isolated-v99k-complementary-display-resource-horizon-400.json),
+The current verified v99l process-isolated result is
+[`reports/official-isolated-v99l-prospective-naturality-probe-400.json`](reports/official-isolated-v99l-prospective-naturality-probe-400.json),
 SHA-256
-`8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`.
-It binds frozen candidate `candidate-ddf2529a2bae5601`, inference source
-`794d9a1`, candidate commit and report source `38cb243`, and inference
+`78e4373caf5095112141f67fcff30b694f2f1d07f9b90155b40cb8b04b0e6449`.
+It binds frozen candidate `candidate-94f98951742396fb`, inference source
+`72e1345`, candidate commit `80a8069`, and inference
 fingerprint
-`1ee5f03659be2e70ce6b3d52066468ab5a8bb783e55fb4ba5c7b063f9ee39a7f`.
-Relative to v98, it changes only `ls20`: 3/7 becomes 4/7 and the vector changes
-from `[17,112,51,220,0,0,0]` to `[17,112,51,133,87,0,0]`. All other 24
-score/level/action/reset signatures remain exact. The complete quality gate
-passes with 516 tests and 3 skips, Ruff, and mypy.
+`33c7705d36a757db76001afd02bac6d03396923211e46a34498b8772bd10ef8c`.
+Relative to v99k, it changes only `ls20`: 4/7 is preserved while the vector
+changes from `[17,112,51,133,87,0,0,0]` to
+`[17,45,49,133,156,0,0]`, recovering 69 actions in the completed prefix and
+using one fewer reset. All other 24 score/level/action/reset signatures remain
+exact. The complete quality gate passes with 521 tests and 3 skips, Ruff, and
+mypy.
 Two exact exports reproduce byte-for-byte, both network-disabled smoke paths
 pass, and the technical prize audit reports `technical_ready: true`. Exact
 SHA-256 values are candidate
-`fa2c05667cca8078123d0e517f7918a9a701a8e1dfa9d6dfb35e0332d92bbc58`,
+`11e728e0477909207a15b9825af87f3153744c7ca57a2bab0253bb9769878822`,
 overlay
-`0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`,
+`4612b3a9adcbd6fa366d10e6eeb25345c16784f36adce08f7b66e825739707e2`,
 and notebook
-`dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`.
-V99k is accepted locally. Its exact private Kaggle notebook version 1
-completed and emitted `submission.parquet`; the competition request was
-quota-blocked and created no submission ID.
+`b62522c08d85802651dfd3bc57e62fde2006124a7f53bb2e0ec56fc52716ece2`.
+V99l is accepted locally. Its exact Kaggle notebook remains to be published;
+v99k's completed private notebook remains the latest deployed artifact.
 
 ## Evaluation surfaces
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
 | Target-only `ls20` reruns | v99l prospective naturality probe, preservation-verified efficiency gain | **30.3413138108 for one game** | exact 4/7 at `[17,45,49,133,156,0,0,0]` twice; same completed levels as v99k, but the four-level prefix falls from 313 to 244 actions | scorecards `2da21321-b2da-4298-b4cb-937f647fc5c7` and `a4dc3cf8-9139-43d9-a9ee-1497dd10f1a2`; deterministic 69-action prefix gain |
-| Process-isolated accepted-progress preservation gate | v99l prospective naturality probe, promotion candidate | **36.0543211900 gate mean** | 51 levels in 5,185 actions; all 14 non-`ls20` signatures exactly preserve v99k; `ls20` keeps 4/7, shortens its completed prefix by 69 actions, and uses one fewer reset | target attribution and non-regression pass; complete frozen 25-game gate pending |
+| Process-isolated accepted-progress preservation gate | v99l prospective naturality probe, accepted | **36.0543211900 gate mean** | 51 levels in 5,185 actions; all 14 non-`ls20` signatures exactly preserve v99k; `ls20` keeps 4/7, shortens its completed prefix by 69 actions, and uses one fewer reset | target attribution and non-regression pass |
+| Complete process-isolated 25-game suite | v99l prospective naturality probe, accepted | **21.6325927140 / 100** | 51/183 levels, 15 games with progress, 3 complete, 9,185 actions; all 24 non-`ls20` signatures exact; `ls20` prefix 313→244 actions | frozen candidate `candidate-94f98951742396fb`; all quality, export, smoke, and technical-audit gates pass |
 | Process-isolated official local suite | v92 accepted | **20.5617973044 / 100** | 3 games beaten; 48/183 levels across 15 games; 9,185 actions | exact v84m preservation on 24/24 non-target games; full quality/export/smoke gates; 25/25 coverage |
 | Process-isolated official local suite | v84m former accepted parent | **20.4189401616 / 100** | 3 games beaten; 47/183 levels across 14 games; 9,185 actions | historical accepted checkpoint; superseded by v92 |
 | Process-isolated 14-game falsifier | v85 compressed progress-path transport, rejected | **35.9812800045 gate mean** | no added level; `lp85` improved, `ft09` regressed 99.0037508892→89.2285714286 | operative but rejected; accepted v84m remains unchanged |

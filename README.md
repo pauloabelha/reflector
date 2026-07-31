@@ -23,7 +23,7 @@ Last verified: 2026-07-31
 > It has solved **51 of 183 levels across 15 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | v99k full-suite result |
+| Metric | v99l accepted full-suite result |
 | --- | ---: |
 | Complete games beaten | **3 / 25** |
 | Games with at least one solved level | **15 / 25** |
@@ -31,22 +31,22 @@ Last verified: 2026-07-31
 | Official local score | **21.632592714022195 / 100** |
 | Games evaluated | **25 / 25** |
 | Total actions | **9,185** |
-| Frozen inference source | `794d9a1` |
-| Frozen candidate commit | `38cb243` |
-| Candidate | `candidate-ddf2529a2bae5601` |
+| Frozen inference source | `72e1345` |
+| Frozen candidate commit | `80a8069` |
+| Candidate | `candidate-94f98951742396fb` |
 | Kaggle submissions | **2**: `55113224` and `55123277` complete |
 | Kaggle public score | **0.02** for frozen v65b and v74 |
 | Kaggle private score | **unavailable** |
 
 The score is about **21.63% of the 100-point scale**. It is a local
 public-development result, not a Kaggle leaderboard score. Relative to v98,
-v99k recognizes exact complementary displays as presentations of one binary
-partition, learns shape and palette morphisms from contact, composes
-contextual resource options, and treats joint resource reappearance as a
-relational horizon reset. This autonomously adds `ls20` level 4 while exactly
-preserving all other 24 score/level/action/reset signatures. The clean
+V99l preserves v99k's complementary-display/resource-horizon solution, then
+relocates its retained body partition under color isomorphism and tests one
+substrate-supported inherited action as a prospective commuting square. It
+keeps the same score and completed levels while recovering 69 actions in the
+`ls20` four-level prefix, with all other 24 signatures exact. The clean
 process-isolated result is in
-[the v99k public-development report](reports/official-isolated-v99k-complementary-display-resource-horizon-400.json).
+[the v99l public-development report](reports/official-isolated-v99l-prospective-naturality-probe-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 

@@ -11,8 +11,8 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Fully artifact-gated accepted agent: v99k
-  `candidate-ddf2529a2bae5601`.
+- Fully artifact-gated accepted agent: v99l
+  `candidate-94f98951742396fb`.
 - Local known-public-development score: **21.632592714022195 / 100**.
 - Progress: **51 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
@@ -20,8 +20,8 @@ Reflector is an interesting but still weak ARC-AGI-3 agent.
 - Kaggle submissions: v65b `55113224` and v74 `55123277` complete.
 - Kaggle public score: **0.02 for frozen v65b and v74**.
 - Kaggle private score: **unavailable**.
-- V99k passes target repeat, preservation, the frozen full suite, quality, and
-  exact deployment gates. Relative to v98, only `ls20` changes; all 24 other
+- V99l passes target repeat, preservation, the frozen full suite, quality, and
+  exact deployment gates. Relative to v99k, only `ls20` changes; all 24 other
   score/action vectors are exactly preserved.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
@@ -29,6 +29,30 @@ one-level accommodations on known public games. The central unsolved problem
 is not adding more symbolic vocabulary. It is learning the right causal state,
 goal, and reusable operator from very few costly interventions, then executing
 efficiently on a genuinely unseen game.
+
+## 2026-07-31 — naturality probes turn compressed knowledge into an option
+
+V99l fixes a precise hierarchy defect: a complete primitive action algebra,
+body partition, and observed traversable substrate survived a level boundary
+but remained inert until random exploration rediscovered motion. The new
+scheme relocates the body uniquely up to color isomorphism and admits one
+untried inherited action only when every newly occupied cell is supported by
+the retained substrate. The next rendered transition must make the predicted
+relative translation commute before the algebra receives authority.
+
+This is a small but genuine synthesis of category theory, Piaget, Drescher,
+and model-based HRL. The retained structure is a compressed scheme; the probe
+is assimilation; a noncommuting transition triggers accommodation; and a
+confirmed primitive becomes an information-valued option for the higher-level
+CSP. No coordinate, route, color identity, game identity, or terminal claim
+crosses the boundary.
+
+Two exact target runs change `ls20` from `[17,112,51,133,87,0,0]` to
+`[17,45,49,133,156,0,0]`. The four completed levels therefore consume 244
+rather than 313 actions. All 24 non-target full-suite signatures are exact,
+and every deployment gate passes. The headline score remains
+21.632592714022195; the gain is 69 actions of causal headroom for the next
+level, not an extra solved level.
 
 ## 2026-07-31 — complementary displays and relational horizon reset
 

@@ -2,16 +2,16 @@
 
 Audit date: 2026-07-31.
 
-Current accepted export: v99k
-`candidate-ddf2529a2bae5601`, local public-development score
+Current accepted export: v99l
+`candidate-94f98951742396fb`, local public-development score
 `21.632592714022195 / 100`. Exact SHA-256 values:
 
 - candidate:
-  `fa2c05667cca8078123d0e517f7918a9a701a8e1dfa9d6dfb35e0332d92bbc58`;
+  `11e728e0477909207a15b9825af87f3153744c7ca57a2bab0253bb9769878822`;
 - overlay:
-  `0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`;
+  `4612b3a9adcbd6fa366d10e6eeb25345c16784f36adce08f7b66e825739707e2`;
 - notebook:
-  `dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`.
+  `b62522c08d85802651dfd3bc57e62fde2006124a7f53bb2e0ec56fc52716ece2`.
 
 This is local evidence, not a Kaggle public or private score.
 
@@ -22,7 +22,7 @@ Submission status, 2026-07-31 UTC:
 - its competition submission request returned HTTP 400 because v74 submission
   `55123277` had already consumed the one-per-day allowance;
 - no v84m competition submission ID exists yet;
-- v99k is now the accepted local package;
+- v99l is now the accepted local efficiency package;
 - private notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed
   successfully and emitted `submission.parquet`;
 - its competition submission request also returned HTTP 400 while v74 remains
@@ -60,6 +60,12 @@ Submission status, 2026-07-31 UTC:
   contains only v65b and v74, so no v99k submission ID exists;
 - submit completed v99k notebook version 1 unchanged after the allowance
   resets;
+- the exact v99l candidate exports byte-identically twice, both
+  network-disabled smoke paths pass, and the technical prize audit reports
+  `technical_ready: true`;
+- v99l preserves v99k's score and completed levels while recovering 69
+  completed-prefix actions on `ls20`; publish and commit its exact hashed
+  notebook before requesting the next competition submission;
 - v74 submission `55123277` has now completed with public score `0.02`;
 - historical v65b submission `55113224` is complete with Kaggle public score
   `0.02`; the private score remains unavailable.

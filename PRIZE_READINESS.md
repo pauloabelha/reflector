@@ -19,7 +19,7 @@ distinct symbolic thesis, an operative implementation, deterministic traces,
 ablation machinery, and explicit approximations. It does **not** yet have
 enough multi-game evidence for a prize-quality paper.
 
-The current accepted v99k public-development result is
+The current accepted v99l public-development result is
 `21.632592714022195/100`: 51/183 levels across 15/25 games, with `sb26`,
 `ft09`, and `cd82` fully completed. This is materially stronger than fixture-only
 compatibility but remains known-public development evidence, not a Kaggle
@@ -79,21 +79,21 @@ Reflector:
 - separates third-party MIT starter code from dual-licensed contributions;
 - discloses that the symbolic model has parameters but no weights.
 
-The accepted inference package is frozen at source commit `794d9a1` and
-candidate commit `38cb243`, candidate `candidate-ddf2529a2bae5601`. Its exact 25-game
+The accepted inference package is frozen at source commit `72e1345` and
+candidate commit `80a8069`, candidate `candidate-94f98951742396fb`. Its exact 25-game
 scorecard has complete 25/25
 coverage; its target repeats, 15-game preservation gate, full suite,
 pytest, Ruff, mypy, direct export, both network-disabled smoke paths, and
 technical prize audit pass. Exact current artifact hashes are:
 
 - candidate:
-  `fa2c05667cca8078123d0e517f7918a9a701a8e1dfa9d6dfb35e0332d92bbc58`;
+  `11e728e0477909207a15b9825af87f3153744c7ca57a2bab0253bb9769878822`;
 - Kaggle overlay:
-  `0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`;
+  `4612b3a9adcbd6fa366d10e6eeb25345c16784f36adce08f7b66e825739707e2`;
 - Kaggle notebook:
-  `dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`;
+  `b62522c08d85802651dfd3bc57e62fde2006124a7f53bb2e0ec56fc52716ece2`;
 - accepted 25-game report:
-  `8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`.
+  `78e4373caf5095112141f67fcff30b694f2f1d07f9b90155b40cb8b04b0e6449`.
 
 `technical_ready` is true. `prize_ready` remains false because the account,
 publication, and committed Kaggle-rerun gates below are manual.
@@ -121,6 +121,11 @@ The exact private v99k notebook
 Its competition request returned HTTP 400 under the same daily allowance, and
 the subsequent submissions listing confirms that no v99k submission ID was
 created. Submit this already-completed version unchanged after the slot resets.
+
+The accepted v99l export passes byte-identical dual export, both
+network-disabled smoke paths, and the technical audit. Its exact notebook has
+not yet been committed on Kaggle; v99k remains the latest completed private
+notebook until that deployment finishes.
 
 ## Required account and publication actions
 

@@ -7,33 +7,30 @@ Last updated: 2026-07-31
 Reflector's best complete, process-isolated 25-game public-development result is
 **21.632592714022195 / 100**.
 
-- Candidate: `candidate-ddf2529a2bae5601` (`v99k`)
-- Frozen inference source: `794d9a1`
-- Frozen candidate commit: `38cb243`
-- Accepted package commit: `d883fac` (pushed to participant remote
-  `reflector/codex/v74-fresh`)
-- Accepted parent: `candidate-59010e6c00da94ac` (`v98`)
+- Candidate: `candidate-94f98951742396fb` (`v99l`)
+- Frozen inference source: `72e1345`
+- Frozen candidate commit: `80a8069`
+- Accepted parent: `candidate-ddf2529a2bae5601` (`v99k`)
 - Coverage: 25/25 games
 - Levels: **51/183**
 - Games with progress: **15/25**
 - Complete games: **3/25**
 - Actions: **9,185**
 - Report:
-  [`reports/official-isolated-v99k-complementary-display-resource-horizon-400.json`](reports/official-isolated-v99k-complementary-display-resource-horizon-400.json)
+  [`reports/official-isolated-v99l-prospective-naturality-probe-400.json`](reports/official-isolated-v99l-prospective-naturality-probe-400.json)
 - Candidate:
-  [`candidates/v99k-complementary-display-resource-horizon-400.json`](candidates/v99k-complementary-display-resource-horizon-400.json)
+  [`candidates/v99l-prospective-naturality-probe-400.json`](candidates/v99l-prospective-naturality-probe-400.json)
 - Report SHA-256:
-  `8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`
+  `78e4373caf5095112141f67fcff30b694f2f1d07f9b90155b40cb8b04b0e6449`
 
-Relative to accepted v98, v99k changes exactly one game. `ls20` advances from
-3/7 at `[17,112,51,220,0,0,0]` to
-**4/7 at `[17,112,51,133,87,0,0]`**; all other 24 complete
-score/level/action/reset signatures and the 9,185-action total are exactly
-preserved. The aggregate gain is **+0.3565096952908604 points** and one level.
-Target repeat, accepted-progress preservation, the frozen complete-suite gate,
-quality, exact export, offline smoke, and technical audit all pass:
-**516 tests passed, 3 skipped**, Ruff and mypy are clean, and
-`technical_ready: true`. V99k is the accepted local package.
+Relative to v99k, v99l preserves the score and all 51 completed levels while
+changing only `ls20`: its completed four-level prefix falls from 313 actions
+at `[17,112,51,133,…]` to **244 at `[17,45,49,133,…]`**, leaving 156 rather
+than 87 actions for level 5 and using one fewer reset. All 24 non-target
+score/level/action/reset signatures are exact. Target repeat, preservation,
+the frozen complete suite, quality, exact export, offline smoke, and technical
+audit pass: **521 tests passed, 3 skipped**, Ruff and mypy are clean, and
+`technical_ready: true`. V99l is the accepted local efficiency package.
 
 Kaggle submissions `55113224` (v65b) and `55123277` (v74) are complete at
 public score **0.02** each. The exact accepted v99k private notebook
@@ -63,8 +60,19 @@ The 15-game process-isolated preservation gate passes at
 score/level/action/reset signatures are exact versus v99k; `ls20` alone has
 the shorter prefix and one fewer reset. Its report SHA-256 is
 `84cbf60a9acde082ef4b8905b0f99898088d09b0fb7eb462e11ae58731e66e9c`.
-V99l is still live and unfrozen; v99k remains accepted until the frozen
-full-suite, quality, and package gates pass.
+Frozen candidate `candidate-94f98951742396fb` at commit `80a8069` passes the
+complete 25-game process-isolated gate at the same accepted headline score,
+**21.632592714022195/100**, with 51/183 levels, 15 games with progress, 3
+complete games, and 9,185 actions. All 24 non-`ls20` signatures are exact;
+`ls20` alone carries the shorter prefix and one fewer reset. The full report
+SHA-256 is
+`78e4373caf5095112141f67fcff30b694f2f1d07f9b90155b40cb8b04b0e6449`.
+Two exact exports are byte-identical; both network-disabled smoke paths pass,
+and the technical audit reports `technical_ready: true`. Exact hashes are
+candidate `11e728e0477909207a15b9825af87f3153744c7ca57a2bab0253bb9769878822`,
+overlay `4612b3a9adcbd6fa366d10e6eeb25345c16784f36adce08f7b66e825739707e2`,
+and notebook `b62522c08d85802651dfd3bc57e62fde2006124a7f53bb2e0ec56fc52716ece2`.
+V99l is accepted locally; its exact Kaggle notebook is the next deployment.
 
 V99l relocates the retained body partition from exact connected components,
 then tests an inherited relative action only when its newly occupied cells lie
@@ -74,11 +82,11 @@ recolored substrate, out-of-bounds codomains, and exhausted probes abstain.
 This turns compressed cross-level knowledge into a bounded information option
 without retaining a coordinate or route.
 
-The accepted gain is not a coordinate script. Its compressed state consists
+The accepted lineage is not a coordinate script. Its compressed state consists
 of a host-preserving complementary-display quotient, contact-induced
 shape/palette morphism types, bounded resource identities, contextual
 transition edges, and a relational horizon-reset witness. The next offspring
-must preserve v99k exactly and should generalize this principle instead of
+must preserve v99l exactly and should generalize this principle instead of
 adding another game-specific detector:
 
 1. infer causal horizons from generic joint reappearance/change-point evidence;
@@ -91,14 +99,12 @@ adding another game-specific detector:
 5. retain only sufficient causal statistics and counterexamples, compressing
    away raw histories once their predictions are subsumed.
 
-The immediate operational action is to resubmit completed Kaggle notebook
-version 1 when the one-per-day slot resets. The immediate scientific action is
-to freeze the minimal v99l inference change, run the complete 25-game
-process-isolated gate, and only then package it if no completion regresses.
-The transformed-control, deterministic-repeat, quality, exact-export, and
-Kaggle-smoke requirements remain unchanged.
+The immediate operational action is to publish and run the exact v99l Kaggle
+notebook, then submit it if the one-per-day slot is available. The immediate
+scientific action is to use its 156-action level-5 trace to learn a more
+general causal horizon/option representation without losing preservation.
 
-## Verified v99k full-suite breakthrough: complementary-display accommodation
+## Verified v99k score breakthrough: complementary-display accommodation
 
 The first fresh-process v99k target run autonomously advances `ls20` through
 level 4. It scores **30.341313810842898** for that game at **4/7** levels with

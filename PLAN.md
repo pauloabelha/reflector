@@ -363,6 +363,27 @@ resets to `[17,45,49,133,156,0,0]` with one reset. Preservation report:
 SHA-256 `84cbf60a9acde082ef4b8905b0f99898088d09b0fb7eb462e11ae58731e66e9c`.
 V99l now qualifies for source freeze and the complete process-isolated gate.
 
+Inference source commit `72e1345`, fingerprint
+`33c7705d36a757db76001afd02bac6d03396923211e46a34498b8772bd10ef8c`,
+is frozen as v99l `candidate-94f98951742396fb` at commit `80a8069`. The
+complete frozen 25-game process-isolated gate passes at
+**21.632592714022195/100**, 51/183 levels, 15 games with progress, 3 complete
+games, and 9,185 actions. All 24 non-`ls20` signatures are exact versus v99k;
+`ls20` alone carries the repeated 69-action prefix gain and one fewer reset.
+Report `reports/official-isolated-v99l-prospective-naturality-probe-400.json`,
+SHA-256 `78e4373caf5095112141f67fcff30b694f2f1d07f9b90155b40cb8b04b0e6449`.
+All remaining promotion gates pass. The complete quality result is **521
+passed, 3 skipped**; repository-wide Ruff and strict mypy over 90 source files
+are clean. Two exports reproduce byte-identical overlay and notebook files.
+Both network-disabled smoke paths select legal action 3, and the technical
+audit reports `TECHNICAL_READY=true`. Exact artifact SHA-256 values are
+candidate `11e728e0477909207a15b9825af87f3153744c7ca57a2bab0253bb9769878822`,
+overlay `4612b3a9adcbd6fa366d10e6eeb25345c16784f36adce08f7b66e825739707e2`,
+and notebook `b62522c08d85802651dfd3bc57e62fde2006124a7f53bb2e0ec56fc52716ece2`.
+V99l is accepted as the minimal score-neutral efficiency successor to v99k.
+Publish and run the exact hashed notebook, then submit it if the daily slot is
+available.
+
 ### V99m addendum: reset-scoped negative transition evidence (preregistered)
 
 The v99l level-5 trace makes the next failure falsifiable. At the first joint
@@ -525,8 +546,8 @@ The live offspring is therefore collapsed back to **v99l only**: prospective
 naturality probes over the retained body/action/substrate structure. This is
 the minimum-description descendant with a demonstrated outcome: 69 fewer
 actions in the accepted four-level `ls20` prefix. The exact target repeat and
-accepted-progress preservation gates pass; next are source freeze, the full
-suite, and package checks if no completion regresses.
+accepted-progress preservation and frozen full-suite gates pass; next are the
+quality and package checks.
 
 ## Active breakthrough: compile `ls20` level 3 as a fibered product CSP
 
