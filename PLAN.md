@@ -129,9 +129,16 @@ color 14 at `(39,30)`. V84g completes symmetry beyond the frame boundary,
 requires a unique minimum-cost bipartite binding, and commits the resulting
 24-action two-mover option so intermediate X recoloring cannot erase identity.
 
+V84g executed all 24 positional actions but remained 3/8. Swatch contact is a
+causal paint transition, not nuisance recoloring. A black-box program that
+first painted plus `6→12` and X `10→14`, then avoided all destructive swatches
+while reaching the same embedding targets, solved level 4 in 44 actions. V84h
+lifts search to `(anchor,color)` and compiles this waypoint structure with a
+4,096-expansion bound.
+
 Required gates are:
 
-1. validate v84g on level 4 without weakening exact-cover safety;
+1. validate v84h's causal paint-state plan on level 4;
 2. reproduce every multi-level gain exactly;
 3. exact preservation of the v82f suite outside changed targets;
 4. full 25-game score of at least 20 before Kaggle submission.

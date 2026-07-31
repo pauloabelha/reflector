@@ -160,6 +160,14 @@ at `(39,30)`. Committing both routes as one option is essential because the X
 is recolored during its first movement. Persistent causal identity again
 matters more than the latest rendered color.
 
+V84g falsified the purely positional endpoint despite executing all 24 planned
+actions. Interventions showed why: contact with a reference swatch repaints the
+entire mover. A corrected black-box program painted plus `6→12` and X `10→14`
+before embedding them, and moved away from the palette row before translating
+sideways so the X did not cross the color-6 swatch. It solved level 4 in 44
+actions. Planning must therefore include color in causal state and treat paint
+acquisition/retention as option subgoals.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

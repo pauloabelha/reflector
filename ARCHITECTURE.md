@@ -185,6 +185,12 @@ boundary-clipped arm remains part of the latent mover mask. A binding is
 compiled only when reachable subset embedding yields a unique minimum-cost
 bijection. The complete multi-mover route is then one committed hierarchical
 option, preserving mover identity through any intermediate recoloring.
+Where visible swatches act as paint stations, the planner lifts position to
+`(anchor, color)`. Shape–swatch intersection is a causal color transition.
+Bounded A* must acquire the assigned landmark color and reach the embedding
+target without later crossing a destructive swatch. This makes an intermediate
+paint contact an explicit hierarchical subgoal rather than a rendering side
+effect.
 
 This implements a narrow Piagetian cycle:
 

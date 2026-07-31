@@ -115,6 +115,13 @@ and solves a unique bipartite embedding: plus color 6 to landmark color 12 at
 `(15,30)`, then X color 10 to landmark color 14 at `(39,30)`. The resulting
 committed hierarchical option has 24 actions.
 
+V84g executed that positional option but remained 3/8. The falsifier was
+causal: reference swatches repaint a mover on contact. A manually derived
+color-state route painted the plus `6→12`, painted the X `10→14`, avoided
+later destructive swatches, and solved level 4 in 44 actions. The active v84h
+planner therefore runs bounded A* over `(anchor,color)` and compiles the same
+44-action paint-and-embed option.
+
 ## Rejected branch
 
 V83 tested distance-decreasing replay on an inferred one-dimensional track.

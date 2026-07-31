@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
+import heapq
 from collections import Counter
 from dataclasses import dataclass
 from itertools import permutations
 
 from .constellation_alignment import _embedding_targets, _landmark_groups
 from .scheme_category import (
-    FocusedRewriteObject,
-    FocusedVariable,
     TranslationMorphism,
-    compile_focused_option,
 )
 
 type Frame = tuple[tuple[int, ...], ...]
@@ -80,12 +78,92 @@ def _unbounded_central_completion(
     )
 
 
+def _compile_paint_route(
+    mover: ReferenceMover,
+    target: Point,
+    target_color: int,
+    morphisms: tuple[TranslationMorphism, ...],
+    paint_regions: dict[int, frozenset[Point]],
+    *,
+    width: int,
+    height: int,
+    max_expansions: int,
+) -> tuple[int, ...] | None:
+    offsets = frozenset(
+        (x - mover.anchor[0], y - mover.anchor[1])
+        for x, y in mover.points
+    )
+    maximum_step = max(
+        abs(item.displacement[0]) + abs(item.displacement[1])
+        for item in morphisms
+    )
+
+    def heuristic(point: Point) -> int:
+        distance = abs(point[0] - target[0]) + abs(point[1] - target[1])
+        return (distance + maximum_step - 1) // maximum_step
+
+    start = mover.anchor, mover.color
+    frontier: list[
+        tuple[int, int, Point, int, tuple[int, ...]]
+    ] = [(heuristic(mover.anchor), 0, mover.anchor, mover.color, ())]
+    best: dict[tuple[Point, int], int] = {start: 0}
+    expansions = 0
+    while frontier and expansions < max_expansions:
+        _priority, cost, point, color, actions = heapq.heappop(frontier)
+        if cost != best.get((point, color)):
+            continue
+        if point == target and color == target_color:
+            return actions
+        expansions += 1
+        for morphism in sorted(morphisms):
+            successor = (
+                point[0] + morphism.displacement[0],
+                point[1] + morphism.displacement[1],
+            )
+            if not (
+                0 <= successor[0] < width
+                and 0 <= successor[1] < height
+            ):
+                continue
+            contacts = {
+                paint_color
+                for paint_color, region in paint_regions.items()
+                if any(
+                    (
+                        pixel[0] - successor[0],
+                        pixel[1] - successor[1],
+                    )
+                    in offsets
+                    for pixel in region
+                )
+            }
+            if len(contacts) > 1:
+                continue
+            next_color = next(iter(contacts), color)
+            state = successor, next_color
+            next_cost = cost + 1
+            if next_cost >= best.get(state, max_expansions + 1):
+                continue
+            best[state] = next_cost
+            heapq.heappush(
+                frontier,
+                (
+                    next_cost + heuristic(successor),
+                    next_cost,
+                    successor,
+                    next_color,
+                    (*actions, morphism.action_id),
+                ),
+            )
+    return None
+
+
 def compile_reference_constellation_plan(
     frame: Frame,
     morphisms: tuple[TranslationMorphism, ...],
     *,
     switch_action: int,
-    max_expansions: int = 512,
+    max_expansions: int = 4096,
 ) -> ReferenceConstellationPlan:
     """Compile a unique two-mover, cross-color landmark assignment."""
 
@@ -134,6 +212,24 @@ def compile_reference_constellation_plan(
     if len(movers) != 2 or sum(mover.selected for mover in movers) != 1:
         return ReferenceConstellationPlan((), (), "not-grounded")
     movers.sort(key=lambda mover: (not mover.selected, mover.color))
+    paint_regions: dict[int, frozenset[Point]] = {}
+    for color in sorted(counts):
+        for component in _components(frame, color):
+            if len(component) != 16:
+                continue
+            component_width = (
+                max(x for x, _y in component)
+                - min(x for x, _y in component)
+                + 1
+            )
+            component_height = (
+                max(y for _x, y in component)
+                - min(y for _x, y in component)
+                + 1
+            )
+            if component_width == component_height == 4:
+                paint_regions[color] = component
+                break
     step = min(
         abs(item.displacement[0]) + abs(item.displacement[1])
         for item in morphisms
@@ -178,24 +274,18 @@ def compile_reference_constellation_plan(
             candidate_targets = domains.get((index, landmark_color), ())
             options: list[tuple[int, Point, tuple[int, ...]]] = []
             for target in candidate_targets:
-                option = compile_focused_option(
-                    FocusedRewriteObject(
-                        (
-                            FocusedVariable(
-                                index,
-                                mover.anchor,
-                                frozenset({target}),
-                            ),
-                        ),
-                        index,
-                    ),
+                route = _compile_paint_route(
+                    mover,
+                    target,
+                    landmark_color,
                     morphisms,
+                    paint_regions,
                     width=width,
                     height=height,
                     max_expansions=max_expansions,
                 )
-                if option.actions:
-                    options.append((len(option.actions), target, option.actions))
+                if route:
+                    options.append((len(route), target, route))
             if not options:
                 valid = False
                 break
