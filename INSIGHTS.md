@@ -274,6 +274,36 @@ total action 400 exactly. This is a useful planning lesson: natural
 transformations should be optimized over coupled commuting paths, because
 locally indispensable primitives can cancel at the level of the composite.
 
+V84l reproduced that exact composite autonomously: 7/8 levels,
+`[24,36,56,44,63,57,120,0]`, and score 77.7777777778. The agreement among
+black-box prediction, compiled option length, and observed transition is exact
+for a third successive new level. The unchanged-suite projection is
+19.4665592092, so this is a large validated abstraction gain but not yet the
+20-point acceptance threshold.
+
+An independent fresh-process rerun reproduced the exact vector, establishing
+determinism twice. The remaining problem is now cross-game selection: acquire
+at least 0.5334407908 aggregate points with the smallest independently
+falsifiable extension, then run the full preservation gate.
+
+`tr87` level 5 supplies a compact example of accommodation by dualization.
+The earlier successful scheme read demonstrations and rewrote a flat answer
+sequence. The new panel reverses those roles: two flat rows are fixed, while
+the editable objects are alternating color-runs. Keeping the old direction as
+an invariant made the panel look unrelated; preserving only the deeper
+structure reveals the same analogy under a change of presentation.
+
+Operationally, the run-length map
+`(1→1),(1→2),(2→1),(1→1)` is a finite partition isomorphism. It transports
+two length-five sequences into eight product-valued editable groups. Each
+glyph is quotiented by the dihedral group before transport, so orientation is
+nuisance while class identity remains causal. This compresses the target from
+eight separately diagnosed goals into one partition plus two sequences and
+reuses the previously learned selector/mutation controls unchanged. A derived
+19-action public-wrapper program completed the real level. The general
+compiler grounds the real frame uniquely and abstains on malformed partition
+controls; autonomous evidence is the next falsifier.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

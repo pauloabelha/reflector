@@ -26,6 +26,15 @@ class DihedralAnalogy:
     selected_index: int
 
 
+@dataclass(frozen=True, slots=True)
+class GroupedDihedralAnalogy:
+    """A partition transported between fixed and editable glyph sequences."""
+
+    groups: tuple[tuple[GlyphTile, ...], ...]
+    targets: tuple[tuple[frozenset[Mask], ...], ...]
+    selected_index: int
+
+
 def dihedral_variants(mask: Mask) -> tuple[Mask, ...]:
     """Return the eight square symmetries in a stable order."""
 
@@ -84,6 +93,43 @@ def _framed_tiles(frame: Frame) -> tuple[GlyphTile, ...]:
                 )
                 tiles.append(GlyphTile(x, y, size, color, mask))
     return tuple(tiles)
+
+
+def _disjoint_rows(
+    tiles: tuple[GlyphTile, ...],
+) -> tuple[tuple[GlyphTile, ...], ...]:
+    rows: dict[tuple[int, int], list[GlyphTile]] = {}
+    for tile in tiles:
+        rows.setdefault((tile.y, tile.size), []).append(tile)
+    disjoint_rows: list[tuple[GlyphTile, ...]] = []
+    for items in rows.values():
+        disjoint: list[GlyphTile] = []
+        next_x = -1
+        for item in sorted(items, key=lambda candidate: candidate.x):
+            if item.x < next_x:
+                continue
+            disjoint.append(item)
+            next_x = item.x + item.size
+        if len(disjoint) >= 2:
+            disjoint_rows.append(tuple(disjoint))
+    return tuple(
+        sorted(
+            disjoint_rows,
+            key=lambda items: (items[0].y, items[0].size),
+        )
+    )
+
+
+def _color_runs(
+    row: tuple[GlyphTile, ...],
+) -> tuple[tuple[GlyphTile, ...], ...]:
+    runs: list[list[GlyphTile]] = []
+    for item in row:
+        if not runs or runs[-1][0].color != item.color:
+            runs.append([item])
+        else:
+            runs[-1].append(item)
+    return tuple(tuple(run) for run in runs)
 
 
 def _sequence_targets(
@@ -237,28 +283,7 @@ def _bridge_targets(
 def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
     """Ground class-valued demonstrations, queries, and the active answer."""
 
-    tiles = _framed_tiles(frame)
-    rows: dict[tuple[int, int], list[GlyphTile]] = {}
-    for tile in tiles:
-        rows.setdefault((tile.y, tile.size), []).append(tile)
-    disjoint_rows: list[tuple[GlyphTile, ...]] = []
-    for items in rows.values():
-        disjoint: list[GlyphTile] = []
-        next_x = -1
-        for item in sorted(items, key=lambda candidate: candidate.x):
-            if item.x < next_x:
-                continue
-            disjoint.append(item)
-            next_x = item.x + item.size
-        if len(disjoint) >= 2:
-            disjoint_rows.append(tuple(disjoint))
-    ordered_rows = tuple(
-        row
-        for row in sorted(
-            disjoint_rows,
-            key=lambda items: (items[0].y, items[0].size),
-        )
-    )
+    ordered_rows = _disjoint_rows(_framed_tiles(frame))
     mixed_rows: list[tuple[GlyphTile, ...]] = []
     ternary_rows: list[tuple[GlyphTile, ...]] = []
     single_color_rows: list[tuple[GlyphTile, ...]] = []
@@ -320,6 +345,141 @@ def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
                     query,
                     answer,
                     targets,
+                    selected[0],
+                )
+            )
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def infer_grouped_dihedral_analogy(
+    frame: Frame,
+) -> GroupedDihedralAnalogy | None:
+    """Infer an editable run partition equivalent to two fixed sequences.
+
+    The fixed rows provide class-valued targets.  Alternating color runs in
+    earlier rows provide the editable partition, so no color, coordinate, or
+    run-length signature is privileged.
+    """
+
+    rows = _disjoint_rows(_framed_tiles(frame))
+    single_rows = tuple(
+        row for row in rows if len({item.color for item in row}) == 1
+    )
+    candidates: list[GroupedDihedralAnalogy] = []
+    for source in single_rows:
+        for answer in single_rows:
+            if (
+                source is answer
+                or len(source) != len(answer)
+                or source[0].size != answer[0].size
+                or source[0].color == answer[0].color
+            ):
+                continue
+            endpoint_colors = {source[0].color, answer[0].color}
+            mixed = tuple(
+                row
+                for row in rows
+                if row[0].y < min(source[0].y, answer[0].y)
+                and all(item.size == source[0].size for item in row)
+                and {item.color for item in row} == endpoint_colors
+            )
+            if not mixed:
+                continue
+            paired_runs: list[
+                tuple[tuple[GlyphTile, ...], tuple[GlyphTile, ...]]
+            ] = []
+            malformed = False
+            for row in mixed:
+                runs = _color_runs(row)
+                if (
+                    len(runs) % 2
+                    or any(
+                        run[0].color
+                        != (
+                            source[0].color
+                            if index % 2 == 0
+                            else answer[0].color
+                        )
+                        for index, run in enumerate(runs)
+                    )
+                ):
+                    malformed = True
+                    break
+                paired_runs.extend(
+                    (runs[index], runs[index + 1])
+                    for index in range(0, len(runs), 2)
+                )
+            if malformed or len(paired_runs) < 2:
+                continue
+            if (
+                sum(len(left) for left, _right in paired_runs) != len(source)
+                or sum(len(right) for _left, right in paired_runs)
+                != len(answer)
+            ):
+                continue
+            groups: list[tuple[GlyphTile, ...]] = []
+            targets: list[tuple[frozenset[Mask], ...]] = []
+            source_cursor = 0
+            answer_cursor = 0
+            for left, right in paired_runs:
+                source_slice = source[
+                    source_cursor : source_cursor + len(left)
+                ]
+                answer_slice = answer[
+                    answer_cursor : answer_cursor + len(right)
+                ]
+                groups.extend((left, right))
+                targets.extend(
+                    (
+                        tuple(
+                            frozenset(dihedral_variants(tile.mask))
+                            for tile in source_slice
+                        ),
+                        tuple(
+                            frozenset(dihedral_variants(tile.mask))
+                            for tile in answer_slice
+                        ),
+                    )
+                )
+                source_cursor += len(left)
+                answer_cursor += len(right)
+
+            selector_scores: list[tuple[int, int]] = []
+            for index, group in enumerate(groups):
+                group_left = min(tile.x for tile in group)
+                group_right = max(tile.x + tile.size for tile in group)
+                top = range(max(0, group[0].y - 3), group[0].y)
+                bottom = range(
+                    group[0].y + group[0].size,
+                    min(
+                        len(frame),
+                        group[0].y + group[0].size + 3,
+                    ),
+                )
+                band = tuple(
+                    frame[y][x]
+                    for y in (*top, *bottom)
+                    for x in range(group_left, group_right)
+                )
+                if not band:
+                    selector_scores.append((0, index))
+                    continue
+                background = Counter(band).most_common(1)[0][0]
+                selector_scores.append(
+                    (sum(cell != background for cell in band), index)
+                )
+            best_score = max(score for score, _index in selector_scores)
+            selected = tuple(
+                index
+                for score, index in selector_scores
+                if score == best_score and score > 0
+            )
+            if len(selected) != 1:
+                continue
+            candidates.append(
+                GroupedDihedralAnalogy(
+                    tuple(groups),
+                    tuple(targets),
                     selected[0],
                 )
             )

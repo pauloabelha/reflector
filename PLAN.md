@@ -229,14 +229,50 @@ step, obstacle bounds, palette fibers, segment spans, loop perimeter, target
 extrema, and focus cycle. Freeze and run it autonomously; do not embed the
 watched action sequence.
 
+V84l passed that autonomous gate once. Frozen
+`candidate-5f09e48c374d0a52` reproduced the exact 120-action level-7
+composition and reached 7/8 at `[24,36,56,44,63,57,120,0]`, score
+77.7777777778. Report
+`reports/experimental-v84l-factor-bundle-re86-r1-400.json`, SHA-256
+`438623478f7e156b806ba606b4450659cb1ebd6012fcc18c5372a7f2dba53689`.
+The projected aggregate is 19.4665592092, leaving 0.5334407908. Repeat v84l,
+then seek the smallest independently verified gain that crosses 20; do not
+submit a projection.
+
+The second fresh-process v84l run exactly reproduced the first. Report
+`reports/experimental-v84l-factor-bundle-re86-r2-400.json`, SHA-256
+`d590a183d2510acfcca9ac427bf1a9f7985a13ade408b598ae82c60f30832c9d`.
+Treat the seven-level gain as deterministic and move to the minimum remaining
+cross-game score opportunity before the full preservation gate.
+
+That opportunity is `tr87` level 5. A frozen-v84l control exactly preserved
+v82f at 4/6, `[56,45,44,38,217,0]`, score 47.6190476190. Its fifth panel
+reverses the established analogy interface: the editable alternating-color
+rows carry group boundaries, while two fixed five-glyph rows supply the target
+classes. The editable run pairs have lengths
+`(1→1),(1→2),(2→1),(1→1)`, whose source and answer totals each equal five.
+Sequentially transporting the fixed rows through this unique partition yields
+eight group goals. A derived 19-action public-wrapper program completed the
+level at total action 202.
+
+The v84m hypothesis is a conservative grouped-dihedral functor. It recognizes
+only equal-size framed glyphs, exactly two endpoint colors, alternating mixed
+runs above compatible fixed rows, equal partition totals, and one uniquely
+marked editable group. It maps each fixed glyph to its dihedral equivalence
+class, transports those classes through the run partition, and reuses only
+causally retained selector/mutation controls. Malformed partitions and
+ambiguous selectors abstain. The real held-out frame grounds uniquely as group
+lengths `[1,1,1,2,2,1,1,1]` with seven unsatisfied groups; synthetic positive
+and negative controls and static checks pass.
+
 Required gates are:
 
-1. integrate and validate the general joint CSP on level 5;
-2. use level 6 as the next falsifier and reach enough `re86` score to imply a
-   full-suite score of at least 20;
-3. reproduce every multi-level gain exactly;
-4. exact preservation of the v82f suite outside changed targets;
-5. full 25-game score of at least 20 before Kaggle submission.
+1. freeze v84m and reproduce the autonomous `tr87` level-5 gain twice;
+2. reject it if the grouped compiler uses more than 66 level actions or fails
+   any structural abstention;
+3. exact preservation of the v82f suite outside `re86` and `tr87`;
+4. full 25-game score of at least 20 before Kaggle submission;
+5. exact export, offline smoke tests, and submission through `KAGGLE.md`.
 
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the

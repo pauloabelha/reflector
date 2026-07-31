@@ -205,6 +205,19 @@ anchors, lattice step, swatch bounds, obstacle bounds, target extrema, and
 perimeter differences. The three object programs and focus transfers execute
 as one protected semi-Markov option.
 
+`dihedral_analogy.py` also supports the inverse presentation of an analogy.
+Earlier panels expose fixed demonstrations and a flat editable answer. A
+grouped panel instead exposes two fixed class sequences and alternating
+editable color runs. The run lengths define a finite coproduct partition; the
+sum constraints establish an isomorphism back to each flat sequence. The
+compiler transports each fixed glyph's square-symmetry equivalence class
+through that partition and gives every editable run a tuple-valued goal.
+Selector and mutation actions operate on whole runs, so the existing causal
+controls lift from singleton slots to product-valued groups. This is accepted
+only when the partition, endpoint-color order, sizes, totals, and selected
+group are unique. The same target representation therefore supports both
+directions without storing a panel signature or an action program.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

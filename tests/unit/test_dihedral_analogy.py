@@ -4,6 +4,7 @@ from reflector.core.dihedral_analogy import (
     Mask,
     dihedral_variants,
     infer_dihedral_analogy,
+    infer_grouped_dihedral_analogy,
 )
 from reflector.core.exploration import ActionToken, EpistemicExplorer
 from reflector.core.symbolic import Observation
@@ -205,6 +206,44 @@ def _bridge_panel() -> Frame:
     return tuple(tuple(row) for row in grid)
 
 
+def _grouped_panel(*, malformed: bool = False) -> Frame:
+    grid = [[2 for _x in range(64)] for _y in range(48)]
+    inputs = (
+        _mask("##.", "...", "..."),
+        _mask("#..", "##.", "..."),
+        _mask("###", "...", "..."),
+        _mask("###", ".#.", "..."),
+        _mask("#.#", "...", "..."),
+    )
+    outputs = (
+        _mask("#..", "#..", "..."),
+        _mask("##.", "#..", "..."),
+        _mask("#..", "#..", "#.."),
+        _mask(".#.", "###", "..."),
+        _mask("##.", ".#.", "..."),
+    )
+    arbitrary = _mask(".#.", "...", "...")
+    run_lengths = (((1, 1), (1, 2)), ((2, 1), (1, 1)))
+    for y, pairs in zip((3, 12), run_lengths, strict=True):
+        x = 8
+        for source_count, answer_count in pairs:
+            for _index in range(source_count):
+                _draw_tile(grid, x, y, 10, arbitrary)
+                x += 6
+            for _index in range(answer_count):
+                _draw_tile(grid, x, y, 7, arbitrary)
+                x += 6
+            x += 3
+    grid[2][8:13] = [0] * 5
+    grid[8][8:13] = [0] * 5
+    fixed_inputs = inputs[:-1] if malformed else inputs
+    for index, mask in enumerate(fixed_inputs):
+        _draw_tile(grid, 8 + index * 6, 27, 10, mask)
+    for index, mask in enumerate(outputs):
+        _draw_tile(grid, 8 + index * 6, 36, 7, mask)
+    return tuple(tuple(row) for row in grid)
+
+
 def test_infers_dihedral_targets_and_selected_slot() -> None:
     arbitrary = _mask(".#.", "...", "...")
     layout = infer_dihedral_analogy(
@@ -260,6 +299,58 @@ def test_composes_glyph_relations_through_a_bridge_color() -> None:
     assert len(layout.query_tiles) == len(layout.answer_tiles) == 2
     assert layout.answer_tiles[0].mask not in layout.targets[0]
     assert layout.selected_index == 0
+
+
+def test_transports_fixed_sequences_into_editable_run_groups() -> None:
+    layout = infer_grouped_dihedral_analogy(_grouped_panel())
+
+    assert layout is not None
+    assert tuple(len(group) for group in layout.groups) == (
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        1,
+    )
+    assert tuple(len(targets) for targets in layout.targets) == (
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        1,
+    )
+    assert layout.selected_index == 0
+
+
+def test_grouped_analogy_abstains_on_non_isomorphic_partitions() -> None:
+    assert infer_grouped_dihedral_analogy(
+        _grouped_panel(malformed=True)
+    ) is None
+
+
+def test_explorer_uses_retained_controls_on_grouped_analogy() -> None:
+    explorer = EpistemicExplorer(dihedral_analogy_alignment=True)
+    explorer.analogy_move_actions[4] = 1
+    explorer.analogy_mutation_actions.add(1)
+    observation = Observation.create(
+        state="NOT_FINISHED",
+        available_actions=(1, 4),
+        frame=_grouped_panel(),
+    )
+
+    selected = explorer._select_dihedral_analogy(
+        observation,
+        (ActionToken(1), ActionToken(4)),
+    )
+
+    assert selected == ActionToken(1)
+    assert explorer.analogy_diagnostic == "mutating-analogy-slot"
 
 
 def test_explorer_learns_move_and_mutation_controls_prospectively() -> None:

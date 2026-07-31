@@ -221,6 +221,48 @@ level 7 at total action **400**, yielding the diagnostic vector
 seven-level route; autonomous compilation, repetition, and suite preservation
 remain pending.
 
+V84l validates the compiler autonomously. Frozen candidate
+`candidate-5f09e48c374d0a52`, inference fingerprint
+`baa58d2d8ef66726aa32e32ebef080e0297e32b0dfd24f15b468e83982f0abe8`,
+reached `re86` **7/8** at exactly
+`[24,36,56,44,63,57,120,0]`, target score
+**77.77777777777779**, and 400 actions. Report
+[`reports/experimental-v84l-factor-bundle-re86-r1-400.json`](reports/experimental-v84l-factor-bundle-re86-r1-400.json),
+SHA-256
+`438623478f7e156b806ba606b4450659cb1ebd6012fcc18c5372a7f2dba53689`.
+This raises the unchanged-suite projection to about
+**19.4665592092 / 100**. Repetition and preservation remain pending, and the
+20-point gate is still short by about **0.5334407908**.
+
+An independent fresh-process rerun reproduced the same score and exact vector.
+Its report is
+[`reports/experimental-v84l-factor-bundle-re86-r2-400.json`](reports/experimental-v84l-factor-bundle-re86-r2-400.json),
+SHA-256
+`d590a183d2510acfcca9ac427bf1a9f7985a13ade408b598ae82c60f30832c9d`.
+The target gain is therefore deterministic twice; full-suite preservation is
+still pending.
+
+The minimum remaining cross-game opportunity is now grounded on `tr87`.
+V84l exactly preserved v82f there: **47.6190476190**, 4/6 levels,
+`[56,45,44,38,217,0]`. Report
+[`reports/experimental-v84l-tr87-r1-400.json`](reports/experimental-v84l-tr87-r1-400.json),
+SHA-256
+`ddd487d02ad3665aa9af0a3a958e51a85cc7f30c49797fc8ccf3a987c2c83217`.
+The fifth panel reverses the earlier interface. Two fixed five-glyph rows are
+partitioned by the run-length signature of editable alternating-color rows:
+`(1→1),(1→2),(2→1),(1→1)`. This is an isomorphism between a flat sequence and
+a coproduct of eight editable groups, not a new color- or coordinate-specific
+rule. A 19-action public-wrapper program derived from that partition completed
+level 5 at total action **202**.
+
+The generalized grouped-dihedral compiler now infers the real held-out frame
+as eight groups of lengths `[1,1,1,2,2,1,1,1]`, transports each fixed glyph's
+dihedral class through the unique partition, identifies the unique selected
+group, and finds seven unsatisfied groups. It has strict size, color,
+partition-sum, ordering, and selector-uniqueness abstention gates. Synthetic
+isomorphic and malformed controls, Ruff, mypy, and the Kaggle contract pass.
+Autonomous target repetition and suite preservation remain pending.
+
 ## Rejected branch
 
 V83 tested distance-decreasing replay on an inferred one-dimensional track.
@@ -230,14 +272,11 @@ negative result and is disabled in v82f/v84 candidates.
 
 ## Immediate objective
 
-The verified score remains **16.3554480981 / 100**. Reaching 20 requires at
-least **+3.6445519019** aggregate points. The current priority is to validate
-level 5 as the next relational falsifier and continue composing the learned
-operators. The immediate implementation target is the newly validated joint
-placement/paint/occlusion CSP for level 5. If no other game changes, v84h's
-present target gain would imply only **17.4665592092 / 100**, still below the
-gate; v84j's five-level result would imply about **18.0221147648 / 100**. A
-v84k-only full-suite projection is about **18.6887814314 / 100**. A complete
-`re86` would imply about **20.3554480981 / 100**. Reproduce every gain, then run
-preservation/full-suite gates. The exact accepted package is submitted to
-Kaggle using `KAGGLE.md` only after the verified aggregate reaches 20.
+The verified score remains **16.3554480981 / 100**. V84l's deterministic
+`re86` gain projects to **19.4665592092 / 100**, still short by
+**0.5334407908**. If the grouped-dihedral compiler autonomously completes
+`tr87` level 5 within 66 actions, its efficiency contribution is capped and
+the unchanged-suite projection becomes about **20.5617973044 / 100**.
+Freeze the offspring, reproduce that target gain twice, and then run the full
+25-game preservation gate. The exact accepted package is submitted to Kaggle
+using `KAGGLE.md` only after the measured aggregate reaches 20.

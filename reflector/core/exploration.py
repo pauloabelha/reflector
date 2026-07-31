@@ -32,7 +32,12 @@ from .constellation_alignment import (
     infer_constellation_alignment,
 )
 from .deformable_constellation import compile_deformable_constellation_plan
-from .dihedral_analogy import infer_dihedral_analogy
+from .dihedral_analogy import (
+    GlyphTile,
+    Mask,
+    infer_dihedral_analogy,
+    infer_grouped_dihedral_analogy,
+)
 from .factor_bundle_constellation import compile_factor_bundle_plan
 from .factored_constellation import (
     FactorGoal,
@@ -6706,19 +6711,50 @@ class EpistemicExplorer:
         after: tuple[tuple[int, ...], ...],
         action_id: int,
     ) -> None:
+        source_groups: tuple[tuple[GlyphTile, ...], ...]
+        destination_groups: tuple[tuple[GlyphTile, ...], ...]
+        source_targets: tuple[tuple[frozenset[Mask], ...], ...]
+        destination_targets: tuple[tuple[frozenset[Mask], ...], ...]
         source = infer_dihedral_analogy(before)
         destination = infer_dihedral_analogy(after)
-        if source is None or destination is None:
-            self.analogy_diagnostic = "analogy-layout-not-grounded"
-            return
-        if source.targets != destination.targets:
+        if source is not None and destination is not None:
+            source_groups = tuple((tile,) for tile in source.answer_tiles)
+            destination_groups = tuple(
+                (tile,) for tile in destination.answer_tiles
+            )
+            source_targets = tuple((target,) for target in source.targets)
+            destination_targets = tuple(
+                (target,) for target in destination.targets
+            )
+            source_selected = source.selected_index
+            destination_selected = destination.selected_index
+        else:
+            grouped_source = infer_grouped_dihedral_analogy(before)
+            grouped_destination = infer_grouped_dihedral_analogy(after)
+            if grouped_source is None or grouped_destination is None:
+                self.analogy_diagnostic = "analogy-layout-not-grounded"
+                return
+            source_groups = grouped_source.groups
+            destination_groups = grouped_destination.groups
+            source_targets = grouped_source.targets
+            destination_targets = grouped_destination.targets
+            source_selected = grouped_source.selected_index
+            destination_selected = grouped_destination.selected_index
+        if source_targets != destination_targets:
             self.analogy_quarantined_actions.add(action_id)
             self.analogy_move_actions.pop(action_id, None)
             self.analogy_mutation_actions.discard(action_id)
             self.analogy_diagnostic = "analogy-demonstration-changed"
             return
-        source_masks = tuple(tile.mask for tile in source.answer_tiles)
-        destination_masks = tuple(tile.mask for tile in destination.answer_tiles)
+        if len(source_groups) != len(destination_groups):
+            self.analogy_diagnostic = "analogy-layout-not-grounded"
+            return
+        source_masks = tuple(
+            tuple(tile.mask for tile in group) for group in source_groups
+        )
+        destination_masks = tuple(
+            tuple(tile.mask for tile in group) for group in destination_groups
+        )
         changed = tuple(
             index
             for index, (left, right) in enumerate(
@@ -6728,10 +6764,10 @@ class EpistemicExplorer:
         )
         if (
             not changed
-            and source.selected_index != destination.selected_index
+            and source_selected != destination_selected
         ):
-            size = len(source.answer_tiles)
-            delta = (destination.selected_index - source.selected_index) % size
+            size = len(source_groups)
+            delta = (destination_selected - source_selected) % size
             previous = self.analogy_move_actions.get(action_id)
             if previous is not None and previous != delta:
                 self.analogy_quarantined_actions.add(action_id)
@@ -6743,8 +6779,8 @@ class EpistemicExplorer:
             self.analogy_diagnostic = "analogy-move-grounded"
             return
         if (
-            source.selected_index == destination.selected_index
-            and changed == (source.selected_index,)
+            source_selected == destination_selected
+            and changed == (source_selected,)
         ):
             if action_id not in self.analogy_move_actions:
                 self.analogy_mutation_actions.add(action_id)
@@ -6760,8 +6796,22 @@ class EpistemicExplorer:
         if self.analogy_selections >= 64:
             self.analogy_diagnostic = "analogy-trial-cap"
             return None
+        groups: tuple[tuple[GlyphTile, ...], ...]
+        targets: tuple[tuple[frozenset[Mask], ...], ...]
         layout = infer_dihedral_analogy(observation.frame)
-        if layout is None:
+        if layout is not None:
+            groups = tuple((tile,) for tile in layout.answer_tiles)
+            targets = tuple((target,) for target in layout.targets)
+            selected_index = layout.selected_index
+        else:
+            grouped = infer_grouped_dihedral_analogy(observation.frame)
+            if grouped is None:
+                self.analogy_diagnostic = "analogy-layout-not-grounded"
+                return None
+            groups = grouped.groups
+            targets = grouped.targets
+            selected_index = grouped.selected_index
+        if not groups:
             self.analogy_diagnostic = "analogy-layout-not-grounded"
             return None
         available = {
@@ -6785,17 +6835,24 @@ class EpistemicExplorer:
             return None
         unsatisfied = tuple(
             index
-            for index, (tile, targets) in enumerate(
-                zip(layout.answer_tiles, layout.targets, strict=True)
+            for index, (group, group_targets) in enumerate(
+                zip(groups, targets, strict=True)
             )
-            if tile.mask not in targets
+            if any(
+                tile.mask not in target
+                for tile, target in zip(
+                    group,
+                    group_targets,
+                    strict=True,
+                )
+            )
         )
         if not unsatisfied:
             self.analogy_diagnostic = "analogy-target-satisfied"
             return None
-        current = layout.selected_index
+        current = selected_index
         if current in unsatisfied:
-            mask = layout.answer_tiles[current].mask
+            mask = tuple(tile.mask for tile in groups[current])
             for action_id in mutation_actions:
                 key = (current, mask, action_id)
                 if key in self.analogy_mutation_attempts:
@@ -6807,7 +6864,7 @@ class EpistemicExplorer:
                 return available[action_id]
             self.analogy_diagnostic = "analogy-mutation-cycle-exhausted"
             return None
-        size = len(layout.answer_tiles)
+        size = len(groups)
         action_id, _delta = min(
             move_actions,
             key=lambda item: (
