@@ -13425,6 +13425,9 @@ class EpistemicExplorer:
             "phase_topology_resource_candidates": len(
                 self.phase_topology_planner.resource_candidates
             ),
+            "phase_topology_resource_option_active": int(
+                self.phase_topology_planner.active_resource is not None
+            ),
             "phase_topology_resource_resets": (
                 self.phase_topology_planner.resource_resets
             ),

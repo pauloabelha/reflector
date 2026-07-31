@@ -393,7 +393,7 @@ returns to its maximal observed area. A global body teleport accompanied by
 budget restoration is a horizon reset, not a learned spatial action or a
 terminal latch.
 
-The proposed successor state is
+V94 implements the successor state
 `(anchor, normalized phase, remaining budget, available resources)`.
 Navigation, operator application, resource contact, and terminal entry are
 bounded options with predicted costs and postconditions. A receding-horizon
@@ -402,6 +402,15 @@ afterward. Because resource contact resets rather than adds budget, the
 compiler schedules it at a latest feasible causal cut. No color, coordinate,
 route, game ID, or fixed horizon belongs in the deployed policy; all roles and
 costs must be inferred from rendered transitions.
+
+The first autonomous trace adds one important execution constraint. A
+resource choice is a hierarchical option, not a fresh preference recomputed
+after every primitive action. V94b stores the selected resource's structural
+key and keeps compiling toward it until one of three bounded termination
+conditions holds: contact causes the predicted meter reset, the resource role
+disappears, or no path remains. This preserves the composition of primitive
+translation arrows into the intended reset morphism while retaining explicit
+falsifiers and hard search bounds.
 
 This implements a narrow Piagetian cycle:
 

@@ -661,6 +661,23 @@ afterward; otherwise it should delay the resource reset to maximize useful
 future budget. Context resets must be treated as exogenous temporal
 boundaries, never as evidence that a terminal predicate has become true.
 
+V94 implements that product state and passes transformed synthetic tests. On
+the verified level-2 recording, it acquires authority only after all four
+plain translations are evidenced and then matches the final 26/26 actions,
+including two observed budget resets and three phase applications. The first
+fresh-process target run does not advance: candidate
+`candidate-c3ea3fa6d77e2ef2` remains 1/7 at `[17,383,0,0,0,0,0]` in
+`reports/experimental-v94-temporal-resource-ls20-r1-400.json`.
+
+That negative run localizes the next accommodation. During the second retry,
+the planner grounds the 21-step meter, selects a reset route, reaches phase
+equality, and still expires because the selected reset option is reconsidered
+and abandoned on the following step. V94b therefore changes no role detector,
+cost model, or route: it adds standard option atomicity. An active reset target
+must remain authoritative until its predicted reset occurs, its role
+disappears, or its bounded path is falsified. Evaluate v94b on `ls20`; only a
+second-level gain warrants repeat and preservation gates.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

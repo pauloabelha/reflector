@@ -286,7 +286,20 @@ def test_temporal_csp_uses_latest_feasible_reset_before_operator() -> None:
 
     assert selected == 3
     assert planner.pending_resource is not None
+    assert planner.active_resource == planner.pending_resource
     assert planner.last_plan_length == 1
+    assert planner.diagnostic == "executing-resource-reset-option"
+
+    planner.pending_action = None
+    planner.pending_anchor = None
+    planner.pending_source = None
+    planner.current_pattern = planner.goal_pattern
+    planner.goal_host = (30, 20, 33, 23)
+    planner.goal_cells = ((31, 21),)
+
+    committed = planner.select(frozen, (1, 2, 3, 4))
+
+    assert committed == 3
     assert planner.diagnostic == "executing-resource-reset-option"
 
 

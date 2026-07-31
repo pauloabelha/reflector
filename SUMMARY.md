@@ -88,8 +88,23 @@ trace is
 [`reports/ls20-black-box-temporal-resource-v1.json`](reports/ls20-black-box-temporal-resource-v1.json).
 Its SHA-256 is
 `e0d486ae7986b2f1c2ab227b39bcb44b73a23bf7e44fb007638b28001b222f4d`.
-This is a verified architectural target, not yet an autonomous candidate;
-v92 remains the accepted score.
+V94 turns that diagnosis into an autonomous, coordinate-free learner over
+`(anchor, normalized phase, remaining budget, available resources)`. Synthetic
+recoloring/layout tests pass, and offline replay shows that once the four
+primitive translations are grounded it reproduces all remaining 26 actions of
+the verified solve exactly.
+
+The first isolated offspring, `candidate-c3ea3fa6d77e2ef2`, is nevertheless
+rejected at 1/7 and `[17,383,0,0,0,0,0]`. Its trace reveals a clean
+hierarchical-RL defect: it selects a resource-reset route and then abandons the
+option after one step when ordinary receding-horizon replanning changes the
+preferred target. The source-matched report is
+[`reports/experimental-v94-temporal-resource-ls20-r1-400.json`](reports/experimental-v94-temporal-resource-ls20-r1-400.json).
+Its SHA-256 is
+`4b9a31ad697ec62f52489687e2ff8cc7f713d1142fbe21ea0a37790390c30fe2`.
+The minimal v94b amendment makes a selected reset an atomic bounded option
+until contact confirms the reset or the path is falsified. V92 remains the
+accepted score pending an autonomous v94b result and preservation.
 
 ## New accepted mechanism: demonstrated analogy algebra
 

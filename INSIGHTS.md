@@ -1736,3 +1736,26 @@ belief state over which object is controlled and which trajectory is replaying.
 - [StochasticGoose source](https://github.com/DriesSmit/ARC3-solution)
 - [Graph-Based Exploration paper](https://arxiv.org/abs/2512.24156)
 - [Graph-Based Exploration source](https://github.com/dolphin-in-a-coma/arc-agi-3-just-explore)
+## 2026-07-31: receding-horizon resource choices require option atomicity
+
+V94 compiles the black-box temporal diagnosis into a general product state:
+body anchor, normalized display phase, inferred remaining action budget, and
+bounded same-role reset resources. The meter and reset relation survive
+recoloring and layout changes in synthetic tests. On the verified legal
+recording, the planner matches every one of the final 26 actions once its four
+primitive translation morphisms are grounded.
+
+The first autonomous isolated run remains at one `ls20` level. Its most useful
+trace is the second retry: the agent infers a four-cell action cost, a
+21-action capacity, and two resource candidates; it selects a reset path, but
+ordinary one-step replanning abandons that target before contact. It later
+reaches display equality with insufficient budget and times out. Thus the
+causal model was adequate while the hierarchical execution semantics were
+not.
+
+The minimal accommodation is Sutton-style option persistence expressed in
+Reflector's symbolic terms: after initiation, preserve the selected resource
+object and its compiled path until the reset postcondition is observed or a
+path/role falsifier fires. This is also the categorical coherence condition:
+primitive path arrows must compose to the chosen reset morphism rather than
+being reselected independently at every intermediate object.

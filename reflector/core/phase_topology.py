@@ -334,6 +334,7 @@ class PhaseTopologyPlanner:
     budget_evidence: Counter[int] = field(default_factory=Counter)
     resource_candidates: tuple[Component, ...] = ()
     consumed_resources: set[ResourceKey] = field(default_factory=set)
+    active_resource: ResourceKey | None = None
     pending_resource: ResourceKey | None = None
     resource_resets: int = 0
     horizon_resets: int = 0
@@ -383,6 +384,7 @@ class PhaseTopologyPlanner:
         self.budget_evidence.clear()
         self.resource_candidates = ()
         self.consumed_resources.clear()
+        self.active_resource = None
         self.pending_resource = None
         self.resource_resets = 0
         self.horizon_resets = 0
@@ -564,12 +566,16 @@ class PhaseTopologyPlanner:
                         if _resource_key(item) == self.pending_resource
                     )
                 if len(contacted) == 1:
-                    self.consumed_resources.add(_resource_key(contacted[0]))
+                    contacted_key = _resource_key(contacted[0])
+                    self.consumed_resources.add(contacted_key)
+                    if self.active_resource == contacted_key:
+                        self.active_resource = None
                     self.resource_resets += 1
                 else:
                     horizon_reset = True
                     self.horizon_resets += 1
                     self.consumed_resources.clear()
+                    self.active_resource = None
         self.resource_candidates = tuple(
             item
             for item in after_resources
@@ -1038,7 +1044,28 @@ class PhaseTopologyPlanner:
         path: tuple[int, ...]
         selected_resource: Component | None = None
 
-        if phase_equal and self.goal_cells:
+        active = next(
+            (
+                resource
+                for resource in self.resource_candidates
+                if _resource_key(resource) == self.active_resource
+            ),
+            None,
+        )
+        if self.active_resource is not None and active is None:
+            self.active_resource = None
+            self.diagnostic = "active-resource-role-disappeared"
+            return None
+        if active is not None:
+            selected_resource = active
+            target_cells = active.cells
+            path = self._path(frame, target_cells)
+            mode = "resource-reset"
+            if not path:
+                self.active_resource = None
+                self.diagnostic = "active-resource-path-falsified"
+                return None
+        elif phase_equal and self.goal_cells:
             target_cells = self.goal_cells
             mode = "terminal"
             path = self._path(frame, target_cells)
@@ -1133,6 +1160,8 @@ class PhaseTopologyPlanner:
         self.pending_resource = (
             _resource_key(selected_resource) if selected_resource is not None else None
         )
+        if selected_resource is not None:
+            self.active_resource = _resource_key(selected_resource)
         self.selections += 1
         self.compilations += 1
         self.last_plan_length = len(path)
