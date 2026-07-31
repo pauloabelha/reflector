@@ -6,32 +6,41 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 3 of 25 public-development games.**
-> It has solved 39 of 183 levels across 13 games. The suite ran all 25 games,
+> It has solved 47 of 183 levels across 14 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v82f result | Meaning |
+| Outcome metric | Accepted v84m result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **3 / 25** | `sb26`, `ft09`, and `cd82` were solved through their final levels. |
-| Games with progress | **13 / 25** | At least one level was solved in thirteen games. |
-| Levels solved | **39 / 183** | Eight in `sb26`; six each in `ft09`, `cd82`, and `lp85`; four in `tr87`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **16.3554480981 / 100** | About **16.36%** of the 100-point scale on the known public-development games. |
+| Games with progress | **14 / 25** | At least one level was solved in fourteen games. |
+| Levels solved | **47 / 183** | Eight in `sb26`; seven in `re86`; six each in `ft09`, `cd82`, and `lp85`; five in `tr87`; two in `ar25`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **20.4189401616 / 100** | About **20.42%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
 | Kaggle submissions | **1 pending** | Submission `55113224` remains `PENDING`; no hidden score has returned yet. |
 
 The current process-isolated result is
-[`reports/official-isolated-v82f-dihedral-bridge-400.json`](reports/official-isolated-v82f-dihedral-bridge-400.json),
+[`reports/official-isolated-v84m-grouped-dihedral-400.json`](reports/official-isolated-v84m-grouped-dihedral-400.json),
 SHA-256
-`a29e963af1dd3af31d6e7cf040b8d28e7006e9bbf1e5007ed02e32e714674f56`.
+`4823d8a358e7798293887ec8eaafd96041b4a5655f7b4da9154b7a7894bfc7c7`.
 It identifies frozen source commit
-`79a872ca0ed3fa40a98b185b3217e304d81dc68f`, candidate
-`candidate-40b2dad207199755`, and inference fingerprint
-`7c28b2a24674941f30a8053326fc2b9b6c2decea339cb8f3c57ff53ef54f7008`.
+`5be5c9c`, frozen candidate commit `f1232e6`, candidate
+`candidate-07d24ee8acf946c9`, and inference fingerprint
+`53729246c43ad6aadcc4fa4ba95a08510f0b200c83d08bd9ea3518816803e36d`.
+The complete quality gate passes with 461 tests, 3 skips, Ruff, and mypy.
+Both network-disabled smoke paths pass and the technical prize audit reports
+`technical_ready: true`. Exact export SHA-256 values are candidate
+`b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54`,
+overlay
+`7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19`,
+and notebook
+`875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064`.
 
 ## Evaluation surfaces
 
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
+| Process-isolated official local suite | v84m accepted | **20.4189401616 / 100** | 3 games beaten; 47/183 levels across 14 games; 9,185 actions | full quality/export gates and exact v82f preservation on 23/23 non-target games; 25/25 coverage |
 | Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |
 | Target-only `tr87` reruns | v82f accepted | 47.6190476190 for one game | 4/6 levels; exact `[56,45,44,38,217,0]` twice | deterministic demonstrated-analogy gain |
 | Target-only `tr87` control | v84l factor-bundle option, experimental | 47.6190476190 for one game | exact v82f preservation at 4/6 and `[56,45,44,38,217,0]` | isolates the next gain from the `re86` mechanism |

@@ -10,7 +10,7 @@ submission.
 
 ## Decision
 
-Submit Reflector after the exact v68 source, candidate, and permanent local
+Submit Reflector after the exact v84m source, candidate, and permanent local
 reports have been frozen and verified. A Kaggle submission is valuable because
 it tests transfer to hidden games; the score on the 25 downloadable
 public-development games cannot answer that question.
@@ -93,15 +93,15 @@ Primary sources:
 
 ## Freeze and verify the exact Reflector candidate
 
-The intended candidate is:
+The current intended candidate is:
 
 ```text
-candidates/v68-path-cycle-transport-400.json
+candidates/v84m-grouped-dihedral-analogy-400.json
 ```
 
-Its frozen identity is `candidate-35de85c4fe395c3a`, generation 32, parent
-`candidate-a1ccbdb17d674b78`, with inference fingerprint
-`eec820706c163e4dc2ae045117ca05f9a7ff9cb75de2f01784744ce60600c8d1`.
+Its frozen identity is `candidate-07d24ee8acf946c9`, generation 47, parent
+`candidate-5f09e48c374d0a52`, with inference fingerprint
+`53729246c43ad6aadcc4fa4ba95a08510f0b200c83d08bd9ea3518816803e36d`.
 
 First confirm that the implementation and candidate are in one frozen source
 commit and that the worktree contains no uncommitted inference-path changes:
@@ -126,10 +126,10 @@ Run the local quality and exact-candidate gates:
 .venv/bin/mypy reflector
 
 .venv/bin/reflector-kaggle smoke-test \
-  --config candidates/v68-path-cycle-transport-400.json
+  --config candidates/v84m-grouped-dihedral-analogy-400.json
 
 .venv/bin/reflector-kaggle export \
-  --config candidates/v68-path-cycle-transport-400.json \
+  --config candidates/v84m-grouped-dihedral-analogy-400.json \
   --output dist
 
 .venv/bin/kaggle_smoke_test
@@ -143,7 +143,7 @@ dist/reflector-kaggle-overlay.zip
 dist/reflector-kaggle-submission.ipynb
 ```
 
-The notebook embeds both the exact inference overlay and the serialized v68
+The notebook embeds both the exact inference overlay and the serialized v84m
 `MindConfig`; it is the artifact to upload. The ZIP is an auditable copy of the
 inference overlay and does not need to be attached as a separate Kaggle
 dataset.
@@ -160,13 +160,13 @@ sha256sum \
 The verified 2026-07-30 hashes are:
 
 ```text
-032aeab81e10976858e335ba1467240cd241a0a9ed65a2d707841c68950c95e6  candidate
-a3c747d23da9444843df36c7c6057866907befb5ebf6700840e0054314705164  overlay
-f83b6f2ea405f7a196a0084d3a21a34e4fc1f6ba07609cf20b2cd91e8f7ec56e  notebook
+b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54  candidate
+7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19  overlay
+875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064  notebook
 ```
 
 The accepted local public-development result bound to that inference source is
-`9.684019526667843/100`, 28/183 levels, 2/25 complete games, and 25/25
+`20.418940161588477/100`, 47/183 levels, 3/25 complete games, and 25/25
 coverage. It is not a Kaggle score.
 
 ## Browser submission workflow
@@ -319,12 +319,11 @@ private code sharing outside the registered team is prohibited.
 
 At the 2026-07-30 audit:
 
-- v68 is frozen at source/candidate commit
-  `59daf6171026b986c1e26aaa5fa1f56e2ef03269`; its candidate fingerprint,
-  two target repeats, preservation gate, full 25-game report, exact export,
-  both network-disabled smoke paths, and technical prize checks pass;
+- v84m is frozen as `candidate-07d24ee8acf946c9`; its candidate fingerprint,
+  target repeats, preservation gate, full 25-game report, exact export, both
+  network-disabled smoke paths, and technical prize checks pass;
 - frozen v65b submission `55113224` is pending and has returned no Kaggle
-  public or private score; v68 has not been submitted;
+  public or private score; v84m is the next intended submission;
 - the project virtual environment has a working authenticated Kaggle CLI; a
   live read-only check still reports submission `55113224` as `PENDING`;
 - rule acceptance, identity verification, eligibility confirmation, team

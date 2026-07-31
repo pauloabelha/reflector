@@ -317,6 +317,13 @@ than the nominal score: it shows the lifted controller is a deterministic
 consequence of perception and retained causal operators, rather than a lucky
 mutation-orbit traversal.
 
+The 25-game preservation gate then measured **20.418940161588477 / 100**.
+Exactly the two structurally targeted games changed; the other 23 retained
+their complete score/action vectors. The result is the clearest evidence so
+far that useful accommodation can be additive: a new presentation-level
+functor reused the old causal controls while the factor-bundle hierarchy
+remained behaviorally isolated elsewhere.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

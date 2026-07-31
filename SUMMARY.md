@@ -5,26 +5,30 @@ Last updated: 2026-07-30
 ## Best verified result
 
 Reflector's best complete, process-isolated 25-game public-development result is
-**16.355448098096414 / 100**.
+**20.418940161588477 / 100**.
 
-- Candidate: `candidate-40b2dad207199755` (`v82f`)
-- Frozen source: `79a872ca0ed3fa40a98b185b3217e304d81dc68f`
+- Candidate: `candidate-07d24ee8acf946c9` (`v84m`)
+- Frozen inference source: `5be5c9c`
+- Frozen candidate commit: `f1232e6`
 - Coverage: 25/25 games
-- Levels: **39/183**
-- Games with progress: **13/25**
+- Levels: **47/183**
+- Games with progress: **14/25**
 - Complete games: **3/25**
 - Actions: **9,185**
 - Report:
-  [`reports/official-isolated-v82f-dihedral-bridge-400.json`](reports/official-isolated-v82f-dihedral-bridge-400.json)
+  [`reports/official-isolated-v84m-grouped-dihedral-400.json`](reports/official-isolated-v84m-grouped-dihedral-400.json)
 - Candidate:
-  [`candidates/v82f-dihedral-bridge-composition-400.json`](candidates/v82f-dihedral-bridge-composition-400.json)
+  [`candidates/v84m-grouped-dihedral-analogy-400.json`](candidates/v84m-grouped-dihedral-analogy-400.json)
 - Report SHA-256:
-  `a29e963af1dd3af31d6e7cf040b8d28e7006e9bbf1e5007ed02e32e714674f56`
+  `4823d8a358e7798293887ec8eaafd96041b4a5655f7b4da9154b7a7894bfc7c7`
 
-Relative to the clean v74 restart at **14.450686193334509**, v82f changes only
-`tr87`: it advances from 0/6 to **4/6**, scoring 47.6190476190 on that game.
-All other game outcomes are exactly preserved. The aggregate gain is
-**+1.904761904761905 points**.
+Relative to accepted v82f, v84m changes exactly two games. `re86` advances
+from 0/8 to **7/8** at `[24,36,56,44,63,57,120,0]`; `tr87` advances from 4/6
+to **5/6** at `[56,45,44,38,55,162]`. All other 23 score/action vectors are
+exactly preserved. The aggregate gain is **+4.063492063492063 points**.
+The promotion gates pass: 461 tests pass with 3 skips, Ruff and mypy are clean,
+both network-disabled smoke paths pass, and the prize audit reports technical
+readiness. V84m is the accepted local candidate.
 
 ## New accepted mechanism: demonstrated analogy algebra
 
@@ -293,10 +297,12 @@ negative result and is disabled in v82f/v84 candidates.
 
 ## Immediate objective
 
-The verified score remains **16.3554480981 / 100**. V84l's deterministic
-`re86` gain projects to **19.4665592092 / 100**, still short by
-**0.5334407908**. The grouped-dihedral compiler has now completed `tr87`
-level 5 in 55 actions; the measured unchanged-suite projection is about
-**20.4189401616 / 100**. Reproduce that target gain, then run the full 25-game
-preservation gate. The exact accepted package is submitted to Kaggle using
-`KAGGLE.md` only after the measured aggregate reaches 20.
+The verified score is now **20.418940161588477 / 100** with full coverage and
+exact non-target preservation. The exact Kaggle export hashes are candidate
+`b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54`,
+overlay
+`7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19`,
+and notebook
+`875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064`.
+Submit this exact candidate using `KAGGLE.md`; do not attribute the resulting
+hidden score until Kaggle returns one.

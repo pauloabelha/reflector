@@ -25,17 +25,17 @@ generalization.
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
 - Last known participant-remote commit: `27f5ac5`
-- Accepted candidate: `candidate-40b2dad207199755`
-- Accepted agent: Reflector v82f
-- Accepted frozen source/candidate commit:
-  `79a872ca0ed3fa40a98b185b3217e304d81dc68f`
-- Accepted inference fingerprint:
-  `7c28b2a24674941f30a8053326fc2b9b6c2decea339cb8f3c57ff53ef54f7008`
-- Accepted public-development report:
-  `reports/official-isolated-v82f-dihedral-bridge-400.json`
-- Accepted score: `16.355448098096414`
+- Accepted candidate: `candidate-07d24ee8acf946c9`
+- Accepted agent: Reflector v84m
+- Frozen inference source commit: `5be5c9c`
+- Frozen candidate commit: `f1232e6`
+- Inference fingerprint:
+  `53729246c43ad6aadcc4fa4ba95a08510f0b200c83d08bd9ea3518816803e36d`
+- Verified public-development report:
+  `reports/official-isolated-v84m-grouped-dihedral-400.json`
+- Verified score: `20.418940161588477`
 - Accepted coverage: 25/25 games, 9,185 actions
-- Accepted completions: 39/183 levels across 13 games; 3/25 games complete
+- Verified completions: 47/183 levels across 14 games; 3/25 games complete
 - Kaggle submission: `55113224`, v65b notebook version 1, pending hidden rerun
 - Kaggle public score: pending; not yet returned
 - Kaggle private score: unavailable
@@ -281,13 +281,31 @@ The second fresh-process target run exactly reproduced
 The target-repeat gate passes. Run the full 25-game process-isolated suite and
 compare every non-target vector with v82f before promotion.
 
+That gate now passes. The complete v84m suite scored
+**20.418940161588477 / 100**, solved 47/183 levels across 14 games, and fully
+completed 3/25 games. `re86` and `tr87` changed exactly as predicted; all 23
+other score, level, and action vectors exactly match v82f. Report
+`reports/official-isolated-v84m-grouped-dihedral-400.json`, SHA-256
+`4823d8a358e7798293887ec8eaafd96041b4a5655f7b4da9154b7a7894bfc7c7`.
+The quality and export gates pass: 461 tests passed with 3 skips, Ruff and
+mypy are clean, both network-disabled smoke paths pass, and the technical
+prize audit passes. Exact artifact SHA-256 values are:
+
+- candidate:
+  `b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54`;
+- overlay:
+  `7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19`;
+- notebook:
+  `875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064`.
+
+V84m is accepted locally. Submit the exact notebook through Kaggle and record
+its notebook version and submission ID separately from the local score.
+
 Required gates are:
 
-1. exact preservation of the v82f suite outside `re86` and `tr87`;
-2. full 25-game score of at least 20 before Kaggle submission;
-3. all tests, Ruff, and mypy;
-4. exact export and both offline smoke paths;
-5. submission through `KAGGLE.md`.
+1. submission through `KAGGLE.md`;
+2. record notebook version, submission ID, and pending/terminal state;
+3. keep local, Kaggle public, and Kaggle private scores separate.
 
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the

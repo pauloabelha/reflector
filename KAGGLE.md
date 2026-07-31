@@ -2,6 +2,19 @@
 
 Audit date: 2026-07-27.
 
+Current accepted export: v84m
+`candidate-07d24ee8acf946c9`, local public-development score
+`20.418940161588477 / 100`. Exact SHA-256 values:
+
+- candidate:
+  `b32d3b48f358951abf22a375faab92b0a6ea705aa1721f1b3d9ecc2098f85e54`;
+- overlay:
+  `7e4ddf76c500396b7dc711977677d7aeeac068e354058124dbbbf390346d2e19`;
+- notebook:
+  `875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064`.
+
+This is local evidence, not a Kaggle public or private score.
+
 Reflector began from the official
 [`arcprize/ARC-AGI-3-Agents`](https://github.com/arcprize/ARC-AGI-3-Agents)
 repository at commit `10213de83f01df0ef4f0149ee9f8408dcc3772fb`.
