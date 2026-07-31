@@ -144,6 +144,22 @@ predicted destination when that cell has the mover color; the already known
 inverse restore executes before any new focus inference. Any other absence
 remains a probe conflict.
 
+V84f passed that temporal test and solved level 3 in exactly 56 actions. The
+result is strong mechanistic evidence: interventions separated three
+overlapping same-colored factors, the exact-cover CSP assigned all eight
+landmarks once, and the generic option compiler executed the assignments.
+`re86` reached 3/8 with `[24,36,56]`, zero quarantines, and zero causal
+conflicts. The product construction is therefore behaviorally validated once,
+not merely plausible offline.
+
+Level 4 removes palette equality as the binding shortcut. A clipped plus and
+an X have colors 6 and 10, while their landmark constraints have colors 12 and
+14. Completing the plus's symmetry outside the frame and solving all reachable
+shape/group embeddings yields one bijection: `6→12` at `(15,30)` and `10→14`
+at `(39,30)`. Committing both routes as one option is essential because the X
+is recolored during its first movement. Persistent causal identity again
+matters more than the latest rendered color.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

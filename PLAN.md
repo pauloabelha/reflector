@@ -115,9 +115,23 @@ translated onto the same-colored line and temporarily disappeared. The online
 learner demanded a visible marker and repeatedly reprobed. V84f accepts only
 the predicted same-color cell as selector occlusion and prioritizes the known
 inverse restore before parsing focus again.
+
+V84f passed the online gate. Its first frozen run solved level 3 in exactly the
+predicted 56 actions, reaching `re86` 3/8 at
+`[24,36,56,284,0,0,0,0]`, score 16.6666666667. All controls remained
+authoritative with zero quarantines and zero causal conflicts. Level 4 is the
+next concrete falsifier.
+
+Level 4 has two differently colored movers, two landmark groups, reference
+swatches, and a boundary-clipped selected plus. Geometry uniquely cross-binds
+plus color 6 to landmark color 12 at `(15,30)` and X color 10 to landmark
+color 14 at `(39,30)`. V84g completes symmetry beyond the frame boundary,
+requires a unique minimum-cost bipartite binding, and commits the resulting
+24-action two-mover option so intermediate X recoloring cannot erase identity.
+
 Required gates are:
 
-1. validate v84e on the frozen target;
+1. validate v84g on level 4 without weakening exact-cover safety;
 2. reproduce every multi-level gain exactly;
 3. exact preservation of the v82f suite outside changed targets;
 4. full 25-game score of at least 20 before Kaggle submission.

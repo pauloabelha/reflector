@@ -74,6 +74,7 @@ from .permutation_transport import (
     plan_factored_orbit_transport,
     plan_marker_transport,
 )
+from .reference_constellation import compile_reference_constellation_plan
 from .scheme_category import (
     FocusedRewriteObject,
     FocusedVariable,
@@ -648,6 +649,10 @@ class EpistemicExplorer:
     factor_constellation_focus_index: int = 0
     factor_constellation_selections: int = 0
     factor_constellation_diagnostic: str = "not-grounded"
+    reference_constellation_plan: tuple[int, ...] = ()
+    reference_constellation_cursor: int = 0
+    reference_constellation_selections: int = 0
+    reference_constellation_diagnostic: str = "not-grounded"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -5787,6 +5792,10 @@ class EpistemicExplorer:
         self.factor_constellation_focus_index = 0
         self.factor_constellation_selections = 0
         self.factor_constellation_diagnostic = "not-grounded"
+        self.reference_constellation_plan = ()
+        self.reference_constellation_cursor = 0
+        self.reference_constellation_selections = 0
+        self.reference_constellation_diagnostic = "not-grounded"
         self.constellation_diagnostic = (
             "not-grounded" if self.constellation_alignment else "exact-off"
         )
@@ -6245,6 +6254,61 @@ class EpistemicExplorer:
         self.factor_constellation_diagnostic = "executing-factor-option"
         return available[option.actions[0]]
 
+    def _select_reference_constellation(
+        self,
+        observation: Observation,
+        available: dict[int, ActionToken],
+    ) -> ActionToken | None:
+        if (
+            self.reference_constellation_cursor
+            < len(self.reference_constellation_plan)
+        ):
+            action_id = self.reference_constellation_plan[
+                self.reference_constellation_cursor
+            ]
+            if action_id not in available:
+                self.reference_constellation_diagnostic = (
+                    "reference-plan-action-unavailable"
+                )
+                self.reference_constellation_plan = ()
+                self.reference_constellation_cursor = 0
+                return None
+            self.reference_constellation_cursor += 1
+            self.reference_constellation_selections += 1
+            self.reference_constellation_diagnostic = (
+                "executing-reference-constellation-option"
+            )
+            return available[action_id]
+        switches = tuple(
+            action_id
+            for action_id in sorted(self.constellation_switch_actions)
+            if action_id in available
+        )
+        if not switches:
+            return None
+        plan = compile_reference_constellation_plan(
+            observation.frame,
+            tuple(
+                TranslationMorphism(action_id, displacement)
+                for action_id, displacement in sorted(
+                    self.constellation_move_actions.items()
+                )
+                if action_id in available
+            ),
+            switch_action=switches[0],
+        )
+        self.reference_constellation_diagnostic = plan.status
+        if not plan.actions:
+            return None
+        self.reference_constellation_plan = plan.actions
+        action_id = plan.actions[0]
+        self.reference_constellation_cursor = 1
+        self.reference_constellation_selections += 1
+        self.reference_constellation_diagnostic = (
+            "executing-reference-constellation-option"
+        )
+        return available[action_id]
+
     def _select_constellation_alignment(
         self,
         observation: Observation,
@@ -6261,6 +6325,12 @@ class EpistemicExplorer:
             if not token.data
             and token.action_id not in self.constellation_quarantined_actions
         }
+        reference = self._select_reference_constellation(
+            observation,
+            available,
+        )
+        if reference is not None:
+            return reference
         factored = self._select_factored_constellation(
             observation,
             available,
@@ -13040,6 +13110,18 @@ class EpistemicExplorer:
             ),
             "factor_constellation_diagnostic": (
                 self.factor_constellation_diagnostic
+            ),
+            "reference_constellation_plan_length": len(
+                self.reference_constellation_plan
+            ),
+            "reference_constellation_cursor": (
+                self.reference_constellation_cursor
+            ),
+            "reference_constellation_selections": (
+                self.reference_constellation_selections
+            ),
+            "reference_constellation_diagnostic": (
+                self.reference_constellation_diagnostic
             ),
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(

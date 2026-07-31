@@ -101,6 +101,20 @@ requiring the marker to reappear. It then solves a unique minimum-cost product
 exact-cover CSP over all eight landmarks. Its inferred target anchors are
 `(27,6)`, `(42,24)`, and `(18,30)` for the line, X, and diamond factors.
 
+V84f validates that product construction end to end. Frozen candidate
+`candidate-f47fa9c6dfffb810` solved `re86` levels 1–3 in
+**`[24,36,56]`**, reaching **3/8** and target score
+**16.666666666666664**. Level 3 used exactly the predicted 56 actions for
+factor discovery, restoration, focus transfer, and compiled routes. The full
+vector is `[24,36,56,284,0,0,0,0]`; no control was quarantined and no causal
+conflict occurred. This is not promoted until reproduced and preserved.
+
+Level 4 cross-binds differently colored movers and landmarks. The active v84g
+compiler reconstructs a boundary-clipped plus by unbounded central symmetry
+and solves a unique bipartite embedding: plus color 6 to landmark color 12 at
+`(15,30)`, then X color 10 to landmark color 14 at `(39,30)`. The resulting
+committed hierarchical option has 24 actions.
+
 ## Rejected branch
 
 V83 tested distance-decreasing replay on an inferred one-dimensional track.
@@ -112,6 +126,6 @@ negative result and is disabled in v82f/v84 candidates.
 
 The verified score remains **16.3554480981 / 100**. Reaching 20 requires at
 least **+3.6445519019** aggregate points. The current priority is to validate
-validate the factored exact-cover compiler on level 3, reproduce every gain,
-then run preservation/full-suite gates. The exact accepted package is submitted
-to Kaggle using `KAGGLE.md` only after the verified aggregate reaches 20.
+derive level 4's relational object, reproduce every gain, then run
+preservation/full-suite gates. The exact accepted package is submitted to
+Kaggle using `KAGGLE.md` only after the verified aggregate reaches 20.

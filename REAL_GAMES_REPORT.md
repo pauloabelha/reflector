@@ -34,6 +34,7 @@ It identifies frozen source commit
 | --- | --- | ---: | --- | --- |
 | Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |
 | Target-only `tr87` reruns | v82f accepted | 47.6190476190 for one game | 4/6 levels; exact `[56,45,44,38,217,0]` twice | deterministic demonstrated-analogy gain |
+| Target-only `re86` run | v84f product exact cover, experimental | 16.6666666667 for one game | 3/8 levels at `[24,36,56,284,0,0,0,0]`; level 3 matched the predicted 56 actions; zero quarantines/conflicts | first validated same-color product-object gain; repeat pending |
 | Target-only `re86` run | v84e factored exact cover, experimental | 8.3333333333 for one game | 2/8 levels at `[24,36,340,0,0,0,0,0]`; one of three factor masks learned | exact-cover CSP passed offline; online discovery rejected a same-color-occluded selector |
 | Target-only `re86` run | v84d causal-filtered categorical options, experimental | 8.3333333333 for one game | 2/8 levels at `[24,36,340,0,0,0,0,0]`; all five controls retained; zero quarantines/conflicts; two option reuses | first multi-level result; repeat and preservation pending |
 | Target-only `re86` run | v84c symmetry-completed masks, experimental | 2.7777777778 for one game | 1/8 levels at `[24,376,0,0,0,0,0,0]`; 246 commuting confirmations, zero conflicts | first mover-mask occlusion fixed; temporal landmark/centroid occlusion still falsified one-frame state |

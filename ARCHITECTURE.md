@@ -178,6 +178,14 @@ selects one placement per factor only when their covered landmark sets are
 disjoint, exhaustive, and uniquely minimum-cost. The resulting factor routes
 are compiled through the same focused-option planner.
 
+Landmark and mover colors need not coincide. For clipped reference
+constellations, large mover components and landmark groups form a bipartite
+binding CSP. Central symmetry is completed outside the visible frame so a
+boundary-clipped arm remains part of the latent mover mask. A binding is
+compiled only when reachable subset embedding yields a unique minimum-cost
+bijection. The complete multi-mover route is then one committed hierarchical
+option, preserving mover identity through any intermediate recoloring.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;
