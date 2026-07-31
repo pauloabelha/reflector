@@ -90,6 +90,23 @@ movement action can be mislabeled as a non-generator. Future action typing
 must use positive effect evidence, not the complement of incomplete
 knowledge.
 
+## 2026-07-30 — v78 positive action-effect types
+
+V78 replaces negative-complement action typing with a finite positive version
+space. An action can gain a relative-translation, component birth/death,
+form-change, relative-layout-change, or residual-change type only after a
+later structurally distinct source confirms the preregistered kind. No-op
+remains inapplicability evidence and never creates a type.
+
+The clean-v74 audit yields authority on 17/25 games and non-translation
+authority on 14/25. The crucial result is not just breadth but explicit
+non-discrimination: live `re86` gives all five actions one shared type
+signature, whereas `g50t` and `tu93` each expose two signatures. A six-game
+fresh-process run exactly preserved every v74 action sequence, and `m0r0`
+failed closed at the component cap. The next scheduler must consume only
+positive distinctions and abstain when this quotient does not separate
+actions.
+
 ## 2026-07-30 — v68 accepted path-cycle result
 
 V68 supplies a generic prior absent from v67: a conserved same-form

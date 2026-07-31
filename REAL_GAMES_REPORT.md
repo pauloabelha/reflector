@@ -373,6 +373,52 @@ The candidate, cognition, and recording SHA-256 values are respectively
 and
 `31275e3743d06e1ef3c277f1493e250ed95a8056fc0d467f3acb5b7381e412db`.
 
+## V78 positive action-effect typing
+
+Generation-35 trace-only candidate `candidate-927ca35ac9ce29e2` returns to
+accepted parent v74 rather than inheriting either rejected controller. It
+prospectively types only positively rendered effects: relative translation,
+component birth/death, component-form change, relative-layout change, or
+residual render change. A no-op is contextual inapplicability and can never
+license a type by complement. Multiple context-conditioned positive types may
+coexist for one action.
+
+The chronological clean-v74 audit found:
+
+- at least one authoritative positive type on **17/25 games**;
+- non-translation authority on **14/25 games**;
+- relative translation on 16 games, component-form change on 12,
+  relative-layout change on 4, and component birth/death on 3 each;
+- action typing alone is not a control claim: several games assign the same
+  type signature to every action.
+
+The immutable audit is
+[`reports/v78-action-effect-type-audit-v1.json`](reports/v78-action-effect-type-audit-v1.json),
+SHA-256
+`bcf11bd626142f65e22517b8b64ed2da1800c2f8a63dc4b615512170bcd132e2`.
+
+A fresh-process live trace run covered `dc22`, `re86`, `tu93`, `g50t`,
+`m0r0`, and `sp80`. Every complete 400-action sequence was exactly identical
+to v74, preserving the three accepted-progress vectors
+`g50t [27,373,...]`, `m0r0 [20,380,...]`, and `sp80 [196,204,...]`.
+Live telemetry exposed one shared action signature on `re86`, versus two
+distinct signatures on `g50t` and `tu93`; `m0r0` safely failed closed at its
+component cap. The report is
+[`reports/official-isolated-v78-positive-action-effect-live-r1-400.json`](reports/official-isolated-v78-positive-action-effect-live-r1-400.json),
+SHA-256
+`a19d7108947674dc36be9b7d7dff3dd4011c451ff22bfb7b2999344642472888`.
+The candidate, cognition, and recording SHA-256 values are respectively
+`d2c87182a0af88be6acaee9fdd08ddc4ebb9377b4d0fc032b8dcf39bee163393`,
+`b0a2d963ffd3974f3e75784bb226f919a71c1534cf2115b1a61dafa63d65c356`,
+and
+`f3d305dd1ed5183abe81e49c5381313dd4f0c9bd757a70ffa5ef56105a042ec7`.
+The full suite passed with 423 tests and 3 skips; Ruff and mypy passed; exact
+candidate export and both network-disabled smoke paths passed.
+
+V78 is representation evidence, not a task-performance candidate. Any
+operative descendant must use positively confirmed distinctions and abstain
+when every action has the same type signature.
+
 ## Historical accepted v69 result
 
 Candidate: `candidate-2336bc12a0bc28de`

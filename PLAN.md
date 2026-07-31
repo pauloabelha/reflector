@@ -2955,15 +2955,25 @@ respectively, but every game remained at zero levels. It also exposed a
 partial-identification flaw: an unlearned generator can temporarily appear to
 be a non-generator affordance. V77 is rejected.
 
+V78 `candidate-927ca35ac9ce29e2` returns directly to accepted v74 as a
+trace-only positive action-effect typer. It never infers a type from absence.
+The clean-v74 audit gains authority on 17/25 games and non-translation
+authority on 14/25. A six-game live run exactly preserved every v74 action
+sequence while exposing discriminative type signatures on `g50t` and `tu93`,
+one non-discriminative shared signature on `re86`, and a safe component-cap
+failure on `m0r0`. This is a valid representational substrate, not task
+progress.
+
 Next:
 
 1. Keep v74 frozen as the preservation anchor. Before promotion, reproduce
    every accepted vector across the full suite.
 2. Do not retry undirected rays or contact-triggered complement actions.
-   The next representation must identify action families completely enough
-   to avoid treating unknown generators as affordances.
-3. Preregister a smaller prospective control claim before another live run;
-   require either a causal event advantage or safe abstention.
+   Construct operative offspring only from positively confirmed type
+   distinctions; abstain when action signatures are non-discriminative.
+3. Cluster where positively typed actions predict structural discontinuities
+   but base control still repeats an unproductive signature. Preregister a
+   small causal scheduling claim before another live run.
 4. A task promotion still requires deterministic gains on two structurally
    different games, exact preservation, the full 25-game suite, export, and
    both offline smoke paths.

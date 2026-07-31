@@ -115,6 +115,7 @@ class MindConfig:
     enable_action_translation_algebra: bool = False
     enable_action_translation_orbit_probe: bool = False
     enable_action_translation_contact_probe: bool = False
+    enable_action_effect_typing: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -195,6 +196,7 @@ class MindConfig:
             "enable_action_translation_algebra",
             "enable_action_translation_orbit_probe",
             "enable_action_translation_contact_probe",
+            "enable_action_effect_typing",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")

@@ -9,6 +9,7 @@ from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
 
+from .action_effect_typing import ProspectiveActionEffectTyper
 from .action_translation_algebra import (
     ActionIdentity,
     ActionTranslationAlgebra,
@@ -403,6 +404,7 @@ class EpistemicExplorer:
     action_translation_algebra: bool = False
     action_translation_orbit_probe: bool = False
     action_translation_contact_probe: bool = False
+    action_effect_typing: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -476,6 +478,18 @@ class EpistemicExplorer:
     translation_contact_selections: int = 0
     translation_contact_abstentions: int = 0
     translation_contact_diagnostic: str = "exact-off"
+    effect_typer: ProspectiveActionEffectTyper = field(
+        default_factory=ProspectiveActionEffectTyper,
+        repr=False,
+    )
+    effect_typing_sequence: int = 0
+    effect_typing_total_observations: int = 0
+    effect_typing_total_positive_observations: int = 0
+    effect_typing_total_predictions: int = 0
+    effect_typing_total_confirmations: int = 0
+    effect_typing_total_contextual_noops: int = 0
+    effect_typing_last_kind: str | None = None
+    effect_typing_last_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -1092,6 +1106,7 @@ class EpistemicExplorer:
                 retain_previous=False
             )
             self._reset_action_translation_algebra()
+            self._reset_action_effect_typing()
         elif observation.state == "GAME_OVER":
             self.episode_roles.clear()
             self.episode_groundings.clear()
@@ -1125,6 +1140,7 @@ class EpistemicExplorer:
                 retain_previous=True
             )
             self._reset_action_translation_algebra()
+            self._reset_action_effect_typing()
             if self.click_object_accommodation and self.level_failures == 1:
                 self._reorganize_click_ontology()
         if state not in self.state_status:
@@ -1245,6 +1261,40 @@ class EpistemicExplorer:
         ):
             self.translation_probe_progress_events += 1
             self._complete_action_translation_probe_ray("progress-observed")
+        if (
+            self.action_effect_typing
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+            and not progressed
+        ):
+            before_positive = self.effect_typer.positive_observations
+            before_predictions = self.effect_typer.predictions
+            before_confirmations = self.effect_typer.confirmations
+            before_noops = self.effect_typer.contextual_noops
+            effect_update = self.effect_typer.observe(
+                sequence=self.effect_typing_sequence,
+                action=ActionIdentity(pending_token.action_id),
+                before=before,
+                after=after,
+            )
+            self.effect_typing_sequence += 1
+            self.effect_typing_total_observations += 1
+            self.effect_typing_total_positive_observations += (
+                self.effect_typer.positive_observations - before_positive
+            )
+            self.effect_typing_total_predictions += (
+                self.effect_typer.predictions - before_predictions
+            )
+            self.effect_typing_total_confirmations += (
+                self.effect_typer.confirmations - before_confirmations
+            )
+            self.effect_typing_total_contextual_noops += (
+                self.effect_typer.contextual_noops - before_noops
+            )
+            self.effect_typing_last_kind = effect_update.kind
+            self.effect_typing_last_diagnostic = effect_update.diagnostic
         if self.paired_object_contact_planning and self.paired_pending is not None:
             self._observe_paired_object_contact(
                 before,
@@ -1556,6 +1606,14 @@ class EpistemicExplorer:
             "not-attempted"
             if self.action_translation_contact_probe
             else "exact-off"
+        )
+
+    def _reset_action_effect_typing(self) -> None:
+        self.effect_typer.reset_episode()
+        self.effect_typing_sequence = 0
+        self.effect_typing_last_kind = None
+        self.effect_typing_last_diagnostic = (
+            "not-attempted" if self.action_effect_typing else "exact-off"
         )
 
     def _reset_repeated_form_events(self) -> None:
@@ -11352,6 +11410,12 @@ class EpistemicExplorer:
                 del self.edges[edge]
 
     def to_dict(self) -> dict[str, Any]:
+        effect_types = self.effect_typer.authoritative_types()
+        effect_type_signatures: dict[ActionIdentity, set[str]] = {}
+        for effect_type in effect_types:
+            effect_type_signatures.setdefault(effect_type.action, set()).add(
+                effect_type.kind
+            )
         result: dict[str, Any] = {
             "states": len(self.state_status),
             "edges": len(self.edges),
@@ -11819,6 +11883,40 @@ class EpistemicExplorer:
             "action_translation_contact_diagnostic": (
                 self.translation_contact_diagnostic
             ),
+            "action_effect_typing_enabled": int(self.action_effect_typing),
+            "action_effect_typing_observations": (
+                self.effect_typing_total_observations
+            ),
+            "action_effect_typing_positive_observations": (
+                self.effect_typing_total_positive_observations
+            ),
+            "action_effect_typing_predictions": (
+                self.effect_typing_total_predictions
+            ),
+            "action_effect_typing_confirmations": (
+                self.effect_typing_total_confirmations
+            ),
+            "action_effect_typing_contextual_noops": (
+                self.effect_typing_total_contextual_noops
+            ),
+            "action_effect_typing_current_types": len(effect_types),
+            "action_effect_typing_current_actions": len(
+                effect_type_signatures
+            ),
+            "action_effect_typing_current_kinds": len(
+                {item.kind for item in effect_types}
+            ),
+            "action_effect_typing_distinct_action_signatures": len(
+                {
+                    tuple(sorted(kinds))
+                    for kinds in effect_type_signatures.values()
+                }
+            ),
+            "action_effect_typing_last_kind": self.effect_typing_last_kind,
+            "action_effect_typing_last_diagnostic": (
+                self.effect_typing_last_diagnostic
+            ),
+            "action_effect_typing_cap_failure": self.effect_typer.cap_failure,
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),
             "relational_scheme_trials": sum(self.relational_trials.values()),
