@@ -70,6 +70,7 @@ from .scheme_category import (
     FocusedVariable,
     FocusMorphism,
     TranslationMorphism,
+    apply_focus,
     apply_translation,
     compile_focused_option,
     focus_square,
@@ -5817,6 +5818,83 @@ class EpistemicExplorer:
             return
         source_objects = {item.color: item for item in source.objects}
         destination_objects = {item.color: item for item in destination.objects}
+        known_displacement = self.constellation_move_actions.get(action_id)
+        if (
+            known_displacement is not None
+            and source_objects.keys() == destination_objects.keys()
+            and source.selected_color == destination.selected_color
+        ):
+            predicted = apply_translation(
+                self._constellation_rewrite_object(source),
+                TranslationMorphism(action_id, known_displacement),
+            )
+            observed_focus = destination_objects[
+                source.selected_color
+            ].center
+            if observed_focus != predicted.focused.value:
+                self.constellation_commuting_conflicts += 1
+                self.constellation_quarantined_actions.add(action_id)
+                self.constellation_move_actions.pop(action_id, None)
+                self.constellation_diagnostic = (
+                    "constellation-focused-effect-conflict"
+                )
+                return
+            self.constellation_last_layout = ConstellationAlignment(
+                tuple(
+                    ConstellationObject(
+                        variable.name,
+                        variable.value,
+                        variable.goals,
+                    )
+                    for variable in predicted.variables
+                ),
+                predicted.focus,
+            )
+            self.constellation_commuting_confirmations += 1
+            if any(
+                source_objects[color].targets
+                != destination_objects[color].targets
+                or (
+                    color != source.selected_color
+                    and source_objects[color].center
+                    != destination_objects[color].center
+                )
+                for color in source_objects
+            ):
+                self.constellation_diagnostic = (
+                    "filtering-occluded-constellation-observation"
+                )
+            else:
+                self.constellation_diagnostic = "constellation-move-confirmed"
+            return
+        if (
+            action_id in self.constellation_switch_actions
+            and source_objects.keys() == destination_objects.keys()
+            and source.selected_color != destination.selected_color
+        ):
+            morphism = FocusMorphism(
+                action_id,
+                source.selected_color,
+                destination.selected_color,
+            )
+            predicted = apply_focus(
+                self._constellation_rewrite_object(source),
+                morphism,
+            )
+            self.constellation_last_layout = ConstellationAlignment(
+                tuple(
+                    ConstellationObject(
+                        variable.name,
+                        variable.value,
+                        variable.goals,
+                    )
+                    for variable in predicted.variables
+                ),
+                predicted.focus,
+            )
+            self.constellation_commuting_confirmations += 1
+            self.constellation_diagnostic = "constellation-focus-confirmed"
+            return
         if (
             source_objects.keys() != destination_objects.keys()
             or any(

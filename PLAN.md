@@ -89,10 +89,16 @@ X, diamond, and ambiguous-but-lattice-filtered synthetic cases pass.
 Level 2 remains the falsifier. Each repeat recorded 173 commuting
 confirmations and zero commuting conflicts, but ended with only two move
 actions, five quarantined controls, and `constellation-structure-changed`.
+V84c's central-symmetry completion removed the first crossing-mover mask
+failure, but its frozen run still remained 1/8 at `[24,376,0,0,0,0,0,0]`.
+Black-box replay exposed a second occlusion: a mover can overwrite a landmark
+center and asymmetrically hide a stationary mover, corrupting both perceived
+role and centroid. V84d now preserves goal domains and non-focused variables
+under confirmed morphisms, while accepting a focused update only when its
+center exactly matches the predicted displacement.
 Required gates are:
 
-1. inspect the causal stream and identify the smallest falsely preserved
-   relation;
+1. verify causal state filtering on the frozen target;
 2. deterministic multi-level `re86` gain twice;
 3. exact preservation of the v82f suite outside changed targets;
 4. full 25-game score of at least 20 before Kaggle submission.

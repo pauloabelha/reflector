@@ -163,6 +163,11 @@ diamond, clipped, translated, reflected, and color-renamed layouts.
 Mover masks are completed under observed central symmetry before embedding,
 so a pixel temporarily occluded by a crossing mover color does not mutate the
 abstract object or its goal domain.
+Once a morphism is causally confirmed, it also acts as a bounded belief-state
+filter: the goal domains and non-focused variables persist through temporary
+occlusion, while the focused variable updates only when its perceived center
+matches the predicted displacement exactly. A focused-effect mismatch remains
+a contradiction and quarantines the morphism.
 
 This implements a narrow Piagetian cycle:
 

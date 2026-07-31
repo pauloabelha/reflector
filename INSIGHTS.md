@@ -104,6 +104,18 @@ the cognitive stream to determine whether mover masks, landmark groups,
 selector identity, or clipping changes. Adding another task-specific planner
 would conceal rather than resolve this contradiction.
 
+V84c repaired the first contradiction by completing mover masks under central
+symmetry: the diamond's apparently new pixel was merely revealed after moving
+away from a crossing plus. The exact prefix then preserved its goal domain.
+The full run exposed a deeper temporal issue. A moving diamond can overwrite a
+landmark center and partially cover a stationary X, so a one-frame parser
+assigns the wrong landmark color and shifts the X centroid. The appropriate
+causal abstraction is therefore belief-state filtering: under a confirmed
+translation, preserve constraints and every non-focused variable, and accept
+only the predicted focused displacement. This is a naturality-based state
+estimator, not permission to ignore an action contradiction; a mismatched
+focused center still quarantines the morphism.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

@@ -63,9 +63,17 @@ Frozen candidate `candidate-ec8492354af28870` reproduced `re86` exactly twice:
 This is a deterministic efficiency breakthrough but not promotion evidence:
 level 2 still did not advance. Only two translation controls remained at the
 end, five actions were quarantined, and the final diagnosis was
-`constellation-structure-changed`. The next step is to inspect the recorded
-causal stream and weaken the smallest false preservation condition. The
-verified 25-game score remains unchanged.
+`constellation-structure-changed`.
+
+V84c then completed mover masks under central symmetry, correctly preserving
+the first diamond translation under crossing-mover occlusion. Its frozen target
+run nevertheless remained exactly 1/8 at `[24,376,0,0,0,0,0,0]`. The next
+falsifier was temporal: a moving diamond overwrote a landmark-ring center and
+partially hid the stationary X, changing its one-frame color label and visible
+centroid. The active v84d accommodation therefore filters perception through
+already confirmed morphisms: goal domains and non-focused variables persist,
+while only an exactly predicted focused center may update. The verified
+25-game score remains unchanged.
 
 ## Rejected branch
 
@@ -78,7 +86,7 @@ negative result and is disabled in v82f/v84 candidates.
 
 The verified score remains **16.3554480981 / 100**. Reaching 20 requires at
 least **+3.6445519019** aggregate points. The current priority is to validate
-why the generic embedding object's supposedly invariant structure changes on
+whether causal state filtering carries the generic embedding object through
 `re86` level 2, require multi-level progress, run preservation/full-suite
 gates, and only then submit the exact accepted package to Kaggle using
 `KAGGLE.md`.
