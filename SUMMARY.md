@@ -30,6 +30,28 @@ The promotion gates pass: 461 tests pass with 3 skips, Ruff and mypy are clean,
 both network-disabled smoke paths pass, and the prize audit reports technical
 readiness. V84m is the accepted local candidate.
 
+## Promotion candidate: phase-topology product planning
+
+V92 `candidate-42dbfa39cba78041` is the first autonomous gain after v84m.
+It learns a multicolor rigid body and four translation morphisms from rendered
+transitions, normalizes embedded displays across scale, treats exact contact
+with a unique small operator as a symbolic phase transition, and runs bounded
+BFS over the product of body anchor and display phase. It retains no game ID,
+color, coordinate, route, or public solution.
+
+Two isolated `ls20` reruns both advanced level 1 in exactly **17 actions**,
+versus v84m's 0/7 at 400 actions. The wider preservation gate then reproduced
+all 14 previously positive v84m games exactly, including every completed-level
+action vector, while preserving the same 17-action `ls20` gain. The gate
+report is
+[`reports/experimental-v92-accepted-win-preservation-r1-400.json`](reports/experimental-v92-accepted-win-preservation-r1-400.json),
+SHA-256
+`3e5ecefb295342a18f883da0ee30fc07bd1c3012f592739ab81fbc16d4790b84`.
+
+This is target-repeat and preservation evidence, not yet the new accepted
+25-game score. Promotion now requires the complete 25-game run, full quality
+suite, exact export, and offline Kaggle smoke.
+
 ## New accepted mechanism: demonstrated analogy algebra
 
 V82f learns transformations from visible input/output demonstrations rather

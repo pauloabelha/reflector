@@ -576,13 +576,30 @@ The first target diagnosis validates exactly such a predicate. A black-box
 
 Report `reports/ls20-black-box-phase-topology-v1.json`, SHA-256
 `96d5b13bee6b50c659f19dccc5bfccdd925d6ce1effc01a757cb357946777efd`.
-Do not encode its coordinates, action sequence, colors, or game ID. Implement a general bounded
-phase-topology substrate with synthetic transformations first: translation
-and color permutation invariance, multicolor rigid-body conservation,
-coarse-grid display extraction, operator-induced phase transition, BFS/CSP on
-`anchor × phase`, and immediate quarantine if a predicted body displacement
-or display transition fails. Then run `ls20` as the causal target and at least
-two translation/phase sentinels for preservation.
+V92 implements the general bounded substrate without encoding those
+coordinates, actions, colors, or game ID. Frozen candidate
+`candidate-42dbfa39cba78041`, source commit `e03fb30`, and inference
+fingerprint
+`32462ddff38fa9ba86691e66601adcef93a9147e0b02e5f219433435f9f54c1f`
+compile observed rigid translations, scale-normalized embedded displays, and
+operator-induced display transitions into bounded options over
+`anchor × phase`.
+
+The causal target passes twice. Both isolated `ls20` runs advance level 1 in
+exactly `[17,383,0,0,0,0,0]`, versus v84m's
+`[400,0,0,0,0,0,0]`. The accepted-win preservation gate then exactly
+reproduces every score, completion flag, action total, and completed-level
+action vector on all 14 previously positive v84m games; only `ls20` changes.
+Report `reports/experimental-v92-accepted-win-preservation-r1-400.json`,
+SHA-256
+`3e5ecefb295342a18f883da0ee30fc07bd1c3012f592739ab81fbc16d4790b84`.
+
+Next, run the complete 25-game process-isolated suite from `e03fb30`. Promote
+only if coverage is 25/25, no zero-progress game regresses an accepted result,
+the aggregate score increases, the full test/Ruff/mypy gate passes, and the
+same candidate passes exact export plus network-disabled Kaggle smoke. If
+promoted, update every score document and submit that exact notebook subject
+to Kaggle's daily quota.
 
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the

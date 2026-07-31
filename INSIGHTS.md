@@ -517,6 +517,23 @@ the product without replaying a public route. A synthetic gate must now prove
 that the same compiler survives translation, recoloring, changed corridor
 layout, and a different phase cycle before it receives live authority.
 
+V92 now supplies the autonomous validation. After only rendered transition
+evidence, the integrated agent compresses the scene into a rigid-body anchor,
+four translation generators, two scale-equivalent display objects, and one
+operator-induced phase morphism. It solves `ls20` level 1 in 17 actions twice,
+shorter than the 19-action diagnostic route, because BFS discovers a different
+valid representative of the same abstract option.
+
+The categorical point is operational rather than decorative: spatial actions
+are endomorphisms in the anchor fiber, operator contact maps between phase
+objects, and display normalization makes the goal comparison invariant to
+scale. The hierarchical policy is the composition
+`navigate(operator) ; transform(phase) ; navigate(terminal)`. Piagetian
+conservation is the rigid body and translation algebra; accommodation is
+localized to the display factor when the operator changes it. The exact
+14-game preservation gate shows that this compression remains dormant outside
+its grounded conjunction.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

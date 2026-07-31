@@ -360,6 +360,21 @@ The compiler must derive masks, graph nodes, display factors, and transition
 effects from current observations and pass translated, recolored, layout-
 changed, and phase-cycle synthetic tests before live control.
 
+V92 realizes this compiler in `reflector/core/phase_topology.py`. Its authority
+is fail-closed: it needs a conserved multicolor mask, four consistent plain
+action translations, traversable substrate evidence, a unique bounded
+multicolor operator, and a uniquely comparable pair of embedded displays.
+Scale normalization maps repeated pixel blocks to one coarse symbolic pattern.
+The planner searches at most 512 anchors, selects at most 96 plan steps, and
+permits at most eight operator applications. Any predicted-anchor conflict
+blocks that edge; an inconsistent rigid mask quarantines the specialist.
+
+In the integrated target, the product planner advances `ls20` level 1 in 17
+actions on two exact reruns. Across every previously positive accepted game,
+the new advisor is behaviorally dormant and all level-action vectors remain
+identical. The inference module is part of the explicit Kaggle overlay and is
+controlled by the serializable `enable_phase_topology_planning` genome bit.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;
