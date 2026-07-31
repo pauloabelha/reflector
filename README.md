@@ -57,15 +57,15 @@ Kaggle leaderboard series.
 
 **Kaggle submission:** frozen v65b—not v84m—owns completed submission
 `55113224` and public score **0.02**. V74 submission `55123277` is pending.
-The exact private v84m notebook
-`pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and emitted
-`submission.parquet`, but its submission request was rejected because v74 had
-already consumed the one-per-day allowance. No v84m submission ID exists yet.
+The exact private v92 notebook
+`pauloabelha/reflector-arc-agi-3-v92` version 1 completed and emitted
+`submission.parquet`, but its submission request returned HTTP 400 while v74
+still occupies the one-per-day allowance. No v92 submission ID exists yet.
 Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
-do not report the local 20.42 score as a Kaggle public or private score.
+do not report the local 20.56 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object

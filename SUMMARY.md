@@ -342,6 +342,12 @@ allowance had already been consumed by v74 submission `55123277`, which is
 submission `55113224` is now `COMPLETE` with Kaggle public score **0.02**;
 its private score remains unavailable.
 
+The exact v92 notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 has now
+also completed and emitted `submission.parquet`. Kaggle again returned HTTP
+400 for the competition submission while v74 remains pending; no v92
+submission ID exists. Retry this exact completed version after the UTC daily
+quota resets.
+
 ## Rejected experiment: compressed backward progress credit
 
 A new immutable audit of all 25 v84m cognitive streams records 43 observable

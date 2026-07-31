@@ -1,6 +1,6 @@
 # ARC-AGI-3 Kaggle submission runbook
 
-Verified: 2026-07-30.
+Verified: 2026-07-31.
 
 This is the operational runbook for submitting Reflector to
 [ARC Prize 2026 - ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3).
@@ -10,7 +10,7 @@ submission.
 
 ## Decision
 
-Submit Reflector after the exact v84m source, candidate, and permanent local
+Submit Reflector after the exact v92 source, candidate, and permanent local
 reports have been frozen and verified. A Kaggle submission is valuable because
 it tests transfer to hidden games; the score on the 25 downloadable
 public-development games cannot answer that question.
@@ -29,7 +29,7 @@ that predates the accepted source commit.
 
 Never infer either Kaggle score from a local report. Submission `55113224`
 contains frozen v65b and completed with public score **0.02**. Submission
-`55123277` contains v74 and is pending. The completed v84m notebook version 1
+`55123277` contains v74 and is pending. The completed v92 notebook version 1
 has no competition submission ID because the v74 submission consumed the
 daily allowance. Until Kaggle releases or verifies a final result, record the
 private score as **unavailable**.
@@ -319,16 +319,16 @@ private code sharing outside the registered team is prohibited.
 
 ## Current manual blockers
 
-At the 2026-07-30 audit:
+At the 2026-07-31 audit:
 
-- v84m is frozen as `candidate-07d24ee8acf946c9`; its candidate fingerprint,
+- v92 is frozen as `candidate-42dbfa39cba78041`; its candidate fingerprint,
   target repeats, preservation gate, full 25-game report, exact export, both
   network-disabled smoke paths, and technical prize checks pass;
 - frozen v65b submission `55113224` is complete at Kaggle public score 0.02;
   v74 submission `55123277` is pending;
-- v84m notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and
+- v92 notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and
   emitted `submission.parquet`, but the submission request was rejected after
-  v74 consumed the daily allowance; no v84m submission ID exists yet;
+  v74 consumed the daily allowance; no v92 submission ID exists yet;
 - the project virtual environment has a working authenticated Kaggle CLI; a
   live read-only check reports `55113224` complete and `55123277` pending;
 - rule acceptance, identity verification, eligibility confirmation, team

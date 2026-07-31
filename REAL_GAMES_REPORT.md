@@ -53,6 +53,7 @@ and notebook
 | Target-only `ls20` reruns | v92 phase-topology product planner, promotion candidate | **3.5714285714 for one game** | exact 1/7 vector `[17,383,0,0,0,0,0]` twice, versus v84m 0/7 | deterministic autonomous gain; full-suite promotion pending |
 | Process-isolated accepted-win preservation gate | v92 phase-topology product planner, promotion candidate | **34.2696621741 gate mean** | all 14 positive v84m vectors preserved exactly; `ls20` alone changes from 0/7 to 1/7 at action 17 | target attribution and non-regression pass; complete 25-game run pending |
 | Kaggle notebook artifact | v84m accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and emitted `submission.parquet` | submission request rejected after v74 consumed daily allowance; no v84m submission ID |
+| Kaggle notebook artifact | v92 accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v92 submission ID |
 | Kaggle public leaderboard | v65b, submission `55113224` | **0.02** | synchronous hidden rerun complete | belongs only to frozen v65b |
 | Kaggle rerun | v74, submission `55123277` | pending | submitted 2026-07-31 01:05:23 UTC | pending; no score yet |
 | Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |
