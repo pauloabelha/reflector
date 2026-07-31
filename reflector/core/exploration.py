@@ -26,6 +26,7 @@ from .connector_synthesis import (
     VariableSlot,
     synthesize_connector_program,
 )
+from .dihedral_analogy import infer_dihedral_analogy
 from .inheritance import SchemeLibrary
 from .lattice_csp import (
     ClickEffectModel,
@@ -416,6 +417,7 @@ class EpistemicExplorer:
     positive_effect_family_fairness: bool = False
     shortest_progress_path_reuse: bool = False
     finite_orbit_commit_exploration: bool = False
+    dihedral_analogy_alignment: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -536,6 +538,26 @@ class EpistemicExplorer:
     finite_orbit_selections: int = 0
     finite_orbit_commit_trials: int = 0
     finite_orbit_diagnostic: str = "exact-off"
+    analogy_move_actions: dict[int, int] = field(
+        default_factory=dict,
+        repr=False,
+    )
+    analogy_quarantined_actions: set[int] = field(
+        default_factory=set,
+        repr=False,
+    )
+    analogy_mutation_actions: set[int] = field(
+        default_factory=set,
+        repr=False,
+    )
+    analogy_mutation_attempts: set[tuple[int, object, int]] = field(
+        default_factory=set,
+        repr=False,
+    )
+    analogy_selections: int = 0
+    analogy_mutations: int = 0
+    analogy_moves: int = 0
+    analogy_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -1003,6 +1025,8 @@ class EpistemicExplorer:
             order.append("committed-trajectory-planning")
         if self.shape_goal_translation:
             order.append("shape-goal-translation")
+        if self.dihedral_analogy_alignment:
+            order.append("dihedral-analogy-alignment")
         if self.finite_orbit_commit_exploration:
             order.append("finite-orbit-commit-exploration")
         if self.productive_role_reuse:
@@ -1040,6 +1064,8 @@ class EpistemicExplorer:
             if "committed-trajectory-planning" in selected_reason
             else "shape-goal-translation"
             if "shape-goal-translation" in selected_reason
+            else "dihedral-analogy-alignment"
+            if "dihedral-analogy-alignment" in selected_reason
             else "finite-orbit-commit-exploration"
             if "finite-orbit-commit-exploration" in selected_reason
             else "parameterized-select-apply-commit"
@@ -1175,9 +1201,11 @@ class EpistemicExplorer:
             self.shortest_progress_path_variant_repetitions = 0
             self.shortest_progress_path_selections = 0
             self._reset_finite_orbit(clear_trials=True)
+            self._reset_dihedral_analogy(clear_controls=True)
         elif observation.state == "GAME_OVER":
             self.level_start_state = None
             self._reset_finite_orbit(clear_trials=False)
+            self._reset_dihedral_analogy(clear_controls=False)
             self.episode_roles.clear()
             self.episode_groundings.clear()
             self.productive_groundings.clear()
@@ -1248,6 +1276,19 @@ class EpistemicExplorer:
             self.current_level is not None
             and observation.levels_completed > self.current_level
         )
+        if (
+            self.dihedral_analogy_alignment
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+            and not progressed
+        ):
+            self._observe_dihedral_analogy(
+                before,
+                after,
+                pending_token.action_id,
+            )
         if (
             self.finite_orbit_commit_exploration
             and pending_token is not None
@@ -5330,6 +5371,24 @@ class EpistemicExplorer:
                 scene,
             )
 
+        analogy = self._select_dihedral_analogy(
+            observation,
+            tokens,
+        )
+        if analogy is not None:
+            self.last_scheme_components = (
+                "scheme:demonstrated-dihedral-analogy",
+                "operator:bind-example-pairs",
+                "operator:transport-output-under-input-symmetry",
+                "operator:preserve-satisfied-slot",
+            )
+            return self._issue(
+                state,
+                analogy,
+                "epistemic-frontier:dihedral-analogy-alignment",
+                scene,
+            )
+
         finite_orbit = self._select_finite_orbit_commit(
             state,
             tokens,
@@ -5549,6 +5608,144 @@ class EpistemicExplorer:
             "epistemic-frontier:least-repeated-exhausted-state",
             scene,
         )
+
+    def _reset_dihedral_analogy(self, *, clear_controls: bool) -> None:
+        self.analogy_mutation_attempts.clear()
+        self.analogy_diagnostic = (
+            "not-grounded"
+            if self.dihedral_analogy_alignment
+            else "exact-off"
+        )
+        if clear_controls:
+            self.analogy_move_actions.clear()
+            self.analogy_quarantined_actions.clear()
+            self.analogy_mutation_actions.clear()
+            self.analogy_selections = 0
+            self.analogy_mutations = 0
+            self.analogy_moves = 0
+
+    def _observe_dihedral_analogy(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+    ) -> None:
+        source = infer_dihedral_analogy(before)
+        destination = infer_dihedral_analogy(after)
+        if source is None or destination is None:
+            self.analogy_diagnostic = "analogy-layout-not-grounded"
+            return
+        if source.targets != destination.targets:
+            self.analogy_quarantined_actions.add(action_id)
+            self.analogy_move_actions.pop(action_id, None)
+            self.analogy_mutation_actions.discard(action_id)
+            self.analogy_diagnostic = "analogy-demonstration-changed"
+            return
+        source_masks = tuple(tile.mask for tile in source.answer_tiles)
+        destination_masks = tuple(tile.mask for tile in destination.answer_tiles)
+        changed = tuple(
+            index
+            for index, (left, right) in enumerate(
+                zip(source_masks, destination_masks, strict=True)
+            )
+            if left != right
+        )
+        if (
+            not changed
+            and source.selected_index != destination.selected_index
+        ):
+            size = len(source.answer_tiles)
+            delta = (destination.selected_index - source.selected_index) % size
+            previous = self.analogy_move_actions.get(action_id)
+            if previous is not None and previous != delta:
+                self.analogy_quarantined_actions.add(action_id)
+                self.analogy_move_actions.pop(action_id, None)
+                self.analogy_diagnostic = "conflicting-analogy-move"
+                return
+            self.analogy_move_actions[action_id] = delta
+            self.analogy_mutation_actions.discard(action_id)
+            self.analogy_diagnostic = "analogy-move-grounded"
+            return
+        if (
+            source.selected_index == destination.selected_index
+            and changed == (source.selected_index,)
+        ):
+            if action_id not in self.analogy_move_actions:
+                self.analogy_mutation_actions.add(action_id)
+                self.analogy_diagnostic = "analogy-mutation-grounded"
+
+    def _select_dihedral_analogy(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        if not self.dihedral_analogy_alignment:
+            return None
+        if self.analogy_selections >= 64:
+            self.analogy_diagnostic = "analogy-trial-cap"
+            return None
+        layout = infer_dihedral_analogy(observation.frame)
+        if layout is None:
+            self.analogy_diagnostic = "analogy-layout-not-grounded"
+            return None
+        available = {
+            token.action_id: token
+            for token in tokens
+            if not token.data
+            and token.action_id not in self.analogy_quarantined_actions
+        }
+        move_actions = tuple(
+            (action_id, delta)
+            for action_id, delta in sorted(self.analogy_move_actions.items())
+            if action_id in available
+        )
+        mutation_actions = tuple(
+            action_id
+            for action_id in sorted(self.analogy_mutation_actions)
+            if action_id in available
+        )
+        if not move_actions or not mutation_actions:
+            self.analogy_diagnostic = "analogy-controls-incomplete"
+            return None
+        unsatisfied = tuple(
+            index
+            for index, (tile, targets) in enumerate(
+                zip(layout.answer_tiles, layout.targets, strict=True)
+            )
+            if tile.mask not in targets
+        )
+        if not unsatisfied:
+            self.analogy_diagnostic = "analogy-target-satisfied"
+            return None
+        current = layout.selected_index
+        if current in unsatisfied:
+            mask = layout.answer_tiles[current].mask
+            for action_id in mutation_actions:
+                key = (current, mask, action_id)
+                if key in self.analogy_mutation_attempts:
+                    continue
+                self.analogy_mutation_attempts.add(key)
+                self.analogy_selections += 1
+                self.analogy_mutations += 1
+                self.analogy_diagnostic = "mutating-analogy-slot"
+                return available[action_id]
+            self.analogy_diagnostic = "analogy-mutation-cycle-exhausted"
+            return None
+        size = len(layout.answer_tiles)
+        action_id, _delta = min(
+            move_actions,
+            key=lambda item: (
+                min(
+                    (target - (current + item[1])) % size
+                    for target in unsatisfied
+                ),
+                item[0],
+            ),
+        )
+        self.analogy_selections += 1
+        self.analogy_moves += 1
+        self.analogy_diagnostic = "moving-to-unsatisfied-analogy-slot"
+        return available[action_id]
 
     def _reset_finite_orbit(self, *, clear_trials: bool) -> None:
         self.finite_orbit_generator = None
@@ -11961,6 +12158,22 @@ class EpistemicExplorer:
             "finite_orbit_selections": self.finite_orbit_selections,
             "finite_orbit_commit_trials": self.finite_orbit_commit_trials,
             "finite_orbit_diagnostic": self.finite_orbit_diagnostic,
+            "dihedral_analogy_enabled": int(
+                self.dihedral_analogy_alignment
+            ),
+            "dihedral_analogy_move_actions": len(
+                self.analogy_move_actions
+            ),
+            "dihedral_analogy_mutation_actions": len(
+                self.analogy_mutation_actions
+            ),
+            "dihedral_analogy_quarantined_actions": len(
+                self.analogy_quarantined_actions
+            ),
+            "dihedral_analogy_selections": self.analogy_selections,
+            "dihedral_analogy_mutations": self.analogy_mutations,
+            "dihedral_analogy_moves": self.analogy_moves,
+            "dihedral_analogy_diagnostic": self.analogy_diagnostic,
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()

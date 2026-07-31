@@ -119,6 +119,7 @@ class MindConfig:
     enable_positive_effect_family_fairness: bool = False
     enable_shortest_progress_path_reuse: bool = False
     enable_finite_orbit_commit_exploration: bool = False
+    enable_dihedral_analogy_alignment: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -203,6 +204,7 @@ class MindConfig:
             "enable_positive_effect_family_fairness",
             "enable_shortest_progress_path_reuse",
             "enable_finite_orbit_commit_exploration",
+            "enable_dihedral_analogy_alignment",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")

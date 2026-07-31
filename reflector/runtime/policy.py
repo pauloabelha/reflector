@@ -92,6 +92,9 @@ class SymbolicPolicy:
             finite_orbit_commit_exploration=(
                 self.mind.config.enable_finite_orbit_commit_exploration
             ),
+            dihedral_analogy_alignment=(
+                self.mind.config.enable_dihedral_analogy_alignment
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),
