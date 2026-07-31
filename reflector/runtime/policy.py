@@ -88,6 +88,9 @@ class SymbolicPolicy:
             terminal_edge_viability_credit=(
                 self.mind.config.enable_terminal_edge_viability_credit
             ),
+            terminal_role_viability_credit=(
+                self.mind.config.enable_terminal_role_viability_credit
+            ),
             finite_orbit_commit_exploration=(
                 self.mind.config.enable_finite_orbit_commit_exploration
             ),

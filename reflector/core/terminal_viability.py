@@ -70,6 +70,7 @@ class TerminalEdgeViability:
     """Finite version space over undefined structural morphisms."""
 
     bounds: TerminalViabilityBounds = field(default_factory=TerminalViabilityBounds)
+    role_only: bool = False
     terminal_sources: dict[AbstractTerminalEdge, set[str]] = field(default_factory=dict)
     quarantined_edges: set[AbstractTerminalEdge] = field(default_factory=set)
     observations: int = 0
@@ -102,6 +103,8 @@ class TerminalEdgeViability:
     ) -> AbstractTerminalEdge | None:
         """Return the nuisance-quotiented scene/role edge when representable."""
 
+        if self.role_only:
+            return ("grounded-role", role)
         source = structural_source_signature(frame)
         if source is None:
             return None

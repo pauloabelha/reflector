@@ -94,6 +94,22 @@ def test_action_role_separates_otherwise_identical_scene_edges() -> None:
     assert not update.authority
 
 
+def test_role_only_mode_ignores_scene_but_requires_distinct_frames() -> None:
+    model = TerminalEdgeViability(role_only=True)
+    first = _frame((1, 2), color=2)
+    structurally_different = _frame((1, 2), color=2, nuisance=(6, 6))
+
+    model.observe(frame=first, role=("click", "object-a"), terminal=True)
+    update = model.observe(
+        frame=structurally_different,
+        role=("click", "object-a"),
+        terminal=True,
+    )
+
+    assert update.authority
+    assert model.authoritative(first, ("click", "object-a"))
+
+
 def test_explorer_filters_only_authoritative_terminal_role() -> None:
     first = _frame((1, 2), color=2)
     translated = _frame((4, 3), color=7)

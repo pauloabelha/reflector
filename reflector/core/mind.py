@@ -119,6 +119,7 @@ class MindConfig:
     enable_positive_effect_family_fairness: bool = False
     enable_shortest_progress_path_reuse: bool = False
     enable_terminal_edge_viability_credit: bool = False
+    enable_terminal_role_viability_credit: bool = False
     enable_finite_orbit_commit_exploration: bool = False
     enable_dihedral_analogy_alignment: bool = False
     enable_linear_track_navigation: bool = False
@@ -207,6 +208,7 @@ class MindConfig:
             "enable_positive_effect_family_fairness",
             "enable_shortest_progress_path_reuse",
             "enable_terminal_edge_viability_credit",
+            "enable_terminal_role_viability_credit",
             "enable_finite_orbit_commit_exploration",
             "enable_dihedral_analogy_alignment",
             "enable_linear_track_navigation",
@@ -243,6 +245,13 @@ class MindConfig:
         ):
             raise ValueError(
                 "positive effect family fairness requires action effect typing"
+            )
+        if (
+            self.enable_terminal_role_viability_credit
+            and not self.enable_terminal_edge_viability_credit
+        ):
+            raise ValueError(
+                "terminal role viability requires terminal edge viability"
             )
         if (
             self.enable_colored_stencil_secondary_planning

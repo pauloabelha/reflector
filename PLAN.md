@@ -411,6 +411,13 @@ games above plus aliasing sentinels `cn04`, `su15`, and `tu93`. Reject if no
 filter activates, any accepted vector regresses, or a safe role gains
 authority.
 
+Frozen v87 candidate `candidate-6e6ed3468326662e`, inference fingerprint
+`c0773e76e5f82944c40cdb9170a4c569de2fe60838d566c2377973e2969d5ad6`,
+implements that one additional mode bit. The concrete-frame hashes remain
+evidence identities only; the retained forbidden assignment is the grounded
+role. Synthetic tests require two distinct frames, separate different roles,
+and preserve safe-counterexample quarantine.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

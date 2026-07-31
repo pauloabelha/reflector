@@ -456,6 +456,7 @@ class EpistemicExplorer:
     positive_effect_family_fairness: bool = False
     shortest_progress_path_reuse: bool = False
     terminal_edge_viability_credit: bool = False
+    terminal_role_viability_credit: bool = False
     finite_orbit_commit_exploration: bool = False
     dihedral_analogy_alignment: bool = False
     linear_track_navigation: bool = False
@@ -1384,6 +1385,9 @@ class EpistemicExplorer:
             self.terminal_edge_viability_credit
             and self.terminal_viability_pending_generic
         ):
+            self.terminal_viability.role_only = (
+                self.terminal_role_viability_credit
+            )
             self.terminal_viability.observe(
                 frame=before,
                 role=role,
@@ -11689,7 +11693,12 @@ class EpistemicExplorer:
 
         if not self.terminal_edge_viability_credit:
             return tokens
-        source = structural_source_signature(self.selection_frame)
+        self.terminal_viability.role_only = self.terminal_role_viability_credit
+        source = (
+            "grounded-role"
+            if self.terminal_role_viability_credit
+            else structural_source_signature(self.selection_frame)
+        )
         if source is None:
             self.terminal_viability.last_diagnostic = (
                 "unrepresentable-current-structural-source"
@@ -12870,6 +12879,9 @@ class EpistemicExplorer:
                 self.shortest_progress_path_diagnostic
             ),
             "terminal_viability_enabled": int(self.terminal_edge_viability_credit),
+            "terminal_viability_role_only": int(
+                self.terminal_role_viability_credit
+            ),
             "terminal_viability_observations": (self.terminal_viability.observations),
             "terminal_viability_terminal_observations": (
                 self.terminal_viability.terminal_observations
