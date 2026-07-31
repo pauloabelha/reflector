@@ -107,6 +107,22 @@ failed closed at the component cap. The next scheduler must consume only
 positive distinctions and abstain when this quotient does not separate
 actions.
 
+## 2026-07-30 — v79 positive-effect fairness rejected
+
+V79 waited for complete positive typing of represented plain actions and at
+least two distinct signatures, then balanced a bounded number of trials across
+effect families. This fixed the epistemic defect in V77: unknown actions were
+never typed by complement, and `dc22` correctly abstained when all four typed
+actions shared one signature.
+
+The task result was still null on all seven preregistered games. Strong
+operation on `cn04`, `ls20`, `sk48`, `tr87`, and `wa30` added no level.
+Positive causal categories help describe the intervention space, but fairness
+over categories remains undirected exploration. The next abstraction must
+compose effects into an executable procedure or connect them to a learned
+goal variable; another scheduling heuristic would repeat the same failure at
+a different vocabulary level.
+
 ## 2026-07-30 — v68 accepted path-cycle result
 
 V68 supplies a generic prior absent from v67: a conserved same-form

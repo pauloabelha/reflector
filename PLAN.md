@@ -2964,16 +2964,24 @@ one non-discriminative shared signature on `re86`, and a safe component-cap
 failure on `m0r0`. This is a valid representational substrate, not task
 progress.
 
+V79 `candidate-1dcd58cc020f3fe0` required complete positive typing and at least
+two action signatures, then balanced at most 64 selections per episode across
+effect families. Across `cn04`, `dc22`, `ls20`, `sk48`, `tr87`, `tu93`, and
+`wa30`, it was strongly operative on five games, safely abstained on `dc22`,
+mostly abstained on `tu93`, and solved zero levels everywhere. V79 is
+rejected. Positive action types are a valid substrate, but fairness over them
+is not a goal model or executable procedure.
+
 Next:
 
 1. Keep v74 frozen as the preservation anchor. Before promotion, reproduce
    every accepted vector across the full suite.
-2. Do not retry undirected rays or contact-triggered complement actions.
-   Construct operative offspring only from positively confirmed type
-   distinctions; abstain when action signatures are non-discriminative.
-3. Cluster where positively typed actions predict structural discontinuities
-   but base control still repeats an unproductive signature. Preregister a
-   small causal scheduling claim before another live run.
+2. Do not retry undirected rays, complement actions, or type-family fairness.
+   The next offspring must compose positive effects into a falsifiable
+   multi-step procedure or infer a goal-relevant state variable.
+3. Cluster cross-game transition motifs around progress and irreversible
+   structural events, then validate a bounded compositional hypothesis on
+   synthetic or held-out structures before another public run.
 4. A task promotion still requires deterministic gains on two structurally
    different games, exact preservation, the full 25-game suite, export, and
    both offline smoke paths.

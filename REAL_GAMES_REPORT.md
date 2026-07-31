@@ -419,6 +419,38 @@ V78 is representation evidence, not a task-performance candidate. Any
 operative descendant must use positively confirmed distinctions and abstain
 when every action has the same type signature.
 
+## V79 rejected positive-effect family fairness
+
+Generation-36 candidate `candidate-1dcd58cc020f3fe0` made the V78 quotient
+operative only when every represented plain action had a prospectively
+authoritative positive type and at least two signatures differed. It balanced
+a hard maximum of 64 selections per episode across learned effect families.
+
+The preregistered seven-game run solved zero levels everywhere:
+
+| Game | Family selections | Terminal behavior |
+| --- | ---: | --- |
+| `cn04` | 178 | operative across retries |
+| `dc22` | 0 | safely abstained: one shared signature |
+| `ls20` | 107 | operative across earlier episodes |
+| `sk48` | 43 | operative |
+| `tr87` | 192 | operative across retries |
+| `tu93` | 13 | mostly abstained |
+| `wa30` | 128 | reached per-episode caps |
+
+V79 is rejected without preservation or full-suite evaluation. Positive
+action typing fixed V77's epistemic error, but fair sampling of causal effect
+families still supplied neither goal inference nor an executable task
+procedure. The report is
+[`reports/official-isolated-v79-positive-effect-family-targets-r1-400.json`](reports/official-isolated-v79-positive-effect-family-targets-r1-400.json),
+SHA-256
+`93a472f6fe1ca1d1f4a52af8b0f247bb968ed0c1c70516bdda7e2a1531a0d767`.
+The candidate, cognition, and recording SHA-256 values are respectively
+`01af6d07c3b27b4ca48390978e6510124ef3e4c2c83e555ea71a732a9e2d6037`,
+`f1c8a7136ad30c17ea80734a05ce692daefc57593b043f7cbc8ee8118f52aef8`,
+and
+`47c55f5b85f255b45a7c21a054e173b51f4f8287745a8f990fb082699433f9c5`.
+
 ## Historical accepted v69 result
 
 Candidate: `candidate-2336bc12a0bc28de`

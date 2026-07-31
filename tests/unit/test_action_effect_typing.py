@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import pytest
+
 from reflector.core.action_effect_typing import (
     ProspectiveActionEffectTyper,
     infer_action_effect,
 )
 from reflector.core.action_translation_algebra import ActionIdentity
 from reflector.core.exploration import ActionToken, EpistemicExplorer
+from reflector.core.mind import MindConfig
 from reflector.core.perception import SceneTracker
 from reflector.core.symbolic import Observation, Scene
 
@@ -195,3 +198,80 @@ def test_explorer_effect_typing_is_exact_off_and_traces_live_authority() -> None
     assert metrics["action_effect_typing_confirmations"] == 1
     assert metrics["action_effect_typing_current_types"] == 1
     assert metrics["action_effect_typing_last_kind"] == "component-birth"
+
+
+def _seed_discriminative_action_types(explorer: EpistemicExplorer) -> None:
+    typer = explorer.effect_typer
+    translation = ActionIdentity(1)
+    birth = ActionIdentity(2)
+    transitions = (
+        (
+            translation,
+            _frame(((1, 2, 2), (7, 0, 8))),
+            _frame(((2, 2, 2), (7, 0, 8))),
+        ),
+        (
+            translation,
+            _frame(((3, 3, 7), (0, 0, 9))),
+            _frame(((4, 3, 7), (0, 0, 9))),
+        ),
+        (
+            birth,
+            _frame(((1, 2, 2),)),
+            _frame(((1, 2, 2), (6, 4, 8))),
+        ),
+        (
+            birth,
+            _frame(((2, 3, 7), (0, 0, 9))),
+            _frame(((2, 3, 7), (0, 0, 9), (6, 4, 4))),
+        ),
+    )
+    for sequence, (action, before, after) in enumerate(transitions):
+        typer.observe(
+            sequence=sequence,
+            action=action,
+            before=before,
+            after=after,
+        )
+
+
+def test_positive_effect_family_fairness_requires_complete_distinctions() -> None:
+    explorer = EpistemicExplorer(
+        action_effect_typing=True,
+        positive_effect_family_fairness=True,
+    )
+    _seed_discriminative_action_types(explorer)
+    tokens = (ActionToken(1), ActionToken(2))
+
+    first = explorer._select_positive_effect_family(tokens)  # noqa: SLF001
+    second = explorer._select_positive_effect_family(tokens)  # noqa: SLF001
+
+    assert first == ActionToken(1)
+    assert second == ActionToken(2)
+    assert explorer.positive_effect_family_selections == 2
+
+
+def test_positive_effect_family_fairness_abstains_on_incomplete_typing() -> None:
+    explorer = EpistemicExplorer(
+        action_effect_typing=True,
+        positive_effect_family_fairness=True,
+    )
+    _seed_discriminative_action_types(explorer)
+    explorer.effect_typer.hypotheses.pop(ActionIdentity(2))
+
+    selected = explorer._select_positive_effect_family(  # noqa: SLF001
+        (ActionToken(1), ActionToken(2))
+    )
+
+    assert selected is None
+    assert explorer.positive_effect_family_diagnostic == (
+        "incomplete-positive-action-typing"
+    )
+
+
+def test_positive_effect_family_config_requires_effect_typing() -> None:
+    with pytest.raises(
+        ValueError,
+        match="family fairness requires",
+    ):
+        MindConfig(enable_positive_effect_family_fairness=True)

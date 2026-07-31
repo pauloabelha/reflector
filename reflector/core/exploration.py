@@ -405,6 +405,7 @@ class EpistemicExplorer:
     action_translation_orbit_probe: bool = False
     action_translation_contact_probe: bool = False
     action_effect_typing: bool = False
+    positive_effect_family_fairness: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -490,6 +491,13 @@ class EpistemicExplorer:
     effect_typing_total_contextual_noops: int = 0
     effect_typing_last_kind: str | None = None
     effect_typing_last_diagnostic: str = "exact-off"
+    positive_effect_family_attempts: Counter[tuple[str, ...]] = field(
+        default_factory=Counter,
+        repr=False,
+    )
+    positive_effect_family_selections: int = 0
+    positive_effect_family_abstentions: int = 0
+    positive_effect_family_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -967,6 +975,8 @@ class EpistemicExplorer:
             order.append("action-translation-contact-probe")
         if self.action_translation_orbit_probe:
             order.append("action-translation-orbit-probe")
+        if self.positive_effect_family_fairness:
+            order.append("positive-effect-family-fairness")
         if self.uses_action_family_schema:
             order.append("hierarchical-action-fairness")
         order.extend(("untried-state-intervention", "known-frontier-navigation"))
@@ -1002,6 +1012,8 @@ class EpistemicExplorer:
             if "action-translation-orbit-probe" in selected_reason
             else "action-translation-contact-probe"
             if "action-translation-contact-probe" in selected_reason
+            else "positive-effect-family-fairness"
+            if "positive-effect-family-fairness" in selected_reason
             else "hierarchical-action-fairness"
             if "hierarchical-action-family" in selected_reason
             else "untried-state-intervention"
@@ -1611,9 +1623,15 @@ class EpistemicExplorer:
     def _reset_action_effect_typing(self) -> None:
         self.effect_typer.reset_episode()
         self.effect_typing_sequence = 0
+        self.positive_effect_family_attempts.clear()
         self.effect_typing_last_kind = None
         self.effect_typing_last_diagnostic = (
             "not-attempted" if self.action_effect_typing else "exact-off"
+        )
+        self.positive_effect_family_diagnostic = (
+            "not-attempted"
+            if self.positive_effect_family_fairness
+            else "exact-off"
         )
 
     def _reset_repeated_form_events(self) -> None:
@@ -5341,6 +5359,23 @@ class EpistemicExplorer:
                 scene,
             )
 
+        effect_family = self._select_positive_effect_family(
+            tokens,
+        )
+        if effect_family is not None:
+            self.last_scheme_components = (
+                "scheme:prospective-positive-action-effect-types",
+                "operator:complete-action-type-quotient",
+                "operator:effect-family-fairness",
+                "state:episode-local-positive-type-signatures",
+            )
+            return self._issue(
+                state,
+                effect_family,
+                "epistemic-frontier:positive-effect-family-fairness",
+                scene,
+            )
+
         if self.uses_action_family_schema:
             _index, balanced = min(
                 enumerate(tokens),
@@ -5404,6 +5439,63 @@ class EpistemicExplorer:
             "epistemic-frontier:least-repeated-exhausted-state",
             scene,
         )
+
+    def _select_positive_effect_family(
+        self,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Balance only a complete, discriminative positive type quotient."""
+
+        if not self.positive_effect_family_fairness:
+            return None
+        represented = tuple(
+            token
+            for token in tokens
+            if not token.data
+            and token.action_id not in {self.reset_action, self.complex_action}
+        )
+        if len(represented) < 2:
+            self.positive_effect_family_abstentions += 1
+            self.positive_effect_family_diagnostic = (
+                "insufficient-plain-actions"
+            )
+            return None
+        type_map: dict[ActionIdentity, set[str]] = {}
+        for effect_type in self.effect_typer.authoritative_types():
+            type_map.setdefault(effect_type.action, set()).add(effect_type.kind)
+        signatures: dict[ActionToken, tuple[str, ...]] = {}
+        for token in represented:
+            kinds = type_map.get(ActionIdentity(token.action_id))
+            if not kinds:
+                self.positive_effect_family_abstentions += 1
+                self.positive_effect_family_diagnostic = (
+                    "incomplete-positive-action-typing"
+                )
+                return None
+            signatures[token] = tuple(sorted(kinds))
+        distinct = set(signatures.values())
+        if len(distinct) < 2:
+            self.positive_effect_family_abstentions += 1
+            self.positive_effect_family_diagnostic = (
+                "nondiscriminative-positive-action-typing"
+            )
+            return None
+        if sum(self.positive_effect_family_attempts.values()) >= 64:
+            self.positive_effect_family_abstentions += 1
+            self.positive_effect_family_diagnostic = "effect-family-trial-cap"
+            return None
+        selected = min(
+            represented,
+            key=lambda token: (
+                self.positive_effect_family_attempts[signatures[token]],
+                self.global_attempts[token],
+                token,
+            ),
+        )
+        self.positive_effect_family_attempts[signatures[selected]] += 1
+        self.positive_effect_family_selections += 1
+        self.positive_effect_family_diagnostic = "effect-family-selected"
+        return selected
 
     def _select_action_translation_contact_probe(
         self,
@@ -11917,6 +12009,21 @@ class EpistemicExplorer:
                 self.effect_typing_last_diagnostic
             ),
             "action_effect_typing_cap_failure": self.effect_typer.cap_failure,
+            "positive_effect_family_fairness_enabled": int(
+                self.positive_effect_family_fairness
+            ),
+            "positive_effect_family_selections": (
+                self.positive_effect_family_selections
+            ),
+            "positive_effect_family_abstentions": (
+                self.positive_effect_family_abstentions
+            ),
+            "positive_effect_family_current_signatures": len(
+                self.positive_effect_family_attempts
+            ),
+            "positive_effect_family_diagnostic": (
+                self.positive_effect_family_diagnostic
+            ),
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),
             "relational_scheme_trials": sum(self.relational_trials.values()),

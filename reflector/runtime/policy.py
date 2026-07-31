@@ -83,6 +83,9 @@ class SymbolicPolicy:
             action_effect_typing=(
                 self.mind.config.enable_action_effect_typing
             ),
+            positive_effect_family_fairness=(
+                self.mind.config.enable_positive_effect_family_fairness
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),
