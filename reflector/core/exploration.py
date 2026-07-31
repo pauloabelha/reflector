@@ -12,6 +12,7 @@ from typing import Any
 from .action_translation_algebra import (
     ActionIdentity,
     ActionTranslationAlgebra,
+    structural_source_signature,
 )
 from .colored_stencil import PrimaryStencilPlanner
 from .connector_synthesis import (
@@ -401,6 +402,7 @@ class EpistemicExplorer:
     compact_component_nuisance_filter: bool = False
     action_translation_algebra: bool = False
     action_translation_orbit_probe: bool = False
+    action_translation_contact_probe: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -466,6 +468,14 @@ class EpistemicExplorer:
     translation_probe_completed_rays: int = 0
     translation_probe_progress_events: int = 0
     translation_probe_diagnostic: str = "exact-off"
+    translation_contact_pending: bool = False
+    translation_contact_signatures: set[str] = field(
+        default_factory=set,
+        repr=False,
+    )
+    translation_contact_selections: int = 0
+    translation_contact_abstentions: int = 0
+    translation_contact_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -939,6 +949,8 @@ class EpistemicExplorer:
             order.append("parameterized-scheme-variation")
         if self.inherited_scheme_library.definitions:
             order.append("inherited-scheme-intervention")
+        if self.action_translation_contact_probe:
+            order.append("action-translation-contact-probe")
         if self.action_translation_orbit_probe:
             order.append("action-translation-orbit-probe")
         if self.uses_action_family_schema:
@@ -974,6 +986,8 @@ class EpistemicExplorer:
             if "inherited-scheme-intervention" in selected_reason
             else "action-translation-orbit-probe"
             if "action-translation-orbit-probe" in selected_reason
+            else "action-translation-contact-probe"
+            if "action-translation-contact-probe" in selected_reason
             else "hierarchical-action-fairness"
             if "hierarchical-action-family" in selected_reason
             else "untried-state-intervention"
@@ -1212,6 +1226,15 @@ class EpistemicExplorer:
                     or update.cap_failure is not None
                 )
             ):
+                if (
+                    self.action_translation_contact_probe
+                    and update.diagnostic
+                    == "contextual-noop-preserves-hypothesis"
+                ):
+                    self.translation_contact_pending = True
+                    self.translation_contact_diagnostic = (
+                        "contact-affordance-pending"
+                    )
                 self._complete_action_translation_probe_ray(
                     update.diagnostic
                 )
@@ -1517,6 +1540,8 @@ class EpistemicExplorer:
         self.translation_probe_active = None
         self.translation_probe_steps = 0
         self.translation_probe_ray_counts.clear()
+        self.translation_contact_pending = False
+        self.translation_contact_signatures.clear()
         self.translation_last_diagnostic = (
             "not-attempted" if self.action_translation_algebra else "exact-off"
         )
@@ -1525,6 +1550,11 @@ class EpistemicExplorer:
         self.translation_probe_diagnostic = (
             "not-attempted"
             if self.action_translation_orbit_probe
+            else "exact-off"
+        )
+        self.translation_contact_diagnostic = (
+            "not-attempted"
+            if self.action_translation_contact_probe
             else "exact-off"
         )
 
@@ -5218,6 +5248,24 @@ class EpistemicExplorer:
                 scene,
             )
 
+        contact_probe = self._select_action_translation_contact_probe(
+            observation,
+            tokens,
+        )
+        if contact_probe is not None:
+            self.last_scheme_components = (
+                "scheme:prospective-action-translation-algebra",
+                "event:contextual-translation-noop",
+                "operator:novel-contact-affordance-probe",
+                "state:relative-contact-signature",
+            )
+            return self._issue(
+                state,
+                contact_probe,
+                "epistemic-frontier:action-translation-contact-probe",
+                scene,
+            )
+
         translation_probe = self._select_action_translation_orbit_probe(
             observation,
             tokens,
@@ -5299,6 +5347,64 @@ class EpistemicExplorer:
             scene,
         )
 
+    def _select_action_translation_contact_probe(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        """Try one non-generator action at a novel predicted collision."""
+
+        if (
+            not self.action_translation_contact_probe
+            or not self.translation_contact_pending
+        ):
+            return None
+        self.translation_contact_pending = False
+        signature = structural_source_signature(
+            observation.frame,
+            bounds=self.translation_algebra.bounds,
+        )
+        if signature is None:
+            self.translation_contact_abstentions += 1
+            self.translation_contact_diagnostic = "unrepresented-contact-state"
+            return None
+        if signature in self.translation_contact_signatures:
+            self.translation_contact_abstentions += 1
+            self.translation_contact_diagnostic = "contact-already-probed"
+            return None
+        if len(self.translation_contact_signatures) >= 64:
+            self.translation_contact_abstentions += 1
+            self.translation_contact_diagnostic = "contact-signature-cap"
+            return None
+        generators = {
+            law.action
+            for law in self.translation_algebra.authoritative_laws()
+        }
+        candidates = tuple(
+            token
+            for token in tokens
+            if not token.data
+            and token.action_id not in {self.reset_action, self.complex_action}
+            and ActionIdentity(token.action_id) not in generators
+        )
+        if not candidates:
+            self.translation_contact_abstentions += 1
+            self.translation_contact_diagnostic = (
+                "no-nongenerator-contact-affordance"
+            )
+            return None
+        self.translation_contact_signatures.add(signature)
+        selected = min(
+            candidates,
+            key=lambda token: (
+                self.global_attempts[token],
+                token,
+            ),
+        )
+        self.translation_contact_selections += 1
+        self.translation_contact_diagnostic = "contact-affordance-selected"
+        return selected
+
     def _select_action_translation_orbit_probe(
         self,
         observation: Observation,
@@ -5329,6 +5435,14 @@ class EpistemicExplorer:
             self.translation_probe_active = None
             self.translation_probe_steps = 0
             self.translation_probe_diagnostic = "no-authoritative-inverse-pair"
+            return None
+        if (
+            self.action_translation_contact_probe
+            and all(self.translation_probe_ray_counts[action] >= 1 for action in laws)
+        ):
+            self.translation_probe_active = None
+            self.translation_probe_steps = 0
+            self.translation_probe_diagnostic = "single-ray-coverage-exhausted"
             return None
         active = self.translation_probe_active
         if active is not None and active not in laws:
@@ -11689,6 +11803,21 @@ class EpistemicExplorer:
             ),
             "action_translation_probe_diagnostic": (
                 self.translation_probe_diagnostic
+            ),
+            "action_translation_contact_probe_enabled": int(
+                self.action_translation_contact_probe
+            ),
+            "action_translation_contact_selections": (
+                self.translation_contact_selections
+            ),
+            "action_translation_contact_abstentions": (
+                self.translation_contact_abstentions
+            ),
+            "action_translation_contact_states": len(
+                self.translation_contact_signatures
+            ),
+            "action_translation_contact_diagnostic": (
+                self.translation_contact_diagnostic
             ),
             "successful_relational_schemes": len(self.successful_relational_schemes),
             "relational_schemes": len(self.relational_schemes),

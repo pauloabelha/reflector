@@ -76,6 +76,20 @@ change, phase change, or another prospectively evidenced discontinuity—or
 abstain. Merely traversing a learned action group more aggressively is now a
 closed branch.
 
+## 2026-07-30 — v77 contact-affordance probe rejected
+
+V77 tested the narrower idea that a prospectively predicted movement no-op is
+an information-bearing contact event. It limited each authoritative generator
+to one ray per episode and tried one least-used action outside the currently
+known generator set at a novel relative contact signature.
+
+All four preregistered games again remained at zero levels. The run also
+revealed that “outside the known generator set” is not a stable affordance
+type: while the algebra is partial, an ordinary but not-yet-authoritative
+movement action can be mislabeled as a non-generator. Future action typing
+must use positive effect evidence, not the complement of incomplete
+knowledge.
+
 ## 2026-07-30 — v68 accepted path-cycle result
 
 V68 supplies a generic prior absent from v67: a conserved same-form

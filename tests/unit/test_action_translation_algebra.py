@@ -7,6 +7,7 @@ from reflector.core.action_translation_algebra import (
     ActionTranslationAlgebra,
     TranslationBounds,
     infer_dominant_translation,
+    structural_source_signature,
 )
 from reflector.core.exploration import (
     ActionToken,
@@ -56,6 +57,12 @@ def test_translation_is_equivariant_under_frame_rotation() -> None:
 
     assert original.displacement == (2, 0)
     assert rotated.displacement == (0, 2)
+
+
+def test_structural_source_signature_ignores_color_and_global_translation() -> None:
+    assert structural_source_signature(_frame((1, 2), color=2)) == (
+        structural_source_signature(_frame((4, 3), color=7))
+    )
 
 
 def test_one_transition_proposes_but_distinct_later_source_authorizes() -> None:
@@ -369,3 +376,37 @@ def test_orbit_probe_config_requires_translation_algebra() -> None:
         match="orbit probing requires",
     ):
         MindConfig(enable_action_translation_orbit_probe=True)
+
+
+def test_contact_probe_tries_one_nongenerator_after_predicted_noop() -> None:
+    explorer = EpistemicExplorer(
+        action_translation_algebra=True,
+        action_translation_orbit_probe=True,
+        action_translation_contact_probe=True,
+    )
+    _seed_inverse_pair(explorer)
+    before, before_scene = _observation(_frame((1, 2), nuisance=6))
+    explorer.observe(before, before_scene)
+
+    assert explorer.select(before, before_scene, (2, 3, 4)).token.action_id == 2
+    moved, moved_scene = _observation(_frame((3, 2), nuisance=6))
+    explorer.observe(moved, moved_scene)
+    assert explorer.select(moved, moved_scene, (2, 3, 4)).token.action_id == 2
+    explorer.observe(moved, moved_scene)
+
+    contact = explorer.select(moved, moved_scene, (2, 3, 4))
+    assert contact.token.action_id == 4
+    metrics = explorer.to_dict()
+    assert metrics["action_translation_contact_selections"] == 1
+    assert metrics["action_translation_contact_states"] == 1
+
+
+def test_contact_probe_config_requires_orbit_probe() -> None:
+    with pytest.raises(
+        ValueError,
+        match="contact probing requires",
+    ):
+        MindConfig(
+            enable_action_translation_algebra=True,
+            enable_action_translation_contact_probe=True,
+        )

@@ -2948,13 +2948,20 @@ four games remained at zero levels. This falsifies undirected generator-ray
 coverage as a useful quotient. V76 is rejected without preservation or a full
 suite; the feature remains exact-off by default.
 
+V77 `candidate-f1554519f6c31f32` narrowed the claim to novel relative contact
+events and limited each authoritative generator to one ray per episode. It
+issued 4/6/16/3 contact-affordance probes on `dc22`/`ls20`/`re86`/`tu93`,
+respectively, but every game remained at zero levels. It also exposed a
+partial-identification flaw: an unlearned generator can temporarily appear to
+be a non-generator affordance. V77 is rejected.
+
 Next:
 
 1. Keep v74 frozen as the preservation anchor. Before promotion, reproduce
    every accepted vector across the full suite.
-2. Do not retry undirected straight rays. Derive a relational event or
-   contact-sensitive quotient that can distinguish information-bearing
-   topology changes from mere orbit coverage.
+2. Do not retry undirected rays or contact-triggered complement actions.
+   The next representation must identify action families completely enough
+   to avoid treating unknown generators as affordances.
 3. Preregister a smaller prospective control claim before another live run;
    require either a causal event advantage or safe abstention.
 4. A task promotion still requires deterministic gains on two structurally

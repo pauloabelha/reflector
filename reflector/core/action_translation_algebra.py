@@ -444,6 +444,20 @@ def infer_dominant_translation(
     )
 
 
+def structural_source_signature(
+    frame: Frame,
+    *,
+    bounds: TranslationBounds | None = None,
+) -> str | None:
+    """Return a color- and global-translation-invariant bounded scene key."""
+
+    active = bounds if bounds is not None else TranslationBounds()
+    components, failure, _omitted = _components(frame, active)
+    if failure is not None:
+        return None
+    return _source_signature(components)
+
+
 def _components(
     frame: Frame,
     bounds: TranslationBounds,

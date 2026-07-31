@@ -77,6 +77,9 @@ class SymbolicPolicy:
             action_translation_orbit_probe=(
                 self.mind.config.enable_action_translation_orbit_probe
             ),
+            action_translation_contact_probe=(
+                self.mind.config.enable_action_translation_contact_probe
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),

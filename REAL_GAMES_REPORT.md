@@ -344,6 +344,35 @@ The candidate, cognition, and recording SHA-256 values are respectively
 and
 `80426ef67e9bdfb59889a9c9ce226944e553798e426e756e1683aba0b0dfa36b`.
 
+## V77 rejected contact-affordance probe
+
+Generation-37 candidate `candidate-f1554519f6c31f32` narrowed v76 to one ray
+per authoritative generator per episode. After a prospectively predicted
+translation no-op, it tried one least-used plain action outside the currently
+authoritative generator set at each novel color-free relative contact
+signature.
+
+The four-game result remained zero levels everywhere. Probe telemetry was:
+
+| Game | Ray selections | Contact selections | Contact abstentions |
+| --- | ---: | ---: | ---: |
+| `dc22` | 30 | 4 | 8 |
+| `ls20` | 69 | 6 | 6 |
+| `re86` | 235 | 16 | 0 |
+| `tu93` | 4 | 3 | 0 |
+
+V77 is rejected. Besides the null result, it exposed an identification flaw:
+under a partial algebra, a not-yet-learned generator can be mistaken for a
+non-generator affordance. The report is
+[`reports/official-isolated-v77-translation-contact-targets-r1-400.json`](reports/official-isolated-v77-translation-contact-targets-r1-400.json),
+SHA-256
+`f2a4183246b6e43319f25df2f026d5ed861082819efde9ac1dc47c43b118672c`.
+The candidate, cognition, and recording SHA-256 values are respectively
+`3ec6617a8390bcbd8e4b949a00b281d90e2b53f8c5d7da92480594b0973fa7a8`,
+`98485d83174e7909c4424b9b60527375f1df6a549f543146ef140844ae5056da`,
+and
+`31275e3743d06e1ef3c277f1493e250ed95a8056fc0d467f3acb5b7381e412db`.
+
 ## Historical accepted v69 result
 
 Candidate: `candidate-2336bc12a0bc28de`
