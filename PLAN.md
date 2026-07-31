@@ -611,6 +611,29 @@ accepted initiation set. The next accommodation should support a bounded
 version space of multiple operators or phase cycles only if each transition
 is prospectively confirmed; preserve v92 as the new exact-off control.
 
+The exact v92 notebook `pauloabelha/reflector-arc-agi-3-v92` version 1
+completed and emitted `submission.parquet`; the competition request returned
+HTTP 400 while v74 submission `55123277` still occupied the UTC daily
+allowance. Retry that exact version after quota reset.
+
+V93 `candidate-d362ccca5fe08c64` tests the first level-2 accommodation. It
+preserves a plain translation when operator contact instead produces a
+same-body teleport, directly replans on the rewritten topology, rearms
+entry-triggered display transitions, and latches equality across a contextual
+reset. The official target remains exactly 1/7 at
+`[17,383,0,0,0,0,0]`; 109 planner decisions observed two contextual
+transitions but did not advance level 2. Report
+`reports/experimental-v93-contextual-phase-ls20-r1-400.json`, SHA-256
+`6e4cad2dae2c86d228976ced77c526099ed2d6fb279bffc783844e62b2b9f7a9`.
+Reject v93 without a preservation suite.
+
+The next level-2 experiment must retain a bounded terminal-predicate version
+space. Display equality is causal evidence for a topology transition, not
+proof that the display host is enterable. Candidate predicates should include
+reachable boundary contact, newly enabled regions, and distinctive relational
+markers; eliminate a predicate on a prospectively observed blocked edge
+instead of converting it directly into a committed terminal option.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

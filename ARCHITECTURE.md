@@ -366,7 +366,7 @@ action translations, traversable substrate evidence, a unique bounded
 multicolor operator, and a uniquely comparable pair of embedded displays.
 Scale normalization maps repeated pixel blocks to one coarse symbolic pattern.
 The planner searches at most 512 anchors, selects at most 96 plan steps, and
-permits at most eight operator applications. Any predicted-anchor conflict
+permits at most sixteen operator applications. Any predicted-anchor conflict
 blocks that edge; an inconsistent rigid mask quarantines the specialist.
 
 In the integrated target, the product planner advances `ls20` level 1 in 17
@@ -374,6 +374,15 @@ actions on two exact reruns. Across every previously positive accepted game,
 the new advisor is behaviorally dormant and all level-action vectors remain
 identical. The inference module is part of the explicit Kaggle overlay and is
 controlled by the serializable `enable_phase_topology_planning` genome bit.
+
+V93 adds an experimental contextual factorization above that accepted layer.
+If a predicted operator contact preserves the body mask but yields a different
+anchor, the planner preserves the plain action generator and records a
+contextual transition instead of globally quarantining the action. It can
+rearm an entry-triggered operator and preserve a bounded goal latch across a
+teleport. The target falsifier shows the current architectural boundary: a
+latched display relation cannot by itself select a terminal region. This child
+is not accepted and its broader source path must not be exported as v92.
 
 This implements a narrow Piagetian cycle:
 

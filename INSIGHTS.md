@@ -534,6 +534,22 @@ localized to the display factor when the operator changes it. The exact
 14-game preservation gate shows that this compression remains dormant outside
 its grounded conjunction.
 
+Level 2 distinguishes a phase morphism from a contextual morphism. Entering
+the visible operator can preserve the rigid body while teleporting its anchor,
+rewriting the traversable topology, consuming a visible finite resource, and
+changing the display. V93 correctly factors this composite and therefore no
+longer mistakes the teleport displacement for a contradiction of a plain
+action generator.
+
+That better world model is still not a goal model. Equality can be transient
+on the operator, and equality followed by teleport can latch a causal event
+without making the fixed display host enterable. The official v93 run remains
+1/7. The next Piagetian accommodation is therefore not another unconditional
+option: maintain competing terminal predicates and eliminate them through
+blocked-contact evidence. In categorical terms, observing a morphism into the
+goal-display object does not prove that object is terminal in the task
+category.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

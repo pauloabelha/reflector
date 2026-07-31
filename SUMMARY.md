@@ -57,6 +57,15 @@ overlay
 and notebook
 `c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`.
 
+The first level-2 accommodation, v93
+`candidate-d362ccca5fe08c64`, is rejected for promotion. It correctly factors
+operator contact into an ordinary translation followed by a contextual
+teleport/topology/resource/display morphism, records two such transitions,
+and preserves the accepted first level at 17 actions. But its latched
+display-equality hypothesis still targets the fixed display host, which
+rejects entry; the official run remains exactly 1/7 at
+`[17,383,0,0,0,0,0]`. V92 remains accepted.
+
 ## New accepted mechanism: demonstrated analogy algebra
 
 V82f learns transformations from visible input/output demonstrations rather
