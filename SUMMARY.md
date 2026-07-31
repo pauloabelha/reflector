@@ -93,8 +93,11 @@ with `constellation-layout-not-grounded`, which is the next accommodation
 target.
 
 Level 3 reveals three overlapping same-colored movers, so color is not an
-object identity. The active v84e generalization learns each focus factor from
-one confirmed translation, then solves a unique minimum-cost product
+object identity. V84e learned the first factor but failed when the second
+factor's selector moved onto the same-colored line and became invisible. It
+therefore remained 2/8. The active v84f generalization treats a predicted
+same-color selector cell as bounded occlusion and restores the probe before
+requiring the marker to reappear. It then solves a unique minimum-cost product
 exact-cover CSP over all eight landmarks. Its inferred target anchors are
 `(27,6)`, `(42,24)`, and `(18,30)` for the line, X, and diamond factors.
 

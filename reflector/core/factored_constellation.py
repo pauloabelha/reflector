@@ -97,7 +97,7 @@ def learn_factor_mask(
         0 <= expected_selector[0] < len(before[0])
         and 0 <= expected_selector[1] < len(before)
         and after[expected_selector[1]][expected_selector[0]]
-        == scene.selector_color
+        in {scene.selector_color, scene.color}
     ):
         return None
     removed = {

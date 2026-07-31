@@ -1,7 +1,32 @@
 from reflector.core.factored_constellation import (
     FactorMask,
+    FactorScene,
+    learn_factor_mask,
     solve_factor_exact_cover,
 )
+
+
+def test_learns_factor_when_selector_is_occluded_by_same_color() -> None:
+    before = [[5 for _x in range(7)] for _y in range(7)]
+    after = [[5 for _x in range(7)] for _y in range(7)]
+    for x in range(1, 6):
+        before[4][x] = 8
+        after[3][x] = 8
+    before[4][3] = 0
+    scene = FactorScene(8, frozenset({(1, 1), (5, 1)}), 0, (3, 4))
+
+    mask = learn_factor_mask(
+        tuple(tuple(row) for row in before),
+        tuple(tuple(row) for row in after),
+        scene,
+        (0, -1),
+    )
+
+    assert mask is not None
+    assert mask.home_anchor == (3, 4)
+    assert mask.offsets == frozenset(
+        {(-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0)}
+    )
 
 
 def test_solves_unique_minimum_cost_product_exact_cover() -> None:

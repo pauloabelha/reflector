@@ -109,6 +109,12 @@ causally separates each factor mask. The resulting product exact-cover CSP has
 one minimum-cost solution: target anchors `(27,6)`, `(42,24)`, and `(18,30)`,
 covering all eight landmarks exactly once. V84e integrates bounded discovery,
 strict exact-cover uniqueness, and the existing option compiler.
+
+V84e's first frozen run remained 2/8 because the second factor's selector
+translated onto the same-colored line and temporarily disappeared. The online
+learner demanded a visible marker and repeatedly reprobed. V84f accepts only
+the predicted same-color cell as selector occlusion and prioritizes the known
+inverse restore before parsing focus again.
 Required gates are:
 
 1. validate v84e on the frozen target;

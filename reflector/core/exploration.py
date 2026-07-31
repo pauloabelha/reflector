@@ -6130,10 +6130,6 @@ class EpistemicExplorer:
             self.factor_constellation_scene = scene
             self.factor_constellation_home_anchor = scene.selector
             self.factor_constellation_diagnostic = "factor-scene-grounded"
-        selector = find_selector(observation.frame, scene.selector_color)
-        if selector is None:
-            self.factor_constellation_diagnostic = "factor-selector-occluded"
-            return None
         if self.factor_constellation_restore_action is not None:
             action_id = self.factor_constellation_restore_action
             if action_id not in available:
@@ -6141,6 +6137,10 @@ class EpistemicExplorer:
                 return None
             self.factor_constellation_selections += 1
             return available[action_id]
+        selector = find_selector(observation.frame, scene.selector_color)
+        if selector is None:
+            self.factor_constellation_diagnostic = "factor-selector-occluded"
+            return None
         if self.factor_constellation_switch_pending:
             switches = tuple(
                 action_id

@@ -136,6 +136,14 @@ exhaustive. The unique minimum-cost solution assigns the line, X, and diamond
 to `(27,6)`, `(42,24)`, and `(18,30)`. This is a genuine extension of the
 common CSP language rather than a new route table.
 
+V84e showed that offline CSP correctness is not enough: it learned the line
+factor, restored it, switched focus, then lost the X selector when an upward
+probe placed the marker directly on the same-colored line. The smallest safe
+revision is temporal again. A marker may be absent only at its exactly
+predicted destination when that cell has the mover color; the already known
+inverse restore executes before any new focus inference. Any other absence
+remains a probe conflict.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the
