@@ -1,4 +1,18 @@
+from reflector.core.exploration import ActionRole, ActionToken, EpistemicExplorer
 from reflector.core.partial_bisimulation import PartialBisimulation
+from reflector.core.symbolic import Scene
+
+
+def _empty_scene() -> Scene:
+    return Scene(
+        index=0,
+        state="NOT_FINISHED",
+        levels_completed=0,
+        available_actions=(1, 2),
+        objects=(),
+        facts=(),
+        frame_digest="recipient",
+    )
 
 
 def test_shared_commuting_role_licenses_donor_only_prediction() -> None:
@@ -140,3 +154,70 @@ def test_frontier_reports_only_untried_uniquely_predicted_roles() -> None:
 
     assert tuple(item.role for item in frontier) == (("click",),)
     assert model.abstract_frontier_roles == 1
+
+
+def test_control_trust_requires_eight_flawless_level_predictions() -> None:
+    model = PartialBisimulation()
+    model.level_predictions = 8
+    model.level_confirmations = 8
+
+    assert model.trusted_for_control()
+    model.level_conflicts = 1
+    assert not model.trusted_for_control()
+    model.reset_level()
+    assert not model.trusted_for_control()
+
+
+def test_trusted_abstract_frontier_selects_positive_donor_only_role() -> None:
+    explorer = EpistemicExplorer(
+        partial_bisimulation=True,
+        abstract_causal_frontier=True,
+    )
+    model = explorer.partial_bisimulation_model
+    move = ActionRole(1)
+    create = ActionRole(2)
+    model.profiles = {
+        "donor": {
+            move: {"relative-translation"},
+            create: {"component-birth"},
+        },
+        "recipient": {move: {"relative-translation"}},
+    }
+    model.domains = {"donor": (1, 2), "recipient": (1, 2)}
+    model.level_predictions = 8
+    model.level_confirmations = 8
+
+    selected = explorer._select_abstract_causal_frontier(
+        (0, "NOT_FINISHED", "recipient"),
+        (ActionToken(1), ActionToken(2)),
+        _empty_scene(),
+    )
+
+    assert selected == ActionToken(2)
+    assert explorer.abstract_causal_frontier_selections == 1
+    assert explorer.abstract_causal_frontier_diagnostic == (
+        "selected-novel-predicted-effect:component-birth"
+    )
+
+
+def test_abstract_frontier_abstains_after_partition_conflict() -> None:
+    explorer = EpistemicExplorer(
+        partial_bisimulation=True,
+        abstract_causal_frontier=True,
+    )
+    model = explorer.partial_bisimulation_model
+    model.level_predictions = 8
+    model.level_confirmations = 7
+    model.level_conflicts = 1
+
+    selected = explorer._select_abstract_causal_frontier(
+        (0, "NOT_FINISHED", "recipient"),
+        (ActionToken(1), ActionToken(2)),
+        _empty_scene(),
+    )
+
+    assert selected is None
+    assert explorer.abstract_causal_frontier_selections == 0
+    assert explorer.abstract_causal_frontier_diagnostic == (
+        "awaiting-flawless-bisimulation-evidence"
+    )

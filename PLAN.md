@@ -474,6 +474,12 @@ the same eight games. Reject any accepted-vector regression; promote to a
 broader gate only for a level gain or a material deterministic efficiency
 gain.
 
+Frozen operative v89 candidate `candidate-bfeac7aef52e2878`, inference
+fingerprint
+`8ead5910fee846f1a6d6b337528b6fc0d2502a9d517b0bcce6fc38223bbe39a5`,
+implements exactly that single additional advisor. Its parent is trace-only
+v88, so an exact v88 comparison isolates selection from representation.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

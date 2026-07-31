@@ -85,12 +85,20 @@ class PartialBisimulation:
     ambiguous_predictions: int = 0
     abstract_frontier_roles: int = 0
     outcome_counts: Counter[Outcome] = field(default_factory=Counter)
+    level_predictions: int = 0
+    level_confirmations: int = 0
+    level_conflicts: int = 0
+    level_outcome_counts: Counter[Outcome] = field(default_factory=Counter)
     cap_failure: str | None = None
     last_diagnostic: str = "exact-off"
 
     def reset_level(self) -> None:
         self.profiles.clear()
         self.domains.clear()
+        self.level_predictions = 0
+        self.level_confirmations = 0
+        self.level_conflicts = 0
+        self.level_outcome_counts.clear()
         self.cap_failure = None
         self.last_diagnostic = "level-reset"
 
@@ -137,10 +145,13 @@ class PartialBisimulation:
                 self.ambiguous_predictions += 1
             elif prediction.outcome is not None:
                 self.predictions += 1
+                self.level_predictions += 1
                 confirmed = prediction.outcome == outcome
                 conflicted = not confirmed
                 self.confirmations += int(confirmed)
                 self.conflicts += int(conflicted)
+                self.level_confirmations += int(confirmed)
+                self.level_conflicts += int(conflicted)
         outcomes = profile.get(role)
         if outcomes is None:
             if len(profile) >= self.bounds.max_roles_per_state:
@@ -167,6 +178,7 @@ class PartialBisimulation:
             outcomes.add(outcome)
         self.domains[source] = domain
         self.outcome_counts[outcome] += 1
+        self.level_outcome_counts[outcome] += 1
         if conflicted:
             diagnostic = "prediction-conflict-refines-partition"
         elif confirmed:
@@ -235,6 +247,16 @@ class PartialBisimulation:
         )
         self.abstract_frontier_roles += len(predictions)
         return predictions
+
+    def trusted_for_control(self, *, min_predictions: int = 8) -> bool:
+        """Whether the current level has a flawless prospective trace gate."""
+
+        return (
+            self.cap_failure is None
+            and self.level_predictions >= min_predictions
+            and self.level_conflicts == 0
+            and self.level_confirmations == self.level_predictions
+        )
 
     def _compatible_donors(
         self,

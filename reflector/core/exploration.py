@@ -462,6 +462,7 @@ class EpistemicExplorer:
     terminal_edge_viability_credit: bool = False
     terminal_role_viability_credit: bool = False
     partial_bisimulation: bool = False
+    abstract_causal_frontier: bool = False
     finite_orbit_commit_exploration: bool = False
     dihedral_analogy_alignment: bool = False
     linear_track_navigation: bool = False
@@ -584,6 +585,9 @@ class EpistemicExplorer:
         default_factory=PartialBisimulation,
         repr=False,
     )
+    abstract_causal_frontier_selections: int = 0
+    abstract_causal_frontier_abstentions: int = 0
+    abstract_causal_frontier_diagnostic: str = "exact-off"
     finite_orbit_generator: ActionToken | None = None
     finite_orbit_inverse: ActionToken | None = None
     finite_orbit_commit_tokens: tuple[ActionToken, ...] = ()
@@ -1164,6 +1168,8 @@ class EpistemicExplorer:
             order.append("positive-effect-family-fairness")
         if self.shortest_progress_path_reuse:
             order.append("shortest-progress-path-reuse")
+        if self.abstract_causal_frontier:
+            order.append("abstract-causal-frontier")
         if self.uses_action_family_schema:
             order.append("hierarchical-action-fairness")
         order.extend(("untried-state-intervention", "known-frontier-navigation"))
@@ -1209,6 +1215,8 @@ class EpistemicExplorer:
             if "positive-effect-family-fairness" in selected_reason
             else "shortest-progress-path-reuse"
             if "shortest-progress-path-reuse" in selected_reason
+            else "abstract-causal-frontier"
+            if "abstract-causal-frontier" in selected_reason
             else "hierarchical-action-fairness"
             if "hierarchical-action-family" in selected_reason
             else "untried-state-intervention"
@@ -1324,6 +1332,12 @@ class EpistemicExplorer:
             self.terminal_viability_pending_generic = False
             if self.partial_bisimulation:
                 self.partial_bisimulation_model.reset_level()
+            self.abstract_causal_frontier_selections = 0
+            self.abstract_causal_frontier_diagnostic = (
+                "not-attempted"
+                if self.abstract_causal_frontier
+                else "exact-off"
+            )
             self._reset_finite_orbit(clear_trials=True)
             self._reset_dihedral_analogy(clear_controls=True)
             self._reset_linear_track()
@@ -5609,6 +5623,25 @@ class EpistemicExplorer:
                 state,
                 progress_path,
                 "epistemic-frontier:shortest-progress-path-reuse",
+                scene,
+            )
+
+        causal_frontier = self._select_abstract_causal_frontier(
+            state,
+            tokens,
+            scene,
+        )
+        if causal_frontier is not None:
+            self.last_scheme_components = (
+                "scheme:partial-bisimulation-quotient",
+                "operator:commuting-role-effect-transfer",
+                "goal:novel-predicted-causal-effect",
+                "falsifier:partition-conflict",
+            )
+            return self._issue(
+                state,
+                causal_frontier,
+                "epistemic-frontier:abstract-causal-frontier",
                 scene,
             )
 
@@ -11764,6 +11797,79 @@ class EpistemicExplorer:
         )
         return viable
 
+    def _select_abstract_causal_frontier(
+        self,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+    ) -> ActionToken | None:
+        """Try a locally novel role with a trusted transferred positive effect."""
+
+        if not self.abstract_causal_frontier:
+            return None
+        if self.abstract_causal_frontier_selections >= 32:
+            self.abstract_causal_frontier_abstentions += 1
+            self.abstract_causal_frontier_diagnostic = "selection-cap"
+            return None
+        model = self.partial_bisimulation_model
+        if not model.trusted_for_control(min_predictions=8):
+            self.abstract_causal_frontier_abstentions += 1
+            self.abstract_causal_frontier_diagnostic = (
+                "awaiting-flawless-bisimulation-evidence"
+            )
+            return None
+        domain = tuple(sorted({token.action_id for token in tokens}))
+        represented = tuple(
+            dict.fromkeys(self._role(token, scene) for token in tokens)
+        )
+        predictions = model.frontier_predictions(
+            source=state[2],
+            domain=domain,
+            roles=represented,
+        )
+        positive_outcomes = {
+            "progress",
+            "relative-translation",
+            "component-birth",
+            "component-death",
+            "component-form-change",
+            "relative-layout-change",
+        }
+        prediction_by_role = {
+            prediction.role: prediction.outcome
+            for prediction in predictions
+            if prediction.outcome is not None
+            and prediction.outcome in positive_outcomes
+        }
+        candidates = tuple(
+            (index, token, outcome)
+            for index, token in enumerate(tokens)
+            if (
+                outcome := prediction_by_role.get(self._role(token, scene))
+            )
+            is not None
+        )
+        if not candidates:
+            self.abstract_causal_frontier_abstentions += 1
+            self.abstract_causal_frontier_diagnostic = (
+                "no-positive-abstract-frontier"
+            )
+            return None
+        index, selected, outcome = min(
+            candidates,
+            key=lambda item: (
+                int(item[2] != "progress"),
+                model.level_outcome_counts[item[2]],
+                *self._novelty_rank(state, item[1], item[0]),
+            ),
+        )
+        del index
+        self.abstract_causal_frontier_selections += 1
+        self.abstract_causal_frontier_diagnostic = (
+            f"selected-novel-predicted-effect:{outcome}"
+        )
+        return selected
+
     def _path_to_frontier(
         self,
         start: StateKey,
@@ -12982,6 +13088,27 @@ class EpistemicExplorer:
             ),
             "partial_bisimulation_cap_failure": (
                 self.partial_bisimulation_model.cap_failure
+            ),
+            "partial_bisimulation_level_predictions": (
+                self.partial_bisimulation_model.level_predictions
+            ),
+            "partial_bisimulation_level_confirmations": (
+                self.partial_bisimulation_model.level_confirmations
+            ),
+            "partial_bisimulation_level_conflicts": (
+                self.partial_bisimulation_model.level_conflicts
+            ),
+            "abstract_causal_frontier_enabled": int(
+                self.abstract_causal_frontier
+            ),
+            "abstract_causal_frontier_selections": (
+                self.abstract_causal_frontier_selections
+            ),
+            "abstract_causal_frontier_abstentions": (
+                self.abstract_causal_frontier_abstentions
+            ),
+            "abstract_causal_frontier_diagnostic": (
+                self.abstract_causal_frontier_diagnostic
             ),
             "finite_orbit_commit_enabled": int(self.finite_orbit_commit_exploration),
             "finite_orbit_grounded": int(self.finite_orbit_generator is not None),

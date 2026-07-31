@@ -271,6 +271,14 @@ positive effect, and has a 32-selection level cap. This is not global state
 merging: every raw state and counterexample remains available for
 accommodation.
 
+V89 freezes that rule as a separate `MindConfig` bit,
+`enable_abstract_causal_frontier`. Configuration validation requires the
+trace-only partial-bisimulation substrate. Arbitration places the advisor
+after the successful-path and typed-effect specialists but before generic
+family fairness, untried-state choice, and graph navigation. Its scheme trace
+names the quotient, commuting role/effect transfer, positive frontier goal,
+and partition-conflict falsifier explicitly.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;
