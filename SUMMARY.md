@@ -5,32 +5,32 @@ Last updated: 2026-07-31
 ## Best verified result
 
 Reflector's best complete, process-isolated 25-game public-development result is
-**20.65827051873133 / 100**.
+**20.847511590159908 / 100**.
 
-- Candidate: `candidate-2d9cadd5859ce47d` (`v94b`)
-- Frozen inference source: `203fa2e`
-- Frozen candidate commit: `203fa2e`
+- Candidate: `candidate-e59a92e72fbd1aef` (`v97`)
+- Frozen inference source: `b8677a2`
+- Frozen candidate commit: `b8677a2`
 - Coverage: 25/25 games
 - Levels: **49/183**
 - Games with progress: **15/25**
 - Complete games: **3/25**
 - Actions: **9,185**
 - Report:
-  [`reports/official-isolated-v94b-atomic-temporal-resource-400.json`](reports/official-isolated-v94b-atomic-temporal-resource-400.json)
+  [`reports/official-isolated-v97-retry-action-algebra-400.json`](reports/official-isolated-v97-retry-action-algebra-400.json)
 - Candidate:
-  [`candidates/v94b-atomic-temporal-resource-csp-400.json`](candidates/v94b-atomic-temporal-resource-csp-400.json)
+  [`candidates/v97-retry-action-algebra-400.json`](candidates/v97-retry-action-algebra-400.json)
 - Report SHA-256:
-  `8e75171f64ad6879ba1f9298fa32fa66a5b714772382b7baf1c8b77956d97c6e`
+  `918090d57d8a7547285d1b91dfebd968732482c076f055c7eecc5d003da9caee`
 
-Relative to accepted v92, v94b changes exactly one game. `ls20` advances from
-1/7 at `[17,383,0,0,0,0,0]` to **2/7** at
-`[17,240,143,0,0,0,0]`; all other 24 score/action vectors and the 9,185-action
-total are exactly preserved. The aggregate gain is
-**+0.096473214285707 points**. Target repeat, accepted-win preservation, and
-the complete-suite gate pass. The final quality gate passes with 498 tests and
-3 skips, Ruff and mypy are clean, exact export passes, both network-disabled
-smoke paths pass, and the technical prize audit is ready. V94b is the accepted
-local candidate.
+Relative to accepted v94b, v97 changes exactly one game. `ls20` remains 2/7
+but improves from `[17,240,143,0,0,0,0]` to
+**`[17,112,271,0,0,0,0]`**; all other 24 score/action/reset vectors and the
+9,185-action total are exactly preserved. The aggregate gain is
+**+0.18924107142857594 points**. Target repeat, accepted-win preservation, the
+complete-suite gate, and the 504-test quality gate pass. Exact export, offline
+smoke, and prize audit are the remaining promotion checks; until they pass,
+v97 is the verified local champion and v94b remains the fully artifact-gated
+accepted package.
 
 ## Rejected offspring: cross-level algebra was natural but not sufficient
 

@@ -11,16 +11,18 @@ before acting.
 
 Reflector is an interesting but still weak ARC-AGI-3 agent.
 
-- Accepted agent: v94b.
-- Accepted candidate: `candidate-2d9cadd5859ce47d`.
-- Local known-public-development score: **20.65827051873133 / 100**.
+- Fully artifact-gated accepted agent: v94b.
+- Verified local promotion candidate: v97
+  `candidate-e59a92e72fbd1aef`.
+- Local known-public-development score: **20.847511590159908 / 100**.
 - Progress: **49 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
 - Total actions: **9,185**.
 - Kaggle submissions: v65b `55113224` complete and v74 `55123277` pending.
 - Kaggle public score: **0.02 for frozen v65b only**.
 - Kaggle private score: **unavailable**.
-- V94b is accepted. Relative to v92, only `ls20` changes; all 24 other
+- V97 passes target repeat, preservation, and the full suite. Relative to v94b,
+  only `ls20` changes; all 24 other
   score/action vectors are exactly preserved.
 
 The project has accumulated real causal mechanisms, but most gains are narrow,
@@ -139,6 +141,13 @@ evidence that scoped retry conservation is not a broad exploration heuristic.
 Its authority gate is narrow enough to preserve unrelated planners and games,
 while its compressed primitive model removes a specific relearning cycle where
 the same causal structure truly recurs.
+
+The complete 25-game result preserves that isolation. V97 gains
+0.18924107142857594 aggregate points with no new level and no changed
+non-target trajectory. This is unusually clean evidence for knowledge
+compression as task progress: the agent does less epistemic work because a
+causal scheme survives the exact boundary where its validity should be
+conserved.
 
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 

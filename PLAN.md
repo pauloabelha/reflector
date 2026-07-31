@@ -36,6 +36,12 @@ generalization.
 - Verified score: `20.65827051873133`
 - Accepted coverage: 25/25 games, 9,185 actions
 - Verified completions: 49/183 levels across 15 games; 3/25 games complete
+- V97 promotion candidate: `candidate-e59a92e72fbd1aef`, frozen source
+  `b8677a2`, fingerprint
+  `b06553316290d3e83db6d2d72c0c0c54daf16ecda152a571d25368d84f10f258`
+- V97 complete-suite result:
+  `20.847511590159908`, 49/183 levels, 25/25 coverage, 9,185 actions;
+  all 24 non-target vectors exact versus v94b
 - Kaggle submissions: v65b `55113224` complete at public score `0.02`; v74
   `55123277` pending
 - V84m Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v84m`, version 1,
@@ -169,6 +175,12 @@ and completed-level action vectors—are exact. Only `ls20` changes, exactly as
 repeated. Proceed to the complete process-isolated 25-game evaluation. Require
 25/25 coverage, no lost completion, exact preservation on all 24 non-targets,
 and the same target vector.
+
+The complete suite passes exactly. V97 scores `20.847511590159908`, a
+`+0.18924107142857594` gain over v94b, with 49/183 levels, 15 progress games,
+3 complete games, and 9,185 actions. Only `ls20` changes. Finish exact export,
+both network-disabled smoke paths, and the technical prize audit before
+changing the accepted artifact state from v94b to v97.
 
 ## Why the accepted agent wins what it wins
 
