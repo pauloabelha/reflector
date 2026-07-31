@@ -36,8 +36,12 @@ generalization.
 - Verified score: `20.418940161588477`
 - Accepted coverage: 25/25 games, 9,185 actions
 - Verified completions: 47/183 levels across 14 games; 3/25 games complete
-- Kaggle submission: `55113224`, v65b notebook version 1, pending hidden rerun
-- Kaggle public score: pending; not yet returned
+- Kaggle submissions: v65b `55113224` complete at public score `0.02`; v74
+  `55123277` pending
+- V84m Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v84m`, version 1,
+  complete with `submission.parquet`; competition submission blocked by the
+  already-consumed daily allowance, so no v84m submission ID exists
+- Kaggle public score: `0.02` for v65b only; v74 pending; v84m unsubmitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
 - Maintenance state: canonical code is organized under `reflector/core/`,
@@ -301,9 +305,16 @@ prize audit passes. Exact artifact SHA-256 values are:
 V84m is accepted locally. Submit the exact notebook through Kaggle and record
 its notebook version and submission ID separately from the local score.
 
+The exact private v84m notebook version 1 completed and emitted
+`submission.parquet`. Kaggle rejected the subsequent code-submission request
+with HTTP 400. The live ledger shows why: v74 submission `55123277` already
+consumed the 2026-07-31 UTC daily allowance and remains pending. Retry v84m
+only after the daily quota resets; do not alter or re-export the completed
+version. V65b submission `55113224` has completed at public score 0.02.
+
 Required gates are:
 
-1. submission through `KAGGLE.md`;
+1. submit completed v84m notebook version 1 after the daily quota resets;
 2. record notebook version, submission ID, and pending/terminal state;
 3. keep local, Kaggle public, and Kaggle private scores separate.
 

@@ -15,6 +15,16 @@ Current accepted export: v84m
 
 This is local evidence, not a Kaggle public or private score.
 
+Submission status, 2026-07-31 UTC:
+
+- private notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed
+  successfully and emitted `submission.parquet`;
+- its competition submission request returned HTTP 400 because v74 submission
+  `55123277` had already consumed the one-per-day allowance and is pending;
+- no v84m competition submission ID exists yet;
+- historical v65b submission `55113224` is complete with Kaggle public score
+  `0.02`; the private score remains unavailable.
+
 Reflector began from the official
 [`arcprize/ARC-AGI-3-Agents`](https://github.com/arcprize/ARC-AGI-3-Agents)
 repository at commit `10213de83f01df0ef4f0149ee9f8408dcc3772fb`.

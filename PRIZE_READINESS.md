@@ -133,7 +133,8 @@ These cannot be completed from a local checkout:
   development baseline: 25/25 coverage, 28/183 levels, 2/25 games complete,
   9,486 actions, and `9.684019526667843/100`. Do not relabel it as held-out or
   leaderboard evidence.
-- Obtain a terminal result for pending v65b Kaggle submission `55113224`, then
+- Record completed v65b Kaggle submission `55113224` and public score `0.02`,
+  monitor pending v74 submission `55123277`, then
   submit v68 only as a separately identified exact notebook/candidate. Never
   attribute a returned v65b score to v68.
 - Replace transformed-trace “holdouts” with held-out environments for the main

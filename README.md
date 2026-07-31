@@ -34,8 +34,8 @@ Last verified: 2026-07-30
 | Frozen inference source | `5be5c9c` |
 | Frozen candidate commit | `f1232e6` |
 | Candidate | `candidate-07d24ee8acf946c9` |
-| Kaggle submissions | **1 pending** (`55113224`) |
-| Kaggle public score | **pending; not yet returned** |
+| Kaggle submissions | **2**: `55113224` complete; `55123277` pending |
+| Kaggle public score | **0.02** for frozen v65b only |
 | Kaggle private score | **unavailable** |
 
 The score is about **20.42% of the 100-point scale**. It is a local
@@ -55,12 +55,13 @@ every canonical score-table checkpoint and is generated from
 [the real-games scorecard](REAL_GAMES_REPORT.md), and it is explicitly not a
 Kaggle leaderboard series.
 
-**Kaggle submission:** frozen v65b—not v69—was submitted for hidden-transfer
-calibration as submission `55113224` from the private, internet-disabled
-notebook `pauloabelha/reflector-arc-agi-3-v65b` version 1. The hidden rerun is
-still `PENDING`, so neither leaderboard regime has returned a score. V84m
-passes its complete local quality and exact offline export gates and is being
-submitted. Eligibility confirmation and
+**Kaggle submission:** frozen v65b—not v84m—owns completed submission
+`55113224` and public score **0.02**. V74 submission `55123277` is pending.
+The exact private v84m notebook
+`pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and emitted
+`submission.parquet`, but its submission request was rejected because v74 had
+already consumed the one-per-day allowance. No v84m submission ID exists yet.
+Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);

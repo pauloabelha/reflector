@@ -17,7 +17,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Official local score | **20.4189401616 / 100** | About **20.42%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
-| Kaggle submissions | **1 pending** | Submission `55113224` remains `PENDING`; no hidden score has returned yet. |
+| Kaggle submissions | **2** | V65b `55113224` is complete at public score **0.02**; v74 `55123277` is pending. V84m has a completed notebook but no submission ID due to the daily quota. |
 
 The current process-isolated result is
 [`reports/official-isolated-v84m-grouped-dihedral-400.json`](reports/official-isolated-v84m-grouped-dihedral-400.json),
@@ -41,6 +41,9 @@ and notebook
 | Evaluation surface | Agent | Score | Outcome | Status |
 | --- | --- | ---: | --- | --- |
 | Process-isolated official local suite | v84m accepted | **20.4189401616 / 100** | 3 games beaten; 47/183 levels across 14 games; 9,185 actions | full quality/export gates and exact v82f preservation on 23/23 non-target games; 25/25 coverage |
+| Kaggle notebook artifact | v84m accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and emitted `submission.parquet` | submission request rejected after v74 consumed daily allowance; no v84m submission ID |
+| Kaggle public leaderboard | v65b, submission `55113224` | **0.02** | synchronous hidden rerun complete | belongs only to frozen v65b |
+| Kaggle rerun | v74, submission `55123277` | pending | submitted 2026-07-31 01:05:23 UTC | pending; no score yet |
 | Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |
 | Target-only `tr87` reruns | v82f accepted | 47.6190476190 for one game | 4/6 levels; exact `[56,45,44,38,217,0]` twice | deterministic demonstrated-analogy gain |
 | Target-only `tr87` control | v84l factor-bundle option, experimental | 47.6190476190 for one game | exact v82f preservation at 4/6 and `[56,45,44,38,217,0]` | isolates the next gain from the `re86` mechanism |
@@ -163,7 +166,7 @@ and notebook
 | Process-isolated official local suite | v26d experimental | 2.9202784571 / 100 | 0 games beaten; 8/183 levels | replay-only efficiency gain; not promoted |
 | Source-matched isolated ablation | v25 without global constraints | 2.1693300953 / 100 | 7/183 levels | controlled comparison |
 | Threaded shared-process suite | v25 invalidated run | 1.9584957457 / 100 | 6/183 levels | retained as methodological negative evidence |
-| Kaggle public leaderboard | v65b, submission `55113224` | — | hidden rerun pending; no returned score | **pending** |
+| Kaggle public leaderboard | v65b, submission `55113224` | **0.02** | hidden rerun complete | **complete** |
 | Kaggle private leaderboard | — | — | no returned score | unavailable |
 | Target-only `ft09` run | v22 experimental | 16.7556638306 for one game | 3/6 levels | not promoted |
 | Target-only `ft09` run | v23 experimental | 47.6190476190 for one game | 4/6 levels; `[4, 7, 14, 16]` actions | deterministic twice; not promoted |

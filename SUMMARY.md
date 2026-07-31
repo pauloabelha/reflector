@@ -306,3 +306,11 @@ and notebook
 `875cc88012b24008103017e98d64c6e49e9ae496c371da9c0eb4bbcefa290064`.
 Submit this exact candidate using `KAGGLE.md`; do not attribute the resulting
 hidden score until Kaggle returns one.
+
+Kaggle notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed
+successfully with internet disabled and emitted `submission.parquet`. Its
+competition submission request returned HTTP 400 because the one-per-day
+allowance had already been consumed by v74 submission `55123277`, which is
+`PENDING`. No v84m competition submission ID exists yet. Historical v65b
+submission `55113224` is now `COMPLETE` with Kaggle public score **0.02**;
+its private score remains unavailable.

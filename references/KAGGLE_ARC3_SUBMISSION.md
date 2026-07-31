@@ -28,9 +28,11 @@ that predates the accepted source commit.
 | Kaggle private-leaderboard score | Remaining 55 hidden games | Final evaluation/verification | Final competition standing |
 
 Never infer either Kaggle score from a local report. Submission `55113224`
-contains frozen v65b and is pending; record its public score as **pending; not
-yet returned**. V68 has not been submitted. Until Kaggle releases or verifies
-the final result, record the private score as **unavailable**.
+contains frozen v65b and completed with public score **0.02**. Submission
+`55123277` contains v74 and is pending. The completed v84m notebook version 1
+has no competition submission ID because the v74 submission consumed the
+daily allowance. Until Kaggle releases or verifies a final result, record the
+private score as **unavailable**.
 
 `REAL_GAMES_REPORT.md` is the canonical root-level score report. Raw local
 scorecards belong under `reports/`. A target-only report and a report generated
@@ -322,10 +324,13 @@ At the 2026-07-30 audit:
 - v84m is frozen as `candidate-07d24ee8acf946c9`; its candidate fingerprint,
   target repeats, preservation gate, full 25-game report, exact export, both
   network-disabled smoke paths, and technical prize checks pass;
-- frozen v65b submission `55113224` is pending and has returned no Kaggle
-  public or private score; v84m is the next intended submission;
+- frozen v65b submission `55113224` is complete at Kaggle public score 0.02;
+  v74 submission `55123277` is pending;
+- v84m notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and
+  emitted `submission.parquet`, but the submission request was rejected after
+  v74 consumed the daily allowance; no v84m submission ID exists yet;
 - the project virtual environment has a working authenticated Kaggle CLI; a
-  live read-only check still reports submission `55113224` as `PENDING`;
+  live read-only check reports `55113224` complete and `55123277` pending;
 - rule acceptance, identity verification, eligibility confirmation, team
   selection, notebook upload, competition-source attachment, internet-off
   setting, committed rerun, and submission all require participant account
