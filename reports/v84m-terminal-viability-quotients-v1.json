@@ -1,0 +1,211 @@
+{
+  "cognitive_root": "/tmp/reflector-v84m-full-cognitive-r1",
+  "format": "reflector-terminal-viability-quotient-audit-v1",
+  "games": 25,
+  "results": {
+    "action": {
+      "candidate_edges": 15,
+      "candidate_edges_without_safe_alias": 0,
+      "candidate_games": {
+        "bp35": 2,
+        "cn04": 1,
+        "dc22": 1,
+        "ka59": 1,
+        "m0r0": 1,
+        "r11l": 1,
+        "s5i5": 1,
+        "sp80": 2,
+        "su15": 1,
+        "tn36": 1,
+        "tu93": 2,
+        "vc33": 1
+      },
+      "candidate_safe_alias_events": 1933,
+      "candidate_terminal_events": 55,
+      "clean_candidate_games": {},
+      "post_authority_uses": 0,
+      "prospective_confirmation_games": {},
+      "prospective_confirmations": 0,
+      "prospective_quarantines": 25,
+      "represented_edges": 115
+    },
+    "action-domain": {
+      "candidate_edges": 15,
+      "candidate_edges_without_safe_alias": 0,
+      "candidate_games": {
+        "bp35": 2,
+        "cn04": 1,
+        "dc22": 1,
+        "ka59": 1,
+        "m0r0": 1,
+        "r11l": 1,
+        "s5i5": 1,
+        "sp80": 2,
+        "su15": 1,
+        "tn36": 1,
+        "tu93": 2,
+        "vc33": 1
+      },
+      "candidate_safe_alias_events": 1933,
+      "candidate_terminal_events": 55,
+      "clean_candidate_games": {},
+      "post_authority_uses": 0,
+      "prospective_confirmation_games": {},
+      "prospective_confirmations": 0,
+      "prospective_quarantines": 25,
+      "represented_edges": 115
+    },
+    "action-object-count": {
+      "candidate_edges": 15,
+      "candidate_edges_without_safe_alias": 0,
+      "candidate_games": {
+        "bp35": 1,
+        "cn04": 1,
+        "dc22": 1,
+        "m0r0": 1,
+        "r11l": 1,
+        "s5i5": 2,
+        "sp80": 4,
+        "su15": 1,
+        "tu93": 2,
+        "vc33": 1
+      },
+      "candidate_safe_alias_events": 650,
+      "candidate_terminal_events": 36,
+      "clean_candidate_games": {},
+      "post_authority_uses": 1,
+      "prospective_confirmation_games": {
+        "cn04": 1
+      },
+      "prospective_confirmations": 1,
+      "prospective_quarantines": 29,
+      "represented_edges": 693
+    },
+    "grounded-role": {
+      "candidate_edges": 14,
+      "candidate_edges_without_safe_alias": 5,
+      "candidate_games": {
+        "bp35": 2,
+        "cn04": 1,
+        "m0r0": 1,
+        "r11l": 1,
+        "s5i5": 2,
+        "sp80": 2,
+        "su15": 1,
+        "tu93": 2,
+        "vc33": 2
+      },
+      "candidate_safe_alias_events": 441,
+      "candidate_terminal_events": 43,
+      "clean_candidate_games": {
+        "bp35": 1,
+        "s5i5": 1,
+        "sp80": 1,
+        "vc33": 2
+      },
+      "post_authority_uses": 5,
+      "prospective_confirmation_games": {
+        "bp35": 1,
+        "s5i5": 1,
+        "sp80": 1,
+        "vc33": 2
+      },
+      "prospective_confirmations": 5,
+      "prospective_quarantines": 28,
+      "represented_edges": 960
+    },
+    "grounded-role-domain": {
+      "candidate_edges": 14,
+      "candidate_edges_without_safe_alias": 5,
+      "candidate_games": {
+        "bp35": 2,
+        "cn04": 1,
+        "m0r0": 1,
+        "r11l": 1,
+        "s5i5": 2,
+        "sp80": 2,
+        "su15": 1,
+        "tu93": 2,
+        "vc33": 2
+      },
+      "candidate_safe_alias_events": 441,
+      "candidate_terminal_events": 43,
+      "clean_candidate_games": {
+        "bp35": 1,
+        "s5i5": 1,
+        "sp80": 1,
+        "vc33": 2
+      },
+      "post_authority_uses": 5,
+      "prospective_confirmation_games": {
+        "bp35": 1,
+        "s5i5": 1,
+        "sp80": 1,
+        "vc33": 2
+      },
+      "prospective_confirmations": 5,
+      "prospective_quarantines": 28,
+      "represented_edges": 960
+    },
+    "grounded-role-object-count": {
+      "candidate_edges": 13,
+      "candidate_edges_without_safe_alias": 3,
+      "candidate_games": {
+        "bp35": 1,
+        "cn04": 1,
+        "m0r0": 1,
+        "s5i5": 2,
+        "sp80": 4,
+        "su15": 1,
+        "tu93": 2,
+        "vc33": 1
+      },
+      "candidate_safe_alias_events": 253,
+      "candidate_terminal_events": 31,
+      "clean_candidate_games": {
+        "s5i5": 1,
+        "sp80": 1,
+        "vc33": 1
+      },
+      "post_authority_uses": 3,
+      "prospective_confirmation_games": {
+        "cn04": 1,
+        "s5i5": 1,
+        "sp80": 1,
+        "vc33": 1
+      },
+      "prospective_confirmations": 4,
+      "prospective_quarantines": 17,
+      "represented_edges": 2042
+    },
+    "grounded-role-scene-forms": {
+      "candidate_edges": 6,
+      "candidate_edges_without_safe_alias": 3,
+      "candidate_games": {
+        "cn04": 1,
+        "m0r0": 1,
+        "sp80": 1,
+        "su15": 1,
+        "tu93": 2
+      },
+      "candidate_safe_alias_events": 4,
+      "candidate_terminal_events": 14,
+      "clean_candidate_games": {
+        "sp80": 1,
+        "su15": 1,
+        "tu93": 1
+      },
+      "post_authority_uses": 2,
+      "prospective_confirmation_games": {
+        "cn04": 1,
+        "sp80": 1,
+        "su15": 1,
+        "tu93": 1
+      },
+      "prospective_confirmations": 4,
+      "prospective_quarantines": 5,
+      "represented_edges": 5331
+    }
+  },
+  "transitions": 9160
+}

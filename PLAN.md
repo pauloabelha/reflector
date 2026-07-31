@@ -389,6 +389,28 @@ specialists abstain. The next gate is a repeated-death game set with cognitive
 telemetry; require real prospective confirmations before interpreting any
 behavior change.
 
+That gate is complete and v86 is inert. All 16 failure-game score/action
+vectors exactly match v84m. Across 75 terminal observations, it proposed 65
+whole-scene/role hypotheses but produced zero predictions, confirmations, or
+filtered choices; two safe counterexamples were recorded. Report
+`reports/experimental-v86-terminal-viability-failure-r1-400.json`, SHA-256
+`f695a05a5d7907a32e9d86f1d4f29429959e204e78c113db4e4f71eecfb5533d`.
+
+The corrected game-local quotient audit finds no clean action-only edge.
+Grounded action roles do expose five clean prospective confirmations across
+`bp35`, `s5i5`, `sp80`, and `vc33`, each arising from object-bound clicks, plus
+five post-authority uses. Whole-scene structural keys erase this recurrence by
+including irrelevant relational layout. Audit
+`reports/v84m-terminal-viability-quotients-v1.json`, SHA-256
+`dbd8272a05239bf8d11727f9f82e4e5321f15852e133742aea4f57acfe1e08e7`.
+
+Next freeze a separate role-only v87 mode. Keep the requirements of two
+distinct concrete terminal predecessors, same-level scope, safe-counterexample
+quarantine, hard evidence caps, and specialist priority. Gate first on the four
+games above plus aliasing sentinels `cn04`, `su15`, and `tu93`. Reject if no
+filter activates, any accepted vector regresses, or a safe role gains
+authority.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

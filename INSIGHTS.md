@@ -357,6 +357,22 @@ causal-learning terms, authority requires repeated consequences across
 distinct concrete contexts, and specialist plans remain upstream of the
 avoidance filter.
 
+V86 then established that the domain of partiality must itself be compressed.
+A whole-scene structural key was safe but too intensional: 65 terminal
+hypotheses across all repeated-death games never matched a second distinct
+source. A corrected game-local audit found that plain action identity is too
+extensional and aliases thousands of safe transitions. The viable middle
+object is an object-grounded action role. Five such edges were both repeatedly
+terminal and free of safe aliases, and each recurred after prospective
+confirmation.
+
+Categorically, undefinedness belongs to the grounded morphism, not the entire
+source object and not the untyped generator. In Drescher terms, the action plus
+item-role context is the schema whose result may include terminal failure. In
+HRL terms, this is an initiation-set exclusion for a grounded option. The
+result is still only an offline hypothesis until an online role-local child
+filters those edges without regressing accepted progress.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

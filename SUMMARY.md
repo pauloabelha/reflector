@@ -350,3 +350,26 @@ natural transformation across levels: role-level rebinding preserved syntax
 but not the changed goal or phase. Failure-conditioned viability learning
 remains a separate hypothesis and must be keyed to prospectively repeated
 terminal transitions, not inferred from this rejected replay.
+
+## Current experiment: bounded terminal viability
+
+V86 tested a color/global-translation-invariant whole-scene key paired with a
+grounded action role. Its 16-game failure gate exactly preserved every v84m
+score and action vector. It observed 75 generic terminal transitions and
+created 65 hypotheses, but earned zero distinct-source predictions, zero
+confirmations, and zero filters; two hypotheses received safe
+counterexamples. The branch is behaviorally inert, not promoted. Report
+[`reports/experimental-v86-terminal-viability-failure-r1-400.json`](reports/experimental-v86-terminal-viability-failure-r1-400.json),
+SHA-256
+`f695a05a5d7907a32e9d86f1d4f29429959e204e78c113db4e4f71eecfb5533d`.
+
+A game-scoped quotient audit over all 9,160 v84m transitions shows why.
+Action-only quotients are universally aliased with safe outcomes. Whole-scene
+structure is too specific. Object-grounded action role alone exposes five
+clean prospectively confirmed terminal edges across `bp35`, `s5i5`, `sp80`,
+and `vc33`, followed by five further uses. This motivates a separate
+role-local offspring; plain actions remain protected by the same safe
+counterexample quarantine. Audit
+[`reports/v84m-terminal-viability-quotients-v1.json`](reports/v84m-terminal-viability-quotients-v1.json),
+SHA-256
+`dbd8272a05239bf8d11727f9f82e4e5321f15852e133742aea4f57acfe1e08e7`.
