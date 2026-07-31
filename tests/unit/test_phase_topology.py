@@ -248,6 +248,7 @@ def test_cross_level_action_algebra_transfers_after_recolored_commuting_square()
     assert planner.action_effects == effects
     assert planner.cross_level_transfer_confirmations == 1
     assert planner.cross_level_transfer_rejections == 0
+    assert planner.transferred_action_algebra_active
     assert planner.inherited_action_effects == {}
     assert planner.traversable_colors == {6}
     assert planner.diagnostic == "cross-level-action-algebra-confirmed"
@@ -278,6 +279,7 @@ def test_cross_level_action_algebra_rejects_noncommuting_action() -> None:
     assert planner.action_effects == {4: (-5, 0)}
     assert planner.cross_level_transfer_confirmations == 0
     assert planner.cross_level_transfer_rejections == 1
+    assert not planner.transferred_action_algebra_active
     assert planner.inherited_action_effects == {}
     assert planner.diagnostic == "cross-level-action-algebra-rejected"
 
@@ -307,6 +309,7 @@ def test_cross_level_hypothesis_waits_through_scene_discontinuity() -> None:
     assert planner.inherited_action_effects == effects
     assert planner.cross_level_transfer_confirmations == 0
     assert planner.cross_level_transfer_rejections == 0
+    assert not planner.transferred_action_algebra_active
 
 
 def test_temporal_meter_and_same_role_reset_are_learned_relationally() -> None:
@@ -396,6 +399,54 @@ def test_temporal_csp_uses_latest_feasible_reset_before_operator() -> None:
     committed = planner.select(frozen, (1, 2, 3, 4))
 
     assert committed == 3
+    assert planner.diagnostic == "executing-resource-reset-option"
+
+
+def test_transferred_algebra_cannot_schedule_reset_before_local_operator_effect() -> (
+    None
+):
+    frame = _frame(40, 30, color=3)
+    _paint_ring(frame, (16, 21), color=7)
+    _paint_meter(frame, color=7, remaining_width=4)
+    _paint_body(frame, (20, 20))
+    frozen = _freeze(frame)
+    resource = next(
+        item
+        for item in components(frozen)
+        if item.color == 7 and item.bbox == (16, 21, 18, 23)
+    )
+    planner = PhaseTopologyPlanner(
+        action_effects={1: (0, -5), 2: (0, 5), 3: (-5, 0), 4: (5, 0)},
+        colored_mask=tuple(
+            (x, y, 9 if x < 2 else 12) for x in range(4) for y in range(4)
+        ),
+        transferred_action_algebra_active=True,
+        current_anchor=(20, 20),
+        traversable_colors={3},
+        current_pattern=(3, 3, ((0, 0),)),
+        goal_pattern=(3, 3, ((2, 2),)),
+        operator_cells=((21, 11), (22, 11)),
+        budget_color=7,
+        budget_area=8,
+        budget_capacity=80,
+        budget_unit=4,
+        resource_candidates=(resource,),
+    )
+
+    selected = planner.select(frozen, (1, 2, 3, 4))
+
+    assert selected == 1
+    assert planner.pending_resource is None
+    assert planner.diagnostic == "executing-operator-option"
+
+    planner.pending_action = None
+    planner.pending_anchor = None
+    planner.pending_source = None
+    planner.operator_applications = 1
+    selected_after_local_effect = planner.select(frozen, (1, 2, 3, 4))
+
+    assert selected_after_local_effect == 3
+    assert planner.pending_resource is not None
     assert planner.diagnostic == "executing-resource-reset-option"
 
 

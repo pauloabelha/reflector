@@ -78,6 +78,14 @@ inherited laws for navigation toward the operator while forbidding them to
 license reset scheduling until one local operator-induced phase transition has
 been observed.
 
+V96 makes that dependency executable without adding a game predicate. The
+planner carries one provenance bit saying that its current primitive algebra
+was transported. That bit cannot alter path geometry; it only blocks the
+resource-option branches until `operator_applications > 0`. Thus the child
+tests the narrow causal claim exposed by v95: early navigation was useful
+knowledge, while early reset scheduling was an illegitimate lift of that
+knowledge into a dependent option layer.
+
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 
 The strongest post-restart gain came from treating `tr87` as a visible algebra

@@ -101,6 +101,14 @@ Next minimal hypothesis:
 - preserve every existing budget, path, atomicity, and falsification bound;
 - reject unless a frozen target improves v94b without losing a level.
 
+This hypothesis is frozen as v96 `candidate-b7142ea72796ed4f`, generation 51,
+with inference fingerprint
+`f3ee4ccbad8cf6d60f679cdc80b963680bcc64efdcd832874e6ff823a14159a1`.
+The candidate is the accepted v94b genome with only the source-level dependent
+authority condition changed. Focused tests pass, including a paired
+before/after-local-effect resource-scheduling control. Run the full quality
+gate, freeze the source commit, then evaluate one isolated `ls20` target.
+
 ## Why the accepted agent wins what it wins
 
 | Mechanism | Causal real-game evidence |

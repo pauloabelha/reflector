@@ -77,6 +77,15 @@ dependency boundary: inherited navigation laws may shorten operator discovery,
 but they may not license resource scheduling until a local operator transition
 grounds the dependent phase model.
 
+V96 `candidate-b7142ea72796ed4f` freezes that minimal accommodation. A
+prospectively confirmed algebra is explicitly marked by provenance. While that
+mark is active and the current level has zero observed operator applications,
+the planner can compose translations directly toward the operator but cannot
+select a reset resource. One local phase-changing contact unlocks the unchanged
+v94b temporal CSP. A paired unit control proves that the same low-budget scene
+selects direct operator navigation before local evidence and the feasible
+resource immediately afterward.
+
 ## New accepted mechanism: phase-topology product planning
 
 V92 `candidate-42dbfa39cba78041` is the first accepted gain after v84m.

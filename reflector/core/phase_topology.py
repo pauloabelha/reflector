@@ -325,6 +325,7 @@ class PhaseTopologyPlanner:
     inherited_action_effects: dict[int, Point] = field(default_factory=dict)
     inherited_action_evidence: Counter[int] = field(default_factory=Counter)
     inherited_mask_signature: MaskSignature = ()
+    transferred_action_algebra_active: bool = False
     cross_level_transfer_confirmations: int = 0
     cross_level_transfer_rejections: int = 0
     invalid_actions: set[int] = field(default_factory=set)
@@ -376,6 +377,7 @@ class PhaseTopologyPlanner:
         return frozenset(color for _x, _y, color in self.colored_mask)
 
     def reset_level(self, *, retain_action_algebra: bool = False) -> None:
+        self.transferred_action_algebra_active = False
         if (
             retain_action_algebra
             and 4 <= len(self.action_effects) <= 8
@@ -458,9 +460,11 @@ class PhaseTopologyPlanner:
                     for inherited_action in self.inherited_action_effects
                 }
             )
+            self.transferred_action_algebra_active = True
             self.cross_level_transfer_confirmations += 1
             self.diagnostic = "cross-level-action-algebra-confirmed"
         else:
+            self.transferred_action_algebra_active = False
             self.cross_level_transfer_rejections += 1
             self.diagnostic = "cross-level-action-algebra-rejected"
         self._clear_inherited_action_algebra()
@@ -1116,6 +1120,10 @@ class PhaseTopologyPlanner:
             and horizon is not None
             and bool(self.resource_candidates)
         )
+        resource_scheduling_grounded = (
+            not self.transferred_action_algebra_active
+            or self.operator_applications > 0
+        )
         target_cells: tuple[Point, ...]
         path: tuple[int, ...]
         selected_resource: Component | None = None
@@ -1147,6 +1155,7 @@ class PhaseTopologyPlanner:
             path = self._path(frame, target_cells)
             if (
                 temporal_grounded
+                and resource_scheduling_grounded
                 and path
                 and len(path) > bounded_remaining
                 and (
@@ -1170,7 +1179,7 @@ class PhaseTopologyPlanner:
             if on_operator:
                 path = self._operator_rearm_path(frame, legal_action_ids)
                 mode = "operator-rearm"
-                if temporal_grounded and path:
+                if temporal_grounded and resource_scheduling_grounded and path:
                     resource_paths = tuple(
                         candidate
                         for resource in self.resource_candidates
@@ -1201,6 +1210,7 @@ class PhaseTopologyPlanner:
                 mode = "operator"
                 if (
                     temporal_grounded
+                    and resource_scheduling_grounded
                     and path
                     and len(path) >= bounded_remaining
                     and (

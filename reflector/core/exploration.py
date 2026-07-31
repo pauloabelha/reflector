@@ -13402,6 +13402,9 @@ class EpistemicExplorer:
             "phase_topology_cross_level_transfer_rejections": (
                 self.phase_topology_planner.cross_level_transfer_rejections
             ),
+            "phase_topology_transferred_action_algebra_active": int(
+                self.phase_topology_planner.transferred_action_algebra_active
+            ),
             "phase_topology_body_grounded": int(
                 bool(self.phase_topology_planner.colored_mask)
             ),
