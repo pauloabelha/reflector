@@ -116,6 +116,26 @@ only the predicted focused displacement. This is a naturality-based state
 estimator, not permission to ignore an action contradiction; a mismatched
 focused center still quarantines the morphism.
 
+That state estimator supplied the sought behavioral leap. Frozen v84d solved
+`re86` levels 1–2 in `[24,36]`, scoring 8.3333333333 on the target game. All
+five controls survived with zero quarantines and zero causal conflicts, and
+two MDL-retained programs were reused. This is the first evidence that the
+categorical language is doing more than redescribing a specialist: a confirmed
+morphism stabilized latent identity through observations that defeated the
+one-frame parser, allowing the same CSP option compiler to solve a structurally
+different level. Level 3 is still ungrounded, so the result remains
+experimental until repeated and preserved.
+
+Level 3 supplies another constructive accommodation: all movers share color 8
+and overlap, so color-based variables collapse three causal factors into one.
+Action 5 reveals focus anchors `(30,45)`, `(18,48)`, and `(45,48)`; one known
+translation separates each factor's pixels despite overlap. Treating the scene
+as a categorical product turns target inference into exact cover: choose one
+reachable placement per factor whose landmark subsets are disjoint and
+exhaustive. The unique minimum-cost solution assigns the line, X, and diamond
+to `(27,6)`, `(42,24)`, and `(18,30)`. This is a genuine extension of the
+common CSP language rather than a new route table.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

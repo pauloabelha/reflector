@@ -169,6 +169,15 @@ occlusion, while the focused variable updates only when its perceived center
 matches the predicted displacement exactly. A focused-effect mismatch remains
 a contradiction and quarantines the morphism.
 
+When color ceases to identify an object, overlapping same-colored movers are
+represented as a product object. One confirmed translation separates the
+focused factor from the same-colored background by its removed/added pixels;
+focus transfer exposes the next factor. Each normalized factor mask generates
+a finite domain of reachable landmark subsets. A bounded exact-cover CSP
+selects one placement per factor only when their covered landmark sets are
+disjoint, exhaustive, and uniquely minimum-cost. The resulting factor routes
+are compiled through the same focused-option planner.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

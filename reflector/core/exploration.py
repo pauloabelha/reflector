@@ -32,6 +32,15 @@ from .constellation_alignment import (
     infer_constellation_alignment,
 )
 from .dihedral_analogy import infer_dihedral_analogy
+from .factored_constellation import (
+    FactorGoal,
+    FactorMask,
+    FactorScene,
+    find_selector,
+    infer_factor_scene,
+    learn_factor_mask,
+    solve_factor_exact_cover,
+)
 from .inheritance import SchemeLibrary
 from .lattice_csp import (
     ClickEffectModel,
@@ -619,6 +628,26 @@ class EpistemicExplorer:
     constellation_last_option_length: int = 0
     constellation_search_expansions: int = 0
     constellation_diagnostic: str = "exact-off"
+    factor_constellation_scene: FactorScene | None = field(
+        default=None,
+        repr=False,
+    )
+    factor_constellation_masks: list[FactorMask] = field(
+        default_factory=list,
+        repr=False,
+    )
+    factor_constellation_anchors: list[tuple[int, int]] = field(
+        default_factory=list,
+        repr=False,
+    )
+    factor_constellation_goals: tuple[FactorGoal, ...] = ()
+    factor_constellation_home_anchor: tuple[int, int] | None = None
+    factor_constellation_probe_action: int | None = None
+    factor_constellation_restore_action: int | None = None
+    factor_constellation_switch_pending: bool = False
+    factor_constellation_focus_index: int = 0
+    factor_constellation_selections: int = 0
+    factor_constellation_diagnostic: str = "not-grounded"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -5747,6 +5776,17 @@ class EpistemicExplorer:
         self.constellation_selections = 0
         self.constellation_last_layout = None
         self.constellation_last_option_length = 0
+        self.factor_constellation_scene = None
+        self.factor_constellation_masks.clear()
+        self.factor_constellation_anchors.clear()
+        self.factor_constellation_goals = ()
+        self.factor_constellation_home_anchor = None
+        self.factor_constellation_probe_action = None
+        self.factor_constellation_restore_action = None
+        self.factor_constellation_switch_pending = False
+        self.factor_constellation_focus_index = 0
+        self.factor_constellation_selections = 0
+        self.factor_constellation_diagnostic = "not-grounded"
         self.constellation_diagnostic = (
             "not-grounded" if self.constellation_alignment else "exact-off"
         )
@@ -5777,12 +5817,114 @@ class EpistemicExplorer:
             layout.selected_color,
         )
 
+    def _inverse_constellation_action(self, action_id: int) -> int | None:
+        displacement = self.constellation_move_actions.get(action_id)
+        if displacement is None:
+            return None
+        inverse = (-displacement[0], -displacement[1])
+        return next(
+            (
+                candidate
+                for candidate, effect in sorted(
+                    self.constellation_move_actions.items()
+                )
+                if effect == inverse
+            ),
+            None,
+        )
+
+    def _observe_factored_constellation(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+    ) -> None:
+        scene = self.factor_constellation_scene
+        if scene is None:
+            scene = infer_factor_scene(before)
+        if scene is None:
+            return
+        if action_id == self.factor_constellation_probe_action:
+            displacement = self.constellation_move_actions.get(action_id)
+            inverse = self._inverse_constellation_action(action_id)
+            mask = (
+                learn_factor_mask(before, after, scene, displacement)
+                if displacement is not None
+                else None
+            )
+            if mask is None or inverse is None:
+                self.factor_constellation_diagnostic = "factor-probe-conflict"
+                self.factor_constellation_probe_action = None
+                return
+            self.factor_constellation_masks.append(mask)
+            self.factor_constellation_anchors.append(mask.home_anchor)
+            self.factor_constellation_probe_action = None
+            self.factor_constellation_restore_action = inverse
+            self.factor_constellation_diagnostic = "factor-mask-grounded"
+            return
+        if action_id == self.factor_constellation_restore_action:
+            selector = find_selector(after, scene.selector_color)
+            if selector != self.factor_constellation_home_anchor:
+                self.factor_constellation_diagnostic = "factor-restore-conflict"
+                self.factor_constellation_restore_action = None
+                return
+            self.factor_constellation_restore_action = None
+            self.factor_constellation_switch_pending = True
+            self.factor_constellation_diagnostic = "factor-restored"
+            return
+        if (
+            self.factor_constellation_switch_pending
+            and action_id in self.constellation_switch_actions
+        ):
+            selector = find_selector(after, scene.selector_color)
+            self.factor_constellation_switch_pending = False
+            if selector is None:
+                self.factor_constellation_diagnostic = "factor-switch-conflict"
+                return
+            first = self.factor_constellation_masks[0].home_anchor
+            if selector == first and len(self.factor_constellation_masks) >= 2:
+                step = min(
+                    abs(dx) + abs(dy)
+                    for dx, dy in self.constellation_move_actions.values()
+                    if (dx, dy) != (0, 0)
+                )
+                goals = solve_factor_exact_cover(
+                    tuple(self.factor_constellation_masks),
+                    scene.landmarks,
+                    width=len(after[0]),
+                    height=len(after),
+                    step=step,
+                )
+                if goals is None:
+                    self.factor_constellation_diagnostic = (
+                        "factor-exact-cover-ambiguous"
+                    )
+                    return
+                self.factor_constellation_goals = goals
+                self.factor_constellation_focus_index = 0
+                self.factor_constellation_diagnostic = (
+                    "factor-exact-cover-grounded"
+                )
+                return
+            if selector in self.factor_constellation_anchors:
+                self.factor_constellation_diagnostic = "factor-cycle-ambiguous"
+                return
+            self.factor_constellation_home_anchor = selector
+            self.factor_constellation_scene = FactorScene(
+                scene.color,
+                scene.landmarks,
+                scene.selector_color,
+                selector,
+            )
+            self.factor_constellation_diagnostic = "factor-focus-discovered"
+
     def _observe_constellation_alignment(
         self,
         before: tuple[tuple[int, ...], ...],
         after: tuple[tuple[int, ...], ...],
         action_id: int,
     ) -> None:
+        self._observe_factored_constellation(before, after, action_id)
         source = infer_constellation_alignment(before)
         destination = infer_constellation_alignment(after)
         if source is None:
@@ -5974,6 +6116,135 @@ class EpistemicExplorer:
                 self.constellation_switch_actions.discard(action_id)
                 self.constellation_diagnostic = "constellation-move-grounded"
 
+    def _select_factored_constellation(
+        self,
+        observation: Observation,
+        available: dict[int, ActionToken],
+    ) -> ActionToken | None:
+        scene = self.factor_constellation_scene
+        parsed = infer_factor_scene(observation.frame)
+        if scene is None:
+            if parsed is None:
+                return None
+            scene = parsed
+            self.factor_constellation_scene = scene
+            self.factor_constellation_home_anchor = scene.selector
+            self.factor_constellation_diagnostic = "factor-scene-grounded"
+        selector = find_selector(observation.frame, scene.selector_color)
+        if selector is None:
+            self.factor_constellation_diagnostic = "factor-selector-occluded"
+            return None
+        if self.factor_constellation_restore_action is not None:
+            action_id = self.factor_constellation_restore_action
+            if action_id not in available:
+                self.factor_constellation_diagnostic = "factor-restore-unavailable"
+                return None
+            self.factor_constellation_selections += 1
+            return available[action_id]
+        if self.factor_constellation_switch_pending:
+            switches = tuple(
+                action_id
+                for action_id in sorted(self.constellation_switch_actions)
+                if action_id in available
+            )
+            if not switches:
+                self.factor_constellation_diagnostic = "factor-switch-unavailable"
+                return None
+            self.factor_constellation_selections += 1
+            return available[switches[0]]
+        if not self.factor_constellation_goals:
+            known_homes = {
+                mask.home_anchor for mask in self.factor_constellation_masks
+            }
+            home = self.factor_constellation_home_anchor
+            if home is None or home in known_homes:
+                self.factor_constellation_diagnostic = "factor-discovery-stalled"
+                return None
+            probe = next(
+                (
+                    action_id
+                    for action_id, displacement in sorted(
+                        self.constellation_move_actions.items()
+                    )
+                    if action_id in available
+                    and self._inverse_constellation_action(action_id)
+                    is not None
+                    and 0 <= selector[0] + displacement[0] < len(
+                        observation.frame[0]
+                    )
+                    and 0 <= selector[1] + displacement[1] < len(
+                        observation.frame
+                    )
+                ),
+                None,
+            )
+            if probe is None:
+                self.factor_constellation_diagnostic = "factor-probe-unavailable"
+                return None
+            self.factor_constellation_probe_action = probe
+            self.factor_constellation_selections += 1
+            self.factor_constellation_diagnostic = "probing-factor-mask"
+            return available[probe]
+        index = self.factor_constellation_focus_index
+        if not 0 <= index < len(self.factor_constellation_goals):
+            self.factor_constellation_diagnostic = "factor-focus-invalid"
+            return None
+        self.factor_constellation_anchors[index] = selector
+        goal = self.factor_constellation_goals[index]
+        if selector == goal.target_anchor:
+            if all(
+                anchor == candidate.target_anchor
+                for anchor, candidate in zip(
+                    self.factor_constellation_anchors,
+                    self.factor_constellation_goals,
+                    strict=True,
+                )
+            ):
+                self.factor_constellation_diagnostic = "factor-goals-satisfied"
+                return None
+            switches = tuple(
+                action_id
+                for action_id in sorted(self.constellation_switch_actions)
+                if action_id in available
+            )
+            if not switches:
+                self.factor_constellation_diagnostic = "factor-switch-unavailable"
+                return None
+            self.factor_constellation_focus_index = (
+                index + 1
+            ) % len(self.factor_constellation_goals)
+            self.factor_constellation_selections += 1
+            self.factor_constellation_diagnostic = "switching-product-factor"
+            return available[switches[0]]
+        option = compile_focused_option(
+            FocusedRewriteObject(
+                (
+                    FocusedVariable(
+                        index,
+                        selector,
+                        frozenset({goal.target_anchor}),
+                    ),
+                ),
+                index,
+            ),
+            tuple(
+                TranslationMorphism(action_id, displacement)
+                for action_id, displacement in sorted(
+                    self.constellation_move_actions.items()
+                )
+                if action_id in available
+            ),
+            width=len(observation.frame[0]),
+            height=len(observation.frame),
+            max_expansions=512,
+        )
+        if not option.actions:
+            self.factor_constellation_diagnostic = "factor-option-unknown"
+            return None
+        self.factor_constellation_selections += 1
+        self.factor_constellation_diagnostic = "executing-factor-option"
+        return available[option.actions[0]]
+
     def _select_constellation_alignment(
         self,
         observation: Observation,
@@ -5984,6 +6255,18 @@ class EpistemicExplorer:
         if self.constellation_selections >= 96:
             self.constellation_diagnostic = "constellation-trial-cap"
             return None
+        available = {
+            token.action_id: token
+            for token in tokens
+            if not token.data
+            and token.action_id not in self.constellation_quarantined_actions
+        }
+        factored = self._select_factored_constellation(
+            observation,
+            available,
+        )
+        if factored is not None:
+            return factored
         layout = infer_constellation_alignment(observation.frame)
         if layout is not None:
             self.constellation_last_layout = layout
@@ -5992,12 +6275,6 @@ class EpistemicExplorer:
         if layout is None:
             self.constellation_diagnostic = "constellation-layout-not-grounded"
             return None
-        available = {
-            token.action_id: token
-            for token in tokens
-            if not token.data
-            and token.action_id not in self.constellation_quarantined_actions
-        }
         objects = {item.color: item for item in layout.objects}
         active = objects[layout.selected_color]
         if active.distance == 0:
@@ -12752,6 +13029,18 @@ class EpistemicExplorer:
                 self.constellation_search_expansions
             ),
             "constellation_diagnostic": self.constellation_diagnostic,
+            "factor_constellation_masks": len(
+                self.factor_constellation_masks
+            ),
+            "factor_constellation_goals": len(
+                self.factor_constellation_goals
+            ),
+            "factor_constellation_selections": (
+                self.factor_constellation_selections
+            ),
+            "factor_constellation_diagnostic": (
+                self.factor_constellation_diagnostic
+            ),
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()

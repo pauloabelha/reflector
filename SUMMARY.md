@@ -75,6 +75,29 @@ already confirmed morphisms: goal domains and non-focused variables persist,
 while only an exactly predicted focused center may update. The verified
 25-game score remains unchanged.
 
+V84d produced the first multi-level breakthrough. Frozen candidate
+`candidate-6b06fcb776d9097d` solved `re86` levels 1–2 in `[24,36]`:
+
+- target score: **8.333333333333332**
+- target levels: **2/8**
+- full action vector: **`[24,36,340,0,0,0,0,0]`**
+- controls retained: four translations and one focus transfer
+- causal conflicts/quarantines: zero/zero
+- compressed option reuses: two
+- report:
+  [`reports/experimental-v84d-causal-filter-re86-r1-400.json`](reports/experimental-v84d-causal-filter-re86-r1-400.json)
+
+This validates causal belief-state filtering once, but v84d is not promoted
+until the target repeats and the accepted suite is preserved. Level 3 ended
+with `constellation-layout-not-grounded`, which is the next accommodation
+target.
+
+Level 3 reveals three overlapping same-colored movers, so color is not an
+object identity. The active v84e generalization learns each focus factor from
+one confirmed translation, then solves a unique minimum-cost product
+exact-cover CSP over all eight landmarks. Its inferred target anchors are
+`(27,6)`, `(42,24)`, and `(18,30)` for the line, X, and diamond factors.
+
 ## Rejected branch
 
 V83 tested distance-decreasing replay on an inferred one-dimensional track.
@@ -86,7 +109,6 @@ negative result and is disabled in v82f/v84 candidates.
 
 The verified score remains **16.3554480981 / 100**. Reaching 20 requires at
 least **+3.6445519019** aggregate points. The current priority is to validate
-whether causal state filtering carries the generic embedding object through
-`re86` level 2, require multi-level progress, run preservation/full-suite
-gates, and only then submit the exact accepted package to Kaggle using
-`KAGGLE.md`.
+validate the factored exact-cover compiler on level 3, reproduce every gain,
+then run preservation/full-suite gates. The exact accepted package is submitted
+to Kaggle using `KAGGLE.md` only after the verified aggregate reaches 20.

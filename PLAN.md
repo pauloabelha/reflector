@@ -96,10 +96,23 @@ center and asymmetrically hide a stationary mover, corrupting both perceived
 role and centroid. V84d now preserves goal domains and non-focused variables
 under confirmed morphisms, while accepting a focused update only when its
 center exactly matches the predicted displacement.
+
+The first frozen v84d run passed that falsifier and is the first multi-level
+result: `re86` reached 2/8 at `[24,36,340,0,0,0,0,0]`, score 8.3333333333.
+All four translations and focus transfer survived, with zero quarantines and
+zero causal conflicts. Two retained option programs were reused. Level 3 then
+remained ungrounded for the remaining 340 actions.
+
+Level 3 has three overlapping same-colored factors whose focus anchors cycle
+through `(30,45)`, `(18,48)`, and `(45,48)`. One translated intervention
+causally separates each factor mask. The resulting product exact-cover CSP has
+one minimum-cost solution: target anchors `(27,6)`, `(42,24)`, and `(18,30)`,
+covering all eight landmarks exactly once. V84e integrates bounded discovery,
+strict exact-cover uniqueness, and the existing option compiler.
 Required gates are:
 
-1. verify causal state filtering on the frozen target;
-2. deterministic multi-level `re86` gain twice;
+1. validate v84e on the frozen target;
+2. reproduce every multi-level gain exactly;
 3. exact preservation of the v82f suite outside changed targets;
 4. full 25-game score of at least 20 before Kaggle submission.
 
