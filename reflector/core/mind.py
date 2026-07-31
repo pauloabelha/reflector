@@ -122,6 +122,7 @@ class MindConfig:
     enable_terminal_role_viability_credit: bool = False
     enable_partial_bisimulation: bool = False
     enable_abstract_causal_frontier: bool = False
+    enable_causal_discrimination_frontier: bool = False
     enable_finite_orbit_commit_exploration: bool = False
     enable_dihedral_analogy_alignment: bool = False
     enable_linear_track_navigation: bool = False
@@ -213,6 +214,7 @@ class MindConfig:
             "enable_terminal_role_viability_credit",
             "enable_partial_bisimulation",
             "enable_abstract_causal_frontier",
+            "enable_causal_discrimination_frontier",
             "enable_finite_orbit_commit_exploration",
             "enable_dihedral_analogy_alignment",
             "enable_linear_track_navigation",
@@ -263,6 +265,13 @@ class MindConfig:
         ):
             raise ValueError(
                 "abstract causal frontier requires partial bisimulation"
+            )
+        if (
+            self.enable_causal_discrimination_frontier
+            and not self.enable_partial_bisimulation
+        ):
+            raise ValueError(
+                "causal discrimination frontier requires partial bisimulation"
             )
         if (
             self.enable_colored_stencil_secondary_planning

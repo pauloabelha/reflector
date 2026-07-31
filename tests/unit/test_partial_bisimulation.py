@@ -1,4 +1,5 @@
 from reflector.core.exploration import ActionRole, ActionToken, EpistemicExplorer
+from reflector.core.mind import MindConfig
 from reflector.core.partial_bisimulation import PartialBisimulation
 from reflector.core.symbolic import Scene
 
@@ -221,3 +222,90 @@ def test_abstract_frontier_abstains_after_partition_conflict() -> None:
     assert explorer.abstract_causal_frontier_diagnostic == (
         "awaiting-flawless-bisimulation-evidence"
     )
+
+
+def test_discrimination_frontier_ranks_expected_hypothesis_elimination() -> None:
+    model = PartialBisimulation()
+    move = ActionRole(1)
+    query = ActionRole(2)
+    model.profiles = {
+        "donor-a": {
+            move: {"relative-translation"},
+            query: {"component-birth"},
+        },
+        "donor-b": {
+            move: {"relative-translation"},
+            query: {"component-death"},
+        },
+        "recipient": {move: {"relative-translation"}},
+    }
+    model.domains = {
+        "donor-a": (1, 2),
+        "donor-b": (1, 2),
+        "recipient": (1, 2),
+    }
+
+    frontier = model.discrimination_frontier(
+        source="recipient",
+        domain=(1, 2),
+        roles=(move, query),
+    )
+
+    assert len(frontier) == 1
+    assert frontier[0].role == query
+    assert frontier[0].donor_states == 2
+    assert frontier[0].expected_elimination == 1.0
+    assert frontier[0].outcome_counts == (
+        ("component-birth", 1),
+        ("component-death", 1),
+    )
+
+
+def test_causal_discrimination_selects_ambiguous_query_role() -> None:
+    explorer = EpistemicExplorer(
+        partial_bisimulation=True,
+        causal_discrimination_frontier=True,
+    )
+    model = explorer.partial_bisimulation_model
+    move = ActionRole(1)
+    query = ActionRole(2)
+    model.profiles = {
+        "donor-a": {
+            move: {"relative-translation"},
+            query: {"component-birth"},
+        },
+        "donor-b": {
+            move: {"relative-translation"},
+            query: {"component-death"},
+        },
+        "recipient": {move: {"relative-translation"}},
+    }
+    model.domains = {
+        "donor-a": (1, 2),
+        "donor-b": (1, 2),
+        "recipient": (1, 2),
+    }
+    model.level_predictions = 4
+    model.level_confirmations = 4
+
+    selected = explorer._select_causal_discrimination_frontier(
+        (0, "NOT_FINISHED", "recipient"),
+        (ActionToken(1), ActionToken(2)),
+        _empty_scene(),
+    )
+
+    assert selected == ActionToken(2)
+    assert explorer.causal_discrimination_total_selections == 1
+    assert explorer.causal_discrimination_pending_outcomes == (
+        ("component-birth", 1),
+        ("component-death", 1),
+    )
+
+
+def test_causal_discrimination_requires_partial_bisimulation() -> None:
+    try:
+        MindConfig(enable_causal_discrimination_frontier=True)
+    except ValueError as error:
+        assert "requires partial bisimulation" in str(error)
+    else:
+        raise AssertionError("invalid causal discrimination config accepted")

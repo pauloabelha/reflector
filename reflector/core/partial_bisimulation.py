@@ -69,6 +69,14 @@ class BisimulationUpdate:
     cap_failure: str | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class CausalDiscrimination:
+    role: Hashable
+    outcome_counts: tuple[tuple[Outcome, int], ...]
+    donor_states: int
+    expected_elimination: float
+
+
 @dataclass(slots=True)
 class PartialBisimulation:
     """Episode-local compatible partial action/effect profiles."""
@@ -84,6 +92,7 @@ class PartialBisimulation:
     conflicts: int = 0
     ambiguous_predictions: int = 0
     abstract_frontier_roles: int = 0
+    discrimination_frontier_roles: int = 0
     outcome_counts: Counter[Outcome] = field(default_factory=Counter)
     level_predictions: int = 0
     level_confirmations: int = 0
@@ -257,6 +266,56 @@ class PartialBisimulation:
             and self.level_conflicts == 0
             and self.level_confirmations == self.level_predictions
         )
+
+    def ready_for_discrimination(
+        self,
+        *,
+        min_confirmations: int = 4,
+    ) -> bool:
+        """Whether the current quotient predicts well enough to query disagreement."""
+
+        return (
+            self.cap_failure is None
+            and self.level_confirmations >= min_confirmations
+            and self.level_confirmations * 4 >= self.level_predictions * 3
+        )
+
+    def discrimination_frontier(
+        self,
+        *,
+        source: str,
+        domain: tuple[int, ...],
+        roles: Iterable[Hashable],
+    ) -> tuple[CausalDiscrimination, ...]:
+        """Return locally untried roles that distinguish compatible donors."""
+
+        source_profile = self.profiles.get(source, {})
+        donors = self._compatible_donors(source, domain)
+        queries = []
+        for role in roles:
+            if role in source_profile:
+                continue
+            counts: Counter[Outcome] = Counter(
+                outcome
+                for donor in donors
+                if (outcome := self._deterministic(donor, role)) is not None
+            )
+            if len(counts) <= 1:
+                continue
+            donor_states = sum(counts.values())
+            expected_elimination = donor_states - sum(
+                count * count for count in counts.values()
+            ) / donor_states
+            queries.append(
+                CausalDiscrimination(
+                    role=role,
+                    outcome_counts=tuple(sorted(counts.items())),
+                    donor_states=donor_states,
+                    expected_elimination=expected_elimination,
+                )
+            )
+        self.discrimination_frontier_roles += len(queries)
+        return tuple(queries)
 
     def _compatible_donors(
         self,

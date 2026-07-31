@@ -516,6 +516,12 @@ distance or label any outcome as reward. Gate first on high-opportunity
 `ar25`, `g50t`, `sc25`, `sk48`, `tu93`, and `wa30`, with `lp85` and `sp80`
 as preservation sentinels.
 
+Frozen v90 candidate `candidate-915572415e361c0c`, inference fingerprint
+`6968d3c650c6d3ae1534f820335787c0ed359431623a82623d0935ebd019718e`,
+is that v88 sibling. It requires four current-level confirmations at at least
+75% prospective precision, caps queries at 16 per level, and records both
+represented and eliminated donor hypotheses.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

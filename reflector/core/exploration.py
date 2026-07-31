@@ -463,6 +463,7 @@ class EpistemicExplorer:
     terminal_role_viability_credit: bool = False
     partial_bisimulation: bool = False
     abstract_causal_frontier: bool = False
+    causal_discrimination_frontier: bool = False
     finite_orbit_commit_exploration: bool = False
     dihedral_analogy_alignment: bool = False
     linear_track_navigation: bool = False
@@ -588,6 +589,13 @@ class EpistemicExplorer:
     abstract_causal_frontier_selections: int = 0
     abstract_causal_frontier_abstentions: int = 0
     abstract_causal_frontier_diagnostic: str = "exact-off"
+    causal_discrimination_selections: int = 0
+    causal_discrimination_total_selections: int = 0
+    causal_discrimination_abstentions: int = 0
+    causal_discrimination_query_hypotheses: int = 0
+    causal_discrimination_eliminated_hypotheses: int = 0
+    causal_discrimination_pending_outcomes: tuple[tuple[str, int], ...] = ()
+    causal_discrimination_diagnostic: str = "exact-off"
     finite_orbit_generator: ActionToken | None = None
     finite_orbit_inverse: ActionToken | None = None
     finite_orbit_commit_tokens: tuple[ActionToken, ...] = ()
@@ -1170,6 +1178,8 @@ class EpistemicExplorer:
             order.append("shortest-progress-path-reuse")
         if self.abstract_causal_frontier:
             order.append("abstract-causal-frontier")
+        if self.causal_discrimination_frontier:
+            order.append("causal-discrimination-frontier")
         if self.uses_action_family_schema:
             order.append("hierarchical-action-fairness")
         order.extend(("untried-state-intervention", "known-frontier-navigation"))
@@ -1217,6 +1227,8 @@ class EpistemicExplorer:
             if "shortest-progress-path-reuse" in selected_reason
             else "abstract-causal-frontier"
             if "abstract-causal-frontier" in selected_reason
+            else "causal-discrimination-frontier"
+            if "causal-discrimination-frontier" in selected_reason
             else "hierarchical-action-fairness"
             if "hierarchical-action-family" in selected_reason
             else "untried-state-intervention"
@@ -1338,6 +1350,13 @@ class EpistemicExplorer:
                 if self.abstract_causal_frontier
                 else "exact-off"
             )
+            self.causal_discrimination_selections = 0
+            self.causal_discrimination_pending_outcomes = ()
+            self.causal_discrimination_diagnostic = (
+                "not-attempted"
+                if self.causal_discrimination_frontier
+                else "exact-off"
+            )
             self._reset_finite_orbit(clear_trials=True)
             self._reset_dihedral_analogy(clear_controls=True)
             self._reset_linear_track()
@@ -1401,6 +1420,7 @@ class EpistemicExplorer:
             self.pending_relational_scheme = None
             self.segmented_permutation_pending_prediction = None
             self.terminal_viability_pending_generic = False
+            self.causal_discrimination_pending_outcomes = ()
             return
         before = self.pending_frame
         after = observation.frame
@@ -1450,6 +1470,18 @@ class EpistemicExplorer:
                 causal_kind = "terminal"
             else:
                 causal_kind = infer_action_effect(before, after).kind
+            if self.causal_discrimination_pending_outcomes:
+                outcome_counts = dict(
+                    self.causal_discrimination_pending_outcomes
+                )
+                hypotheses = sum(outcome_counts.values())
+                eliminated = hypotheses - outcome_counts.get(causal_kind, 0)
+                self.causal_discrimination_query_hypotheses += hypotheses
+                self.causal_discrimination_eliminated_hypotheses += eliminated
+                self.causal_discrimination_diagnostic = (
+                    f"observed-query:{causal_kind}:eliminated-{eliminated}"
+                )
+                self.causal_discrimination_pending_outcomes = ()
             self.partial_bisimulation_model.observe(
                 source=source_state[2],
                 domain=domain,
@@ -5642,6 +5674,25 @@ class EpistemicExplorer:
                 state,
                 causal_frontier,
                 "epistemic-frontier:abstract-causal-frontier",
+                scene,
+            )
+
+        discrimination = self._select_causal_discrimination_frontier(
+            state,
+            tokens,
+            scene,
+        )
+        if discrimination is not None:
+            self.last_scheme_components = (
+                "scheme:causal-version-space",
+                "operator:expected-hypothesis-elimination",
+                "goal:discriminate-compatible-donors",
+                "falsifier:no-version-space-reduction",
+            )
+            return self._issue(
+                state,
+                discrimination,
+                "epistemic-frontier:causal-discrimination-frontier",
                 scene,
             )
 
@@ -11870,6 +11921,65 @@ class EpistemicExplorer:
         )
         return selected
 
+    def _select_causal_discrimination_frontier(
+        self,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+    ) -> ActionToken | None:
+        """Choose the legal role expected to eliminate most donor hypotheses."""
+
+        if not self.causal_discrimination_frontier:
+            return None
+        if self.causal_discrimination_selections >= 16:
+            self.causal_discrimination_abstentions += 1
+            self.causal_discrimination_diagnostic = "query-cap"
+            return None
+        model = self.partial_bisimulation_model
+        if not model.ready_for_discrimination(min_confirmations=4):
+            self.causal_discrimination_abstentions += 1
+            self.causal_discrimination_diagnostic = (
+                "awaiting-predictive-quotient"
+            )
+            return None
+        domain = tuple(sorted({token.action_id for token in tokens}))
+        represented = tuple(
+            dict.fromkeys(self._role(token, scene) for token in tokens)
+        )
+        queries = model.discrimination_frontier(
+            source=state[2],
+            domain=domain,
+            roles=represented,
+        )
+        query_by_role = {query.role: query for query in queries}
+        candidates = tuple(
+            (index, token, query)
+            for index, token in enumerate(tokens)
+            if (query := query_by_role.get(self._role(token, scene))) is not None
+        )
+        if not candidates:
+            self.causal_discrimination_abstentions += 1
+            self.causal_discrimination_diagnostic = (
+                "no-ambiguous-causal-frontier"
+            )
+            return None
+        _index, selected, query = min(
+            candidates,
+            key=lambda item: (
+                -item[2].expected_elimination,
+                -item[2].donor_states,
+                *self._novelty_rank(state, item[1], item[0]),
+            ),
+        )
+        self.causal_discrimination_pending_outcomes = query.outcome_counts
+        self.causal_discrimination_selections += 1
+        self.causal_discrimination_total_selections += 1
+        self.causal_discrimination_diagnostic = (
+            "selected-max-expected-elimination:"
+            f"{query.expected_elimination:.6f}"
+        )
+        return selected
+
     def _path_to_frontier(
         self,
         start: StateKey,
@@ -13109,6 +13219,30 @@ class EpistemicExplorer:
             ),
             "abstract_causal_frontier_diagnostic": (
                 self.abstract_causal_frontier_diagnostic
+            ),
+            "partial_bisimulation_discrimination_frontier_roles": (
+                self.partial_bisimulation_model.discrimination_frontier_roles
+            ),
+            "causal_discrimination_frontier_enabled": int(
+                self.causal_discrimination_frontier
+            ),
+            "causal_discrimination_selections": (
+                self.causal_discrimination_selections
+            ),
+            "causal_discrimination_total_selections": (
+                self.causal_discrimination_total_selections
+            ),
+            "causal_discrimination_abstentions": (
+                self.causal_discrimination_abstentions
+            ),
+            "causal_discrimination_query_hypotheses": (
+                self.causal_discrimination_query_hypotheses
+            ),
+            "causal_discrimination_eliminated_hypotheses": (
+                self.causal_discrimination_eliminated_hypotheses
+            ),
+            "causal_discrimination_diagnostic": (
+                self.causal_discrimination_diagnostic
             ),
             "finite_orbit_commit_enabled": int(self.finite_orbit_commit_exploration),
             "finite_orbit_grounded": int(self.finite_orbit_generator is not None),

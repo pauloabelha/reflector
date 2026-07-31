@@ -97,6 +97,9 @@ class SymbolicPolicy:
             abstract_causal_frontier=(
                 self.mind.config.enable_abstract_causal_frontier
             ),
+            causal_discrimination_frontier=(
+                self.mind.config.enable_causal_discrimination_frontier
+            ),
             finite_orbit_commit_exploration=(
                 self.mind.config.enable_finite_orbit_commit_exploration
             ),

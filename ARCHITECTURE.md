@@ -302,6 +302,14 @@ architecture does not attach old terminal distance to a causally compatible
 new state. This preserves the distinction between a causal homomorphism and a
 goal-respecting natural transformation.
 
+V90 freezes this mechanism behind
+`enable_causal_discrimination_frontier`, which requires partial
+bisimulation. The advisor needs four current-level confirmations and at least
+75% prospective precision, is below all grounded specialists, and has a
+16-query level cap. Telemetry separates represented query hypotheses from
+hypotheses eliminated by the observed effect, so information gain is measured
+rather than inferred from action count.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;
