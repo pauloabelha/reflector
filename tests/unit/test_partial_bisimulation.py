@@ -309,3 +309,50 @@ def test_causal_discrimination_requires_partial_bisimulation() -> None:
         assert "requires partial bisimulation" in str(error)
     else:
         raise AssertionError("invalid causal discrimination config accepted")
+
+
+def test_bisimulation_coverage_filters_only_multiply_supported_prediction() -> None:
+    explorer = EpistemicExplorer(
+        partial_bisimulation=True,
+        bisimulation_coverage_compression=True,
+    )
+    model = explorer.partial_bisimulation_model
+    shared = ActionRole(1)
+    redundant = ActionRole(2)
+    model.profiles = {
+        "donor-a": {
+            shared: {"relative-translation"},
+            redundant: {"component-birth"},
+        },
+        "donor-b": {
+            shared: {"relative-translation"},
+            redundant: {"component-birth"},
+        },
+        "recipient": {shared: {"relative-translation"}},
+    }
+    model.domains = {
+        "donor-a": (1, 2, 3),
+        "donor-b": (1, 2, 3),
+        "recipient": (1, 2, 3),
+    }
+    model.level_predictions = 4
+    model.level_confirmations = 4
+
+    retained = explorer._bisimulation_coverage_tokens(
+        (0, "NOT_FINISHED", "recipient"),
+        (ActionToken(1), ActionToken(2), ActionToken(3)),
+        _empty_scene(),
+    )
+
+    assert retained == (ActionToken(1), ActionToken(3))
+    assert explorer.bisimulation_coverage_filtered_tokens == 1
+    assert explorer.bisimulation_coverage_total_selections == 1
+
+
+def test_bisimulation_coverage_requires_partial_bisimulation() -> None:
+    try:
+        MindConfig(enable_bisimulation_coverage_compression=True)
+    except ValueError as error:
+        assert "requires partial bisimulation" in str(error)
+    else:
+        raise AssertionError("invalid bisimulation coverage config accepted")

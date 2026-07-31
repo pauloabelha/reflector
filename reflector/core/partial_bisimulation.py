@@ -216,19 +216,25 @@ class PartialBisimulation:
         if role in source_profile:
             return None
         donors = self._compatible_donors(source, domain)
-        outcomes = {
+        supported_outcomes = [
             outcome
             for donor in donors
             if (outcome := self._deterministic(donor, role)) is not None
-        }
+        ]
+        outcomes = set(supported_outcomes)
         if not outcomes:
             return None
         if len(outcomes) > 1:
-            return BisimulationPrediction(role, None, len(donors), True)
+            return BisimulationPrediction(
+                role,
+                None,
+                len(supported_outcomes),
+                True,
+            )
         return BisimulationPrediction(
             role,
             next(iter(outcomes)),
-            len(donors),
+            len(supported_outcomes),
         )
 
     def frontier_predictions(

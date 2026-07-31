@@ -541,6 +541,13 @@ navigation, and exact fallback when every legal role is redundant. Reject any
 accepted-vector regression; measure whether the saved redundant tests increase
 distinct abstract frontier coverage or task progress.
 
+Frozen v91 candidate `candidate-3011d26c13f51690`, inference fingerprint
+`8a9946dfba2aee6e180d6b47c471919788e1e89f8f5f149b5cd0dd6f7070acf8`,
+is a v88 sibling that implements only this compression. It needs the same
+four-confirmation/75%-precision maturity gate, requires two donor supports,
+caps filtering at 64 generic decisions per level, and falls back when every
+legal role is redundant.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

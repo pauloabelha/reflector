@@ -464,6 +464,7 @@ class EpistemicExplorer:
     partial_bisimulation: bool = False
     abstract_causal_frontier: bool = False
     causal_discrimination_frontier: bool = False
+    bisimulation_coverage_compression: bool = False
     finite_orbit_commit_exploration: bool = False
     dihedral_analogy_alignment: bool = False
     linear_track_navigation: bool = False
@@ -596,6 +597,11 @@ class EpistemicExplorer:
     causal_discrimination_eliminated_hypotheses: int = 0
     causal_discrimination_pending_outcomes: tuple[tuple[str, int], ...] = ()
     causal_discrimination_diagnostic: str = "exact-off"
+    bisimulation_coverage_selections: int = 0
+    bisimulation_coverage_total_selections: int = 0
+    bisimulation_coverage_filtered_tokens: int = 0
+    bisimulation_coverage_all_redundant_abstentions: int = 0
+    bisimulation_coverage_diagnostic: str = "exact-off"
     finite_orbit_generator: ActionToken | None = None
     finite_orbit_inverse: ActionToken | None = None
     finite_orbit_commit_tokens: tuple[ActionToken, ...] = ()
@@ -1355,6 +1361,12 @@ class EpistemicExplorer:
             self.causal_discrimination_diagnostic = (
                 "not-attempted"
                 if self.causal_discrimination_frontier
+                else "exact-off"
+            )
+            self.bisimulation_coverage_selections = 0
+            self.bisimulation_coverage_diagnostic = (
+                "not-attempted"
+                if self.bisimulation_coverage_compression
                 else "exact-off"
             )
             self._reset_finite_orbit(clear_trials=True)
@@ -5697,6 +5709,11 @@ class EpistemicExplorer:
             )
 
         viable_tokens = self._viability_filtered_generic_tokens(tokens, scene)
+        viable_tokens = self._bisimulation_coverage_tokens(
+            state,
+            viable_tokens,
+            scene,
+        )
 
         if self.uses_action_family_schema:
             _index, balanced = min(
@@ -11980,6 +11997,61 @@ class EpistemicExplorer:
         )
         return selected
 
+    def _bisimulation_coverage_tokens(
+        self,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+    ) -> tuple[ActionToken, ...]:
+        """Deprioritize only multiply supported, uniquely predicted roles."""
+
+        if not self.bisimulation_coverage_compression:
+            return tokens
+        if self.bisimulation_coverage_selections >= 64:
+            self.bisimulation_coverage_diagnostic = "coverage-filter-cap"
+            return tokens
+        model = self.partial_bisimulation_model
+        if not model.ready_for_discrimination(min_confirmations=4):
+            self.bisimulation_coverage_diagnostic = (
+                "awaiting-predictive-quotient"
+            )
+            return tokens
+        domain = tuple(sorted({token.action_id for token in tokens}))
+        redundant = {
+            token
+            for token in tokens
+            if (
+                prediction := model.predict(
+                    source=state[2],
+                    domain=domain,
+                    role=self._role(token, scene),
+                )
+            )
+            is not None
+            and not prediction.ambiguous
+            and prediction.outcome is not None
+            and prediction.donor_states >= 2
+        }
+        if not redundant:
+            self.bisimulation_coverage_diagnostic = (
+                "no-multiply-supported-redundancy"
+            )
+            return tokens
+        retained = tuple(token for token in tokens if token not in redundant)
+        if not retained:
+            self.bisimulation_coverage_all_redundant_abstentions += 1
+            self.bisimulation_coverage_diagnostic = (
+                "all-legal-roles-redundant-exact-fallback"
+            )
+            return tokens
+        self.bisimulation_coverage_selections += 1
+        self.bisimulation_coverage_total_selections += 1
+        self.bisimulation_coverage_filtered_tokens += len(redundant)
+        self.bisimulation_coverage_diagnostic = (
+            "filtered-multiply-supported-predicted-role"
+        )
+        return retained
+
     def _path_to_frontier(
         self,
         start: StateKey,
@@ -13243,6 +13315,24 @@ class EpistemicExplorer:
             ),
             "causal_discrimination_diagnostic": (
                 self.causal_discrimination_diagnostic
+            ),
+            "bisimulation_coverage_compression_enabled": int(
+                self.bisimulation_coverage_compression
+            ),
+            "bisimulation_coverage_selections": (
+                self.bisimulation_coverage_selections
+            ),
+            "bisimulation_coverage_total_selections": (
+                self.bisimulation_coverage_total_selections
+            ),
+            "bisimulation_coverage_filtered_tokens": (
+                self.bisimulation_coverage_filtered_tokens
+            ),
+            "bisimulation_coverage_all_redundant_abstentions": (
+                self.bisimulation_coverage_all_redundant_abstentions
+            ),
+            "bisimulation_coverage_diagnostic": (
+                self.bisimulation_coverage_diagnostic
             ),
             "finite_orbit_commit_enabled": int(self.finite_orbit_commit_exploration),
             "finite_orbit_grounded": int(self.finite_orbit_generator is not None),

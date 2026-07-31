@@ -100,6 +100,9 @@ class SymbolicPolicy:
             causal_discrimination_frontier=(
                 self.mind.config.enable_causal_discrimination_frontier
             ),
+            bisimulation_coverage_compression=(
+                self.mind.config.enable_bisimulation_coverage_compression
+            ),
             finite_orbit_commit_exploration=(
                 self.mind.config.enable_finite_orbit_commit_exploration
             ),

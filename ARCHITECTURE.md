@@ -319,6 +319,13 @@ by multiple compatible donors may be deprioritized as already characterized.
 Ambiguous, unsupported, and locally observed navigation roles remain
 available, and an all-redundant legal set falls back exactly.
 
+V91 freezes this as `enable_bisimulation_coverage_compression`. It does not
+merge raw states or delete transitions. It changes only the generic legal
+token view after four confirmations at at least 75% precision: a locally
+untried role with one unique outcome and at least two donor supports is
+temporarily omitted. The filter has a 64-decision level cap and preserves an
+exact fallback if omission would empty the legal set.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;
