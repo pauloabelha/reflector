@@ -20,31 +20,32 @@ service, database, or web server.
 Last verified: 2026-07-31
 
 > **Plain-language result:** Reflector has fully beaten **3 of 25 games**.
-> It has solved **48 of 183 levels across 15 games**. All 25 games were
+> It has solved **49 of 183 levels across 15 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v92 result |
+| Metric | v94b full-suite result |
 | --- | ---: |
 | Complete games beaten | **3 / 25** |
 | Games with at least one solved level | **15 / 25** |
-| Levels solved | **48 / 183** |
-| Official local score | **20.561797304445623 / 100** |
+| Levels solved | **49 / 183** |
+| Official local score | **20.65827051873133 / 100** |
 | Games evaluated | **25 / 25** |
 | Total actions | **9,185** |
-| Frozen inference source | `e03fb30` |
-| Frozen candidate commit | `e03fb30` |
-| Candidate | `candidate-42dbfa39cba78041` |
+| Frozen inference source | `203fa2e` |
+| Frozen candidate commit | `203fa2e` |
+| Candidate | `candidate-2d9cadd5859ce47d` |
 | Kaggle submissions | **2**: `55113224` complete; `55123277` pending |
 | Kaggle public score | **0.02** for frozen v65b only |
 | Kaggle private score | **unavailable** |
 
-The score is about **20.56% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. Relative to v84m,
-v92 adds `ls20` level 1 in 17 actions by planning over the product of a
-learned rigid-body anchor and a scale-normalized symbolic display phase. All
-other 24 score/action vectors are exactly preserved. The clean
+The score is about **20.66% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. Relative to v92,
+v94b adds `ls20` level 2 by learning a depleting action meter, same-role reset
+resources, and an atomic resource option over the product of anchor, display
+phase, budget, and available resources. All other 24 score/action vectors are
+exactly preserved. The clean
 process-isolated result is in
-[the v92 public-development report](reports/official-isolated-v92-phase-topology-400.json).
+[the v94b public-development report](reports/official-isolated-v94b-atomic-temporal-resource-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -65,7 +66,7 @@ Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
-do not report the local 20.56 score as a Kaggle public or private score.
+do not report the local 20.66 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object

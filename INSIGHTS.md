@@ -1785,3 +1785,8 @@ all fourteen non-target vectors are exact, total actions are unchanged, and
 only the predicted `ls20` level is added. This is strong evidence that the
 new authority gate is structurally narrow rather than a broad exploration
 perturbation.
+
+The complete 25-game run confirms the same isolation: 49/183 levels and
+20.65827051873133/100, with all 24 non-target vectors exact and no action-cost
+increase. The temporal CSP therefore adds one level without disturbing any
+previously measured behavior.

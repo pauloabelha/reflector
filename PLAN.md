@@ -701,6 +701,25 @@ non-target vectors are exact. Report
 `d833d7912755edb632e66cfbb8494d424d0434dd8ed6e8b5996731397ed7644e`.
 Run all 25 public-development games from fresh processes next.
 
+The complete run passes with 25/25 coverage: score
+`20.65827051873133`, 49/183 levels, 15 games with progress, 3 complete games,
+and 9,185 actions. Only `ls20` differs from v92. Report
+`reports/official-isolated-v94b-atomic-temporal-resource-400.json`, SHA-256
+`8e75171f64ad6879ba1f9298fa32fa66a5b714772382b7baf1c8b77956d97c6e`.
+Run the full tests, Ruff, mypy, exact export, offline package smoke, and prize
+audit. If all pass, promote v94b and build the exact Kaggle notebook.
+
+All final gates pass: 498 tests with 3 skips, repository-wide Ruff, mypy over
+90 source files, exact candidate export, both network-disabled smoke paths,
+and `TECHNICAL_READY=true`. V94b is accepted. Its exact candidate/overlay/
+notebook SHA-256 values are
+`0432087230ed083c9410fa94de367c38a536bcb4c565f8f7b160992bad3f28d5`,
+`f676d8294f49cfa8c0152aa524021c6175ee10c4f51093d09b95e8208c40d047`,
+and
+`585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219`.
+Freeze the documentation/report commit, push the exact v94b notebook, and
+attempt a competition submission only if Kaggle's daily quota permits.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

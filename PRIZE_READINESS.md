@@ -19,8 +19,8 @@ distinct symbolic thesis, an operative implementation, deterministic traces,
 ablation machinery, and explicit approximations. It does **not** yet have
 enough multi-game evidence for a prize-quality paper.
 
-The current accepted v92 public-development result is
-`20.561797304445623/100`: 48/183 levels across 15/25 games, with `sb26`,
+The current accepted v94b public-development result is
+`20.65827051873133/100`: 49/183 levels across 15/25 games, with `sb26`,
 `ft09`, and `cd82` fully completed. This is materially stronger than fixture-only
 compatibility but remains known-public development evidence, not a Kaggle
 leaderboard result or a competitive hidden-game claim.
@@ -80,20 +80,20 @@ Reflector:
 - discloses that the symbolic model has parameters but no weights.
 
 The accepted inference package is frozen at source/candidate commit
-`e03fb30`, candidate `candidate-42dbfa39cba78041`. Its exact 25-game
+`203fa2e`, candidate `candidate-2d9cadd5859ce47d`. Its exact 25-game
 scorecard has complete 25/25
-coverage; its target repeats, eleven-game preservation gate, full suite,
+coverage; its target repeats, 15-game preservation gate, full suite,
 pytest, Ruff, mypy, direct export, both network-disabled smoke paths, and
 technical prize audit pass. Exact current artifact hashes are:
 
 - candidate:
-  `6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4`;
+  `0432087230ed083c9410fa94de367c38a536bcb4c565f8f7b160992bad3f28d5`;
 - Kaggle overlay:
-  `7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731`;
+  `f676d8294f49cfa8c0152aa524021c6175ee10c4f51093d09b95e8208c40d047`;
 - Kaggle notebook:
-  `c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`;
+  `585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219`;
 - accepted 25-game report:
-  `0caf5a52474ac7f89703861fa81b52528b45f4f806ba623d689362fb852d4f9a`.
+  `8e75171f64ad6879ba1f9298fa32fa66a5b714772382b7baf1c8b77956d97c6e`.
 
 `technical_ready` is true. `prize_ready` remains false because the account,
 publication, and committed Kaggle-rerun gates below are manual.

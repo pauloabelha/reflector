@@ -418,6 +418,11 @@ v94b reaches two. This establishes task utility for the finite product and its
 atomic option semantics on one target run; it does not yet establish
 cross-game preservation or hidden transfer.
 
+The later preservation and complete-suite gates strengthen that evidence:
+all 24 non-target game vectors remain exact while `ls20` alone gains a level.
+The bounded temporal product is therefore dormant outside its relational
+initiation set on the public-development suite.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

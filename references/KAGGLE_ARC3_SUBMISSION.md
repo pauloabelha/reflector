@@ -10,7 +10,7 @@ submission.
 
 ## Decision
 
-Submit Reflector after the exact v92 source, candidate, and permanent local
+Submit Reflector after the exact v94b source, candidate, and permanent local
 reports have been frozen and verified. A Kaggle submission is valuable because
 it tests transfer to hidden games; the score on the 25 downloadable
 public-development games cannot answer that question.
@@ -98,12 +98,12 @@ Primary sources:
 The current intended candidate is:
 
 ```text
-candidates/v84m-grouped-dihedral-analogy-400.json
+candidates/v94b-atomic-temporal-resource-csp-400.json
 ```
 
-Its frozen identity is `candidate-07d24ee8acf946c9`, generation 47, parent
-`candidate-5f09e48c374d0a52`, with inference fingerprint
-`53729246c43ad6aadcc4fa4ba95a08510f0b200c83d08bd9ea3518816803e36d`.
+Its frozen identity is `candidate-2d9cadd5859ce47d`, generation 49, parent
+`candidate-42dbfa39cba78041`, with inference fingerprint
+`80d2c3f7c3a1842fefd0b29fb43eb5968b61eecbc66e0462def3e6bee7dc1db8`.
 
 First confirm that the implementation and candidate are in one frozen source
 commit and that the worktree contains no uncommitted inference-path changes:
@@ -111,7 +111,7 @@ commit and that the worktree contains no uncommitted inference-path changes:
 ```bash
 git status --short
 git rev-parse HEAD
-git show 59daf6171026b986c1e26aaa5fa1f56e2ef03269:candidates/v68-path-cycle-transport-400.json
+git show 203fa2e:candidates/v94b-atomic-temporal-resource-csp-400.json
 ```
 
 The permanent target, preservation, and full 25-game reports must all name that
@@ -128,10 +128,10 @@ Run the local quality and exact-candidate gates:
 .venv/bin/mypy reflector
 
 .venv/bin/reflector-kaggle smoke-test \
-  --config candidates/v84m-grouped-dihedral-analogy-400.json
+  --config candidates/v94b-atomic-temporal-resource-csp-400.json
 
 .venv/bin/reflector-kaggle export \
-  --config candidates/v84m-grouped-dihedral-analogy-400.json \
+  --config candidates/v94b-atomic-temporal-resource-csp-400.json \
   --output dist
 
 .venv/bin/kaggle_smoke_test
@@ -154,7 +154,7 @@ Record the final artifact hashes only after the last export:
 
 ```bash
 sha256sum \
-  candidates/v68-path-cycle-transport-400.json \
+  candidates/v94b-atomic-temporal-resource-csp-400.json \
   dist/reflector-kaggle-overlay.zip \
   dist/reflector-kaggle-submission.ipynb
 ```
@@ -162,13 +162,13 @@ sha256sum \
 The verified 2026-07-30 hashes are:
 
 ```text
-6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4  candidate
-7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731  overlay
-c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d  notebook
+0432087230ed083c9410fa94de367c38a536bcb4c565f8f7b160992bad3f28d5  candidate
+f676d8294f49cfa8c0152aa524021c6175ee10c4f51093d09b95e8208c40d047  overlay
+585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219  notebook
 ```
 
 The accepted local public-development result bound to that inference source is
-`20.561797304445623/100`, 48/183 levels, 3/25 complete games, and 25/25
+`20.65827051873133/100`, 49/183 levels, 3/25 complete games, and 25/25
 coverage. It is not a Kaggle score.
 
 ## Browser submission workflow
@@ -321,7 +321,7 @@ private code sharing outside the registered team is prohibited.
 
 At the 2026-07-31 audit:
 
-- v92 is frozen as `candidate-42dbfa39cba78041`; its candidate fingerprint,
+- v94b is frozen as `candidate-2d9cadd5859ce47d`; its candidate fingerprint,
   target repeats, preservation gate, full 25-game report, exact export, both
   network-disabled smoke paths, and technical prize checks pass;
 - frozen v65b submission `55113224` is complete at Kaggle public score 0.02;
@@ -329,6 +329,8 @@ At the 2026-07-31 audit:
 - v92 notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and
   emitted `submission.parquet`, but the submission request was rejected after
   v74 consumed the daily allowance; no v92 submission ID exists yet;
+- the exact v94b export is ready but has not yet been pushed as a private
+  Kaggle notebook version or submitted;
 - the project virtual environment has a working authenticated Kaggle CLI; a
   live read-only check reports `55113224` complete and `55123277` pending;
 - rule acceptance, identity verification, eligibility confirmation, team

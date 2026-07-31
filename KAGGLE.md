@@ -2,16 +2,16 @@
 
 Audit date: 2026-07-31.
 
-Current accepted export: v92
-`candidate-42dbfa39cba78041`, local public-development score
-`20.561797304445623 / 100`. Exact SHA-256 values:
+Current accepted export: v94b
+`candidate-2d9cadd5859ce47d`, local public-development score
+`20.65827051873133 / 100`. Exact SHA-256 values:
 
 - candidate:
-  `6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4`;
+  `0432087230ed083c9410fa94de367c38a536bcb4c565f8f7b160992bad3f28d5`;
 - overlay:
-  `7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731`;
+  `f676d8294f49cfa8c0152aa524021c6175ee10c4f51093d09b95e8208c40d047`;
 - notebook:
-  `c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`.
+  `585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219`.
 
 This is local evidence, not a Kaggle public or private score.
 
@@ -22,12 +22,13 @@ Submission status, 2026-07-31 UTC:
 - its competition submission request returned HTTP 400 because v74 submission
   `55123277` had already consumed the one-per-day allowance and is pending;
 - no v84m competition submission ID exists yet;
-- v92 is now the accepted local package and its exact notebook is ready for a
+- v94b is now the accepted local package and its exact notebook is ready for a
   new Kaggle commit/submission when the daily allowance permits;
 - private notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed
   successfully and emitted `submission.parquet`;
 - its competition submission request also returned HTTP 400 while v74 remains
   pending, so no v92 competition submission ID exists yet;
+- v94b has not yet been pushed as a Kaggle notebook version or submitted;
 - historical v65b submission `55113224` is complete with Kaggle public score
   `0.02`; the private score remains unavailable.
 

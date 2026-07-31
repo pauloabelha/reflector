@@ -5,30 +5,32 @@ Last updated: 2026-07-31
 ## Best verified result
 
 Reflector's best complete, process-isolated 25-game public-development result is
-**20.561797304445623 / 100**.
+**20.65827051873133 / 100**.
 
-- Candidate: `candidate-42dbfa39cba78041` (`v92`)
-- Frozen inference source: `e03fb30`
-- Frozen candidate commit: `e03fb30`
+- Candidate: `candidate-2d9cadd5859ce47d` (`v94b`)
+- Frozen inference source: `203fa2e`
+- Frozen candidate commit: `203fa2e`
 - Coverage: 25/25 games
-- Levels: **48/183**
+- Levels: **49/183**
 - Games with progress: **15/25**
 - Complete games: **3/25**
 - Actions: **9,185**
 - Report:
-  [`reports/official-isolated-v92-phase-topology-400.json`](reports/official-isolated-v92-phase-topology-400.json)
+  [`reports/official-isolated-v94b-atomic-temporal-resource-400.json`](reports/official-isolated-v94b-atomic-temporal-resource-400.json)
 - Candidate:
-  [`candidates/v92-phase-topology-product-400.json`](candidates/v92-phase-topology-product-400.json)
+  [`candidates/v94b-atomic-temporal-resource-csp-400.json`](candidates/v94b-atomic-temporal-resource-csp-400.json)
 - Report SHA-256:
-  `0caf5a52474ac7f89703861fa81b52528b45f4f806ba623d689362fb852d4f9a`
+  `8e75171f64ad6879ba1f9298fa32fa66a5b714772382b7baf1c8b77956d97c6e`
 
-Relative to accepted v84m, v92 changes exactly one game. `ls20` advances from
-0/7 at `[400,0,0,0,0,0,0]` to **1/7** at
-`[17,383,0,0,0,0,0]`; all other 24 score/action vectors are exactly
-preserved. The aggregate gain is **+0.142857142857146 points**. The promotion
-gates pass: 493 tests pass with 3 skips, Ruff and mypy are clean, exact export
-passes, and the network-disabled official-toolkit smoke passes. V92 is the
-accepted local candidate.
+Relative to accepted v92, v94b changes exactly one game. `ls20` advances from
+1/7 at `[17,383,0,0,0,0,0]` to **2/7** at
+`[17,240,143,0,0,0,0]`; all other 24 score/action vectors and the 9,185-action
+total are exactly preserved. The aggregate gain is
+**+0.096473214285707 points**. Target repeat, accepted-win preservation, and
+the complete-suite gate pass. The final quality gate passes with 498 tests and
+3 skips, Ruff and mypy are clean, exact export passes, both network-disabled
+smoke paths pass, and the technical prize audit is ready. V94b is the accepted
+local candidate.
 
 ## New accepted mechanism: phase-topology product planning
 
@@ -127,7 +129,19 @@ gate score rises from `34.26966217407604` to `34.43045086455222`. Report:
 SHA-256
 `d833d7912755edb632e66cfbb8494d424d0434dd8ed6e8b5996731397ed7644e`.
 The complete 25-game process-isolated run is now the remaining empirical
-promotion gate.
+promotion gate. It passes at **20.65827051873133/100**, with 49/183 levels,
+complete 25/25 coverage, and the same 9,185 actions as v92. All 24 non-target
+vectors remain exact. The canonical report is
+[`reports/official-isolated-v94b-atomic-temporal-resource-400.json`](reports/official-isolated-v94b-atomic-temporal-resource-400.json),
+SHA-256
+`8e75171f64ad6879ba1f9298fa32fa66a5b714772382b7baf1c8b77956d97c6e`.
+
+Exact export SHA-256 values are candidate
+`0432087230ed083c9410fa94de367c38a536bcb4c565f8f7b160992bad3f28d5`,
+overlay
+`f676d8294f49cfa8c0152aa524021c6175ee10c4f51093d09b95e8208c40d047`,
+and notebook
+`585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219`.
 
 ## New accepted mechanism: demonstrated analogy algebra
 

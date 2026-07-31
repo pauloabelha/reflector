@@ -6,35 +6,34 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 ## Result at a glance
 
 > **Reflector has fully beaten 3 of 25 public-development games.**
-> It has solved 48 of 183 levels across 15 games. The suite ran all 25 games,
+> It has solved 49 of 183 levels across 15 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v92 result | Meaning |
+| Outcome metric | v94b full-suite result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **3 / 25** | `sb26`, `ft09`, and `cd82` were solved through their final levels. |
 | Games with progress | **15 / 25** | At least one level was solved in fifteen games. |
-| Levels solved | **48 / 183** | Eight in `sb26`; seven in `re86`; six each in `ft09`, `cd82`, and `lp85`; five in `tr87`; two in `ar25`; one each in `g50t`, `lf52`, `ls20`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
-| Official local score | **20.5617973044 / 100** | About **20.56%** of the 100-point scale on the known public-development games. |
+| Levels solved | **49 / 183** | Eight in `sb26`; seven in `re86`; six each in `ft09`, `cd82`, and `lp85`; five in `tr87`; two each in `ar25` and `ls20`; one each in `g50t`, `lf52`, `m0r0`, `r11l`, `sp80`, `tn36`, and `vc33`. |
+| Official local score | **20.6582705187 / 100** | About **20.66%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
 | Kaggle submissions | **2** | V65b `55113224` is complete at public score **0.02**; v74 `55123277` is pending. V84m has a completed notebook but no submission ID due to the daily quota. |
 
 The current process-isolated result is
-[`reports/official-isolated-v92-phase-topology-400.json`](reports/official-isolated-v92-phase-topology-400.json),
+[`reports/official-isolated-v94b-atomic-temporal-resource-400.json`](reports/official-isolated-v94b-atomic-temporal-resource-400.json),
 SHA-256
-`0caf5a52474ac7f89703861fa81b52528b45f4f806ba623d689362fb852d4f9a`.
-It identifies frozen source commit
-`89b6aa4`, frozen inference/candidate commit `e03fb30`, candidate
-`candidate-42dbfa39cba78041`, and inference fingerprint
-`32462ddff38fa9ba86691e66601adcef93a9147e0b02e5f219433435f9f54c1f`.
-The complete quality gate passes with 493 tests, 3 skips, Ruff, and mypy.
+`8e75171f64ad6879ba1f9298fa32fa66a5b714772382b7baf1c8b77956d97c6e`.
+It identifies report source commit `61a9b87`, frozen inference/candidate commit
+`203fa2e`, candidate `candidate-2d9cadd5859ce47d`, and inference fingerprint
+`80d2c3f7c3a1842fefd0b29fb43eb5968b61eecbc66e0462def3e6bee7dc1db8`.
+The complete quality gate passes with 498 tests, 3 skips, Ruff, and mypy.
 The network-disabled smoke passes and the technical prize audit reports
 `technical_ready: true`. Exact export SHA-256 values are candidate
-`6e7bd19eecbaccfa670dca7b92c4cac3cf2dc1737fe6dd59724600e216e54fb4`,
+`0432087230ed083c9410fa94de367c38a536bcb4c565f8f7b160992bad3f28d5`,
 overlay
-`7e2bce6fc750d8343b223e732fae75a91be79b4be93dc0d828714d59657bb731`,
+`f676d8294f49cfa8c0152aa524021c6175ee10c4f51093d09b95e8208c40d047`,
 and notebook
-`c266c5e3e35e37312aa001ce28428e1c42fdbe539ab3f0b453ee6c120f9f099d`.
+`585518a9acb9ee1cc7d612b14dbfdaeb9d2279f1149463aaa55dbd37e5342219`.
 
 ## Evaluation surfaces
 
@@ -57,6 +56,7 @@ and notebook
 | Target-only `ls20` run | v94 temporal-resource CSP, rejected | **3.5714285714 for one game** | exact accepted 1/7 vector `[17,383,0,0,0,0,0]`; learned four-cell cost, 21-action horizon, and two reset roles | causal model grounded, but receding-horizon replanning abandoned a selected reset option; v94b adds only bounded option atomicity |
 | Target-only `ls20` reruns | v94b atomic temporal-resource option, provisional gain | **5.9832589286 for one game** | **2/7** at exact `[17,240,143,0,0,0,0]` twice, with four resets each | deterministic first autonomous level-2 gain; preservation pending |
 | Process-isolated accepted-win preservation gate | v94b atomic temporal-resource option, promotion candidate | **34.4304508646 gate mean** | 49 levels in 5,185 actions; all 14 non-`ls20` vectors exactly preserve v92, while `ls20` alone gains level 2 | target attribution and non-regression pass; complete 25-game run pending |
+| Complete process-isolated 25-game suite | v94b atomic temporal-resource option, accepted | **20.6582705187 / 100** | 49/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v92 | all promotion, quality, and exact-export gates pass |
 | Kaggle notebook artifact | v84m accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v84m` version 1 completed and emitted `submission.parquet` | submission request rejected after v74 consumed daily allowance; no v84m submission ID |
 | Kaggle notebook artifact | v92 accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v92 submission ID |
 | Kaggle public leaderboard | v65b, submission `55113224` | **0.02** | synchronous hidden rerun complete | belongs only to frozen v65b |
