@@ -324,6 +324,23 @@ far that useful accommodation can be additive: a new presentation-level
 functor reused the old causal controls while the factor-bundle hierarchy
 remained behaviorally isolated elsewhere.
 
+The next cross-game audit reveals a different compression opportunity. Across
+the v84m suite, 43 progress events are advisor-homogeneous: successful levels
+usually terminate inside a sustained specialist option. In contrast, all 75
+failures are owned by generic exploration, and 73 follow one of two
+four-action constant motifs. The important abstraction is not “repeat whatever
+worked.” It is to quotient the successful state path by grounded action role,
+run-length encode the quotient, and test whether the resulting option is
+natural under the next level's perceptual re-grounding.
+
+This separates Piagetian conservation from assimilation. The completed
+level's concrete states are discarded; only a typed morphism word remains.
+The next level supplies new objects and bindings. If the word cannot be
+re-grounded, the agent abstains instead of forcing a route. If it can, exact
+progress or contradiction supplies pragmatic credit. Failure avoidance is not
+folded into the same mutation because progress transport and viability
+learning have different falsifiers.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

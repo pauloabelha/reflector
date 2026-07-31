@@ -218,6 +218,17 @@ only when the partition, endpoint-color order, sizes, totals, and selected
 group are unique. The same target representation therefore supports both
 directions without storing a panel signature or an action program.
 
+The exact-off backward-credit compiler provides a deliberately weaker form of
+cross-level hierarchy. On a level advance it performs bounded breadth-first
+search over the already observed, non-reset, still-live state graph to recover
+the shortest witnessed path from the level start. Every edge must have a
+grounded `ActionRole`. Consecutive identical roles become one
+`ProgressPathStep(role, repetitions)`, which is a compressed option word rather
+than a frame sequence. In the next level each role is rebound against current
+objects; missing bindings cause abstention, equal bindings become bounded
+discriminating variants, and execution stops after 64 selections. This is
+operative retrospective credit only when enabled by a candidate.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

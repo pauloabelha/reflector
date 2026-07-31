@@ -318,6 +318,33 @@ Required gates are:
 2. record notebook version, submission ID, and pending/terminal state;
 3. keep local, Kaggle public, and Kaggle private scores separate.
 
+## Current experiment: v85 compressed progress-path transport
+
+The immutable v84m cognitive audit contains 43 observed progress events and 75
+failure/reset events across all 25 games. Generic exploration owns every
+failure: 40 immediately follow hierarchical action-family selection and 35
+follow untried-state selection. Four repeated hierarchical selections precede
+39 failures; four repeated untried selections precede 34. The source report is
+`reports/v84m-progress-failure-signatures-v1.json`, SHA-256
+`c5dd2d22b0fc21ac5652be900745da835ff23e09a39f4f1923aa5c1bd07b9614`.
+
+V85 tests one hypothesis only: a shortest successful state-graph path can be
+compressed into grounded action roles and transported as a bounded
+hierarchical option to the next level. The mechanism:
+
+1. searches only observed non-reset edges within the completed level;
+2. requires a grounding for every edge;
+3. run-length encodes consecutive equal roles;
+4. rebinds roles prospectively in the next level;
+5. explores ambiguous equal-score bindings deterministically;
+6. stops after 64 selections and abstains when no role matches.
+
+This is internal retrospective credit, not a retained public route: no game
+ID, frame, fixed coordinate, or offline replay enters the candidate. First run
+partially solved games plus complete preservation sentinels. Reject on any
+accepted score/action regression. Do not combine failure avoidance with this
+offspring; that remains a distinct causal hypothesis.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

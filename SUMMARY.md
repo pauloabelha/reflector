@@ -314,3 +314,24 @@ allowance had already been consumed by v74 submission `55123277`, which is
 `PENDING`. No v84m competition submission ID exists yet. Historical v65b
 submission `55113224` is now `COMPLETE` with Kaggle public score **0.02**;
 its private score remains unavailable.
+
+## Current experiment: compressed backward progress credit
+
+A new immutable audit of all 25 v84m cognitive streams records 43 observable
+level transitions and 75 failure/reset events. All failures followed generic
+exploration: 40 were attributed to hierarchical action-family selection and
+35 to untried-state selection. The dominant four-action motifs were four
+consecutive hierarchical selections (39 failures) and four consecutive
+untried selections (34 failures). Report
+[`reports/v84m-progress-failure-signatures-v1.json`](reports/v84m-progress-failure-signatures-v1.json),
+SHA-256
+`c5dd2d22b0fc21ac5652be900745da835ff23e09a39f4f1923aa5c1bd07b9614`.
+
+The next minimal offspring activates the existing exact-off shortest-progress
+compiler. After a level advance it finds only the shortest observed non-reset
+path, replaces consecutive identical grounded action roles with repetition
+counts, and may transport that bounded option into the next level for at most
+64 actions. It stores no game identifier, frame, coordinate route, or public
+solution. The falsifier is strict: it must shorten or extend progress without
+regressing any accepted vector. Failure-conditioned avoidance remains a
+separate future hypothesis.

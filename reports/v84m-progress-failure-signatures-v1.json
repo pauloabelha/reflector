@@ -1,0 +1,625 @@
+{
+  "cognitive_root": "/tmp/reflector-v84m-full-cognitive-r1",
+  "failure_advisors": {
+    "\"epistemic-frontier:hierarchical-action-family\"": 40,
+    "\"epistemic-frontier:untried-current-state\"": 35
+  },
+  "failure_events": 75,
+  "failure_motifs": {
+    "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 39,
+    "[\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 1,
+    "[\"epistemic-frontier:shape-goal-translation\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 1,
+    "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 34
+  },
+  "format": "reflector-progress-failure-signature-audit-v1",
+  "games": 25,
+  "motif_width": 4,
+  "progress_advisors": {
+    "\"epistemic-frontier:colored-stencil-primary\"": 3,
+    "\"epistemic-frontier:colored-stencil-secondary\"": 2,
+    "\"epistemic-frontier:committed-trajectory-planning\"": 1,
+    "\"epistemic-frontier:constellation-alignment\"": 6,
+    "\"epistemic-frontier:cyclic-sequence-alignment\"": 2,
+    "\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\"": 1,
+    "\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\"": 2,
+    "\"epistemic-frontier:dihedral-analogy-alignment\"": 5,
+    "\"epistemic-frontier:hierarchical-action-family\"": 1,
+    "\"epistemic-frontier:paired-object-contact-planning\"": 1,
+    "\"epistemic-frontier:parameterized-select-apply-commit\"": 7,
+    "\"epistemic-frontier:repair-local-relation\"": 5,
+    "\"epistemic-frontier:reuse-productive-action-role\"": 3,
+    "\"epistemic-frontier:shape-goal-translation\"": 2,
+    "\"epistemic-frontier:untried-current-state\"": 2
+  },
+  "progress_events": 43,
+  "progress_motifs": {
+    "[\"epistemic-frontier:colored-stencil-primary\",\"epistemic-frontier:colored-stencil-primary\",\"epistemic-frontier:colored-stencil-primary\",\"epistemic-frontier:colored-stencil-primary\"]": 3,
+    "[\"epistemic-frontier:colored-stencil-secondary\",\"epistemic-frontier:colored-stencil-secondary\",\"epistemic-frontier:colored-stencil-secondary\",\"epistemic-frontier:colored-stencil-secondary\"]": 2,
+    "[\"epistemic-frontier:committed-trajectory-planning\",\"epistemic-frontier:committed-trajectory-planning\",\"epistemic-frontier:committed-trajectory-planning\",\"epistemic-frontier:committed-trajectory-planning\"]": 1,
+    "[\"epistemic-frontier:constellation-alignment\",\"epistemic-frontier:constellation-alignment\",\"epistemic-frontier:constellation-alignment\",\"epistemic-frontier:constellation-alignment\"]": 6,
+    "[\"epistemic-frontier:cyclic-sequence-alignment\",\"epistemic-frontier:cyclic-sequence-alignment\",\"epistemic-frontier:cyclic-sequence-alignment\",\"epistemic-frontier:cyclic-sequence-alignment\"]": 2,
+    "[\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\",\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\",\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\",\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\"]": 1,
+    "[\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\",\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\",\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\",\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\"]": 2,
+    "[\"epistemic-frontier:dihedral-analogy-alignment\",\"epistemic-frontier:dihedral-analogy-alignment\",\"epistemic-frontier:dihedral-analogy-alignment\",\"epistemic-frontier:dihedral-analogy-alignment\"]": 5,
+    "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 1,
+    "[\"epistemic-frontier:paired-object-contact-planning\",\"epistemic-frontier:paired-object-contact-planning\",\"epistemic-frontier:paired-object-contact-planning\",\"epistemic-frontier:paired-object-contact-planning\"]": 1,
+    "[\"epistemic-frontier:parameterized-select-apply-commit\",\"epistemic-frontier:parameterized-select-apply-commit\",\"epistemic-frontier:parameterized-select-apply-commit\",\"epistemic-frontier:parameterized-select-apply-commit\"]": 7,
+    "[\"epistemic-frontier:repair-local-relation\",\"epistemic-frontier:repair-local-relation\",\"epistemic-frontier:repair-local-relation\",\"epistemic-frontier:repair-local-relation\"]": 4,
+    "[\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\"]": 2,
+    "[\"epistemic-frontier:shape-goal-translation\",\"epistemic-frontier:shape-goal-translation\",\"epistemic-frontier:shape-goal-translation\",\"epistemic-frontier:shape-goal-translation\"]": 2,
+    "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:repair-local-relation\",\"epistemic-frontier:repair-local-relation\"]": 1,
+    "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\"]": 1,
+    "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+  },
+  "results": {
+    "ar25": {
+      "events": 400,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {
+        "\"epistemic-frontier:shape-goal-translation\"": 2
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 2
+      },
+      "progress_events": 2,
+      "progress_motifs": {
+        "[\"epistemic-frontier:shape-goal-translation\",\"epistemic-frontier:shape-goal-translation\",\"epistemic-frontier:shape-goal-translation\",\"epistemic-frontier:shape-goal-translation\"]": 2
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ar25.cognitive.jsonl",
+      "stream_sha256": "51c874d7247a3d9d1b1d996b9c0749a2c6f0fed3d8d1bcfc4dfbb7621597b6d7"
+    },
+    "bp35": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 4,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"orientation_delta\",\"state_changed\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 2,
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"state_changed\"]": 2,
+        "[\"area_changed\",\"frame_changed\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 1
+      },
+      "failure_events": 6,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 4,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/bp35.cognitive.jsonl",
+      "stream_sha256": "3f6601928b25990d7df3b1937eae425bdf9196373dee41b3f4530a9c184a49ed"
+    },
+    "cd82": {
+      "events": 99,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {
+        "\"epistemic-frontier:colored-stencil-primary\"": 3,
+        "\"epistemic-frontier:colored-stencil-secondary\"": 2
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"rotated_90\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 3,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_moved\",\"rotated_180\"]": 1
+      },
+      "progress_events": 5,
+      "progress_motifs": {
+        "[\"epistemic-frontier:colored-stencil-primary\",\"epistemic-frontier:colored-stencil-primary\",\"epistemic-frontier:colored-stencil-primary\",\"epistemic-frontier:colored-stencil-primary\"]": 3,
+        "[\"epistemic-frontier:colored-stencil-secondary\",\"epistemic-frontier:colored-stencil-secondary\",\"epistemic-frontier:colored-stencil-secondary\",\"epistemic-frontier:colored-stencil-secondary\"]": 2
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/cd82.cognitive.jsonl",
+      "stream_sha256": "fe1980635139ce87acb0e242adad343881ab535fbb529c4cd308b318e46e9cae"
+    },
+    "cn04": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 3,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"state_changed\"]": 5
+      },
+      "failure_events": 5,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 3,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/cn04.cognitive.jsonl",
+      "stream_sha256": "1318fa967e9daa186089c0390f06a53f18ddf34f7bee25047bd74a4cff5c96c9"
+    },
+    "dc22": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 1,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"frame_changed\",\"novel_state_reached\",\"object_moved\",\"state_changed\"]": 1,
+        "[\"state_changed\"]": 2
+      },
+      "failure_events": 3,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 1,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/dc22.cognitive.jsonl",
+      "stream_sha256": "fbf6eb51ca3a207dc46970c9c90e3fc40b5aa5330c16a2380aacaa3554a88df8"
+    },
+    "ft09": {
+      "events": 162,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {
+        "\"epistemic-frontier:repair-local-relation\"": 5
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"rotated_90\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 4
+      },
+      "progress_events": 5,
+      "progress_motifs": {
+        "[\"epistemic-frontier:repair-local-relation\",\"epistemic-frontier:repair-local-relation\",\"epistemic-frontier:repair-local-relation\",\"epistemic-frontier:repair-local-relation\"]": 4,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:repair-local-relation\",\"epistemic-frontier:repair-local-relation\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ft09.cognitive.jsonl",
+      "stream_sha256": "9a1f4d2e20ffa5d5a952b000a14ed88d6719ffb9b2dcb129a954ee01d9ca26df"
+    },
+    "g50t": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 1,
+        "[\"frame_changed\",\"object_moved\",\"state_changed\"]": 1
+      },
+      "failure_events": 2,
+      "failure_motifs": {
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {
+        "\"epistemic-frontier:committed-trajectory-planning\"": 1
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 1
+      },
+      "progress_events": 1,
+      "progress_motifs": {
+        "[\"epistemic-frontier:committed-trajectory-planning\",\"epistemic-frontier:committed-trajectory-planning\",\"epistemic-frontier:committed-trajectory-planning\",\"epistemic-frontier:committed-trajectory-planning\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/g50t.cognitive.jsonl",
+      "stream_sha256": "d014b2e58faf4364536890c1b62d87303ae31a148789393638a5b39faeca3c56"
+    },
+    "ka59": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 1,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 3
+      },
+      "failure_events": 3,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 1,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ka59.cognitive.jsonl",
+      "stream_sha256": "a876c577a639a5c0966c67ae5a17f1c642d0e284a080fd68c4352649d5ba14f0"
+    },
+    "lf52": {
+      "events": 400,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {
+        "\"epistemic-frontier:reuse-productive-action-role\"": 1
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 1
+      },
+      "progress_events": 1,
+      "progress_motifs": {
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/lf52.cognitive.jsonl",
+      "stream_sha256": "02ccf6b6fc34652cff98802a9a497a0911a24d6a93ec211f60f018fe6045a01f"
+    },
+    "lp85": {
+      "events": 400,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {
+        "\"epistemic-frontier:cyclic-sequence-alignment\"": 2,
+        "\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\"": 1,
+        "\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\"": 2,
+        "\"epistemic-frontier:reuse-productive-action-role\"": 1
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"rotated_270\"]": 2,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"rotated_90\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 3
+      },
+      "progress_events": 6,
+      "progress_motifs": {
+        "[\"epistemic-frontier:cyclic-sequence-alignment\",\"epistemic-frontier:cyclic-sequence-alignment\",\"epistemic-frontier:cyclic-sequence-alignment\",\"epistemic-frontier:cyclic-sequence-alignment\"]": 2,
+        "[\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\",\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\",\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\",\"epistemic-frontier:cyclic-sequence-alignment:factored-orbit-transport\"]": 1,
+        "[\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\",\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\",\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\",\"epistemic-frontier:cyclic-sequence-alignment:segmented-permutation-transport\"]": 2,
+        "[\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/lp85.cognitive.jsonl",
+      "stream_sha256": "ccfea228d7625e072a376b769104c7802a3b1033e9c77ac06e0e0e474dd30e88"
+    },
+    "ls20": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 1,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"frame_changed\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 3
+      },
+      "failure_events": 3,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 1,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ls20.cognitive.jsonl",
+      "stream_sha256": "d1f7d9a2a956611210d12998585663ec1b6cb025aa78375b389482dea02b223b"
+    },
+    "m0r0": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"state_changed\"]": 2
+      },
+      "failure_events": 2,
+      "failure_motifs": {
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {
+        "\"epistemic-frontier:paired-object-contact-planning\"": 1
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 1
+      },
+      "progress_events": 1,
+      "progress_motifs": {
+        "[\"epistemic-frontier:paired-object-contact-planning\",\"epistemic-frontier:paired-object-contact-planning\",\"epistemic-frontier:paired-object-contact-planning\",\"epistemic-frontier:paired-object-contact-planning\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/m0r0.cognitive.jsonl",
+      "stream_sha256": "8d60ddd8f1f6fc0cc8779bdd0285d20635edb0288764171b5c5da16dfbcfc398"
+    },
+    "r11l": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 5,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 2,
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_appeared\",\"object_moved\",\"state_changed\"]": 1,
+        "[\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"state_changed\"]": 4
+      },
+      "failure_events": 7,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 5,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {
+        "\"epistemic-frontier:untried-current-state\"": 1
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_moved\"]": 1
+      },
+      "progress_events": 1,
+      "progress_motifs": {
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/r11l.cognitive.jsonl",
+      "stream_sha256": "c05bc5a7a9e2385e88b35cd92ec13b4c1dee87710ebcc03dc3983df28e93fabb"
+    },
+    "re86": {
+      "events": 400,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {
+        "\"epistemic-frontier:constellation-alignment\"": 6
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 6
+      },
+      "progress_events": 6,
+      "progress_motifs": {
+        "[\"epistemic-frontier:constellation-alignment\",\"epistemic-frontier:constellation-alignment\",\"epistemic-frontier:constellation-alignment\",\"epistemic-frontier:constellation-alignment\"]": 6
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/re86.cognitive.jsonl",
+      "stream_sha256": "51b72122a6c2dd1c81394e85e1d515ac87af1d8b1a772043284a380dcdaceea0"
+    },
+    "s5i5": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 5,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 6,
+        "[\"area_changed\",\"frame_changed\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 1
+      },
+      "failure_events": 7,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 5,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/s5i5.cognitive.jsonl",
+      "stream_sha256": "d61fcd085bfd3a0377c78338a2281aff63c6ef169d8604e41769aac83d67682c"
+    },
+    "sb26": {
+      "events": 124,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {
+        "\"epistemic-frontier:parameterized-select-apply-commit\"": 7
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"rotated_270\",\"rotated_90\"]": 2,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 4,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\"]": 1
+      },
+      "progress_events": 7,
+      "progress_motifs": {
+        "[\"epistemic-frontier:parameterized-select-apply-commit\",\"epistemic-frontier:parameterized-select-apply-commit\",\"epistemic-frontier:parameterized-select-apply-commit\",\"epistemic-frontier:parameterized-select-apply-commit\"]": 7
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sb26.cognitive.jsonl",
+      "stream_sha256": "871330a296e13a76b143c4cae0fb67ee28993e0a1119659ddfc37c17ec71be5b"
+    },
+    "sc25": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:untried-current-state\"": 1
+      },
+      "failure_effect_families": {
+        "[\"frame_changed\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"state_changed\"]": 1
+      },
+      "failure_events": 1,
+      "failure_motifs": {
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 1
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sc25.cognitive.jsonl",
+      "stream_sha256": "aae666c51dccb1e0a2b2f2d147f6157bd19bffe564f6970dcd24a18ca9ea5065"
+    },
+    "sk48": {
+      "events": 400,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sk48.cognitive.jsonl",
+      "stream_sha256": "580ff43c985f2f909a7f3175cb25b00c323a058fa8a41074397f4ccb6b9c0b3d"
+    },
+    "sp80": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 8,
+        "\"epistemic-frontier:untried-current-state\"": 4
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"state_changed\"]": 2,
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_moved\",\"state_changed\"]": 7,
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"state_changed\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 1
+      },
+      "failure_events": 12,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 7,
+        "[\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 1,
+        "[\"epistemic-frontier:shape-goal-translation\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 1,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 3
+      },
+      "progress_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 1
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"rotated_180\"]": 1
+      },
+      "progress_events": 1,
+      "progress_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sp80.cognitive.jsonl",
+      "stream_sha256": "a30e9f9778b6ee558a658280cd8855264bc6bf92b7b19e9fdb4121b57f6924d4"
+    },
+    "su15": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 2,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"state_changed\"]": 3,
+        "[\"frame_changed\",\"object_disappeared\",\"state_changed\"]": 1
+      },
+      "failure_events": 4,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 2,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/su15.cognitive.jsonl",
+      "stream_sha256": "bdd3217440d22e8b40bb1cc0449ba21772c5828699283a1711e079ed0adc4956"
+    },
+    "tn36": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 2,
+        "\"epistemic-frontier:untried-current-state\"": 3
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"state_changed\"]": 4,
+        "[\"area_changed\",\"frame_changed\",\"object_disappeared\",\"state_changed\"]": 1
+      },
+      "failure_events": 5,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 2,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 3
+      },
+      "progress_advisors": {
+        "\"epistemic-frontier:untried-current-state\"": 1
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 1
+      },
+      "progress_events": 1,
+      "progress_motifs": {
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tn36.cognitive.jsonl",
+      "stream_sha256": "ba46cfb4934b4e0d7de0e64e40e0360ba00075180dfbdc9d2433c7cafdb93ee7"
+    },
+    "tr87": {
+      "events": 400,
+      "failure_advisors": {},
+      "failure_effect_families": {},
+      "failure_events": 0,
+      "failure_motifs": {},
+      "progress_advisors": {
+        "\"epistemic-frontier:dihedral-analogy-alignment\"": 5
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"orientation_delta\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"rotated_90\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\"]": 2,
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"orientation_delta\"]": 1
+      },
+      "progress_events": 5,
+      "progress_motifs": {
+        "[\"epistemic-frontier:dihedral-analogy-alignment\",\"epistemic-frontier:dihedral-analogy-alignment\",\"epistemic-frontier:dihedral-analogy-alignment\",\"epistemic-frontier:dihedral-analogy-alignment\"]": 5
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tr87.cognitive.jsonl",
+      "stream_sha256": "c48d031164395ea23f38fa7ba40020b04edaf702919bb1a084d7e101473c86f0"
+    },
+    "tu93": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 5,
+        "\"epistemic-frontier:untried-current-state\"": 2
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"orientation_delta\",\"state_changed\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"rotated_180\",\"state_changed\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 1,
+        "[\"area_changed\",\"frame_changed\",\"object_disappeared\",\"object_moved\",\"orientation_delta\",\"state_changed\"]": 3,
+        "[\"area_changed\",\"frame_changed\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 1
+      },
+      "failure_events": 7,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 5,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 2
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tu93.cognitive.jsonl",
+      "stream_sha256": "2350e26463f16bd55d158a7522dabe1e13b7c781da67bce3aa0e0d28c58e3bf5"
+    },
+    "vc33": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:hierarchical-action-family\"": 3,
+        "\"epistemic-frontier:untried-current-state\"": 4
+      },
+      "failure_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"novel_state_reached\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 4,
+        "[\"area_changed\",\"frame_changed\",\"object_disappeared\",\"object_moved\",\"state_changed\"]": 3
+      },
+      "failure_events": 7,
+      "failure_motifs": {
+        "[\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\",\"epistemic-frontier:hierarchical-action-family\"]": 3,
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 4
+      },
+      "progress_advisors": {
+        "\"epistemic-frontier:reuse-productive-action-role\"": 1
+      },
+      "progress_effect_families": {
+        "[\"area_changed\",\"frame_changed\",\"level_advanced\",\"novel_state_reached\",\"object_appeared\",\"object_disappeared\",\"object_moved\",\"rotated_180\"]": 1
+      },
+      "progress_events": 1,
+      "progress_motifs": {
+        "[\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\",\"epistemic-frontier:reuse-productive-action-role\"]": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/vc33.cognitive.jsonl",
+      "stream_sha256": "68066f8f131ce959e269acc2c2753c4548d021ed5fc0adb58d2834d646adbabd"
+    },
+    "wa30": {
+      "events": 400,
+      "failure_advisors": {
+        "\"epistemic-frontier:untried-current-state\"": 1
+      },
+      "failure_effect_families": {
+        "[\"state_changed\"]": 1
+      },
+      "failure_events": 1,
+      "failure_motifs": {
+        "[\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\",\"epistemic-frontier:untried-current-state\"]": 1
+      },
+      "progress_advisors": {},
+      "progress_effect_families": {},
+      "progress_events": 0,
+      "progress_motifs": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/wa30.cognitive.jsonl",
+      "stream_sha256": "9df2aa75eb1b13b51868d67b11733636660349a6a67b34d7d583ce44f83e1d06"
+    }
+  }
+}
