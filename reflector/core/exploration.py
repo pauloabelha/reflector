@@ -65,6 +65,16 @@ from .permutation_transport import (
     plan_factored_orbit_transport,
     plan_marker_transport,
 )
+from .scheme_category import (
+    FocusedRewriteObject,
+    FocusedVariable,
+    FocusMorphism,
+    TranslationMorphism,
+    apply_translation,
+    compile_focused_option,
+    focus_square,
+    translation_square,
+)
 from .symbolic import ObjectState, Observation, Scene
 
 StateKey = tuple[int, str, str]
@@ -595,6 +605,18 @@ class EpistemicExplorer:
     constellation_selections: int = 0
     constellation_moves: int = 0
     constellation_switches: int = 0
+    constellation_commuting_confirmations: int = 0
+    constellation_commuting_conflicts: int = 0
+    constellation_option_compilations: int = 0
+    constellation_retained_options: int = 0
+    constellation_reused_options: int = 0
+    constellation_retained_option_programs: set[tuple[int, ...]] = field(
+        default_factory=set,
+        repr=False,
+    )
+    constellation_compression_savings: int = 0
+    constellation_last_option_length: int = 0
+    constellation_search_expansions: int = 0
     constellation_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
@@ -5723,6 +5745,7 @@ class EpistemicExplorer:
     def _reset_constellation_alignment(self, *, clear_controls: bool) -> None:
         self.constellation_selections = 0
         self.constellation_last_layout = None
+        self.constellation_last_option_length = 0
         self.constellation_diagnostic = (
             "not-grounded" if self.constellation_alignment else "exact-off"
         )
@@ -5732,6 +5755,26 @@ class EpistemicExplorer:
             self.constellation_quarantined_actions.clear()
             self.constellation_moves = 0
             self.constellation_switches = 0
+            self.constellation_commuting_confirmations = 0
+            self.constellation_commuting_conflicts = 0
+            self.constellation_option_compilations = 0
+            self.constellation_retained_options = 0
+            self.constellation_reused_options = 0
+            self.constellation_retained_option_programs.clear()
+            self.constellation_compression_savings = 0
+            self.constellation_search_expansions = 0
+
+    @staticmethod
+    def _constellation_rewrite_object(
+        layout: ConstellationAlignment,
+    ) -> FocusedRewriteObject:
+        return FocusedRewriteObject(
+            tuple(
+                FocusedVariable(item.color, item.center, item.targets)
+                for item in layout.objects
+            ),
+            layout.selected_color,
+        )
 
     def _observe_constellation_alignment(
         self,
@@ -5749,24 +5792,20 @@ class EpistemicExplorer:
         if destination is None:
             displacement = self.constellation_move_actions.get(action_id)
             if displacement is not None:
-                predicted = tuple(
-                    (
-                        ConstellationObject(
-                            item.color,
-                            (
-                                item.center[0] + displacement[0],
-                                item.center[1] + displacement[1],
-                            ),
-                            item.target,
-                        )
-                        if item.color == source.selected_color
-                        else item
-                    )
-                    for item in source.objects
+                predicted = apply_translation(
+                    self._constellation_rewrite_object(source),
+                    TranslationMorphism(action_id, displacement),
                 )
                 self.constellation_last_layout = ConstellationAlignment(
-                    predicted,
-                    source.selected_color,
+                    tuple(
+                        ConstellationObject(
+                            item.name,
+                            item.value,
+                            item.goals,
+                        )
+                        for item in predicted.variables
+                    ),
+                    predicted.focus,
                 )
                 self.constellation_diagnostic = (
                     "predicting-occluded-constellation-move"
@@ -5781,8 +5820,8 @@ class EpistemicExplorer:
         if (
             source_objects.keys() != destination_objects.keys()
             or any(
-                source_objects[color].target
-                != destination_objects[color].target
+                source_objects[color].targets
+                != destination_objects[color].targets
                 for color in source_objects
             )
         ):
@@ -5803,7 +5842,25 @@ class EpistemicExplorer:
             and source.selected_color != destination.selected_color
         ):
             if action_id not in self.constellation_move_actions:
+                morphism = FocusMorphism(
+                    action_id,
+                    source.selected_color,
+                    destination.selected_color,
+                )
+                square = focus_square(
+                    self._constellation_rewrite_object(source),
+                    self._constellation_rewrite_object(destination),
+                    morphism,
+                )
+                if not square.commutes:
+                    self.constellation_commuting_conflicts += 1
+                    self.constellation_quarantined_actions.add(action_id)
+                    self.constellation_diagnostic = (
+                        "constellation-focus-naturality-conflict"
+                    )
+                    return
                 self.constellation_switch_actions.add(action_id)
+                self.constellation_commuting_confirmations += 1
                 self.constellation_diagnostic = "constellation-switch-grounded"
             return
         if (
@@ -5814,6 +5871,20 @@ class EpistemicExplorer:
             old = source_objects[color].center
             new = destination_objects[color].center
             displacement = new[0] - old[0], new[1] - old[1]
+            square = translation_square(
+                self._constellation_rewrite_object(source),
+                self._constellation_rewrite_object(destination),
+                TranslationMorphism(action_id, displacement),
+            )
+            if not square.commutes:
+                self.constellation_commuting_conflicts += 1
+                self.constellation_quarantined_actions.add(action_id)
+                self.constellation_move_actions.pop(action_id, None)
+                self.constellation_diagnostic = (
+                    "constellation-naturality-conflict"
+                )
+                return
+            self.constellation_commuting_confirmations += 1
             previous = self.constellation_move_actions.get(action_id)
             if previous is not None and previous != displacement:
                 self.constellation_quarantined_actions.add(action_id)
@@ -5867,26 +5938,42 @@ class EpistemicExplorer:
             self.constellation_switches += 1
             self.constellation_diagnostic = "switching-constellation-mover"
             return available[switches[0]]
-        moves: list[tuple[int, int]] = []
-        for action_id, displacement in self.constellation_move_actions.items():
-            if action_id not in available:
-                continue
-            next_center = (
-                active.center[0] + displacement[0],
-                active.center[1] + displacement[1],
-            )
-            distance = abs(active.target[0] - next_center[0]) + abs(
-                active.target[1] - next_center[1]
-            )
-            if distance < active.distance:
-                moves.append((distance, action_id))
-        if not moves:
+        option = compile_focused_option(
+            self._constellation_rewrite_object(layout),
+            tuple(
+                TranslationMorphism(action_id, displacement)
+                for action_id, displacement in sorted(
+                    self.constellation_move_actions.items()
+                )
+                if action_id in available
+            ),
+            width=len(observation.frame[0]),
+            height=len(observation.frame),
+            max_expansions=512,
+        )
+        self.constellation_option_compilations += 1
+        self.constellation_search_expansions += option.expansions
+        self.constellation_last_option_length = len(option.actions)
+        if not option.actions:
             self.constellation_diagnostic = "constellation-controls-incomplete"
             return None
-        _distance, action_id = min(moves)
+        if option.retained:
+            if option.actions in self.constellation_retained_option_programs:
+                self.constellation_reused_options += 1
+            else:
+                self.constellation_retained_option_programs.add(option.actions)
+                self.constellation_retained_options += 1
+                self.constellation_compression_savings += (
+                    option.compression_utility
+                )
+        action_id = option.actions[0]
         self.constellation_selections += 1
         self.constellation_moves += 1
-        self.constellation_diagnostic = "moving-to-latent-constellation-target"
+        self.constellation_diagnostic = (
+            "executing-compressed-focused-option"
+            if option.retained
+            else "executing-exact-focused-option"
+        )
         return available[action_id]
 
     def _reset_linear_track(self) -> None:
@@ -12564,6 +12651,28 @@ class EpistemicExplorer:
             "constellation_selections": self.constellation_selections,
             "constellation_moves": self.constellation_moves,
             "constellation_switches": self.constellation_switches,
+            "constellation_commuting_confirmations": (
+                self.constellation_commuting_confirmations
+            ),
+            "constellation_commuting_conflicts": (
+                self.constellation_commuting_conflicts
+            ),
+            "constellation_option_compilations": (
+                self.constellation_option_compilations
+            ),
+            "constellation_retained_options": (
+                self.constellation_retained_options
+            ),
+            "constellation_reused_options": self.constellation_reused_options,
+            "constellation_compression_savings": (
+                self.constellation_compression_savings
+            ),
+            "constellation_last_option_length": (
+                self.constellation_last_option_length
+            ),
+            "constellation_search_expansions": (
+                self.constellation_search_expansions
+            ),
             "constellation_diagnostic": self.constellation_diagnostic,
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(

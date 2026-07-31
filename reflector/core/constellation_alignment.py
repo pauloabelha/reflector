@@ -10,16 +10,17 @@ type Frame = tuple[tuple[int, ...], ...]
 
 @dataclass(frozen=True, slots=True)
 class ConstellationObject:
-    """One colored mover and the intersection encoded by its four landmarks."""
+    """One colored mover and its uniquely reachable subset embeddings."""
 
     color: int
     center: tuple[int, int]
-    target: tuple[int, int]
+    targets: frozenset[tuple[int, int]]
 
     @property
     def distance(self) -> int:
-        return abs(self.target[0] - self.center[0]) + abs(
-            self.target[1] - self.center[1]
+        return min(
+            abs(target[0] - self.center[0]) + abs(target[1] - self.center[1])
+            for target in self.targets
         )
 
 
@@ -61,64 +62,69 @@ def _landmark_groups(frame: Frame, background: int) -> dict[int, set[tuple[int, 
     return groups
 
 
-def _intersection(points: set[tuple[int, int]]) -> tuple[int, int] | None:
-    if len(points) != 4:
-        return None
-    candidates: set[tuple[int, int]] = set()
-    ordered = tuple(points)
-    for first_index, first in enumerate(ordered):
-        for second in ordered[first_index + 1 :]:
-            if first[0] != second[0]:
-                continue
-            vertical = {first, second}
-            horizontal = tuple(point for point in points if point not in vertical)
-            if len(horizontal) != 2 or horizontal[0][1] != horizontal[1][1]:
-                continue
-            target = first[0], horizontal[0][1]
-            if target in points:
-                continue
-            candidates.add(target)
-    return next(iter(candidates)) if len(candidates) == 1 else None
+def _shape_points(frame: Frame, color: int) -> frozenset[tuple[int, int]]:
+    height = len(frame)
+    width = len(frame[0])
+    points = {
+        (x, y)
+        for y, row in enumerate(frame)
+        for x, value in enumerate(row)
+        if value == color
+    }
+    seen: set[tuple[int, int]] = set()
+    components: list[set[tuple[int, int]]] = []
+    for point in points:
+        if point in seen:
+            continue
+        frontier = [point]
+        seen.add(point)
+        component: set[tuple[int, int]] = set()
+        while frontier:
+            current = frontier.pop()
+            component.add(current)
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    neighbor = current[0] + dx, current[1] + dy
+                    if (
+                        0 <= neighbor[0] < width
+                        and 0 <= neighbor[1] < height
+                        and neighbor in points
+                        and neighbor not in seen
+                    ):
+                        seen.add(neighbor)
+                        frontier.append(neighbor)
+        components.append(component)
+    return frozenset().union(
+        *(component for component in components if len(component) >= 3)
+    )
 
 
-def _run_length(
-    frame: Frame,
+def _embedding_targets(
+    shape: frozenset[tuple[int, int]],
+    landmarks: set[tuple[int, int]],
     center: tuple[int, int],
-    color: int,
-    delta: tuple[int, int],
-) -> int:
-    width = len(frame[0])
-    height = len(frame)
-    x, y = center
-    dx, dy = delta
-    length = 0
-    x += dx
-    y += dy
-    while 0 <= x < width and 0 <= y < height and frame[y][x] == color:
-        length += 1
-        x += dx
-        y += dy
-    return length
-
-
-def _plus_centers(frame: Frame, color: int) -> tuple[tuple[int, int], ...]:
-    height = len(frame)
-    width = len(frame[0])
-    centers: list[tuple[int, int]] = []
-    for y in range(1, height - 1):
-        for x in range(1, width - 1):
-            center = x, y
-            runs = tuple(
-                _run_length(frame, center, color, delta)
-                for delta in ((-1, 0), (1, 0), (0, -1), (0, 1))
-            )
-            if min(runs) < 3:
-                continue
-            horizontal = runs[0] + runs[1]
-            vertical = runs[2] + runs[3]
-            if abs(horizontal - vertical) <= 2:
-                centers.append(center)
-    return tuple(centers)
+    width: int,
+    height: int,
+) -> frozenset[tuple[int, int]]:
+    translations: set[tuple[int, int]] | None = None
+    for landmark in landmarks:
+        candidates = {
+            (landmark[0] - point[0], landmark[1] - point[1])
+            for point in shape
+        }
+        translations = (
+            candidates if translations is None else translations & candidates
+        )
+    bounded = {
+        delta
+        for delta in translations or set()
+        if 0 <= center[0] + delta[0] < width
+        and 0 <= center[1] + delta[1] < height
+    }
+    return frozenset(
+        (center[0] + delta[0], center[1] + delta[1])
+        for delta in bounded
+    )
 
 
 def infer_constellation_alignment(frame: Frame) -> ConstellationAlignment | None:
@@ -127,17 +133,37 @@ def infer_constellation_alignment(frame: Frame) -> ConstellationAlignment | None
     if not frame or not frame[0] or any(len(row) != len(frame[0]) for row in frame):
         return None
     background = Counter(cell for row in frame for cell in row).most_common(1)[0][0]
+    counts = Counter(cell for row in frame for cell in row)
     groups = _landmark_groups(frame, background)
     objects: list[ConstellationObject] = []
     selected: list[int] = []
     for color, points in groups.items():
-        target = _intersection(points)
-        centers = _plus_centers(frame, color)
-        if target is None or len(centers) != 1:
+        if len(points) < 2:
             continue
-        center = centers[0]
-        objects.append(ConstellationObject(color, center, target))
-        if frame[center[1]][center[0]] != color:
+        shape = _shape_points(frame, color)
+        if len(shape) < 8:
+            continue
+        center = (
+            (2 * sum(point[0] for point in shape) + len(shape))
+            // (2 * len(shape)),
+            (2 * sum(point[1] for point in shape) + len(shape))
+            // (2 * len(shape)),
+        )
+        targets = _embedding_targets(
+            shape,
+            points,
+            center,
+            len(frame[0]),
+            len(frame),
+        )
+        if not targets:
+            continue
+        objects.append(ConstellationObject(color, center, targets))
+        selector = frame[center[1]][center[0]]
+        if (
+            selector not in {background, color}
+            and counts[selector] == 1
+        ):
             selected.append(color)
     if len(objects) < 2 or len(objects) != len(groups) or len(selected) != 1:
         return None

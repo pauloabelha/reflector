@@ -20,29 +20,29 @@ service, database, or web server.
 Last verified: 2026-07-30
 
 > **Plain-language result:** Reflector has fully beaten **3 of 25 games**.
-> It has solved **35 of 183 levels across 12 games**. All 25 games were
+> It has solved **39 of 183 levels across 13 games**. All 25 games were
 > evaluated; “25/25 evaluated” does not mean “25/25 beaten.”
 
-| Metric | Accepted v74 result |
+| Metric | Accepted v82f result |
 | --- | ---: |
 | Complete games beaten | **3 / 25** |
-| Games with at least one solved level | **12 / 25** |
-| Levels solved | **35 / 183** |
-| Official local score | **14.450686193334509 / 100** |
+| Games with at least one solved level | **13 / 25** |
+| Levels solved | **39 / 183** |
+| Official local score | **16.355448098096414 / 100** |
 | Games evaluated | **25 / 25** |
 | Total actions | **9,185** |
-| Frozen source/candidate commit | `5422fb823d464e9f837f7b523d06e41a930effd5` |
-| Candidate | `candidate-cb34c9a1195fafa1` |
+| Frozen source/candidate commit | `79a872ca0ed3fa40a98b185b3217e304d81dc68f` |
+| Candidate | `candidate-40b2dad207199755` |
 | Kaggle submissions | **1 pending** (`55113224`) |
 | Kaggle public score | **pending; not yet returned** |
 | Kaggle private score | **unavailable** |
 
-The score is about **14.45% of the 100-point scale**. It is a local
-public-development result, not a Kaggle leaderboard score. Relative to v69,
-v74 completes all six `cd82` levels and reaches six of eight `lp85` levels
-while preserving the other public-development trajectories. The clean
+The score is about **16.36% of the 100-point scale**. It is a local
+public-development result, not a Kaggle leaderboard score. Relative to v74,
+v82f adds four deterministic `tr87` levels through demonstrated dihedral
+analogy while preserving every other public-development trajectory. The clean
 process-isolated result is in
-[the v74 public-development report](reports/official-isolated-v74-clean-baseline-400.json).
+[the v82f public-development report](reports/official-isolated-v82f-dihedral-bridge-400.json).
 
 ![Reflector progress across all canonical evaluated checkpoints](reports/generation-progress.svg)
 
@@ -56,12 +56,12 @@ Kaggle leaderboard series.
 **Kaggle submission:** frozen v65b—not v69—was submitted for hidden-transfer
 calibration as submission `55113224` from the private, internet-disabled
 notebook `pauloabelha/reflector-arc-agi-3-v65b` version 1. The hidden rerun is
-still `PENDING`, so neither leaderboard regime has returned a score. V74 has
+still `PENDING`, so neither leaderboard regime has returned a score. V82f has
 not been submitted. Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the
 [ARC-AGI-3 Kaggle submission runbook](references/KAGGLE_ARC3_SUBMISSION.md);
-do not report the local 14.45 score as a Kaggle public or private score.
+do not report the local 16.36 score as a Kaggle public or private score.
 
 A new paired pure-symbolic control makes the local gain more interpretable.
 Under the same 25 games and 10,000 actions, a deterministic connected-object

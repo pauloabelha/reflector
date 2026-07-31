@@ -39,6 +39,7 @@ OVERLAY_FILES = (
     "reflector/core/dihedral_analogy.py",
     "reflector/core/linear_track.py",
     "reflector/core/constellation_alignment.py",
+    "reflector/core/scheme_category.py",
     "reflector/core/exploration.py",
     "reflector/core/graph.py",
     "reflector/core/mind.py",

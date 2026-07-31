@@ -107,6 +107,77 @@ morphisms, unbounded composition, and general category-theoretic cognition
 remain unvalidated. Existing schema families remain similarity groups rather
 than arrows in the comparison graph.
 
+## Scheme category and compressed hierarchical options
+
+The post-v82f inference core introduces a small finite-domain substrate in
+`reflector/core/scheme_category.py`. It is intended to replace accumulation of
+unrelated advisors with a common representation, not to add category-theory
+terminology around game-specific routes.
+
+A `FocusedRewriteObject` is a relational state object: it contains named
+variables, their current values, finite goal domains, and one causally focused
+variable. A grounded action displacement is a `TranslationMorphism`, an
+endomorphism that changes only the focused variable while preserving the other
+variables and all goal constraints. A `FocusMorphism` transfers causal focus
+while preserving all relational content. Perception maps concrete frames into
+these objects. Every observed intervention constructs a commuting square:
+
+```text
+concrete frame before ── action ──> concrete frame after
+        │ abstraction                         │ abstraction
+        ▼                                     ▼
+relational object ─── predicted morphism ──> relational object
+```
+
+The action model gains authority only when the predicted and observed abstract
+codomains are identical. A failed square is a typed causal contradiction and
+quarantines the morphism. This is the operative naturality criterion: changing
+layout, color names, or other nuisance presentation must not change the
+relation between intervention and abstract effect.
+
+`compile_focused_option` treats the variable's goal domain as a finite CSP and
+performs bounded A* over confirmed morphisms. Its result is a hierarchical
+option with:
+
+- an initiation object;
+- a primitive-action policy;
+- a goal-domain termination condition;
+- an exact expansion bound;
+- raw and compiled description lengths;
+- explicit compression utility.
+
+An option may execute as a bounded exact plan without being inherited.
+Retention requires positive minimum-description-length utility, and identical
+option programs are stored only once while subsequent uses count as reuse.
+This separates short-lived planning from durable knowledge compression and
+prevents every successful trajectory from becoming another permanent policy
+fragment.
+
+The first binding is landmark-constrained shape embedding. Colored landmark
+centers are Drescher-style synthetic items whose conjunction defines a latent
+goal: every center must lie on one translation of the corresponding mover
+mask. Perception may return several pixel-level embeddings. The CSP planner,
+not a shape-specific tie-breaker, selects only embeddings reachable in the
+intervention-grounded action lattice. The same representation covers plus, X,
+diamond, clipped, translated, reflected, and color-renamed layouts.
+
+This implements a narrow Piagetian cycle:
+
+1. assimilate a new layout into the existing focused-rewrite scheme;
+2. predict the abstract consequence of an intervention;
+3. preserve the scheme when the square commutes;
+4. accommodate on disequilibrium by weakening the smallest false perceptual
+   condition, such as replacing “four points form a plus” with “landmarks embed
+   in a translated mover mask”;
+5. retain the revision only when it compresses evidence and improves bounded
+   planning.
+
+The current scope is deliberately finite and symbolic. Arbitrary categories,
+learned neural representations, unbounded program synthesis, and general
+option discovery remain unproven. The target evidence and preservation gates
+in `PLAN.md` determine whether this substrate becomes part of an accepted
+agent.
+
 `EpisodeTrace` records the same scenes, transitions, hypotheses, experiment
 questions, plans, decisions, and concept births used during inference. It also
 records the complete deployed `MindConfig`, so a selected population descendant

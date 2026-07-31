@@ -17,7 +17,7 @@ def _draw_plus(
     selected: bool,
 ) -> None:
     x, y = center
-    for offset in range(-5, 6):
+    for offset in range(-12, 13):
         if offset:
             grid[y][x + offset] = color
             grid[y + offset][x] = color
@@ -55,17 +55,67 @@ def _frame(
     return tuple(tuple(row) for row in grid)
 
 
+def _translate(frame: Frame, dx: int, dy: int) -> Frame:
+    grid = [[5 for _x in range(64)] for _y in range(64)]
+    for y, row in enumerate(frame):
+        for x, value in enumerate(row):
+            if value == 5:
+                continue
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < 64 and 0 <= ny < 64:
+                grid[ny][nx] = value
+    return tuple(tuple(row) for row in grid)
+
+
+def _recolor(frame: Frame, mapping: dict[int, int]) -> Frame:
+    return tuple(
+        tuple(mapping.get(value, value) for value in row)
+        for row in frame
+    )
+
+
 def test_infers_cross_targets_from_colored_landmark_intersections() -> None:
     layout = infer_constellation_alignment(_frame())
 
     assert layout is not None
     assert layout.selected_color == 9
     assert {
-        item.color: (item.center, item.target)
+        item.color: (item.center, item.targets)
         for item in layout.objects
     } == {
-        9: ((36, 45), (48, 24)),
-        11: ((21, 27), (15, 9)),
+        9: ((36, 45), frozenset({(48, 24)})),
+        11: ((21, 27), frozenset({(15, 9)})),
+    }
+
+
+def test_inference_is_natural_under_global_translation_and_color_renaming() -> None:
+    transformed = _recolor(_translate(_frame(), 2, 1), {9: 12, 11: 13})
+
+    layout = infer_constellation_alignment(transformed)
+
+    assert layout is not None
+    assert layout.selected_color == 12
+    assert {
+        item.color: (item.center, item.targets)
+        for item in layout.objects
+    } == {
+        12: ((38, 46), frozenset({(50, 25)})),
+        13: ((23, 28), frozenset({(17, 10)})),
+    }
+
+
+def test_inference_commutes_with_horizontal_reflection() -> None:
+    reflected = tuple(tuple(reversed(row)) for row in _frame())
+
+    layout = infer_constellation_alignment(reflected)
+
+    assert layout is not None
+    assert {
+        item.color: (item.center, item.targets)
+        for item in layout.objects
+    } == {
+        9: ((27, 45), frozenset({(15, 24)})),
+        11: ((42, 27), frozenset({(48, 9)})),
     }
 
 

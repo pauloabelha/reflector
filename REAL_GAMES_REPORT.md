@@ -9,7 +9,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 > It has solved 39 of 183 levels across 13 games. The suite ran all 25 games,
 > but evaluation coverage is not game completion.
 
-| Outcome metric | Accepted v74 result | Meaning |
+| Outcome metric | Accepted v82f result | Meaning |
 | --- | ---: | --- |
 | Complete games beaten | **3 / 25** | `sb26`, `ft09`, and `cd82` were solved through their final levels. |
 | Games with progress | **13 / 25** | At least one level was solved in thirteen games. |
