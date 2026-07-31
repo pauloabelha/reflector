@@ -34,8 +34,13 @@ Submission status, 2026-07-31 UTC:
   pending and occupies the UTC daily allowance, so no v94b submission ID
   exists yet;
 - the exact v97 export passes two deterministic exports, both network-disabled
-  smoke paths, and the technical prize audit; its Kaggle notebook
-  `pauloabelha/reflector-arc-agi-3-v97` is the next commit/submission target;
+  smoke paths, and the technical prize audit;
+- private notebook `pauloabelha/reflector-arc-agi-3-v97` version 1 completed
+  successfully and emitted `submission.parquet`;
+- its competition submission request returned HTTP 400 while v74 remains
+  pending and occupies the UTC daily allowance, so no v97 submission ID
+  exists; resubmit this already completed version unchanged when the slot
+  clears;
 - historical v65b submission `55113224` is complete with Kaggle public score
   `0.02`; the private score remains unavailable.
 

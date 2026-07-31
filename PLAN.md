@@ -24,7 +24,7 @@ generalization.
 - Branch: `codex/v74-fresh`
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
-- Last pushed participant-remote commit: `5523abc`
+- Last pushed participant-remote commit: `0e0f700`
 - Accepted candidate: `candidate-e59a92e72fbd1aef`
 - Accepted agent: Reflector v97
 - Frozen inference source commit: `b8677a2`
@@ -54,7 +54,10 @@ generalization.
   complete with `submission.parquet`; competition submission was attempted but
   blocked by the daily quota occupied by pending v74, so no v94b submission ID
   exists
-- Kaggle public score: `0.02` for v65b only; v74 pending; v94b unsubmitted
+- V97 Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v97`, version 1,
+  complete with `submission.parquet`; competition submission returned HTTP 400
+  while v74 remains pending, so no v97 submission ID exists
+- Kaggle public score: `0.02` for v65b only; v74 pending; v97 unsubmitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
 - Maintenance state: canonical code is organized under `reflector/core/`,
@@ -190,6 +193,11 @@ hashes byte-for-byte, both smoke paths select a legal action inside the
 network-disabled official fixture, and the audit reports
 `technical_ready: true`. V97 is accepted. Build and submit the exact hashed
 notebook through the quota-aware workflow in `KAGGLE.md`.
+
+The exact private v97 notebook version 1 completed and emitted
+`submission.parquet`. Its submission request returned HTTP 400; the live list
+still contains only pending v74 `55123277` and complete v65b `55113224`.
+Resubmit v97 version 1 unchanged after the daily slot clears.
 
 ## Why the accepted agent wins what it wins
 

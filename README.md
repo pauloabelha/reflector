@@ -65,7 +65,10 @@ still occupies the one-per-day allowance. The exact accepted v94b notebook
 `pauloabelha/reflector-arc-agi-3-v94b` version 1 also completed and emitted
 `submission.parquet`; its submission request received the same quota rejection.
 No v92 or v94b submission ID exists yet. The exact accepted v97 artifact is
-ready for the next quota-aware Kaggle notebook commit and submission.
+committed as private notebook `pauloabelha/reflector-arc-agi-3-v97` version 1,
+which completed and emitted `submission.parquet`. Its competition submission
+request returned HTTP 400 while v74 remains pending, so no v97 submission ID
+exists yet.
 Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the

@@ -37,6 +37,12 @@ overlay
 and notebook
 `5b7e03d9b31a7e76d163dae273cb73aa2687ddfb785f88e07cd6264466fdb2ee`.
 
+Private Kaggle notebook `pauloabelha/reflector-arc-agi-3-v97` version 1
+completed and emitted `submission.parquet`. The competition submission request
+returned HTTP 400 because pending v74 submission `55123277` still occupies the
+daily allowance. Kaggle created no v97 submission ID. The exact completed
+version should be resubmitted unchanged when the quota clears.
+
 ## Rejected offspring: cross-level algebra was natural but not sufficient
 
 V95 `candidate-304a6d8e5158b3ae` is a frozen experimental child of v94b.

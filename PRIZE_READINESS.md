@@ -103,6 +103,10 @@ The exact private v94b notebook version 1 has completed and emitted
 while pending v74 submission `55123277` occupies the daily allowance; no v94b
 submission ID exists yet.
 
+The exact private v97 notebook version 1 has also completed and emitted
+`submission.parquet`. Its competition submission request returned HTTP 400
+under the same pending-v74 quota condition; no v97 submission ID exists.
+
 ## Required account and publication actions
 
 These cannot be completed from a local checkout:
