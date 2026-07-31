@@ -9,7 +9,10 @@ from collections import Counter, deque
 from dataclasses import dataclass, field
 from typing import Any
 
-from .action_effect_typing import ProspectiveActionEffectTyper
+from .action_effect_typing import (
+    ProspectiveActionEffectTyper,
+    infer_action_effect,
+)
 from .action_translation_algebra import (
     ActionIdentity,
     ActionTranslationAlgebra,
@@ -61,6 +64,7 @@ from .lattice_csp import (
     solve_click_csp,
 )
 from .linear_track import TrackState, infer_linear_track
+from .partial_bisimulation import PartialBisimulation
 from .permutation_transport import (
     FactoredOrbitDomain,
     FactoredOrbitGenerator,
@@ -457,6 +461,7 @@ class EpistemicExplorer:
     shortest_progress_path_reuse: bool = False
     terminal_edge_viability_credit: bool = False
     terminal_role_viability_credit: bool = False
+    partial_bisimulation: bool = False
     finite_orbit_commit_exploration: bool = False
     dihedral_analogy_alignment: bool = False
     linear_track_navigation: bool = False
@@ -575,6 +580,10 @@ class EpistemicExplorer:
     terminal_viability_filtered_tokens: int = 0
     terminal_viability_filter_selections: int = 0
     terminal_viability_all_unsafe_abstentions: int = 0
+    partial_bisimulation_model: PartialBisimulation = field(
+        default_factory=PartialBisimulation,
+        repr=False,
+    )
     finite_orbit_generator: ActionToken | None = None
     finite_orbit_inverse: ActionToken | None = None
     finite_orbit_commit_tokens: tuple[ActionToken, ...] = ()
@@ -1313,6 +1322,8 @@ class EpistemicExplorer:
             if self.terminal_edge_viability_credit:
                 self.terminal_viability.reset_level()
             self.terminal_viability_pending_generic = False
+            if self.partial_bisimulation:
+                self.partial_bisimulation_model.reset_level()
             self._reset_finite_orbit(clear_trials=True)
             self._reset_dihedral_analogy(clear_controls=True)
             self._reset_linear_track()
@@ -1405,6 +1416,32 @@ class EpistemicExplorer:
             self.current_level is not None
             and observation.levels_completed > self.current_level
         )
+        if (
+            self.partial_bisimulation
+            and pending_token is not None
+            and self.pending is not None
+        ):
+            source_state = self.pending[0]
+            domain = tuple(
+                sorted(
+                    {
+                        token.action_id
+                        for token in self.tokens_by_state.get(source_state, ())
+                    }
+                )
+            )
+            if progressed:
+                causal_kind = "progress"
+            elif observation.state == "GAME_OVER":
+                causal_kind = "terminal"
+            else:
+                causal_kind = infer_action_effect(before, after).kind
+            self.partial_bisimulation_model.observe(
+                source=source_state[2],
+                domain=domain,
+                role=role,
+                outcome=causal_kind,
+            )
         if (
             self.dihedral_analogy_alignment
             and pending_token is not None
@@ -12913,6 +12950,39 @@ class EpistemicExplorer:
                 else "exact-off"
             ),
             "terminal_viability_cap_failure": (self.terminal_viability.cap_failure),
+            "partial_bisimulation_enabled": int(self.partial_bisimulation),
+            "partial_bisimulation_states": len(
+                self.partial_bisimulation_model.profiles
+            ),
+            "partial_bisimulation_observations": (
+                self.partial_bisimulation_model.observations
+            ),
+            "partial_bisimulation_predictions": (
+                self.partial_bisimulation_model.predictions
+            ),
+            "partial_bisimulation_confirmations": (
+                self.partial_bisimulation_model.confirmations
+            ),
+            "partial_bisimulation_conflicts": (
+                self.partial_bisimulation_model.conflicts
+            ),
+            "partial_bisimulation_ambiguous_predictions": (
+                self.partial_bisimulation_model.ambiguous_predictions
+            ),
+            "partial_bisimulation_frontier_roles": (
+                self.partial_bisimulation_model.abstract_frontier_roles
+            ),
+            "partial_bisimulation_outcomes": len(
+                self.partial_bisimulation_model.outcome_counts
+            ),
+            "partial_bisimulation_diagnostic": (
+                self.partial_bisimulation_model.last_diagnostic
+                if self.partial_bisimulation
+                else "exact-off"
+            ),
+            "partial_bisimulation_cap_failure": (
+                self.partial_bisimulation_model.cap_failure
+            ),
             "finite_orbit_commit_enabled": int(self.finite_orbit_commit_exploration),
             "finite_orbit_grounded": int(self.finite_orbit_generator is not None),
             "finite_orbit_states": len(self.finite_orbit_expanded_states),

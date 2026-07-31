@@ -392,6 +392,20 @@ competing subgoal predicates, and hierarchical planning compiles the selected
 abstract path into a bounded option. This joins causal learning, CSP, and HRL
 without pretending negative knowledge is itself a goal.
 
+The first causal-quotient audit supplies unusually broad evidence compared
+with prior local mechanisms. Compatible partial action/effect profiles made
+458 prospective predictions across the full accepted suite and confirmed 422
+of them. The 36 conflicts are not a reason to average outcomes; they are the
+counterexamples that split an over-broad equivalence class. The quotient also
+exposes 18,901 abstract frontier roles—actions untried in the current raw frame
+but causally characterized in a compatible one.
+
+This is the first post-v84 abstraction that simultaneously compresses many
+games, makes falsifiable predictions, and defines a positive search direction.
+It is not yet control evidence. The online trace-only child must reproduce
+high precision with exact `ActionRole` and rendered effect typing before an
+operative child may prioritize a novel predicted effect.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

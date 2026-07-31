@@ -91,6 +91,9 @@ class SymbolicPolicy:
             terminal_role_viability_credit=(
                 self.mind.config.enable_terminal_role_viability_credit
             ),
+            partial_bisimulation=(
+                self.mind.config.enable_partial_bisimulation
+            ),
             finite_orbit_commit_exploration=(
                 self.mind.config.enable_finite_orbit_commit_exploration
             ),

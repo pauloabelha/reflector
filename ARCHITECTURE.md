@@ -251,6 +251,16 @@ layer, not a value layer: a future abstract causal graph may consume these
 forbidden assignments, but the accepted policy must keep both modes exact-off
 until a positive potential supplies directed control.
 
+`partial_bisimulation.py` provides the next trace-only substrate. Each raw
+state owns a partial mapping from grounded `ActionRole` to observed causal
+effect kind. Two states become compatible only when at least one overlapping
+role has the same deterministic effect and every other observed overlap also
+matches. A role known only in a compatible donor yields a prospective
+prediction in the recipient. Confirmation supports the quotient; conflict is
+partition-refinement evidence; multiple donor outcomes force abstention.
+Missing roles form an abstract causal frontier. The representation is bounded,
+game-local, reset at level change, and cannot yet select an action.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

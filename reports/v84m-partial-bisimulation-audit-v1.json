@@ -1,0 +1,640 @@
+{
+  "aggregate": {
+    "abstract_frontier_roles": 18901,
+    "ambiguous_predictions": 135,
+    "compatible_state_pairs": 105508,
+    "conflicting_state_pairs": 53188,
+    "nondeterministic_state_roles": 150,
+    "profiled_states": 5614,
+    "prospective_confirmations": 422,
+    "prospective_conflicts": 36,
+    "prospective_precision": 0.9213973799126638,
+    "prospective_predictions": 458,
+    "states_with_compatible_peer": 5251,
+    "transitions": 9160
+  },
+  "cognitive_root": "/tmp/reflector-v84m-full-cognitive-r1",
+  "format": "reflector-partial-bisimulation-audit-v1",
+  "games": 25,
+  "results": {
+    "ar25": {
+      "abstract_frontier_roles": 2565,
+      "ambiguous_predictions": 8,
+      "compatible_state_pairs": 301,
+      "conflicting_state_pairs": 91,
+      "nondeterministic_state_roles": 3,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 347,
+        "[\"motion\"]": 2,
+        "[\"progress\"]": 2,
+        "[\"structural\", \"motion\"]": 48
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 13,
+        "[\"structural\", \"motion\"]": 3
+      },
+      "profiled_states": 51,
+      "prospective_confirmations": 13,
+      "prospective_conflicts": 3,
+      "prospective_predictions": 16,
+      "states_with_compatible_peer": 49,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ar25.cognitive.jsonl",
+      "transitions": 399
+    },
+    "bp35": {
+      "abstract_frontier_roles": 117,
+      "ambiguous_predictions": 2,
+      "compatible_state_pairs": 10316,
+      "conflicting_state_pairs": 3086,
+      "nondeterministic_state_roles": 1,
+      "outcomes": {
+        "[\"structural\", \"motion\", \"effect:rotated_270\"]": 1,
+        "[\"structural\", \"motion\", \"phase\"]": 6,
+        "[\"structural\", \"motion\"]": 322,
+        "[\"structural\"]": 64,
+        "[\"terminal\"]": 6
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 14
+      },
+      "profiled_states": 332,
+      "prospective_confirmations": 13,
+      "prospective_conflicts": 1,
+      "prospective_predictions": 14,
+      "states_with_compatible_peer": 329,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/bp35.cognitive.jsonl",
+      "transitions": 399
+    },
+    "cd82": {
+      "abstract_frontier_roles": 0,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 349,
+      "conflicting_state_pairs": 66,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 1,
+        "[\"progress\"]": 5,
+        "[\"structural\", \"motion\"]": 87,
+        "[\"structural\"]": 5
+      },
+      "prediction_outcomes": {},
+      "profiled_states": 97,
+      "prospective_confirmations": 0,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 0,
+      "states_with_compatible_peer": 89,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/cd82.cognitive.jsonl",
+      "transitions": 98
+    },
+    "cn04": {
+      "abstract_frontier_roles": 244,
+      "ambiguous_predictions": 2,
+      "compatible_state_pairs": 2782,
+      "conflicting_state_pairs": 3321,
+      "nondeterministic_state_roles": 16,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 61,
+        "[\"motion\"]": 137,
+        "[\"structural\", \"motion\", \"phase\", \"effect:rotated_270\"]": 1,
+        "[\"structural\", \"motion\", \"phase\"]": 4,
+        "[\"structural\", \"motion\"]": 143,
+        "[\"structural\"]": 48,
+        "[\"terminal\"]": 5
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 2,
+        "[\"motion\"]": 4,
+        "[\"structural\", \"motion\", \"phase\", \"effect:rotated_270\"]": 1,
+        "[\"structural\", \"motion\"]": 9,
+        "[\"structural\"]": 8
+      },
+      "profiled_states": 269,
+      "prospective_confirmations": 20,
+      "prospective_conflicts": 4,
+      "prospective_predictions": 24,
+      "states_with_compatible_peer": 251,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/cn04.cognitive.jsonl",
+      "transitions": 399
+    },
+    "dc22": {
+      "abstract_frontier_roles": 127,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 1739,
+      "conflicting_state_pairs": 1258,
+      "nondeterministic_state_roles": 39,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 117,
+        "[\"motion\"]": 66,
+        "[\"structural\", \"motion\", \"phase\"]": 3,
+        "[\"structural\", \"motion\"]": 156,
+        "[\"structural\"]": 54,
+        "[\"terminal\"]": 3
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 7,
+        "[\"structural\"]": 3
+      },
+      "profiled_states": 236,
+      "prospective_confirmations": 8,
+      "prospective_conflicts": 2,
+      "prospective_predictions": 10,
+      "states_with_compatible_peer": 191,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/dc22.cognitive.jsonl",
+      "transitions": 399
+    },
+    "ft09": {
+      "abstract_frontier_roles": 32,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 893,
+      "conflicting_state_pairs": 121,
+      "nondeterministic_state_roles": 1,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 57,
+        "[\"motion\"]": 2,
+        "[\"progress\"]": 5,
+        "[\"structural\", \"motion\"]": 97
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 1,
+        "[\"structural\", \"motion\"]": 1
+      },
+      "profiled_states": 104,
+      "prospective_confirmations": 2,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 2,
+      "states_with_compatible_peer": 101,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ft09.cognitive.jsonl",
+      "transitions": 161
+    },
+    "g50t": {
+      "abstract_frontier_roles": 185,
+      "ambiguous_predictions": 12,
+      "compatible_state_pairs": 5905,
+      "conflicting_state_pairs": 8357,
+      "nondeterministic_state_roles": 6,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 38,
+        "[\"motion\"]": 117,
+        "[\"progress\"]": 1,
+        "[\"structural\", \"motion\", \"phase\"]": 2,
+        "[\"structural\", \"motion\"]": 215,
+        "[\"structural\"]": 24,
+        "[\"terminal\"]": 2
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 6,
+        "[\"motion\"]": 4,
+        "[\"structural\", \"motion\"]": 26,
+        "[\"structural\"]": 1
+      },
+      "profiled_states": 315,
+      "prospective_confirmations": 28,
+      "prospective_conflicts": 9,
+      "prospective_predictions": 37,
+      "states_with_compatible_peer": 310,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/g50t.cognitive.jsonl",
+      "transitions": 399
+    },
+    "ka59": {
+      "abstract_frontier_roles": 49,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 3622,
+      "conflicting_state_pairs": 2360,
+      "nondeterministic_state_roles": 6,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 66,
+        "[\"motion\"]": 56,
+        "[\"structural\", \"motion\", \"phase\"]": 3,
+        "[\"structural\", \"motion\"]": 214,
+        "[\"structural\"]": 57,
+        "[\"terminal\"]": 3
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 3,
+        "[\"structural\"]": 10
+      },
+      "profiled_states": 307,
+      "prospective_confirmations": 13,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 13,
+      "states_with_compatible_peer": 290,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ka59.cognitive.jsonl",
+      "transitions": 399
+    },
+    "lf52": {
+      "abstract_frontier_roles": 194,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 4130,
+      "conflicting_state_pairs": 3091,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 100,
+        "[\"motion\"]": 2,
+        "[\"progress\"]": 1,
+        "[\"structural\", \"motion\"]": 179,
+        "[\"structural\"]": 117
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 2
+      },
+      "profiled_states": 299,
+      "prospective_confirmations": 2,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 2,
+      "states_with_compatible_peer": 232,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/lf52.cognitive.jsonl",
+      "transitions": 399
+    },
+    "lp85": {
+      "abstract_frontier_roles": 2011,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 1607,
+      "conflicting_state_pairs": 1076,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 282,
+        "[\"motion\"]": 25,
+        "[\"progress\"]": 6,
+        "[\"structural\", \"motion\"]": 86
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 30,
+        "[\"structural\", \"motion\"]": 4
+      },
+      "profiled_states": 118,
+      "prospective_confirmations": 32,
+      "prospective_conflicts": 2,
+      "prospective_predictions": 34,
+      "states_with_compatible_peer": 115,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/lp85.cognitive.jsonl",
+      "transitions": 399
+    },
+    "ls20": {
+      "abstract_frontier_roles": 127,
+      "ambiguous_predictions": 1,
+      "compatible_state_pairs": 13858,
+      "conflicting_state_pairs": 999,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 3,
+        "[\"structural\", \"motion\", \"phase\"]": 3,
+        "[\"structural\", \"motion\"]": 383,
+        "[\"structural\"]": 7,
+        "[\"terminal\"]": 3
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 42
+      },
+      "profiled_states": 303,
+      "prospective_confirmations": 42,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 42,
+      "states_with_compatible_peer": 301,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ls20.cognitive.jsonl",
+      "transitions": 399
+    },
+    "m0r0": {
+      "abstract_frontier_roles": 56,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 616,
+      "conflicting_state_pairs": 3158,
+      "nondeterministic_state_roles": 71,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 98,
+        "[\"motion\"]": 127,
+        "[\"progress\"]": 1,
+        "[\"structural\", \"motion\", \"phase\"]": 2,
+        "[\"structural\", \"motion\"]": 169,
+        "[\"terminal\"]": 2
+      },
+      "prediction_outcomes": {},
+      "profiled_states": 163,
+      "prospective_confirmations": 0,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 0,
+      "states_with_compatible_peer": 91,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/m0r0.cognitive.jsonl",
+      "transitions": 399
+    },
+    "r11l": {
+      "abstract_frontier_roles": 20,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 5099,
+      "conflicting_state_pairs": 1092,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"progress\"]": 1,
+        "[\"structural\", \"motion\", \"phase\"]": 7,
+        "[\"structural\", \"motion\"]": 315,
+        "[\"structural\"]": 69,
+        "[\"terminal\"]": 7
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 1
+      },
+      "profiled_states": 384,
+      "prospective_confirmations": 1,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 1,
+      "states_with_compatible_peer": 341,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/r11l.cognitive.jsonl",
+      "transitions": 399
+    },
+    "re86": {
+      "abstract_frontier_roles": 0,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 11419,
+      "conflicting_state_pairs": 8111,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"motion\"]": 100,
+        "[\"progress\"]": 6,
+        "[\"structural\", \"motion\", \"effect:rotated_270\"]": 1,
+        "[\"structural\", \"motion\"]": 291,
+        "[\"structural\"]": 1
+      },
+      "prediction_outcomes": {},
+      "profiled_states": 399,
+      "prospective_confirmations": 0,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 0,
+      "states_with_compatible_peer": 395,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/re86.cognitive.jsonl",
+      "transitions": 399
+    },
+    "s5i5": {
+      "abstract_frontier_roles": 841,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 1317,
+      "conflicting_state_pairs": 148,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"structural\", \"motion\", \"phase\"]": 7,
+        "[\"structural\", \"motion\"]": 279,
+        "[\"structural\"]": 106,
+        "[\"terminal\"]": 7
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 8,
+        "[\"structural\"]": 2
+      },
+      "profiled_states": 241,
+      "prospective_confirmations": 10,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 10,
+      "states_with_compatible_peer": 236,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/s5i5.cognitive.jsonl",
+      "transitions": 399
+    },
+    "sb26": {
+      "abstract_frontier_roles": 0,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 1802,
+      "conflicting_state_pairs": 32,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"progress\"]": 7,
+        "[\"structural\", \"motion\"]": 101,
+        "[\"structural\"]": 15
+      },
+      "prediction_outcomes": {},
+      "profiled_states": 123,
+      "prospective_confirmations": 0,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 0,
+      "states_with_compatible_peer": 116,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sb26.cognitive.jsonl",
+      "transitions": 123
+    },
+    "sc25": {
+      "abstract_frontier_roles": 3873,
+      "ambiguous_predictions": 8,
+      "compatible_state_pairs": 453,
+      "conflicting_state_pairs": 64,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 324,
+        "[\"motion\"]": 5,
+        "[\"structural\", \"motion\", \"phase\"]": 1,
+        "[\"structural\", \"motion\"]": 66,
+        "[\"structural\"]": 2,
+        "[\"terminal\"]": 1
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 35,
+        "[\"structural\", \"motion\"]": 15
+      },
+      "profiled_states": 71,
+      "prospective_confirmations": 45,
+      "prospective_conflicts": 5,
+      "prospective_predictions": 50,
+      "states_with_compatible_peer": 68,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sc25.cognitive.jsonl",
+      "transitions": 399
+    },
+    "sk48": {
+      "abstract_frontier_roles": 3780,
+      "ambiguous_predictions": 1,
+      "compatible_state_pairs": 39,
+      "conflicting_state_pairs": 12,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 379,
+        "[\"structural\", \"motion\"]": 15,
+        "[\"structural\"]": 5
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 44,
+        "[\"structural\", \"motion\"]": 3,
+        "[\"structural\"]": 2
+      },
+      "profiled_states": 17,
+      "prospective_confirmations": 47,
+      "prospective_conflicts": 2,
+      "prospective_predictions": 49,
+      "states_with_compatible_peer": 17,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sk48.cognitive.jsonl",
+      "transitions": 399
+    },
+    "sp80": {
+      "abstract_frontier_roles": 151,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 5651,
+      "conflicting_state_pairs": 568,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"progress\"]": 1,
+        "[\"structural\", \"motion\", \"phase\"]": 10,
+        "[\"structural\", \"motion\"]": 355,
+        "[\"structural\", \"phase\"]": 2,
+        "[\"structural\"]": 19,
+        "[\"terminal\"]": 12
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 18
+      },
+      "profiled_states": 322,
+      "prospective_confirmations": 17,
+      "prospective_conflicts": 1,
+      "prospective_predictions": 18,
+      "states_with_compatible_peer": 290,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sp80.cognitive.jsonl",
+      "transitions": 399
+    },
+    "su15": {
+      "abstract_frontier_roles": 2974,
+      "ambiguous_predictions": 4,
+      "compatible_state_pairs": 2165,
+      "conflicting_state_pairs": 453,
+      "nondeterministic_state_roles": 4,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 235,
+        "[\"motion\"]": 8,
+        "[\"structural\", \"motion\", \"phase\"]": 2,
+        "[\"structural\", \"motion\"]": 148,
+        "[\"structural\", \"phase\"]": 2,
+        "[\"terminal\"]": 4
+      },
+      "prediction_outcomes": {
+        "[\"effect:no_observed_change\"]": 7,
+        "[\"structural\", \"motion\"]": 27,
+        "[\"terminal\"]": 2
+      },
+      "profiled_states": 104,
+      "prospective_confirmations": 34,
+      "prospective_conflicts": 2,
+      "prospective_predictions": 36,
+      "states_with_compatible_peer": 103,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/su15.cognitive.jsonl",
+      "transitions": 399
+    },
+    "tn36": {
+      "abstract_frontier_roles": 295,
+      "ambiguous_predictions": 1,
+      "compatible_state_pairs": 4312,
+      "conflicting_state_pairs": 173,
+      "nondeterministic_state_roles": 1,
+      "outcomes": {
+        "[\"progress\"]": 1,
+        "[\"structural\", \"motion\", \"effect:rotated_270\"]": 9,
+        "[\"structural\", \"motion\", \"phase\"]": 5,
+        "[\"structural\", \"motion\"]": 379,
+        "[\"terminal\"]": 5
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 7
+      },
+      "profiled_states": 251,
+      "prospective_confirmations": 7,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 7,
+      "states_with_compatible_peer": 237,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tn36.cognitive.jsonl",
+      "transitions": 399
+    },
+    "tr87": {
+      "abstract_frontier_roles": 46,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 13495,
+      "conflicting_state_pairs": 6020,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"motion\"]": 58,
+        "[\"progress\"]": 5,
+        "[\"render-noop\"]": 2,
+        "[\"structural\", \"motion\", \"effect:rotated_270\"]": 5,
+        "[\"structural\", \"motion\"]": 322,
+        "[\"structural\"]": 7
+      },
+      "prediction_outcomes": {
+        "[\"motion\"]": 9,
+        "[\"structural\", \"motion\"]": 21
+      },
+      "profiled_states": 366,
+      "prospective_confirmations": 30,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 30,
+      "states_with_compatible_peer": 365,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tr87.cognitive.jsonl",
+      "transitions": 399
+    },
+    "tu93": {
+      "abstract_frontier_roles": 375,
+      "ambiguous_predictions": 57,
+      "compatible_state_pairs": 5555,
+      "conflicting_state_pairs": 3422,
+      "nondeterministic_state_roles": 1,
+      "outcomes": {
+        "[\"structural\", \"motion\", \"phase\", \"effect:rotated_270\"]": 1,
+        "[\"structural\", \"motion\", \"phase\"]": 6,
+        "[\"structural\", \"motion\"]": 310,
+        "[\"structural\"]": 75,
+        "[\"terminal\"]": 7
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 48,
+        "[\"structural\"]": 4
+      },
+      "profiled_states": 183,
+      "prospective_confirmations": 49,
+      "prospective_conflicts": 3,
+      "prospective_predictions": 52,
+      "states_with_compatible_peer": 181,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tu93.cognitive.jsonl",
+      "transitions": 399
+    },
+    "vc33": {
+      "abstract_frontier_roles": 783,
+      "ambiguous_predictions": 0,
+      "compatible_state_pairs": 1620,
+      "conflicting_state_pairs": 182,
+      "nondeterministic_state_roles": 1,
+      "outcomes": {
+        "[\"progress\"]": 1,
+        "[\"structural\", \"motion\", \"phase\"]": 2,
+        "[\"structural\", \"motion\"]": 265,
+        "[\"structural\", \"phase\"]": 5,
+        "[\"structural\"]": 119,
+        "[\"terminal\"]": 7
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 4,
+        "[\"structural\"]": 3,
+        "[\"terminal\"]": 1
+      },
+      "profiled_states": 240,
+      "prospective_confirmations": 8,
+      "prospective_conflicts": 0,
+      "prospective_predictions": 8,
+      "states_with_compatible_peer": 235,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/vc33.cognitive.jsonl",
+      "transitions": 399
+    },
+    "wa30": {
+      "abstract_frontier_roles": 56,
+      "ambiguous_predictions": 39,
+      "compatible_state_pairs": 6463,
+      "conflicting_state_pairs": 5927,
+      "nondeterministic_state_roles": 0,
+      "outcomes": {
+        "[\"effect:no_observed_change\"]": 45,
+        "[\"motion\"]": 222,
+        "[\"structural\", \"motion\", \"phase\"]": 1,
+        "[\"structural\", \"motion\"]": 113,
+        "[\"structural\"]": 17,
+        "[\"terminal\"]": 1
+      },
+      "prediction_outcomes": {
+        "[\"structural\", \"motion\"]": 2,
+        "[\"structural\"]": 1
+      },
+      "profiled_states": 319,
+      "prospective_confirmations": 1,
+      "prospective_conflicts": 2,
+      "prospective_predictions": 3,
+      "states_with_compatible_peer": 318,
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/wa30.cognitive.jsonl",
+      "transitions": 399
+    }
+  }
+}

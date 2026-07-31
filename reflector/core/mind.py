@@ -120,6 +120,7 @@ class MindConfig:
     enable_shortest_progress_path_reuse: bool = False
     enable_terminal_edge_viability_credit: bool = False
     enable_terminal_role_viability_credit: bool = False
+    enable_partial_bisimulation: bool = False
     enable_finite_orbit_commit_exploration: bool = False
     enable_dihedral_analogy_alignment: bool = False
     enable_linear_track_navigation: bool = False
@@ -209,6 +210,7 @@ class MindConfig:
             "enable_shortest_progress_path_reuse",
             "enable_terminal_edge_viability_credit",
             "enable_terminal_role_viability_credit",
+            "enable_partial_bisimulation",
             "enable_finite_orbit_commit_exploration",
             "enable_dihedral_analogy_alignment",
             "enable_linear_track_navigation",

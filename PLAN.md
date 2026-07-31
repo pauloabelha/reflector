@@ -437,6 +437,25 @@ and observed outcomes commute. Plan over the quotient with a CSP/CEGIS
 version space of candidate subgoals. First validate bisimulation and aliasing
 offline; then test one partially solved game and one zero-progress game.
 
+The offline partial-bisimulation audit now supports that substrate. Across all
+9,160 accepted v84m transitions it found 458 prospective donor-only
+role-effect predictions: 422 confirmed and 36 conflicted, for **92.14%**
+precision. It exposed 18,901 locally untried roles with donor predictions.
+Every hypothesis remained game-local; a compatible pair required at least one
+shared deterministic role-effect and no overlapping contradiction. Report
+`reports/v84m-partial-bisimulation-audit-v1.json`, SHA-256
+`42efa51c9f2fe41a0ab4e044c4e4820e4b68716d97f9caa6f71d19e4e5049c34`.
+
+Frozen trace-only v88 candidate `candidate-de408a819b3f6dcd`, inference
+fingerprint
+`8cb07f524cf875937c985a5dceb80b2ae0020dec560d6199638d884ecc6c4852`,
+implements the bounded online version without changing selection. It resets at
+level boundaries, retains evidence across same-level retries, caps states,
+roles, and outcomes, predicts before integrating each row, and records
+confirmations, conflicts, ambiguity, and cap failure. First measure exact
+runtime precision and preservation on high-opportunity games; do not activate
+abstract-frontier control until that trace gate passes.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.
