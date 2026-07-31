@@ -107,6 +107,13 @@ The exact private v97 notebook version 1 has also completed and emitted
 `submission.parquet`. Its competition submission request returned HTTP 400
 under the same pending-v74 quota condition; no v97 submission ID exists.
 
+The exact private v98 notebook version 1 completed and emitted a 2,648-byte
+`submission.parquet`. Its competition request returned HTTP 400 because v74
+had consumed the UTC daily allowance; no v98 submission ID exists. V74
+submission `55123277` subsequently completed at public score `0.02`, matching
+v65b `55113224`. The v98 version must be submitted unchanged after the quota
+resets.
+
 ## Required account and publication actions
 
 These cannot be completed from a local checkout:

@@ -17,8 +17,8 @@ Reflector is an interesting but still weak ARC-AGI-3 agent.
 - Progress: **50 / 183 levels across the 25 public-development games**.
 - Fully completed games: **3 / 25**.
 - Total actions: **9,185**.
-- Kaggle submissions: v65b `55113224` complete and v74 `55123277` pending.
-- Kaggle public score: **0.02 for frozen v65b only**.
+- Kaggle submissions: v65b `55113224` and v74 `55123277` complete.
+- Kaggle public score: **0.02 for frozen v65b and v74**.
 - Kaggle private score: **unavailable**.
 - V98 passes target repeat, preservation, the full suite, quality, and exact
   deployment gates. Relative to v97, only `ls20` changes; all 24 other

@@ -37,11 +37,15 @@ overlay
 and notebook
 `98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`.
 
-Private Kaggle notebook `pauloabelha/reflector-arc-agi-3-v97` version 1
-completed and emitted `submission.parquet`. The competition submission request
-returned HTTP 400 because pending v74 submission `55123277` still occupies the
-daily allowance. Kaggle created no v97 submission ID. The exact completed
-version should be resubmitted unchanged when the quota clears.
+Kaggle submissions `55113224` (v65b) and `55123277` (v74) are complete at
+public score **0.02** each. Private v97 notebook version 1 completed but has no
+submission ID because v74 consumed the UTC daily allowance. Exact accepted v98
+private notebook `pauloabelha/reflector-arc-agi-3-v98` version 1 also completed
+and emitted a 2,648-byte `submission.parquet`, SHA-256
+`71bfd543030e339d87bd9ff744d466218398a1259650b2c255626d27049c88bb`.
+Its competition submission request returned HTTP 400 under the same daily
+quota, so Kaggle created no v98 submission ID. Submit this completed version
+unchanged after the allowance resets.
 
 ## Provisional autonomous breakthrough: `ls20` level 3
 

@@ -17,7 +17,7 @@ Canonical report: this is the only root-level report for real ARC-AGI-3 games.
 | Official local score | **21.2760830187 / 100** | About **21.28%** of the 100-point scale on the known public-development games. |
 | Evaluation coverage | **25 / 25 games** | Every public-development game was run. |
 | Actions used | **9,185** | The budget was 400 actions per game; completed `sb26`, `ft09`, and `cd82` stopped after 124, 162, and 99 actions. |
-| Kaggle submissions | **2** | V65b `55113224` is complete at public score **0.02**; v74 `55123277` is pending. V84m has a completed notebook but no submission ID due to the daily quota. |
+| Kaggle submissions | **2** | V65b `55113224` and v74 `55123277` are complete at public score **0.02** each. V98 notebook version 1 is complete but its competition request hit the daily quota, so it has no submission ID. |
 
 The current process-isolated result is
 [`reports/official-isolated-v98-fibered-factored-quotient-400.json`](reports/official-isolated-v98-fibered-factored-quotient-400.json),
@@ -73,8 +73,9 @@ V98 is accepted.
 | Kaggle notebook artifact | v92 accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v92 submission ID |
 | Kaggle notebook artifact | v94b accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v94b` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v94b submission ID |
 | Kaggle notebook artifact | v97 accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v97` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v97 submission ID |
+| Kaggle notebook artifact | v98 accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v98` version 1 completed and emitted a 2,648-byte `submission.parquet` | exact competition request returned HTTP 400 after v74 consumed the UTC daily allowance; no v98 submission ID |
 | Kaggle public leaderboard | v65b, submission `55113224` | **0.02** | synchronous hidden rerun complete | belongs only to frozen v65b |
-| Kaggle rerun | v74, submission `55123277` | pending | submitted 2026-07-31 01:05:23 UTC | pending; no score yet |
+| Kaggle rerun | v74, submission `55123277` | **0.02 public** | submitted 2026-07-31 01:05:23 UTC | complete; private score unavailable |
 | Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |
 | Target-only `tr87` reruns | v82f accepted | 47.6190476190 for one game | 4/6 levels; exact `[56,45,44,38,217,0]` twice | deterministic demonstrated-analogy gain |
 | Target-only `tr87` control | v84l factor-bundle option, experimental | 47.6190476190 for one game | exact v82f preservation at 4/6 and `[56,45,44,38,217,0]` | isolates the next gain from the `re86` mechanism |

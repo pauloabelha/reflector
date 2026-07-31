@@ -34,8 +34,8 @@ Last verified: 2026-07-31
 | Frozen inference source | `d73027d` |
 | Frozen candidate commit | `00c0039` |
 | Candidate | `candidate-59010e6c00da94ac` |
-| Kaggle submissions | **2**: `55113224` complete; `55123277` pending |
-| Kaggle public score | **0.02** for frozen v65b only |
+| Kaggle submissions | **2**: `55113224` and `55123277` complete |
+| Kaggle public score | **0.02** for frozen v65b and v74 |
 | Kaggle private score | **unavailable** |
 
 The score is about **21.28% of the 100-point scale**. It is a local
@@ -57,8 +57,8 @@ every canonical score-table checkpoint and is generated from
 [the real-games scorecard](REAL_GAMES_REPORT.md), and it is explicitly not a
 Kaggle leaderboard series.
 
-**Kaggle submission:** frozen v65b—not v84m—owns completed submission
-`55113224` and public score **0.02**. V74 submission `55123277` is pending.
+**Kaggle submission:** frozen v65b and v74 own completed submissions
+`55113224` and `55123277`; both public scores are **0.02**.
 The exact private v92 notebook
 `pauloabelha/reflector-arc-agi-3-v92` version 1 completed and emitted
 `submission.parquet`, but its submission request returned HTTP 400 while v74
@@ -68,9 +68,11 @@ still occupies the one-per-day allowance. The exact accepted v94b notebook
 No v92 or v94b submission ID exists yet. The exact accepted v97 artifact is
 committed as private notebook `pauloabelha/reflector-arc-agi-3-v97` version 1,
 which completed and emitted `submission.parquet`. Its competition submission
-request returned HTTP 400 while v74 remains pending, so no v97 submission ID
-exists yet. The exact accepted v98 artifact passes deterministic export and
-network-disabled smoke and is ready for its own Kaggle notebook commit.
+request returned HTTP 400 after v74 consumed that UTC day's allowance, so no
+v97 submission ID exists. Exact accepted v98 private notebook
+`pauloabelha/reflector-arc-agi-3-v98` version 1 completed and emitted
+`submission.parquet`; its competition request also returned HTTP 400 because
+the same daily allowance was occupied. No v98 submission ID exists yet.
 Eligibility confirmation and
 publication of the exact notebook and commit from a participant-owned public
 repository remain manual. Follow the

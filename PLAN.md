@@ -45,8 +45,8 @@ generalization.
   `e4352d7faf21c41f67f5009952c5381e3a083a2fc086e511185b73432d9c7d0a`,
   notebook
   `98d738a4dc040e62a0d17739c0b2b3d48c70ecfc2ae160d6e0f467c775e612e9`
-- Kaggle submissions: v65b `55113224` complete at public score `0.02`; v74
-  `55123277` pending
+- Kaggle submissions: v65b `55113224` and v74 `55123277` are complete at
+  public score `0.02`
 - V84m Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v84m`, version 1,
   complete with `submission.parquet`; competition submission blocked by the
   already-consumed daily allowance, so no v84m submission ID exists
@@ -57,7 +57,11 @@ generalization.
 - V97 Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v97`, version 1,
   complete with `submission.parquet`; competition submission returned HTTP 400
   while v74 remains pending, so no v97 submission ID exists
-- Kaggle public score: `0.02` for v65b only; v74 pending; v97 unsubmitted
+- V98 Kaggle notebook: `pauloabelha/reflector-arc-agi-3-v98`, version 1,
+  complete with a 2,648-byte `submission.parquet`; competition submission
+  returned HTTP 400 because v74 had consumed the UTC daily allowance, so no
+  v98 submission ID exists
+- Kaggle public score: `0.02` for v65b and v74; v98 unsubmitted
 - Kaggle private score: unavailable
 - Canonical human-readable report: `REAL_GAMES_REPORT.md`
 - Maintenance state: canonical code is organized under `reflector/core/`,
