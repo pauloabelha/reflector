@@ -71,6 +71,16 @@ with Ruff and focused mypy clean.
 Next gates are an exact target repeat, accepted-win preservation, the full
 25-game process-isolated suite, and the complete quality/export package.
 
+The 15-game accepted-progress preservation gate now passes. V98 solves
+**50 levels in 5,185 actions** with gate mean **35.46013836455222**. Every
+score, level count, action total, reset count, and level-action vector for the
+fourteen non-`ls20` games is exactly v97; `ls20` alone gains level 3.
+Report
+[`reports/experimental-v98-preservation-15games.json`](reports/experimental-v98-preservation-15games.json),
+SHA-256
+`7105c21fa79737d69f7f311cce978046f266ef85f6140ff8e67b78e4579e5828`.
+The complete 25-game gate is next.
+
 ## New level-3 breakthrough: a product of contextual, palette, and shape morphisms
 
 A public-wrapper-only diagnosis now advances `ls20` level 3 in **49 legal

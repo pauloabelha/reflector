@@ -110,7 +110,8 @@ Implemented bounded offspring:
 Immediate gate sequence:
 
 1. ~~exact fresh-process `ls20` repeat~~ — passed;
-2. accepted-win preservation with exact non-target vector comparison;
+2. ~~accepted-win preservation with exact non-target vector comparison~~ —
+   passed: 50 levels, 5,185 actions, fourteen non-target vectors exact;
 3. frozen-source 25-game isolated suite;
 4. full tests, Ruff, mypy, exact export, offline smoke, and prize audit;
 5. promote and submit the exact Kaggle artifact only if every gate passes.
