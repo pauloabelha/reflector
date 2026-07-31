@@ -634,6 +634,33 @@ reachable boundary contact, newly enabled regions, and distinctive relational
 markers; eliminate a predicate on a prospectively observed blocked edge
 instead of converting it directly into a committed terminal option.
 
+The subsequent public-wrapper diagnosis falsifies the topology premise more
+precisely. The large same-color strip loses four cells on every action and is
+restored from zero to 84 on a reset. The apparent contextual teleport is a
+21-action horizon reset, and its coincidence with operator contact confounded
+v93's causal attribution. The two hollow same-color spatial components are
+consumable resources: contact restores that budget indicator to 84.
+
+A composed legal plan advances level 2 in 45 actions:
+
+1. reach the operator and induce the first normalized phase;
+2. use the nearby resource just before the horizon becomes binding;
+3. return to induce the second phase;
+4. rearm/reenter once to reach display equality;
+5. use the remaining distant resource only now, resetting the horizon;
+6. enter the fixed display host and advance.
+
+Report `reports/ls20-black-box-temporal-resource-v1.json`, SHA-256
+`e0d486ae7986b2f1c2ab227b39bcb44b73a23bf7e44fb007638b28001b222f4d`.
+The next offspring must implement this as a generic bounded
+resource-constrained option CSP, not as a route. It should infer a monotone
+budget component, its action cost, same-role resource candidates, causal reset
+evidence, option distances, and phase equality. Receding-horizon selection
+should apply an operator only when a resource or terminal remains feasible
+afterward; otherwise it should delay the resource reset to maximize useful
+future budget. Context resets must be treated as exogenous temporal
+boundaries, never as evidence that a terminal predicate has become true.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

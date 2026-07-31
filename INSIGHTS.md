@@ -550,6 +550,35 @@ blocked-contact evidence. In categorical terms, observing a morphism into the
 goal-display object does not prove that object is terminal in the task
 category.
 
+The next black-box intervention changes this interpretation. A thin component
+decreases by a constant four cells per action; the alleged contextual
+transition restores it to 84 while consuming a finite life. It is a horizon
+reset, not a topology rewrite. The v93 latch therefore illustrates causal
+confounding: operator contact and timeout occurred in the same transition.
+
+Two hollow components share the budget component's color and act as spatial
+resource morphisms. Contact resets the remaining horizon to 21 actions. This
+effect explains why merely reaching them looked inert under a progress-only
+predicate and why collecting them greedily failed: a reset collected too
+early discards residual budget.
+
+The verified 45-action level-2 solve is a resource-constrained natural
+transformation between three representations:
+
+- pixel area maps to remaining abstract time;
+- normalized display succession maps to a phase object;
+- shortest anchor paths map resource and terminal options into primitive
+  actions.
+
+The hierarchical CSP composes these morphisms as
+`operator ; resource ; operator ; operator ; resource ; terminal`. Each
+resource is scheduled at the latest feasible causal cut, so its restored
+horizon serves downstream options rather than overwriting unused capacity.
+This is Drescher-style schema construction with explicit preconditions and
+results, Piagetian accommodation localized to the temporal factor, and
+model-based HRL over a product of anchor, phase, remaining budget, and
+resource availability.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

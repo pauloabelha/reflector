@@ -59,12 +59,37 @@ and notebook
 
 The first level-2 accommodation, v93
 `candidate-d362ccca5fe08c64`, is rejected for promotion. It correctly factors
-operator contact into an ordinary translation followed by a contextual
-teleport/topology/resource/display morphism, records two such transitions,
-and preserves the accepted first level at 17 actions. But its latched
-display-equality hypothesis still targets the fixed display host, which
-rejects entry; the official run remains exactly 1/7 at
+operator contact from an ordinary translation and preserves the accepted
+first level at 17 actions. But later black-box evidence identifies the
+supposed contextual topology morphism as a finite-horizon reset confounded
+with operator contact. Its latched display-equality hypothesis targets the
+fixed display host after the reset has already changed the phase; the official
+run remains exactly 1/7 at
 `[17,383,0,0,0,0,0]`. V92 remains accepted.
+
+## New verified diagnosis: temporal-resource option scheduling
+
+A public-wrapper-only level-2 diagnosis now advances `ls20` from level 1 to
+level 2 in **45 actions**. The key accommodation is temporal, not topological.
+A thin 84-cell indicator loses four cells per action, giving a 21-action
+horizon. Contact with either of two structurally repeated hollow markers
+restores the indicator to 84; these objects are consumable resource
+morphisms, not terminal predicates.
+
+The successful bounded option composition is:
+
+`operator phase 1 → near resource reset → operator phase 2 → rearm/reenter →
+display equality → far resource reset → goal-host entry`.
+
+Resource order is causal: collecting both before operating wastes their reset
+effect and leaves every terminal plan one action short. Delaying each pickup
+until its future horizon is needed makes the CSP feasible. The exact legal
+trace is
+[`reports/ls20-black-box-temporal-resource-v1.json`](reports/ls20-black-box-temporal-resource-v1.json).
+Its SHA-256 is
+`e0d486ae7986b2f1c2ab227b39bcb44b73a23bf7e44fb007638b28001b222f4d`.
+This is a verified architectural target, not yet an autonomous candidate;
+v92 remains the accepted score.
 
 ## New accepted mechanism: demonstrated analogy algebra
 

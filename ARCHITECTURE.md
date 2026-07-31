@@ -384,6 +384,25 @@ teleport. The target falsifier shows the current architectural boundary: a
 latched display relation cannot by itself select a terminal region. This child
 is not accepted and its broader source path must not be exported as v92.
 
+The later level-2 diagnosis replaces that contextual interpretation with a
+factored temporal model. A large thin component is a learned budget object
+when its area decreases by a constant amount under otherwise heterogeneous
+actions. Small spatial components with the same role/color become resource
+hypotheses; contact is confirmed when one disappears while the budget object
+returns to its maximal observed area. A global body teleport accompanied by
+budget restoration is a horizon reset, not a learned spatial action or a
+terminal latch.
+
+The proposed successor state is
+`(anchor, normalized phase, remaining budget, available resources)`.
+Navigation, operator application, resource contact, and terminal entry are
+bounded options with predicted costs and postconditions. A receding-horizon
+CSP permits an option only if a resource reset or terminal remains reachable
+afterward. Because resource contact resets rather than adds budget, the
+compiler schedules it at a latest feasible causal cut. No color, coordinate,
+route, game ID, or fixed horizon belongs in the deployed policy; all roles and
+costs must be inferred from rendered transitions.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

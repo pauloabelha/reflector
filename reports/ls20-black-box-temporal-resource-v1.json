@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "game": "ls20",
+  "method": "public-wrapper-black-box",
+  "status": "verified-level-2-solve",
+  "levels_completed_before": 1,
+  "levels_completed_after": 2,
+  "level_actions": 45,
+  "causal_model": {
+    "budget_indicator_initial_area": 84,
+    "budget_decrement_per_action": 4,
+    "inferred_horizon_actions": 21,
+    "resource_contact_effect": "reset-budget-indicator-to-84",
+    "operator_effect": "unary-successor-on-normalized-display-phase",
+    "goal_relation": "normalized-display-equality-followed-by-display-host-entry"
+  },
+  "abstract_option_program": [
+    {
+      "option": "navigate-to-operator",
+      "actions": 17
+    },
+    {
+      "option": "navigate-to-near-resource",
+      "actions": 3,
+      "effect": "budget-reset"
+    },
+    {
+      "option": "return-to-operator",
+      "actions": 3,
+      "effect": "phase-successor"
+    },
+    {
+      "option": "rearm-and-reenter-operator",
+      "actions": 2,
+      "effect": "display-equality"
+    },
+    {
+      "option": "navigate-to-far-resource",
+      "actions": 15,
+      "effect": "budget-reset"
+    },
+    {
+      "option": "navigate-and-enter-display-host",
+      "actions": 5,
+      "effect": "level-progress"
+    }
+  ],
+  "level_action_ids": [
+    1,
+    4,
+    1,
+    1,
+    1,
+    1,
+    1,
+    4,
+    4,
+    2,
+    4,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    4,
+    1,
+    4,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    2,
+    3,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "constraints": {
+    "public_observations_only": true,
+    "legal_actions_only": true,
+    "game_source_inspected": false,
+    "agent_hard_coding": false
+  }
+}
