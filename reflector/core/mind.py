@@ -120,6 +120,7 @@ class MindConfig:
     enable_shortest_progress_path_reuse: bool = False
     enable_finite_orbit_commit_exploration: bool = False
     enable_dihedral_analogy_alignment: bool = False
+    enable_linear_track_navigation: bool = False
     action_budget: int = 80
     planner_max_depth: int = 3
     planner_max_expansions: int = 64
@@ -205,6 +206,7 @@ class MindConfig:
             "enable_shortest_progress_path_reuse",
             "enable_finite_orbit_commit_exploration",
             "enable_dihedral_analogy_alignment",
+            "enable_linear_track_navigation",
         ):
             if type(getattr(self, name)) is not bool:
                 raise ValueError(f"{name} must be a boolean")

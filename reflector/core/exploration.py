@@ -39,6 +39,7 @@ from .lattice_csp import (
     learn_click_effect_model,
     solve_click_csp,
 )
+from .linear_track import TrackState, infer_linear_track
 from .permutation_transport import (
     FactoredOrbitDomain,
     FactoredOrbitGenerator,
@@ -418,6 +419,7 @@ class EpistemicExplorer:
     shortest_progress_path_reuse: bool = False
     finite_orbit_commit_exploration: bool = False
     dihedral_analogy_alignment: bool = False
+    linear_track_navigation: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -558,6 +560,16 @@ class EpistemicExplorer:
     analogy_mutations: int = 0
     analogy_moves: int = 0
     analogy_diagnostic: str = "exact-off"
+    track_last_visible: TrackState | None = None
+    track_actions_since_visible: list[int] = field(
+        default_factory=list,
+        repr=False,
+    )
+    track_macro: tuple[int, ...] = ()
+    track_macro_cursor: int = 0
+    track_selections: int = 0
+    track_compilations: int = 0
+    track_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -1025,6 +1037,8 @@ class EpistemicExplorer:
             order.append("committed-trajectory-planning")
         if self.shape_goal_translation:
             order.append("shape-goal-translation")
+        if self.linear_track_navigation:
+            order.append("linear-track-navigation")
         if self.dihedral_analogy_alignment:
             order.append("dihedral-analogy-alignment")
         if self.finite_orbit_commit_exploration:
@@ -1202,10 +1216,12 @@ class EpistemicExplorer:
             self.shortest_progress_path_selections = 0
             self._reset_finite_orbit(clear_trials=True)
             self._reset_dihedral_analogy(clear_controls=True)
+            self._reset_linear_track()
         elif observation.state == "GAME_OVER":
             self.level_start_state = None
             self._reset_finite_orbit(clear_trials=False)
             self._reset_dihedral_analogy(clear_controls=False)
+            self._reset_linear_track()
             self.episode_roles.clear()
             self.episode_groundings.clear()
             self.productive_groundings.clear()
@@ -1285,6 +1301,19 @@ class EpistemicExplorer:
             and not progressed
         ):
             self._observe_dihedral_analogy(
+                before,
+                after,
+                pending_token.action_id,
+            )
+        if (
+            self.linear_track_navigation
+            and pending_token is not None
+            and not pending_token.data
+            and pending_token.action_id
+            not in {self.reset_action, self.complex_action}
+            and not progressed
+        ):
+            self._observe_linear_track(
                 before,
                 after,
                 pending_token.action_id,
@@ -5371,6 +5400,24 @@ class EpistemicExplorer:
                 scene,
             )
 
+        track_navigation = self._select_linear_track(
+            observation,
+            tokens,
+        )
+        if track_navigation is not None:
+            self.last_scheme_components = (
+                "scheme:prospective-linear-track-navigation",
+                "relation:marker-to-framed-endpoint",
+                "operator:replay-distance-decreasing-macro",
+                "state:bounded-occluded-intermediate",
+            )
+            return self._issue(
+                state,
+                track_navigation,
+                "epistemic-frontier:linear-track-navigation",
+                scene,
+            )
+
         analogy = self._select_dihedral_analogy(
             observation,
             tokens,
@@ -5608,6 +5655,96 @@ class EpistemicExplorer:
             "epistemic-frontier:least-repeated-exhausted-state",
             scene,
         )
+
+    def _reset_linear_track(self) -> None:
+        self.track_last_visible = None
+        self.track_actions_since_visible.clear()
+        self.track_macro = ()
+        self.track_macro_cursor = 0
+        self.track_selections = 0
+        self.track_diagnostic = (
+            "not-grounded"
+            if self.linear_track_navigation
+            else "exact-off"
+        )
+
+    def _observe_linear_track(
+        self,
+        before: tuple[tuple[int, ...], ...],
+        after: tuple[tuple[int, ...], ...],
+        action_id: int,
+    ) -> None:
+        source = infer_linear_track(before)
+        destination = infer_linear_track(after)
+        if self.track_last_visible is None:
+            self.track_last_visible = source
+        if self.track_last_visible is None:
+            self.track_diagnostic = "linear-track-not-grounded"
+            return
+        self.track_actions_since_visible.append(action_id)
+        if len(self.track_actions_since_visible) > 4:
+            self.track_actions_since_visible.clear()
+            self.track_last_visible = destination
+            self.track_diagnostic = "linear-track-observation-cap"
+            return
+        if destination is None:
+            self.track_diagnostic = "linear-track-intermediate-occluded"
+            return
+        if destination.target != self.track_last_visible.target:
+            self.track_last_visible = destination
+            self.track_actions_since_visible.clear()
+            self.track_macro = ()
+            self.track_macro_cursor = 0
+            self.track_diagnostic = "linear-track-target-changed"
+            return
+        if destination.distance < self.track_last_visible.distance:
+            self.track_macro = tuple(self.track_actions_since_visible)
+            self.track_macro_cursor = 0
+            self.track_compilations += 1
+            self.track_diagnostic = "distance-decreasing-track-macro"
+        else:
+            self.track_diagnostic = "non-decreasing-track-observation"
+        self.track_last_visible = destination
+        self.track_actions_since_visible.clear()
+
+    def _select_linear_track(
+        self,
+        observation: Observation,
+        tokens: tuple[ActionToken, ...],
+    ) -> ActionToken | None:
+        if (
+            not self.linear_track_navigation
+            or not self.track_macro
+            or self.track_selections >= 32
+        ):
+            return None
+        available = {
+            token.action_id: token
+            for token in tokens
+            if not token.data
+            and token.action_id
+            not in {self.reset_action, self.complex_action}
+        }
+        action_id = self.track_macro[self.track_macro_cursor]
+        if action_id not in available:
+            self.track_macro = ()
+            self.track_macro_cursor = 0
+            self.track_diagnostic = "track-macro-action-unavailable"
+            return None
+        layout = infer_linear_track(observation.frame)
+        if (
+            self.track_macro_cursor == 0
+            and layout is not None
+            and layout.distance == 0
+        ):
+            self.track_diagnostic = "linear-track-target-reached"
+            return None
+        self.track_macro_cursor = (
+            self.track_macro_cursor + 1
+        ) % len(self.track_macro)
+        self.track_selections += 1
+        self.track_diagnostic = "replaying-distance-decreasing-track-macro"
+        return available[action_id]
 
     def _reset_dihedral_analogy(self, *, clear_controls: bool) -> None:
         self.analogy_mutation_attempts.clear()
@@ -12174,6 +12311,11 @@ class EpistemicExplorer:
             "dihedral_analogy_mutations": self.analogy_mutations,
             "dihedral_analogy_moves": self.analogy_moves,
             "dihedral_analogy_diagnostic": self.analogy_diagnostic,
+            "linear_track_enabled": int(self.linear_track_navigation),
+            "linear_track_macro_length": len(self.track_macro),
+            "linear_track_selections": self.track_selections,
+            "linear_track_compilations": self.track_compilations,
+            "linear_track_diagnostic": self.track_diagnostic,
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()

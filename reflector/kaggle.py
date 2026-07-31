@@ -37,6 +37,7 @@ OVERLAY_FILES = (
     "reflector/core/action_translation_algebra.py",
     "reflector/core/action_effect_typing.py",
     "reflector/core/dihedral_analogy.py",
+    "reflector/core/linear_track.py",
     "reflector/core/exploration.py",
     "reflector/core/graph.py",
     "reflector/core/mind.py",

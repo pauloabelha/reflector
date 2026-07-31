@@ -95,6 +95,9 @@ class SymbolicPolicy:
             dihedral_analogy_alignment=(
                 self.mind.config.enable_dihedral_analogy_alignment
             ),
+            linear_track_navigation=(
+                self.mind.config.enable_linear_track_navigation
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),
