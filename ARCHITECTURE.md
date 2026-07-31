@@ -261,6 +261,16 @@ partition-refinement evidence; multiple donor outcomes force abstention.
 Missing roles form an abstract causal frontier. The representation is bounded,
 game-local, reset at level change, and cannot yet select an action.
 
+The v88 online trace gate validates this deployment boundary: 285 of 308
+prospective predictions confirmed across eight games (92.53%), with exact
+parent behavior and no cap failure. The first operative descendant is
+therefore constrained to a lower-priority generic advisor. It may order a
+locally untried role only after eight flawless current-level predictions,
+abstains after any partition conflict, accepts only a unique predicted
+positive effect, and has a 32-selection level cap. This is not global state
+merging: every raw state and counterexample remains available for
+accommodation.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

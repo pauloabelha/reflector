@@ -390,3 +390,21 @@ can prevent one undefined grounded morphism, but substituting the next
 least-tried action remains undirected. The next architecture must learn a
 positive abstract value or subgoal over causal states—while retaining failure
 evidence as a constraint—rather than widening the taboo.
+
+V88 validates the first online causal quotient without changing control. On
+`g50t`, `lp85`, `ls20`, `sc25`, `sk48`, `sp80`, `su15`, and `tu93`, every
+score, completed-level vector, failure count, and total action count exactly
+matched v84m. The live model made 308 prospective predictions, confirmed 285,
+and contradicted 23: **92.53% precision**, close to the independent 92.14%
+offline audit. `ls20` confirmed all 42 predictions; all hard evidence caps
+held. Report
+[`reports/experimental-v88-bisim-trace-r1-400.json`](reports/experimental-v88-bisim-trace-r1-400.json),
+SHA-256
+`49f4db4efb7dd71a033caf0ac4edc49cf208612bfa18d91e424cb9cdd542025b`.
+
+This is a representation breakthrough, not a score change: compatible
+partial action/effect profiles compress raw frames while retaining explicit
+counterexamples. The next offspring may use the abstract causal frontier only
+after eight flawless current-level prospective predictions, must disable that
+control after any conflict, and must yield to every grounded specialist.
+V84m remains the accepted 20.418940161588477/100 parent.

@@ -406,6 +406,22 @@ It is not yet control evidence. The online trace-only child must reproduce
 high precision with exact `ActionRole` and rendered effect typing before an
 operative child may prioritize a novel predicted effect.
 
+V88 completed that online test. Its exact grounded roles confirmed 285 of 308
+prospective predictions across eight games (**92.53%**) while reproducing
+every parent trajectory. The agreement with the independently computed
+92.14% offline precision matters: the compression is not an artifact of a
+post-hoc batch representation. It survives chronological, predict-before-
+update execution.
+
+The conflict rate also gives the control boundary. Partial bisimulation is not
+an equivalence relation to assert globally; it is a defeasible local
+simulation relation. Control authority should therefore be earned within the
+current level, revoked by the first failed commuting square, and used only to
+order already-legal generic interventions. This is a compact form of
+Piagetian assimilation/accommodation and a cautious HRL initiation rule:
+reuse a causal schema while it predicts, then split the abstraction at the
+first disequilibrium.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

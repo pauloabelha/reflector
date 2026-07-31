@@ -456,6 +456,24 @@ confirmations, conflicts, ambiguity, and cap failure. First measure exact
 runtime precision and preservation on high-opportunity games; do not activate
 abstract-frontier control until that trace gate passes.
 
+That trace gate passes. Across `g50t`, `lp85`, `ls20`, `sc25`, `sk48`,
+`sp80`, `su15`, and `tu93`, v88 exactly reproduced every v84m score,
+completed-level action vector, failure count, and action total. The online
+quotient recorded 3,163 observations, 308 prospective predictions, 285
+confirmations, and 23 conflicts, or **92.53% precision**; `ls20` was 42/42
+and no cap failed. Report
+`reports/experimental-v88-bisim-trace-r1-400.json`, SHA-256
+`49f4db4efb7dd71a033caf0ac4edc49cf208612bfa18d91e424cb9cdd542025b`.
+
+Freeze v88 as the trace control and build one minimal operative child. Its
+abstract-causal-frontier advisor must remain below every specialist, require
+at least eight flawless current-level prospective predictions, disable itself
+for the level after any conflict, select only a locally untried role with a
+unique predicted positive effect, and stop after 32 selections. First gate on
+the same eight games. Reject any accepted-vector regression; promote to a
+broader gate only for a level gain or a material deterministic efficiency
+gain.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.
