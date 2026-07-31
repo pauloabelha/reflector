@@ -249,6 +249,7 @@ def test_cross_level_action_algebra_transfers_after_recolored_commuting_square()
     assert planner.cross_level_transfer_confirmations == 1
     assert planner.cross_level_transfer_rejections == 0
     assert planner.transferred_action_algebra_active
+    assert planner.active_action_algebra_scope == "cross-level"
     assert planner.inherited_action_effects == {}
     assert planner.traversable_colors == {6}
     assert planner.diagnostic == "cross-level-action-algebra-confirmed"
@@ -280,6 +281,7 @@ def test_cross_level_action_algebra_rejects_noncommuting_action() -> None:
     assert planner.cross_level_transfer_confirmations == 0
     assert planner.cross_level_transfer_rejections == 1
     assert not planner.transferred_action_algebra_active
+    assert planner.active_action_algebra_scope is None
     assert planner.inherited_action_effects == {}
     assert planner.diagnostic == "cross-level-action-algebra-rejected"
 
@@ -310,6 +312,41 @@ def test_cross_level_hypothesis_waits_through_scene_discontinuity() -> None:
     assert planner.cross_level_transfer_confirmations == 0
     assert planner.cross_level_transfer_rejections == 0
     assert not planner.transferred_action_algebra_active
+    assert planner.inherited_action_algebra_scope == "cross-level"
+
+
+def test_same_level_retry_algebra_uses_distinct_prospective_authority() -> None:
+    effects = {1: (0, -5), 2: (0, 5), 3: (-5, 0), 4: (5, 0)}
+    planner = PhaseTopologyPlanner(
+        action_effects=dict(effects),
+        action_evidence=Counter({action_id: 4 for action_id in effects}),
+        colored_mask=tuple(
+            (x, y, 9 if x < 2 else 12) for x in range(4) for y in range(4)
+        ),
+    )
+    planner.reset_level(
+        retain_action_algebra=True,
+        retention_scope="same-level-retry",
+    )
+    before = _frame(28, 18, color=6)
+    after = _frame(28, 18, color=6)
+    _paint_body(before, (3, 7), left_color=2, right_color=11)
+    _paint_body(after, (8, 7), left_color=2, right_color=11)
+
+    planner.observe(
+        _freeze(before),
+        _freeze(after),
+        action_id=4,
+        progressed=False,
+    )
+
+    assert planner.action_effects == effects
+    assert planner.transferred_action_algebra_active
+    assert planner.active_action_algebra_scope == "same-level-retry"
+    assert planner.retry_transfer_confirmations == 1
+    assert planner.retry_transfer_rejections == 0
+    assert planner.cross_level_transfer_confirmations == 0
+    assert planner.diagnostic == "retry-action-algebra-confirmed"
 
 
 def test_temporal_meter_and_same_role_reset_are_learned_relationally() -> None:

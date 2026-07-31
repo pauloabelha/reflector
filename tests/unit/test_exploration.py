@@ -42,6 +42,36 @@ def test_explorer_tries_each_simple_action_before_repeating() -> None:
     assert "least-repeated" in third.reason
 
 
+def test_game_over_retains_only_phase_topology_algebra_as_retry_hypothesis() -> None:
+    effects = {1: (0, -5), 2: (0, 5), 3: (-5, 0), 4: (5, 0)}
+    explorer = EpistemicExplorer(phase_topology_planning=True)
+    planner = explorer.phase_topology_planner
+    planner.action_effects = dict(effects)
+    planner.action_evidence = Counter({action_id: 3 for action_id in effects})
+    planner.colored_mask = tuple(
+        (x, y, 9 if x < 2 else 12) for x in range(4) for y in range(4)
+    )
+    planner.current_anchor = (5, 5)
+    planner.operator_cells = ((6, 6),)
+    planner.resource_resets = 2
+    explorer.current_level = 1
+    game_over = Observation.create(
+        state="GAME_OVER",
+        available_actions=(0,),
+        frame=((0, 0), (0, 0)),
+        levels_completed=1,
+    )
+
+    explorer.observe(game_over, _scene(game_over))
+
+    assert planner.action_effects == {}
+    assert planner.inherited_action_effects == effects
+    assert planner.inherited_action_algebra_scope == "same-level-retry"
+    assert planner.current_anchor is None
+    assert planner.operator_cells == ()
+    assert planner.resource_resets == 0
+
+
 def test_explorer_generates_distinct_legal_object_clicks() -> None:
     observation = Observation.create(
         state="NOT_FINISHED",

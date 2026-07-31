@@ -1386,7 +1386,10 @@ class EpistemicExplorer:
             self._reset_linear_track()
             self._reset_constellation_alignment(clear_controls=False)
             if self.phase_topology_planning:
-                self.phase_topology_planner.reset_level()
+                self.phase_topology_planner.reset_level(
+                    retain_action_algebra=True,
+                    retention_scope="same-level-retry",
+                )
             self.episode_roles.clear()
             self.episode_groundings.clear()
             self.productive_groundings.clear()
@@ -13404,6 +13407,15 @@ class EpistemicExplorer:
             ),
             "phase_topology_transferred_action_algebra_active": int(
                 self.phase_topology_planner.transferred_action_algebra_active
+            ),
+            "phase_topology_action_algebra_scope": (
+                self.phase_topology_planner.active_action_algebra_scope
+            ),
+            "phase_topology_retry_transfer_confirmations": (
+                self.phase_topology_planner.retry_transfer_confirmations
+            ),
+            "phase_topology_retry_transfer_rejections": (
+                self.phase_topology_planner.retry_transfer_rejections
             ),
             "phase_topology_body_grounded": int(
                 bool(self.phase_topology_planner.colored_mask)

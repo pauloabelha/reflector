@@ -101,6 +101,14 @@ scene or action semantics, so one post-reset commuting square is still
 required. What may persist is only the compressed primitive law, never the
 failed route or option state.
 
+V97 operationalizes that claim with scoped memory. “Cross-level” and
+“same-level retry” are not collapsed into one transfer statistic; they are
+separately falsifiable. This matters epistemologically: the abstraction being
+conserved is identical, but the evidence for why conservation is plausible is
+different. A retry is identity in the level context, whereas a level change is
+a candidate presentation morphism. Both still require a prospective concrete
+square before authority.
+
 ## 2026-07-30 — v82f demonstrated analogy algebra accepted
 
 The strongest post-restart gain came from treating `tr87` as a visible algebra

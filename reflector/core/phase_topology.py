@@ -5,13 +5,14 @@ from __future__ import annotations
 from collections import Counter, defaultdict, deque
 from dataclasses import dataclass, field
 from math import gcd
-from typing import Iterable
+from typing import Iterable, Literal
 
 type Frame = tuple[tuple[int, ...], ...]
 type Point = tuple[int, int]
 type Pattern = tuple[int, int, tuple[Point, ...]]
 type ResourceKey = tuple[int, tuple[int, int, int, int], tuple[Point, ...]]
 type MaskSignature = tuple[tuple[int, int, int], ...]
+type RetentionScope = Literal["cross-level", "same-level-retry"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -325,9 +326,13 @@ class PhaseTopologyPlanner:
     inherited_action_effects: dict[int, Point] = field(default_factory=dict)
     inherited_action_evidence: Counter[int] = field(default_factory=Counter)
     inherited_mask_signature: MaskSignature = ()
+    inherited_action_algebra_scope: RetentionScope | None = None
     transferred_action_algebra_active: bool = False
+    active_action_algebra_scope: RetentionScope | None = None
     cross_level_transfer_confirmations: int = 0
     cross_level_transfer_rejections: int = 0
+    retry_transfer_confirmations: int = 0
+    retry_transfer_rejections: int = 0
     invalid_actions: set[int] = field(default_factory=set)
     colored_mask: tuple[tuple[int, int, int], ...] = ()
     current_anchor: Point | None = None
@@ -376,8 +381,14 @@ class PhaseTopologyPlanner:
     def body_colors(self) -> frozenset[int]:
         return frozenset(color for _x, _y, color in self.colored_mask)
 
-    def reset_level(self, *, retain_action_algebra: bool = False) -> None:
+    def reset_level(
+        self,
+        *,
+        retain_action_algebra: bool = False,
+        retention_scope: RetentionScope = "cross-level",
+    ) -> None:
         self.transferred_action_algebra_active = False
+        self.active_action_algebra_scope = None
         if (
             retain_action_algebra
             and 4 <= len(self.action_effects) <= 8
@@ -386,10 +397,12 @@ class PhaseTopologyPlanner:
             self.inherited_action_effects = dict(self.action_effects)
             self.inherited_action_evidence = Counter(self.action_evidence)
             self.inherited_mask_signature = _partition_signature(self.colored_mask)
+            self.inherited_action_algebra_scope = retention_scope
         else:
             self.inherited_action_effects.clear()
             self.inherited_action_evidence.clear()
             self.inherited_mask_signature = ()
+            self.inherited_action_algebra_scope = None
         self.action_effects.clear()
         self.action_evidence.clear()
         self.invalid_actions.clear()
@@ -431,6 +444,7 @@ class PhaseTopologyPlanner:
         self.inherited_action_effects.clear()
         self.inherited_action_evidence.clear()
         self.inherited_mask_signature = ()
+        self.inherited_action_algebra_scope = None
 
     def _consider_inherited_action_algebra(
         self,
@@ -449,6 +463,7 @@ class PhaseTopologyPlanner:
             _partition_signature(motion.colored_mask) == self.inherited_mask_signature
             and motion.displacement == self.inherited_action_effects[action_id]
         )
+        scope = self.inherited_action_algebra_scope
         if commutes:
             self.action_effects = dict(self.inherited_action_effects)
             self.action_evidence = Counter(
@@ -461,12 +476,22 @@ class PhaseTopologyPlanner:
                 }
             )
             self.transferred_action_algebra_active = True
-            self.cross_level_transfer_confirmations += 1
-            self.diagnostic = "cross-level-action-algebra-confirmed"
+            self.active_action_algebra_scope = scope
+            if scope == "same-level-retry":
+                self.retry_transfer_confirmations += 1
+                self.diagnostic = "retry-action-algebra-confirmed"
+            else:
+                self.cross_level_transfer_confirmations += 1
+                self.diagnostic = "cross-level-action-algebra-confirmed"
         else:
             self.transferred_action_algebra_active = False
-            self.cross_level_transfer_rejections += 1
-            self.diagnostic = "cross-level-action-algebra-rejected"
+            self.active_action_algebra_scope = None
+            if scope == "same-level-retry":
+                self.retry_transfer_rejections += 1
+                self.diagnostic = "retry-action-algebra-rejected"
+            else:
+                self.cross_level_transfer_rejections += 1
+                self.diagnostic = "cross-level-action-algebra-rejected"
         self._clear_inherited_action_algebra()
 
     @property

@@ -129,6 +129,15 @@ leave only a dormant primitive hypothesis. One ordinary post-reset transition
 must commute before activation, and v96's local-operator prerequisite must
 still guard resource scheduling.
 
+This offspring is frozen as v97 `candidate-e59a92e72fbd1aef`, generation 52,
+fingerprint
+`b06553316290d3e83db6d2d72c0c0c54daf16ecda152a571d25368d84f10f258`.
+The exact accepted v94b genome is unchanged. Focused controls cover
+cross-level confirmation, retry confirmation, mismatch rejection,
+scene-discontinuity waiting, dependent resource authority, and the full
+`GAME_OVER` integration boundary. Run the full quality gate and one isolated
+target; promote to repeat only for a real level or efficiency gain.
+
 ## Why the accepted agent wins what it wins
 
 | Mechanism | Causal real-game evidence |

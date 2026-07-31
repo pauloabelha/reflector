@@ -104,6 +104,13 @@ The level identity is unchanged, but one prospective post-reset motion must
 still confirm the law before use. Phase, resource, anchor, route, and terminal
 state remain cleared, and the v96 dependent resource gate remains in force.
 
+V97 `candidate-e59a92e72fbd1aef` freezes this retry-scoped accommodation.
+Cross-level and retry hypotheses now carry distinct scope tags and distinct
+confirmation/rejection telemetry. An integration control sends a grounded
+planner through `GAME_OVER` and proves that only the inactive algebra survives.
+A recolored commuting post-reset motion then reactivates it with retry—not
+cross-level—authority. The focused 72-test gate, Ruff, and mypy pass.
+
 ## New accepted mechanism: phase-topology product planning
 
 V92 `candidate-42dbfa39cba78041` is the first accepted gain after v84m.

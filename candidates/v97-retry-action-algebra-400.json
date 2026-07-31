@@ -1,0 +1,43 @@
+{
+  "candidate_id": "candidate-e59a92e72fbd1aef",
+  "config": {
+    "enable_epistemic_state_graph": true,
+    "enable_hierarchical_action_fairness": true,
+    "enable_failure_conditioned_fairness": true,
+    "enable_click_object_accommodation": true,
+    "enable_productive_role_reuse": true,
+    "enable_cross_retry_maturity": true,
+    "enable_paired_object_contact_planning": true,
+    "enable_local_relation_solver": true,
+    "enable_global_relation_constraint_solver": true,
+    "enable_cyclic_sequence_alignment": true,
+    "enable_graph_cycle_transport": true,
+    "enable_parameterized_select_apply_commit": true,
+    "enable_multiline_target_binding": true,
+    "enable_nested_target_traversal": true,
+    "enable_enclosure_target_traversal": true,
+    "enable_connector_graph_synthesis": true,
+    "enable_lattice_effect_planning": true,
+    "enable_segmented_permutation_transport": true,
+    "enable_path_cycle_transport": true,
+    "enable_factored_orbit_transport": true,
+    "enable_shape_goal_translation": true,
+    "enable_relational_phase_translation": true,
+    "enable_phase_topology_planning": true,
+    "enable_committed_trajectory_planning": true,
+    "enable_colored_stencil_primary_planning": true,
+    "enable_colored_stencil_secondary_planning": true,
+    "enable_compact_component_frontier": true,
+    "enable_dihedral_analogy_alignment": true,
+    "enable_constellation_alignment": true,
+    "action_budget": 400
+  },
+  "parent_id": "candidate-2d9cadd5859ce47d",
+  "contributor_ids": [
+    "candidate-2d9cadd5859ce47d"
+  ],
+  "generation": 52,
+  "rationale": "Conserve a complete primitive action algebra across an explicit same-level retry only as a dormant scope-tagged hypothesis; reactivate it after one commuting post-reset motion while clearing every task-specific state and preserving the local-operator gate on resource options.",
+  "mutation_source": "deterministic-symbolic-accommodation:prospective-same-level-retry-algebra",
+  "inference_fingerprint": "b06553316290d3e83db6d2d72c0c0c54daf16ecda152a571d25368d84f10f258"
+}
