@@ -86,6 +86,9 @@ class SymbolicPolicy:
             positive_effect_family_fairness=(
                 self.mind.config.enable_positive_effect_family_fairness
             ),
+            shortest_progress_path_reuse=(
+                self.mind.config.enable_shortest_progress_path_reuse
+            ),
             boundary_nuisance_state_key=(
                 self.mind.config.enable_boundary_nuisance_state_key
             ),

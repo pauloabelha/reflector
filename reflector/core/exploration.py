@@ -185,6 +185,14 @@ class GroundedRole:
 
 
 @dataclass(frozen=True, slots=True)
+class ProgressPathStep:
+    """One role-bound run in a shortest observed path to level progress."""
+
+    role: ActionRole
+    repetitions: int
+
+
+@dataclass(frozen=True, slots=True)
 class CyclicAlignmentScheme:
     """An evidenced, appearance-relative goal over cyclic transports."""
 
@@ -406,6 +414,7 @@ class EpistemicExplorer:
     action_translation_contact_probe: bool = False
     action_effect_typing: bool = False
     positive_effect_family_fairness: bool = False
+    shortest_progress_path_reuse: bool = False
     boundary_nuisance_state_key: bool = False
     boundary_nuisance_fairness: bool = False
     paired_object_contact_planning: bool = False
@@ -498,6 +507,18 @@ class EpistemicExplorer:
     positive_effect_family_selections: int = 0
     positive_effect_family_abstentions: int = 0
     positive_effect_family_diagnostic: str = "exact-off"
+    edge_groundings: dict[
+        tuple[StateKey, ActionToken], GroundedRole
+    ] = field(default_factory=dict, repr=False)
+    level_start_state: StateKey | None = None
+    shortest_progress_path: tuple[ProgressPathStep, ...] = ()
+    shortest_progress_path_cursor: int = 0
+    shortest_progress_path_bound_token: ActionToken | None = None
+    shortest_progress_path_repetitions_left: int = 0
+    shortest_progress_path_selections: int = 0
+    shortest_progress_path_compilations: int = 0
+    shortest_progress_path_abstentions: int = 0
+    shortest_progress_path_diagnostic: str = "exact-off"
     attempts: Counter[tuple[StateKey, ActionToken]] = field(default_factory=Counter)
     global_attempts: Counter[ActionToken] = field(default_factory=Counter)
     family_attempts: Counter[tuple[StateKey, int]] = field(default_factory=Counter)
@@ -1060,7 +1081,9 @@ class EpistemicExplorer:
         self._record_response(observation)
         if self.current_level is None:
             self.current_level = observation.levels_completed
+            self.level_start_state = state
         elif observation.levels_completed > self.current_level:
+            self._compile_shortest_progress_path()
             if (
                 self.successful_role_replay
                 or self.parameterized_scheme_variation
@@ -1113,12 +1136,17 @@ class EpistemicExplorer:
             self.inherited_scheme_diagnostic = "not-attempted"
             self.level_interventions = 0
             self.current_level = observation.levels_completed
+            self.level_start_state = state
             self.level_failures = 0
             self._reset_compact_component_frontier_retry(
                 retain_previous=False
             )
             self._reset_action_translation_algebra()
             self._reset_action_effect_typing()
+            self.shortest_progress_path_cursor = 0
+            self.shortest_progress_path_bound_token = None
+            self.shortest_progress_path_repetitions_left = 0
+            self.shortest_progress_path_selections = 0
         elif observation.state == "GAME_OVER":
             self.episode_roles.clear()
             self.episode_groundings.clear()
@@ -1471,6 +1499,7 @@ class EpistemicExplorer:
         self.family_attempts.clear()
         self.global_family_attempts.clear()
         self.edges.clear()
+        self.edge_groundings.clear()
         self.tokens_by_state.clear()
         self.state_status.clear()
         self.visit_order.clear()
@@ -5376,6 +5405,25 @@ class EpistemicExplorer:
                 scene,
             )
 
+        progress_path = self._select_shortest_progress_path_role(
+            state,
+            tokens,
+            scene,
+        )
+        if progress_path is not None:
+            self.last_scheme_components = (
+                "scheme:shortest-observed-progress-path",
+                "operator:backward-progress-credit",
+                "operator:role-bound-path-reuse",
+                "falsifier:missing-structural-role",
+            )
+            return self._issue(
+                state,
+                progress_path,
+                "epistemic-frontier:shortest-progress-path-reuse",
+                scene,
+            )
+
         if self.uses_action_family_schema:
             _index, balanced = min(
                 enumerate(tokens),
@@ -5496,6 +5544,178 @@ class EpistemicExplorer:
         self.positive_effect_family_selections += 1
         self.positive_effect_family_diagnostic = "effect-family-selected"
         return selected
+
+    def _compile_shortest_progress_path(self) -> None:
+        """Back-label only the shortest observed non-reset path to progress."""
+
+        if not self.shortest_progress_path_reuse:
+            self.shortest_progress_path_diagnostic = "exact-off"
+            return
+        if self.level_start_state is None or self.pending is None:
+            self.shortest_progress_path_abstentions += 1
+            self.shortest_progress_path_diagnostic = "missing-path-endpoint"
+            return
+        progress_source, progress_token = self.pending
+        if progress_token.action_id == self.reset_action:
+            self.shortest_progress_path_abstentions += 1
+            self.shortest_progress_path_diagnostic = "reset-caused-progress"
+            return
+        queue: deque[
+            tuple[StateKey, tuple[tuple[StateKey, ActionToken], ...]]
+        ] = deque([(self.level_start_state, ())])
+        seen = {self.level_start_state}
+        path: tuple[tuple[StateKey, ActionToken], ...] | None = None
+        while queue:
+            state, prefix = queue.popleft()
+            if state == progress_source:
+                path = (*prefix, (progress_source, progress_token))
+                break
+            if len(prefix) >= 63:
+                continue
+            outgoing = sorted(
+                (
+                    token,
+                    destination,
+                )
+                for (source, token), destination in self.edges.items()
+                if source == state
+                and source[0] == self.current_level
+                and destination[0] == self.current_level
+                and token.action_id != self.reset_action
+                and self.state_status.get(destination) == "NOT_FINISHED"
+            )
+            for token, destination in outgoing:
+                if destination in seen:
+                    continue
+                seen.add(destination)
+                queue.append(
+                    (
+                        destination,
+                        (*prefix, (state, token)),
+                    )
+                )
+        if path is None or not path:
+            self.shortest_progress_path_abstentions += 1
+            self.shortest_progress_path_diagnostic = (
+                "no-bounded-progress-path"
+            )
+            return
+        roles: list[ActionRole] = []
+        for edge in path:
+            grounding = self.edge_groundings.get(edge)
+            if grounding is None:
+                self.shortest_progress_path_abstentions += 1
+                self.shortest_progress_path_diagnostic = (
+                    "missing-edge-grounding"
+                )
+                return
+            roles.append(grounding.role)
+        compressed: list[ProgressPathStep] = []
+        for role in roles:
+            if compressed and compressed[-1].role == role:
+                previous = compressed[-1]
+                compressed[-1] = ProgressPathStep(
+                    role,
+                    previous.repetitions + 1,
+                )
+            else:
+                compressed.append(ProgressPathStep(role, 1))
+        self.shortest_progress_path = tuple(compressed)
+        self.shortest_progress_path_compilations += 1
+        self.shortest_progress_path_diagnostic = (
+            "compiled-shortest-progress-path"
+        )
+
+    @staticmethod
+    def _progress_role_similarity(expected: ActionRole, actual: ActionRole) -> int:
+        if expected.action_id != actual.action_id:
+            return 0
+        if expected.action_id != 6:
+            return 8
+        score = 0
+        if expected.shape and expected.shape == actual.shape:
+            score += 4
+        if expected.color is not None and expected.color == actual.color:
+            score += 2
+        if expected.area is not None and expected.area == actual.area:
+            score += 1
+        if (
+            expected.primitive_kind is not None
+            and expected.primitive_kind == actual.primitive_kind
+        ):
+            score += 4
+        if (
+            expected.primitive_properties
+            and expected.primitive_properties == actual.primitive_properties
+        ):
+            score += 2
+        return score
+
+    def _select_shortest_progress_path_role(
+        self,
+        state: StateKey,
+        tokens: tuple[ActionToken, ...],
+        scene: Scene,
+    ) -> ActionToken | None:
+        """Reuse a progress path only through prospectively matched roles."""
+
+        if not self.shortest_progress_path_reuse:
+            return None
+        if self.shortest_progress_path_selections >= 64:
+            self.shortest_progress_path_diagnostic = "progress-path-trial-cap"
+            return None
+        if (
+            self.shortest_progress_path_bound_token is not None
+            and self.shortest_progress_path_repetitions_left > 0
+        ):
+            if self.shortest_progress_path_bound_token in tokens:
+                self.shortest_progress_path_repetitions_left -= 1
+                self.shortest_progress_path_selections += 1
+                self.shortest_progress_path_diagnostic = (
+                    "repeating-bound-progress-role"
+                )
+                return self.shortest_progress_path_bound_token
+            self.shortest_progress_path_bound_token = None
+            self.shortest_progress_path_repetitions_left = 0
+        while self.shortest_progress_path_cursor < len(
+            self.shortest_progress_path
+        ):
+            step = self.shortest_progress_path[
+                self.shortest_progress_path_cursor
+            ]
+            self.shortest_progress_path_cursor += 1
+            ranked = tuple(
+                (
+                    self._progress_role_similarity(
+                        step.role,
+                        self._role(token, scene),
+                    ),
+                    token,
+                )
+                for token in tokens
+            )
+            score, selected = min(
+                ranked,
+                key=lambda item: (
+                    -item[0],
+                    self.global_attempts[item[1]],
+                    item[1],
+                ),
+            )
+            if score < 4:
+                continue
+            self.shortest_progress_path_bound_token = selected
+            self.shortest_progress_path_repetitions_left = (
+                step.repetitions - 1
+            )
+            self.shortest_progress_path_selections += 1
+            self.shortest_progress_path_diagnostic = (
+                "matched-progress-path-role"
+            )
+            return selected
+        self.shortest_progress_path_abstentions += 1
+        self.shortest_progress_path_diagnostic = "no-matching-progress-role"
+        return None
 
     def _select_action_translation_contact_probe(
         self,
@@ -7644,6 +7864,7 @@ class EpistemicExplorer:
         self.pending_frame = self.selection_frame
         self.pending_role = grounding.role
         self.pending_grounding = grounding
+        self.edge_groundings[(state, token)] = grounding
         self._register_segmented_permutation_prediction(grounding)
         self._register_factored_orbit_prediction(grounding)
         self.pending = (state, token)
@@ -11500,6 +11721,7 @@ class EpistemicExplorer:
         for edge, destination in tuple(self.edges.items()):
             if edge[0] == oldest or destination == oldest:
                 del self.edges[edge]
+                self.edge_groundings.pop(edge, None)
 
     def to_dict(self) -> dict[str, Any]:
         effect_types = self.effect_typer.authoritative_types()
@@ -11516,6 +11738,24 @@ class EpistemicExplorer:
             "action_families": len(self.global_family_attempts),
             "successful_program_length": len(self.successful_program),
             "program_cursor": self.program_cursor,
+            "shortest_progress_path_enabled": int(
+                self.shortest_progress_path_reuse
+            ),
+            "shortest_progress_path_steps": len(
+                self.shortest_progress_path
+            ),
+            "shortest_progress_path_selections": (
+                self.shortest_progress_path_selections
+            ),
+            "shortest_progress_path_compilations": (
+                self.shortest_progress_path_compilations
+            ),
+            "shortest_progress_path_abstentions": (
+                self.shortest_progress_path_abstentions
+            ),
+            "shortest_progress_path_diagnostic": (
+                self.shortest_progress_path_diagnostic
+            ),
             "perceptual_accommodations": self.level_failures,
             "productive_roles": sum(
                 response > 0 for response in self.role_responses.values()

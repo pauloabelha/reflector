@@ -7,7 +7,13 @@ from reflector.core.action_effect_typing import (
     infer_action_effect,
 )
 from reflector.core.action_translation_algebra import ActionIdentity
-from reflector.core.exploration import ActionToken, EpistemicExplorer
+from reflector.core.exploration import (
+    ActionRole,
+    ActionToken,
+    EpistemicExplorer,
+    GroundedRole,
+    ProgressPathStep,
+)
 from reflector.core.mind import MindConfig
 from reflector.core.perception import SceneTracker
 from reflector.core.symbolic import Observation, Scene
@@ -75,6 +81,59 @@ def test_positive_effect_type_is_invariant_to_recoloring_and_translation() -> No
     )
 
     assert first.kind == transformed.kind == "component-birth"
+
+
+def test_shortest_progress_path_compiles_and_run_length_encodes_roles() -> None:
+    explorer = EpistemicExplorer(shortest_progress_path_reuse=True)
+    states = tuple(
+        (0, "NOT_FINISHED", f"state-{index}") for index in range(4)
+    )
+    first = ActionToken(1)
+    repeated = ActionToken(2)
+    detour = ActionToken(3)
+    first_role = GroundedRole(ActionRole(1))
+    repeated_role = GroundedRole(ActionRole(2))
+    explorer.current_level = 0
+    explorer.level_start_state = states[0]
+    explorer.pending = (states[2], repeated)
+    explorer.edges = {
+        (states[0], first): states[1],
+        (states[1], repeated): states[2],
+        (states[0], detour): states[3],
+        (states[3], detour): states[2],
+    }
+    explorer.edge_groundings = {
+        (states[0], first): first_role,
+        (states[1], repeated): repeated_role,
+        (states[2], repeated): repeated_role,
+        (states[0], detour): GroundedRole(ActionRole(3)),
+        (states[3], detour): GroundedRole(ActionRole(3)),
+    }
+    explorer.state_status = {
+        state: "NOT_FINISHED" for state in states
+    }
+
+    explorer._compile_shortest_progress_path()
+
+    assert explorer.shortest_progress_path == (
+        ProgressPathStep(ActionRole(1), 1),
+        ProgressPathStep(ActionRole(2), 2),
+    )
+    assert explorer.shortest_progress_path_compilations == 1
+
+
+def test_progress_role_match_ignores_color_when_shape_and_area_transfer() -> None:
+    shape = ((0, 0), (0, 1), (1, 0), (1, 1))
+    expected = ActionRole(6, color=3, area=4, shape=shape)
+    transferred = ActionRole(6, color=9, area=4, shape=shape)
+    unrelated = ActionRole(6, color=3, area=5, shape=((0, 0),))
+
+    assert EpistemicExplorer._progress_role_similarity(
+        expected, transferred
+    ) == 5
+    assert EpistemicExplorer._progress_role_similarity(
+        expected, unrelated
+    ) == 2
 
 
 def test_one_positive_effect_proposes_and_distinct_source_confirms() -> None:
