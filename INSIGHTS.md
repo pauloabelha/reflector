@@ -439,6 +439,28 @@ shows the label transports under the quotient. These are respectively causal
 identification and HRL value learning; neither should be conflated with a
 generic preference for visible change.
 
+The direct comparison now supports the epistemic branch. Across the frozen
+chronology, ambiguous donor predictions define 878 query states and 1,672
+candidate roles. All 135 queries the base trajectory happened to execute
+eliminated hypotheses, removing 39.75% of the represented donor models. This
+is stronger than a novelty heuristic: the action has a pre-observation,
+model-relative information value and a post-observation eliminated set.
+
+The progress-label control fails. A completed trajectory can assign a number
+to an old state, but that number is not natural under a new level's goal.
+Only one near-progress case aligned with the transported best role, versus 23
+that did not. Thus v85's online regression and the new offline audit agree:
+distance-to-an-old-terminal is not a transferable potential merely because
+the local causal square commutes.
+
+The resulting architecture is a finite scientific method. Compatible donor
+profiles are competing causal models; their predicted outcomes form a
+version space; expected model elimination ranks experiments; the observation
+refines the partial partition. This is Drescher's synthetic schema
+construction, Piagetian accommodation, CSP/CEGIS, and intrinsic-reward HRL in
+one bounded operation. Its claim remains epistemic efficiency until a live
+offspring improves task progress.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

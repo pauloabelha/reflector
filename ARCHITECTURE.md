@@ -287,6 +287,21 @@ exact-off. Future descendants may consume the quotient as a CEGIS version
 space or a progress-labeled abstract graph; they may not treat effect
 positivity itself as value.
 
+The immutable causal-version-space audit establishes the next legitimate
+consumer of `partial_bisimulation.py`. Compatible donor profiles are treated
+as a finite hypothesis set. For each locally untried legal role, donor outcome
+counts define expected hypothesis elimination
+`N - sum(n_outcome^2) / N`. A CEGIS advisor may maximize that quantity after
+all grounded specialists abstain, then preserve the observed outcome as
+partition-refinement evidence. No outcome receives extrinsic value from this
+calculation.
+
+Cross-level progress distance is explicitly excluded. Its chronological
+control aligned with only one of 24 near-progress opportunities, so the
+architecture does not attach old terminal distance to a causally compatible
+new state. This preserves the distinction between a causal homomorphism and a
+goal-respecting natural transformation.
+
 This implements a narrow Piagetian cycle:
 
 1. assimilate a new layout into the existing focused-rewrite scheme;

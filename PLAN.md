@@ -497,6 +497,25 @@ completed trajectories. Implement control only if the offline chronological
 audit shows that the proposed signal predicts information gain or progress
 better than v84m's generic novelty rank.
 
+That audit chooses CEGIS and rejects transported progress distance. Across the
+accepted chronological streams, 878 states expose 1,672 ambiguous frontier
+roles. All 135 such roles actually executed eliminate hypotheses, removing
+797/2,005 compatible donor models (39.75%); 129 occur under generic
+exploration. The progress control finds 187 unique cross-level predicted-best
+states, but v84m chooses the role only 14 times, and only 1/24 near-progress
+opportunities uses it. Report
+`reports/v84m-causal-version-space-audit-v1.json`, SHA-256
+`49bc11b138ee46b43dcb09a18140afa00cd74131fc3b8677ae4d823d8b4a03d7`.
+
+Implement one v90 sibling of trace-only v88, not a descendant of rejected
+v89. Its lower-priority CEGIS advisor may select only a locally untried legal
+role with at least two donor outcome hypotheses, ranks by expected hypothesis
+elimination, records the eliminated version-space mass after observation, and
+has a hard per-level query cap. It must not reuse transported progress
+distance or label any outcome as reward. Gate first on high-opportunity
+`ar25`, `g50t`, `sc25`, `sk48`, `tu93`, and `wa30`, with `lp85` and `sp80`
+as preservation sentinels.
+
 V83's one-dimensional track replay is rejected: it was active on `sc25` but
 remained 0/6 in 400 actions because geometric endpoint proximity was not the
 task goal.

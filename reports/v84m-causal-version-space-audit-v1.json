@@ -1,0 +1,408 @@
+{
+  "aggregate": {
+    "cegis": {
+      "best_expected_eliminations": 1996.1378210544453,
+      "donor_hypotheses": 2005,
+      "eliminated_hypotheses": 797,
+      "executed_ambiguous_queries": 135,
+      "executed_elimination_fraction": 0.3975062344139651,
+      "generic_queries": 129,
+      "opportunity_roles": 1672,
+      "opportunity_states": 878,
+      "queries_with_elimination": 135
+    },
+    "progress_transfer": {
+      "base_chose_best": 14,
+      "best_progress_within_32": 1,
+      "completed_donor_levels": 43,
+      "generic_chose_best": 8,
+      "generic_opportunities": 170,
+      "other_progress_within_32": 23,
+      "potential_candidates": 752,
+      "unique_potential_states": 187
+    }
+  },
+  "cognitive_root": "/tmp/reflector-v84m-full-cognitive-r1",
+  "format": "reflector-causal-version-space-audit-v1",
+  "games": 25,
+  "results": {
+    "ar25": {
+      "cegis": {
+        "best_expected_eliminations": 461.2666666666658,
+        "donor_hypotheses": 25,
+        "eliminated_hypotheses": 13,
+        "executed_ambiguous_queries": 8,
+        "executed_elimination_fraction": 0.52,
+        "generic_queries": 8,
+        "opportunity_roles": 719,
+        "opportunity_states": 312,
+        "queries_with_elimination": 8
+      },
+      "progress_transfer": {
+        "completed_donor_levels": 2
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ar25.cognitive.jsonl",
+      "transitions": 399
+    },
+    "bp35": {
+      "cegis": {
+        "best_expected_eliminations": 24.909523809523808,
+        "donor_hypotheses": 9,
+        "eliminated_hypotheses": 5,
+        "executed_ambiguous_queries": 2,
+        "executed_elimination_fraction": 0.5555555555555556,
+        "generic_queries": 2,
+        "opportunity_roles": 20,
+        "opportunity_states": 12,
+        "queries_with_elimination": 2
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/bp35.cognitive.jsonl",
+      "transitions": 399
+    },
+    "cd82": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "completed_donor_levels": 5
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/cd82.cognitive.jsonl",
+      "transitions": 98
+    },
+    "cn04": {
+      "cegis": {
+        "best_expected_eliminations": 14.423809523809524,
+        "donor_hypotheses": 8,
+        "eliminated_hypotheses": 6,
+        "executed_ambiguous_queries": 2,
+        "executed_elimination_fraction": 0.75,
+        "generic_queries": 1,
+        "opportunity_roles": 13,
+        "opportunity_states": 7,
+        "queries_with_elimination": 2
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/cn04.cognitive.jsonl",
+      "transitions": 399
+    },
+    "dc22": {
+      "cegis": {
+        "best_expected_eliminations": 1.0,
+        "executed_elimination_fraction": 0.0,
+        "opportunity_roles": 1,
+        "opportunity_states": 1
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/dc22.cognitive.jsonl",
+      "transitions": 399
+    },
+    "ft09": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "base_chose_best": 1,
+        "best_progress_within_32": 0,
+        "completed_donor_levels": 5,
+        "generic_chose_best": 1,
+        "generic_opportunities": 14,
+        "other_progress_within_32": 0,
+        "potential_candidates": 18,
+        "unique_potential_states": 14
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ft09.cognitive.jsonl",
+      "transitions": 161
+    },
+    "g50t": {
+      "cegis": {
+        "best_expected_eliminations": 70.44444444444446,
+        "donor_hypotheses": 54,
+        "eliminated_hypotheses": 35,
+        "executed_ambiguous_queries": 12,
+        "executed_elimination_fraction": 0.6481481481481481,
+        "generic_queries": 12,
+        "opportunity_roles": 57,
+        "opportunity_states": 35,
+        "queries_with_elimination": 12
+      },
+      "progress_transfer": {
+        "base_chose_best": 2,
+        "best_progress_within_32": 0,
+        "completed_donor_levels": 1,
+        "generic_chose_best": 0,
+        "generic_opportunities": 0,
+        "other_progress_within_32": 0,
+        "potential_candidates": 4,
+        "unique_potential_states": 4
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/g50t.cognitive.jsonl",
+      "transitions": 399
+    },
+    "ka59": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ka59.cognitive.jsonl",
+      "transitions": 399
+    },
+    "lf52": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "completed_donor_levels": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/lf52.cognitive.jsonl",
+      "transitions": 399
+    },
+    "lp85": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "base_chose_best": 3,
+        "best_progress_within_32": 1,
+        "completed_donor_levels": 6,
+        "generic_chose_best": 2,
+        "generic_opportunities": 145,
+        "other_progress_within_32": 23,
+        "potential_candidates": 697,
+        "unique_potential_states": 146
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/lp85.cognitive.jsonl",
+      "transitions": 399
+    },
+    "ls20": {
+      "cegis": {
+        "best_expected_eliminations": 43.33333333333333,
+        "donor_hypotheses": 2,
+        "eliminated_hypotheses": 1,
+        "executed_ambiguous_queries": 1,
+        "executed_elimination_fraction": 0.5,
+        "generic_queries": 0,
+        "opportunity_roles": 28,
+        "opportunity_states": 28,
+        "queries_with_elimination": 1
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/ls20.cognitive.jsonl",
+      "transitions": 399
+    },
+    "m0r0": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "base_chose_best": 0,
+        "best_progress_within_32": 0,
+        "completed_donor_levels": 1,
+        "generic_chose_best": 0,
+        "generic_opportunities": 0,
+        "other_progress_within_32": 0,
+        "potential_candidates": 5,
+        "unique_potential_states": 5
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/m0r0.cognitive.jsonl",
+      "transitions": 399
+    },
+    "r11l": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "completed_donor_levels": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/r11l.cognitive.jsonl",
+      "transitions": 399
+    },
+    "re86": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "completed_donor_levels": 6
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/re86.cognitive.jsonl",
+      "transitions": 399
+    },
+    "s5i5": {
+      "cegis": {
+        "best_expected_eliminations": 36.33333333333333,
+        "executed_elimination_fraction": 0.0,
+        "opportunity_roles": 37,
+        "opportunity_states": 36
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/s5i5.cognitive.jsonl",
+      "transitions": 399
+    },
+    "sb26": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "completed_donor_levels": 7
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sb26.cognitive.jsonl",
+      "transitions": 123
+    },
+    "sc25": {
+      "cegis": {
+        "best_expected_eliminations": 209.54761904761915,
+        "donor_hypotheses": 28,
+        "eliminated_hypotheses": 11,
+        "executed_ambiguous_queries": 8,
+        "executed_elimination_fraction": 0.39285714285714285,
+        "generic_queries": 8,
+        "opportunity_roles": 260,
+        "opportunity_states": 128,
+        "queries_with_elimination": 8
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sc25.cognitive.jsonl",
+      "transitions": 399
+    },
+    "sk48": {
+      "cegis": {
+        "best_expected_eliminations": 198.0,
+        "donor_hypotheses": 2,
+        "eliminated_hypotheses": 2,
+        "executed_ambiguous_queries": 1,
+        "executed_elimination_fraction": 1.0,
+        "generic_queries": 1,
+        "opportunity_roles": 316,
+        "opportunity_states": 158,
+        "queries_with_elimination": 1
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sk48.cognitive.jsonl",
+      "transitions": 399
+    },
+    "sp80": {
+      "cegis": {
+        "best_expected_eliminations": 1.6,
+        "executed_elimination_fraction": 0.0,
+        "opportunity_roles": 1,
+        "opportunity_states": 1
+      },
+      "progress_transfer": {
+        "base_chose_best": 2,
+        "best_progress_within_32": 0,
+        "completed_donor_levels": 1,
+        "generic_chose_best": 0,
+        "generic_opportunities": 1,
+        "other_progress_within_32": 0,
+        "potential_candidates": 15,
+        "unique_potential_states": 7
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/sp80.cognitive.jsonl",
+      "transitions": 399
+    },
+    "su15": {
+      "cegis": {
+        "best_expected_eliminations": 30.470459250894027,
+        "donor_hypotheses": 86,
+        "eliminated_hypotheses": 4,
+        "executed_ambiguous_queries": 4,
+        "executed_elimination_fraction": 0.046511627906976744,
+        "generic_queries": 4,
+        "opportunity_roles": 16,
+        "opportunity_states": 16,
+        "queries_with_elimination": 4
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/su15.cognitive.jsonl",
+      "transitions": 399
+    },
+    "tn36": {
+      "cegis": {
+        "best_expected_eliminations": 2.0,
+        "donor_hypotheses": 4,
+        "eliminated_hypotheses": 2,
+        "executed_ambiguous_queries": 1,
+        "executed_elimination_fraction": 0.5,
+        "generic_queries": 0,
+        "opportunity_roles": 1,
+        "opportunity_states": 1,
+        "queries_with_elimination": 1
+      },
+      "progress_transfer": {
+        "completed_donor_levels": 1
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tn36.cognitive.jsonl",
+      "transitions": 399
+    },
+    "tr87": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "completed_donor_levels": 5
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tr87.cognitive.jsonl",
+      "transitions": 399
+    },
+    "tu93": {
+      "cegis": {
+        "best_expected_eliminations": 534.559945684392,
+        "donor_hypotheses": 968,
+        "eliminated_hypotheses": 355,
+        "executed_ambiguous_queries": 57,
+        "executed_elimination_fraction": 0.36673553719008267,
+        "generic_queries": 54,
+        "opportunity_roles": 160,
+        "opportunity_states": 100,
+        "queries_with_elimination": 57
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/tu93.cognitive.jsonl",
+      "transitions": 399
+    },
+    "vc33": {
+      "cegis": {
+        "best_expected_eliminations": 0.0,
+        "executed_elimination_fraction": 0.0
+      },
+      "progress_transfer": {
+        "base_chose_best": 6,
+        "best_progress_within_32": 0,
+        "completed_donor_levels": 1,
+        "generic_chose_best": 5,
+        "generic_opportunities": 10,
+        "other_progress_within_32": 0,
+        "potential_candidates": 13,
+        "unique_potential_states": 11
+      },
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/vc33.cognitive.jsonl",
+      "transitions": 399
+    },
+    "wa30": {
+      "cegis": {
+        "best_expected_eliminations": 368.2486859604299,
+        "donor_hypotheses": 819,
+        "eliminated_hypotheses": 363,
+        "executed_ambiguous_queries": 39,
+        "executed_elimination_fraction": 0.4432234432234432,
+        "generic_queries": 39,
+        "opportunity_roles": 43,
+        "opportunity_states": 43,
+        "queries_with_elimination": 39
+      },
+      "progress_transfer": {},
+      "stream": "/tmp/reflector-v84m-full-cognitive-r1/wa30.cognitive.jsonl",
+      "transitions": 399
+    }
+  }
+}

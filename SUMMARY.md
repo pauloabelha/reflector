@@ -424,3 +424,21 @@ The quotient remains valuable as a learned world-model compression, but
 positive structural change is not a reward. The next use should select a
 discriminating intervention over competing causal hypotheses or derive a
 progress-backed potential; it must not simply prefer component change.
+
+The chronological v84m comparison selects the former. It finds 878 states
+with 1,672 locally untried roles whose compatible donor models disagree.
+Every one of the 135 ambiguous roles actually executed eliminated at least one
+causal hypothesis, removing 797 of 2,005 donor models (**39.75%**); 129 of
+those decisions were generic exploration. Cross-level progress-distance
+transport fails its control: only 14 of 187 unique predicted-best roles were
+chosen by v84m, and only one of 24 opportunities within 32 actions of actual
+progress used the transported best role. Report
+[`reports/v84m-causal-version-space-audit-v1.json`](reports/v84m-causal-version-space-audit-v1.json),
+SHA-256
+`49bc11b138ee46b43dcb09a18140afa00cd74131fc3b8677ae4d823d8b4a03d7`.
+
+The next bounded child should therefore use the quotient as a CEGIS version
+space: after specialists abstain, select the locally untried legal role with
+maximum expected donor-hypothesis elimination, observe its effect, and refine
+the partition. This is information-seeking causal learning, not an asserted
+task reward.
