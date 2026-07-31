@@ -86,6 +86,154 @@ def _framed_tiles(frame: Frame) -> tuple[GlyphTile, ...]:
     return tuple(tiles)
 
 
+def _sequence_targets(
+    query: tuple[GlyphTile, ...],
+    answer: tuple[GlyphTile, ...],
+    rows: tuple[tuple[GlyphTile, ...], ...],
+) -> tuple[frozenset[Mask], ...] | None:
+    relevant: list[tuple[tuple[GlyphTile, ...], tuple[GlyphTile, ...]]] = []
+    for row in rows:
+        if any(item.size != query[0].size for item in row):
+            continue
+        if set(item.color for item in row) != {
+            query[0].color,
+            answer[0].color,
+        }:
+            continue
+        runs: list[list[GlyphTile]] = []
+        for item in row:
+            if not runs or runs[-1][0].color != item.color:
+                runs.append([item])
+            else:
+                runs[-1].append(item)
+        if (
+            len(runs) % 2
+            or any(
+                run[0].color
+                != (
+                    query[0].color
+                    if index % 2 == 0
+                    else answer[0].color
+                )
+                for index, run in enumerate(runs)
+            )
+        ):
+            return None
+        relevant.extend(
+            (tuple(runs[index]), tuple(runs[index + 1]))
+            for index in range(0, len(runs), 2)
+        )
+    if len(relevant) < 4:
+        return None
+    target_sequences: set[tuple[frozenset[Mask], ...]] = set()
+    frontier: list[tuple[int, tuple[frozenset[Mask], ...]]] = [(0, ())]
+    expansions = 0
+    while frontier and expansions < 128:
+        position, compiled = frontier.pop()
+        if position == len(query):
+            target_sequences.add(compiled)
+            continue
+        for sources, outputs in relevant:
+            destination = position + len(sources)
+            if destination > len(query):
+                continue
+            if not all(
+                query_tile.mask in dihedral_variants(source.mask)
+                for query_tile, source in zip(
+                    query[position:destination],
+                    sources,
+                    strict=True,
+                )
+            ):
+                continue
+            frontier.append(
+                (
+                    destination,
+                    compiled
+                    + tuple(
+                        frozenset(dihedral_variants(output.mask))
+                        for output in outputs
+                    ),
+                )
+            )
+            expansions += 1
+    if len(target_sequences) != 1:
+        return None
+    targets = next(iter(target_sequences))
+    return targets if len(targets) == len(answer) else None
+
+
+def _bridge_targets(
+    query: tuple[GlyphTile, ...],
+    answer: tuple[GlyphTile, ...],
+    rows: tuple[tuple[GlyphTile, ...], ...],
+) -> tuple[frozenset[Mask], ...] | None:
+    endpoint_colors = {query[0].color, answer[0].color}
+    bridge_colors = {
+        item.color
+        for row in rows
+        for item in row
+        if item.color not in endpoint_colors
+    }
+    compiled_candidates: set[tuple[frozenset[Mask], ...]] = set()
+    for bridge_color in bridge_colors:
+        first: list[tuple[GlyphTile, GlyphTile]] = []
+        second: list[tuple[GlyphTile, GlyphTile]] = []
+        malformed = False
+        for row in rows:
+            if any(item.size != query[0].size for item in row):
+                continue
+            if set(item.color for item in row) != endpoint_colors | {
+                bridge_color
+            }:
+                continue
+            if len(row) % 2:
+                malformed = True
+                break
+            for index in range(0, len(row), 2):
+                left, right = row[index : index + 2]
+                pair = {left.color, right.color}
+                if pair == {query[0].color, bridge_color}:
+                    source = left if left.color == query[0].color else right
+                    bridge = right if source is left else left
+                    first.append((source, bridge))
+                elif pair == {bridge_color, answer[0].color}:
+                    bridge = left if left.color == bridge_color else right
+                    output = right if bridge is left else left
+                    second.append((bridge, output))
+                else:
+                    malformed = True
+                    break
+            if malformed:
+                break
+        if malformed or len(first) < 2 or len(second) < 2:
+            continue
+        targets: list[frozenset[Mask]] = []
+        for query_tile in query:
+            bridges = tuple(
+                bridge
+                for source, bridge in first
+                if query_tile.mask in dihedral_variants(source.mask)
+            )
+            output_classes = {
+                frozenset(dihedral_variants(output.mask))
+                for bridge, output in second
+                if any(
+                    source_bridge.mask
+                    in dihedral_variants(bridge.mask)
+                    for source_bridge in bridges
+                )
+            }
+            if len(output_classes) != 1:
+                break
+            targets.append(next(iter(output_classes)))
+        if len(targets) == len(query) == len(answer):
+            compiled_candidates.add(tuple(targets))
+    if len(compiled_candidates) != 1:
+        return None
+    return next(iter(compiled_candidates))
+
+
 def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
     """Ground class-valued demonstrations, queries, and the active answer."""
 
@@ -112,6 +260,7 @@ def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
         )
     )
     mixed_rows: list[tuple[GlyphTile, ...]] = []
+    ternary_rows: list[tuple[GlyphTile, ...]] = []
     single_color_rows: list[tuple[GlyphTile, ...]] = []
     for row in ordered_rows:
         colors = tuple(item.color for item in row)
@@ -120,6 +269,8 @@ def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
             continue
         if len(set(colors)) == 2:
             mixed_rows.append(row)
+        elif len(set(colors)) == 3:
+            ternary_rows.append(row)
     candidates: list[DihedralAnalogy] = []
     for query in single_color_rows:
         for answer in single_color_rows:
@@ -129,84 +280,16 @@ def infer_dihedral_analogy(frame: Frame) -> DihedralAnalogy | None:
                 or answer[0].color == query[0].color
             ):
                 continue
-            relevant: list[
-                tuple[tuple[GlyphTile, ...], tuple[GlyphTile, ...]]
-            ] = []
-            malformed = False
-            for row in mixed_rows:
-                if any(item.size != query[0].size for item in row):
-                    continue
-                if set(item.color for item in row) != {
-                    query[0].color,
-                    answer[0].color,
-                }:
-                    continue
-                runs: list[list[GlyphTile]] = []
-                for item in row:
-                    if not runs or runs[-1][0].color != item.color:
-                        runs.append([item])
-                    else:
-                        runs[-1].append(item)
-                if (
-                    len(runs) % 2
-                    or any(
-                        run[0].color
-                        != (
-                            query[0].color
-                            if index % 2 == 0
-                            else answer[0].color
-                        )
-                        for index, run in enumerate(runs)
-                    )
-                ):
-                    malformed = True
-                    break
-                relevant.extend(
-                    (tuple(runs[index]), tuple(runs[index + 1]))
-                    for index in range(0, len(runs), 2)
-                )
-            if malformed:
-                continue
-            if len(relevant) < 4:
-                continue
-            target_sequences: set[tuple[frozenset[Mask], ...]] = set()
-            frontier: list[tuple[int, tuple[frozenset[Mask], ...]]] = [
-                (0, ())
-            ]
-            expansions = 0
-            while frontier and expansions < 128:
-                position, compiled = frontier.pop()
-                if position == len(query):
-                    target_sequences.add(compiled)
-                    continue
-                for sources, outputs in relevant:
-                    destination = position + len(sources)
-                    if destination > len(query):
-                        continue
-                    if not all(
-                        query_tile.mask in dihedral_variants(source.mask)
-                        for query_tile, source in zip(
-                            query[position:destination],
-                            sources,
-                            strict=True,
-                        )
-                    ):
-                        continue
-                    frontier.append(
-                        (
-                            destination,
-                            compiled
-                            + tuple(
-                                frozenset(dihedral_variants(output.mask))
-                                for output in outputs
-                            ),
-                        )
-                    )
-                    expansions += 1
-            if len(target_sequences) != 1:
-                continue
-            targets = next(iter(target_sequences))
-            if len(targets) != len(answer):
+            targets = _sequence_targets(
+                query,
+                answer,
+                tuple(mixed_rows),
+            ) or _bridge_targets(
+                query,
+                answer,
+                tuple(ternary_rows),
+            )
+            if targets is None:
                 continue
             background = Counter(
                 cell for row in frame[answer[0].y :] for cell in row

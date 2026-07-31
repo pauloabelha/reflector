@@ -164,6 +164,47 @@ def _sequence_to_sequence_panel() -> Frame:
     return tuple(tuple(row) for row in grid)
 
 
+def _bridge_panel() -> Frame:
+    grid = [[2 for _x in range(64)] for _y in range(42)]
+    for y in range(26, 42):
+        grid[y] = [3 for _x in range(64)]
+    inputs = (
+        _mask("##.", "...", "..."),
+        _mask("#..", "##.", "..."),
+        _mask("###", "...", "..."),
+        _mask("###", ".#.", "..."),
+    )
+    bridges = (
+        _mask("##.", ".#.", "..."),
+        _mask("#..", ".#.", "..#"),
+        _mask("#.#", ".#.", "..."),
+        _mask(".#.", "###", "..."),
+    )
+    outputs = (
+        _mask("#..", "#..", "..."),
+        _mask("##.", "#..", "..."),
+        _mask("#..", "#..", "#.."),
+        _mask(".#.", "###", ".#."),
+    )
+    for y, (source, bridge, output) in zip(
+        (1, 7, 13, 19),
+        zip(inputs, bridges, outputs, strict=True),
+        strict=True,
+    ):
+        _draw_tile(grid, 5, y, 11, bridge)
+        _draw_tile(grid, 15, y, 7, output)
+        _draw_tile(grid, 30, y, 10, source)
+        _draw_tile(grid, 40, y, 11, bridge)
+    for index, source in enumerate((inputs[0], inputs[2])):
+        _draw_tile(grid, 20 + index * 6, 27, 10, source)
+    arbitrary = _mask(".#.", "...", "...")
+    for index in range(2):
+        _draw_tile(grid, 20 + index * 6, 34, 7, arbitrary)
+    grid[33][20] = 0
+    grid[39][20] = 0
+    return tuple(tuple(row) for row in grid)
+
+
 def test_infers_dihedral_targets_and_selected_slot() -> None:
     arbitrary = _mask(".#.", "...", "...")
     layout = infer_dihedral_analogy(
@@ -209,6 +250,15 @@ def test_segments_and_substitutes_demonstrated_glyph_sequences() -> None:
     assert layout is not None
     assert len(layout.query_tiles) == 3
     assert len(layout.answer_tiles) == len(layout.targets) == 4
+    assert layout.selected_index == 0
+
+
+def test_composes_glyph_relations_through_a_bridge_color() -> None:
+    layout = infer_dihedral_analogy(_bridge_panel())
+
+    assert layout is not None
+    assert len(layout.query_tiles) == len(layout.answer_tiles) == 2
+    assert layout.answer_tiles[0].mask not in layout.targets[0]
     assert layout.selected_index == 0
 
 
