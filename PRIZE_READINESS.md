@@ -114,6 +114,14 @@ submission `55123277` subsequently completed at public score `0.02`, matching
 v65b `55113224`. The v98 version must be submitted unchanged after the quota
 resets.
 
+The exact private v99k notebook
+`pauloabelha/reflector-arc-agi-3-v99k` version 1 also completed and emitted a
+2,648-byte `submission.parquet`, SHA-256
+`71bfd543030e339d87bd9ff744d466218398a1259650b2c255626d27049c88bb`.
+Its competition request returned HTTP 400 under the same daily allowance, and
+the subsequent submissions listing confirms that no v99k submission ID was
+created. Submit this already-completed version unchanged after the slot resets.
+
 ## Required account and publication actions
 
 These cannot be completed from a local checkout:

@@ -39,7 +39,9 @@ overlay
 `0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`,
 and notebook
 `dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`.
-V99k is accepted locally; Kaggle publication and submission remain.
+V99k is accepted locally. Its exact private Kaggle notebook version 1
+completed and emitted `submission.parquet`; the competition request was
+quota-blocked and created no submission ID.
 
 ## Evaluation surfaces
 
@@ -63,7 +65,7 @@ V99k is accepted locally; Kaggle publication and submission remain.
 | Target-only `ls20` reruns | v98 observational-quotient offspring, accepted | **21.4285714286 for one game** | exact **3/7** at `[17,112,51,220,0,0,0]` twice; first two level lengths preserve v97; level 3 completes autonomously in 51 actions | deterministic target gate passes; overlapping cropped/full operator views are one causal identity |
 | Target-only `ls20` reruns | v99k complementary-display accommodation, verified | **30.3413138108 for one game** | exact **4/7** at `[17,112,51,133,87,0,0]` twice; accepted first three level lengths exact; level 4 completes after a relational horizon-reset retry | deterministic target gate passes |
 | Process-isolated accepted-progress preservation gate | v99k complementary-display accommodation, verified | **36.0543211900 gate mean** | 51 levels in 5,185 actions; all 14 non-`ls20` score/action/reset signatures exact versus v98 | target attribution and non-regression pass |
-| Complete process-isolated 25-game suite | v99k complementary-display accommodation, verified | **21.6325927140 / 100** | 51/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v98 | exact 24-game preservation; quality/package promotion gates active |
+| Complete process-isolated 25-game suite | v99k complementary-display accommodation, accepted | **21.6325927140 / 100** | 51/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v98 | all promotion, quality, exact-export, smoke, and technical-audit gates pass |
 | Process-isolated accepted-progress preservation gate | v98 observational-quotient offspring, accepted | **35.4601383646 gate mean** | 50 levels in 5,185 actions; all 14 non-`ls20` score/level/action/reset vectors exactly preserve v97 | target attribution and non-regression pass |
 | Complete process-isolated 25-game suite | v98 fibered/factored observational quotient, accepted | **21.2760830187 / 100** | 50/183 levels, 15 games with progress, 3 complete, 9,185 actions; only `ls20` differs from v97 | all promotion, quality, exact-export, smoke, and technical-audit gates pass |
 | Target-only `ls20` run | v94 temporal-resource CSP, rejected | **3.5714285714 for one game** | exact accepted 1/7 vector `[17,383,0,0,0,0,0]`; learned four-cell cost, 21-action horizon, and two reset roles | causal model grounded, but receding-horizon replanning abandoned a selected reset option; v94b adds only bounded option atomicity |
@@ -80,6 +82,7 @@ V99k is accepted locally; Kaggle publication and submission remain.
 | Kaggle notebook artifact | v94b accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v94b` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v94b submission ID |
 | Kaggle notebook artifact | v97 accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v97` version 1 completed and emitted `submission.parquet` | submission request returned HTTP 400 while v74 remains pending; no v97 submission ID |
 | Kaggle notebook artifact | v98 accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v98` version 1 completed and emitted a 2,648-byte `submission.parquet` | exact competition request returned HTTP 400 after v74 consumed the UTC daily allowance; no v98 submission ID |
+| Kaggle notebook artifact | v99k accepted package | — | private notebook `pauloabelha/reflector-arc-agi-3-v99k` version 1 completed and emitted a 2,648-byte `submission.parquet` | exact competition request returned HTTP 400 after v74 consumed the UTC daily allowance; no v99k submission ID |
 | Kaggle public leaderboard | v65b, submission `55113224` | **0.02** | synchronous hidden rerun complete | belongs only to frozen v65b |
 | Kaggle rerun | v74, submission `55123277` | **0.02 public** | submitted 2026-07-31 01:05:23 UTC | complete; private score unavailable |
 | Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |

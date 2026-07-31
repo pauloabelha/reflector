@@ -10,6 +10,8 @@ Reflector's best complete, process-isolated 25-game public-development result is
 - Candidate: `candidate-ddf2529a2bae5601` (`v99k`)
 - Frozen inference source: `794d9a1`
 - Frozen candidate commit: `38cb243`
+- Accepted package commit: `d883fac` (pushed to participant remote
+  `reflector/codex/v74-fresh`)
 - Accepted parent: `candidate-59010e6c00da94ac` (`v98`)
 - Coverage: 25/25 games
 - Levels: **51/183**
@@ -29,18 +31,46 @@ Relative to accepted v98, v99k changes exactly one game. `ls20` advances from
 score/level/action/reset signatures and the 9,185-action total are exactly
 preserved. The aggregate gain is **+0.3565096952908604 points** and one level.
 Target repeat, accepted-progress preservation, the frozen complete-suite gate,
-quality, exact export, offline smoke, and technical audit all pass. V99k is the
-accepted local package.
+quality, exact export, offline smoke, and technical audit all pass:
+**516 tests passed, 3 skipped**, Ruff and mypy are clean, and
+`technical_ready: true`. V99k is the accepted local package.
 
 Kaggle submissions `55113224` (v65b) and `55123277` (v74) are complete at
-public score **0.02** each. Private v97 notebook version 1 completed but has no
-submission ID because v74 consumed the UTC daily allowance. Exact accepted v98
-private notebook `pauloabelha/reflector-arc-agi-3-v98` version 1 also completed
-and emitted a 2,648-byte `submission.parquet`, SHA-256
+public score **0.02** each. The exact accepted v99k private notebook
+[`pauloabelha/reflector-arc-agi-3-v99k`](https://www.kaggle.com/code/pauloabelha/reflector-arc-agi-3-v99k)
+version 1 completed successfully with internet disabled and the competition
+source attached. It emitted a 2,648-byte `submission.parquet`, SHA-256
 `71bfd543030e339d87bd9ff744d466218398a1259650b2c255626d27049c88bb`.
-Its competition submission request returned HTTP 400 under the same daily
-quota, so Kaggle created no v98 submission ID. Submit this completed version
-unchanged after the allowance resets.
+The exact competition request returned HTTP 400 because submission `55123277`
+had already consumed the UTC daily allowance. The subsequent submissions
+listing contains only `55113224` and `55123277`, so Kaggle created **no v99k
+submission ID**. Submit this already-completed version 1 unchanged after the
+allowance resets.
+
+## Current handoff and next research frontier
+
+The accepted gain is not a coordinate script. Its compressed state consists
+of a host-preserving complementary-display quotient, contact-induced
+shape/palette morphism types, bounded resource identities, contextual
+transition edges, and a relational horizon-reset witness. The next offspring
+must preserve v99k exactly and should generalize this principle instead of
+adding another game-specific detector:
+
+1. infer causal horizons from generic joint reappearance/change-point evidence;
+2. discover option objects and their preconditions/effects as a finite
+   Drescher-style scheme category;
+3. test transport by commuting diagrams under color, translation, scale, and
+   presentation changes;
+4. plan over factored option morphisms with CSP/HRL while explicitly pricing
+   uncertainty and reset risk;
+5. retain only sufficient causal statistics and counterexamples, compressing
+   away raw histories once their predictions are subsumed.
+
+The immediate operational action is to resubmit completed Kaggle notebook
+version 1 when the one-per-day slot resets. The next scientific action is a
+bounded v100 hypothesis against `ls20` level 5 or a broader zero-progress
+cluster, with transformed controls, deterministic repeat, exact preservation,
+and the full 25-game gate unchanged.
 
 ## Verified v99k full-suite breakthrough: complementary-display accommodation
 
@@ -89,7 +119,9 @@ overlay
 `0b27853b2e428f0a8aee6219b7cf90f2c8d559f5ff435e3b32c591e9d5eefbef`,
 and notebook
 `dd93c904b2a44ee7ba53a6e591c51cfd64e0e595bb27751a596a063edf3a3143`.
-Kaggle publication and submission remain.
+The exact v99k Kaggle notebook version 1 is published privately and completed;
+its competition submission attempt was quota-blocked and created no submission
+ID.
 
 ## Provisional autonomous breakthrough: `ls20` level 3
 

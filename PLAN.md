@@ -24,7 +24,7 @@ generalization.
 - Branch: `codex/v74-fresh`
 - Participant repository: `git@github.com:pauloabelha/reflector.git`
 - Upstream starter remote: `https://github.com/arcprize/ARC-AGI-3-Agents.git`
-- Last pushed participant-remote commit: `40e49cb`
+- Last pushed participant-remote commit: `d883fac`
 - Accepted candidate: `candidate-ddf2529a2bae5601`
 - Accepted agent: Reflector v99k
 - Frozen inference source commit: `794d9a1`
@@ -274,8 +274,11 @@ v98: `ls20` advances from 3/7 at `[17,112,51,220,0,0,0]` to 4/7 at
 exact. Report SHA-256:
 `8160783c9aae6c62fda71a8338e118c730debf3f1b76b79ecec7d494b1e7c74a`.
 Frozen candidate `candidate-ddf2529a2bae5601` at `38cb243` exactly reproduces
-the earlier pre-freeze signature. The active gates are exact export,
-network-disabled smoke, technical audit, and Kaggle submission.
+the earlier pre-freeze signature. Exact export, both network-disabled smoke
+paths, technical audit, and full quality pass. Private Kaggle notebook
+`pauloabelha/reflector-arc-agi-3-v99k` version 1 completed and emitted
+`submission.parquet`; the competition request was quota-blocked and created no
+submission ID. Retry that exact completed version after the daily slot resets.
 
 ## Active breakthrough: compile `ls20` level 3 as a fibered product CSP
 

@@ -22,8 +22,7 @@ Submission status, 2026-07-31 UTC:
 - its competition submission request returned HTTP 400 because v74 submission
   `55123277` had already consumed the one-per-day allowance;
 - no v84m competition submission ID exists yet;
-- v99k is now the accepted local package and its exact notebook is ready for a
-  new Kaggle commit/submission when the daily allowance permits;
+- v99k is now the accepted local package;
 - private notebook `pauloabelha/reflector-arc-agi-3-v92` version 1 completed
   successfully and emitted `submission.parquet`;
 - its competition submission request also returned HTTP 400 while v74 remains
@@ -52,8 +51,15 @@ Submission status, 2026-07-31 UTC:
   ID, so submit completed version 1 unchanged after the quota resets;
 - the exact v99k candidate exports byte-identically twice, both
   network-disabled smoke paths pass, and the technical prize audit reports
-  `technical_ready: true`; its Kaggle notebook publication and competition
-  submission are the next gate;
+  `technical_ready: true`;
+- private notebook `pauloabelha/reflector-arc-agi-3-v99k` version 1 completed
+  successfully and emitted a 2,648-byte `submission.parquet`, SHA-256
+  `71bfd543030e339d87bd9ff744d466218398a1259650b2c255626d27049c88bb`;
+- the exact v99k competition request returned HTTP 400 because v74 submission
+  `55123277` had consumed the UTC daily allowance; the subsequent listing
+  contains only v65b and v74, so no v99k submission ID exists;
+- submit completed v99k notebook version 1 unchanged after the allowance
+  resets;
 - v74 submission `55123277` has now completed with public score `0.02`;
 - historical v65b submission `55113224` is complete with Kaggle public score
   `0.02`; the private score remains unavailable.
