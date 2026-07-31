@@ -160,6 +160,9 @@ mask. Perception may return several pixel-level embeddings. The CSP planner,
 not a shape-specific tie-breaker, selects only embeddings reachable in the
 intervention-grounded action lattice. The same representation covers plus, X,
 diamond, clipped, translated, reflected, and color-renamed layouts.
+Mover masks are completed under observed central symmetry before embedding,
+so a pixel temporarily occluded by a crossing mover color does not mutate the
+abstract object or its goal domain.
 
 This implements a narrow Piagetian cycle:
 

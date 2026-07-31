@@ -34,6 +34,7 @@ It identifies frozen source commit
 | --- | --- | ---: | --- | --- |
 | Process-isolated official local suite | v82f accepted | **16.3554480981 / 100** | 3 games beaten; 39/183 levels across 13 games; 9,185 actions | exact v74 preservation outside `tr87`; 25/25 coverage |
 | Target-only `tr87` reruns | v82f accepted | 47.6190476190 for one game | 4/6 levels; exact `[56,45,44,38,217,0]` twice | deterministic demonstrated-analogy gain |
+| Target-only `re86` reruns | v84b categorical options, experimental | 2.7777777778 for one game | 1/8 levels; exact `[24,376,0,0,0,0,0,0]` twice; 173 commuting confirmations and zero conflicts per run | deterministic 10-action efficiency gain; level 2 still falsifies structural preservation |
 | Target-only `re86` run | v84 experimental | 1.6243752403 for one game | 1/8 levels at `[34,366,0,0,0,0,0,0]`; four moves and one switch grounded, zero conflicts | target gain once; broader level-2 shape embedding under development |
 | Target-only `sc25` run | v83 rejected | 0.0000000000 for one game | 0/6 levels in 400 actions despite operative distance-decreasing track replay | rejected; track endpoint was not the task goal |
 | Clean process-isolated official local suite | v74 accepted | **14.4506861933 / 100** | 3 games beaten; 35/183 levels across 12 games; 9,185 actions | exact clean restart; 25/25 coverage |

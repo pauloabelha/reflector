@@ -42,23 +42,30 @@ On `tr87`, the frozen agent reproduced 4/6 twice with level actions
 
 ## Current development result
 
-V84 adds a distinct relational mechanism: colored landmark centers constrain
-where switchable movable shapes must be translated. A black-box derivation
-solved `re86` level 1 in exactly 20 actions. The first frozen autonomous run
-also advanced level 1, in 34 actions:
+V84b replaces the plus-specific route with a common finite-domain rewrite
+substrate. Translations and focus transfers are grounded morphisms whose
+predicted and observed abstractions must form commuting squares. Landmark
+embedding is a CSP, bounded A* compiles its primitive policy as an option, and
+only MDL-positive option programs are retained without duplication.
 
-- target score: **1.6243752402921952**
+Frozen candidate `candidate-ec8492354af28870` reproduced `re86` exactly twice:
+
+- target score: **2.7777777777777777**
 - target levels: **1/8**
-- controls grounded: four translations and one control-transfer action
-- conflicts/quarantines: zero
-- report:
-  [`reports/experimental-v84-constellation-re86-r1-400.json`](reports/experimental-v84-constellation-re86-r1-400.json)
+- level actions: **`[24,376,0,0,0,0,0,0]`**
+- improvement over v84: level 1 fell from 34 to 24 actions
+- causal evidence per run: 173 commuting confirmations, zero commuting
+  conflicts
+- reports:
+  [`r1`](reports/experimental-v84b-categorical-re86-r1-400.json) and
+  [`r2`](reports/experimental-v84b-categorical-re86-r2-400.json)
 
-Level 2 falsified the plus-only version of the perceptual rule. It contains a
-plus, an X, and a diamond. The stronger ongoing hypothesis is generic subset
-embedding: translate each mover so all same-colored landmark centers lie on
-its translated pixel mask. V84 is therefore promising but **not promoted** and
-does not change the verified 25-game score yet.
+This is a deterministic efficiency breakthrough but not promotion evidence:
+level 2 still did not advance. Only two translation controls remained at the
+end, five actions were quarantined, and the final diagnosis was
+`constellation-structure-changed`. The next step is to inspect the recorded
+causal stream and weaken the smallest false preservation condition. The
+verified 25-game score remains unchanged.
 
 ## Rejected branch
 
@@ -71,6 +78,7 @@ negative result and is disabled in v82f/v84 candidates.
 
 The verified score remains **16.3554480981 / 100**. Reaching 20 requires at
 least **+3.6445519019** aggregate points. The current priority is to validate
-generic shape-to-landmark subset embedding across changed `re86` layouts,
-repeat any gain deterministically, run the preservation/full-suite gate, and
-only then submit the exact accepted package to Kaggle using `KAGGLE.md`.
+why the generic embedding object's supposedly invariant structure changes on
+`re86` level 2, require multi-level progress, run preservation/full-suite
+gates, and only then submit the exact accepted package to Kaggle using
+`KAGGLE.md`.

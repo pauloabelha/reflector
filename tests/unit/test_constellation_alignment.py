@@ -119,6 +119,22 @@ def test_inference_commutes_with_horizontal_reflection() -> None:
     }
 
 
+def test_inference_quotients_out_one_crossing_mover_occlusion() -> None:
+    grid = [list(row) for row in _frame()]
+    grid[45][48] = 11
+
+    layout = infer_constellation_alignment(tuple(tuple(row) for row in grid))
+
+    assert layout is not None
+    assert {
+        item.color: (item.center, item.targets)
+        for item in layout.objects
+    } == {
+        9: ((36, 45), frozenset({(48, 24)})),
+        11: ((21, 27), frozenset({(15, 9)})),
+    }
+
+
 def test_learns_translation_and_switch_controls_from_interventions() -> None:
     explorer = EpistemicExplorer(constellation_alignment=True)
     start = _frame()

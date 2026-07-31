@@ -127,6 +127,23 @@ def _embedding_targets(
     )
 
 
+def _complete_central_symmetry(
+    shape: frozenset[tuple[int, int]],
+    center: tuple[int, int],
+    width: int,
+    height: int,
+) -> frozenset[tuple[int, int]]:
+    """Recover mover pixels hidden by selectors or crossing mover colors."""
+
+    reflected = {
+        (2 * center[0] - x, 2 * center[1] - y)
+        for x, y in shape
+        if 0 <= 2 * center[0] - x < width
+        and 0 <= 2 * center[1] - y < height
+    }
+    return shape | reflected
+
+
 def infer_constellation_alignment(frame: Frame) -> ConstellationAlignment | None:
     """Return a unique colored-plus/landmark alignment, otherwise abstain."""
 
@@ -148,6 +165,12 @@ def infer_constellation_alignment(frame: Frame) -> ConstellationAlignment | None
             // (2 * len(shape)),
             (2 * sum(point[1] for point in shape) + len(shape))
             // (2 * len(shape)),
+        )
+        shape = _complete_central_symmetry(
+            shape,
+            center,
+            len(frame[0]),
+            len(frame),
         )
         targets = _embedding_targets(
             shape,

@@ -78,6 +78,32 @@ This is promising but not accepted evidence beyond one level. The stronger
 parser must solve changed layouts reproducibly and pass preservation before it
 can affect the canonical score.
 
+## 2026-07-30 — v84b categorical option compiler: efficient but structurally false
+
+The generic parser is now embedded in a common finite-domain control language
+rather than another shape advisor. Relational states are objects; grounded
+translations are endomorphisms; control transfer is a focus morphism; and an
+action model is trusted only when concrete intervention and abstract
+prediction form a commuting square. Landmark embeddings define finite CSP
+domains. Bounded A* compiles a hierarchical option, and MDL-positive programs
+are retained once rather than turning every successful suffix into permanent
+knowledge.
+
+This compression changed behavior reproducibly. Frozen v84b completed `re86`
+level 1 in 24 actions twice, versus 34 for v84, raising the target score from
+1.6243752403 to 2.7777777778. Each run accumulated 173 commuting confirmations
+and zero commuting conflicts. The gain is real but narrow: level 2 still
+consumed the remainder of the budget. Five actions were quarantined and the
+last diagnosis was `constellation-structure-changed`.
+
+The important disequilibrium is now sharper. The causal action algebra is not
+being contradicted; the perceptual object changes under actions that should
+preserve its constraint structure. Following Piaget and Drescher, the next
+accommodation should weaken only that false synthetic-item invariant, using
+the cognitive stream to determine whether mover masks, landmark groups,
+selector identity, or clipping changes. Adding another task-specific planner
+would conceal rather than resolve this contradiction.
+
 ## 2026-07-30 — clean restart and v75 translation algebra
 
 A pinned fresh-process rerun from the v74 source commit exactly reproduced the

@@ -72,20 +72,27 @@ generalization.
 | Secondary stencil and factored orbit composition | v74 independently grounded smaller overwrite components and factored cyclic direction from radial rank. It completed `cd82` 6/6 and reached `lp85` 6/8 while preserving all other v69 outcomes exactly. |
 | Demonstrated dihedral analogy algebra | v82f inferred glyph-to-glyph, glyph-to-sequence, sequence-to-sequence, and bridge-composed relations under square symmetries. It preserved every v74 game exactly except `tr87`, where it reproducibly advanced 4/6 at `[56,45,44,38,217,0]`; the full suite rose to 16.3554480981 and 39/183 levels. |
 
-## Current experiment: v84 landmark-constrained shape embedding
+## Current experiment: v84b categorical constellation options
 
-V84 is not promoted. Its first frozen target run advanced `re86` from 0/8 to
-1/8 in 34 actions and grounded four translations plus one control-transfer
-action with zero conflicts. The plus-only target parser then abstained on level
-2, which contains a plus, an X, and a diamond.
+V84b is not promoted. Candidate `candidate-ec8492354af28870`, frozen at source
+`5d64e5794c3720e14f2a7f7d3f430e359cf6992d`, reproduced `re86` exactly twice
+at 1/8, score 2.7777777778, and `[24,376,0,0,0,0,0,0]`. This improves v84's
+level-1 route from 34 to 24 actions but does not add a level.
 
-The active generalization replaces shape-specific target centers with a
-translation subset constraint: for each colored mover, infer translations
-under which every same-colored landmark center lies on the translated mover
-mask. Candidate ambiguity is resolved only by the intervention-grounded action
-lattice. Required gates are:
+The implementation now represents mover positions and finite landmark-
+embedding domains as focused rewrite objects. Observed translations and focus
+transfers earn authority only through commuting-square checks. A bounded A*
+CSP compiler produces hierarchical primitive options; MDL-positive programs
+are deduplicated before retention. Translated, reflected, color-renamed, plus,
+X, diamond, and ambiguous-but-lattice-filtered synthetic cases pass.
 
-1. focused parser and controller tests;
+Level 2 remains the falsifier. Each repeat recorded 173 commuting
+confirmations and zero commuting conflicts, but ended with only two move
+actions, five quarantined controls, and `constellation-structure-changed`.
+Required gates are:
+
+1. inspect the causal stream and identify the smallest falsely preserved
+   relation;
 2. deterministic multi-level `re86` gain twice;
 3. exact preservation of the v82f suite outside changed targets;
 4. full 25-game score of at least 20 before Kaggle submission.
