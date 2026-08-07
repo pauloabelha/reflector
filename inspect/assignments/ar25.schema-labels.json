@@ -1,0 +1,32 @@
+{
+  "kind": "schema-label-assignment",
+  "scope": "Inspector-only display annotation. It is not stored in, learned by, or supplied to Reflector-II.",
+  "game": "ar25",
+  "author": "Codex, based on the first rendered frame only",
+  "labels": {
+    "4d322f48e00777d475bdd9a5ca0749ad62801a768bc0bffb837aaf11ad0da5be": {
+      "label": "six single-cell markers",
+      "rationale": "The schema binds six one-cell foreground regions with one shared form."
+    },
+    "a9ce0379004762da78578b5542f3e5cc21a4f02bc3e91fba43b5fec11f6f6577": {
+      "label": "pair of repeated stepped 9×9 shapes",
+      "rationale": "The schema binds two 45-cell regions with the same 9×9 normalized form."
+    },
+    "188febeeae53e15b70003f6890d097074bf901463148d8c549ddd225d4c7bb34": {
+      "label": "63-cell horizontal border bar",
+      "rationale": "The bound region is a one-cell-high 63-cell horizontal run."
+    },
+    "99ac14b9fdf83d2c21e9c562d7de9dad544cca3813349f3e756530949be0cb67": {
+      "label": "3×63 central divider block",
+      "rationale": "The bound region is a solid three-cell-wide, 63-cell-high block."
+    },
+    "a19b8a6a010af5cda110557d074b575accec0449ae75184b6ddd858d7815b7f9": {
+      "label": "63-cell vertical border bar",
+      "rationale": "The bound region is a one-cell-wide 63-cell vertical run."
+    },
+    "e6cc51cd4926785ce42557f1af86b40258b591bcda899d265721c67afd7ffccf": {
+      "label": "one distinct 9×9 shape",
+      "rationale": "The schema binds one 40-cell region with a distinct 9×9 normalized form."
+    }
+  }
+}

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071019" />
+    <title>Reflector-II · Concept Inspector</title>
+    <link rel="stylesheet" href="/inspect/style.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span><span></span></div>
+        <div>
+          <div class="eyebrow">Sparse schema laboratory</div>
+          <h1>Reflector<span>II</span></h1>
+        </div>
+      </div>
+      <div class="runtime-state"><i></i><span>Local deterministic runtime</span></div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div>
+          <p class="kicker">Observation → evidence → active subgraph</p>
+          <h2>See what the learner sees—<em>without choosing one parse.</em></h2>
+          <p class="hero-copy">Load pixel art or a captured ARC frame. Every concept below is produced by the actual bounded Reflector-II runtime.</p>
+        </div>
+        <div class="load-actions">
+          <label class="upload-button" for="image-input">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5"/></svg>
+            Load image
+          </label>
+          <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+          <span class="upload-hint">Pixel art works best · max 128²</span>
+        </div>
+      </section>
+
+      <section class="fixture-strip" aria-label="Available fixtures">
+        <div class="section-label">Choose an ARC game</div>
+        <div id="fixtures" class="fixture-list"><div class="skeleton fixture-skeleton"></div></div>
+      </section>
+
+      <section id="status" class="status-card hidden" role="status"></section>
+
+      <section class="workspace-grid">
+        <article class="panel observation-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-index">01</span>
+              <h3>Observation</h3>
+            </div>
+            <div class="segmented">
+              <button class="active" data-overlay="schemas">Hover graph node</button>
+              <button data-overlay="none">Clean</button>
+            </div>
+          </div>
+          <div id="drop-zone" class="canvas-stage">
+            <canvas id="grid-canvas" width="640" height="640"></canvas>
+            <canvas id="overlay-canvas" width="640" height="640"></canvas>
+            <div id="empty-state" class="empty-state">
+              <div class="empty-glyph"><span></span><span></span><span></span><span></span></div>
+              <strong>Drop an image here</strong>
+              <small>or select a fixture above</small>
+            </div>
+            <div id="canvas-badge" class="canvas-badge hidden"></div>
+          </div>
+          <div id="palette" class="palette-row"></div>
+          <div id="region-summary" class="mini-summary"></div>
+        </article>
+
+        <article class="panel graph-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-index">02</span>
+              <h3>Active schema graph</h3>
+            </div>
+            <div class="graph-legend">
+              <span><i class="depth-0"></i>seed</span>
+              <span><i class="depth-1"></i>composed</span>
+              <span><i class="depth-2"></i>deeper</span>
+            </div>
+          </div>
+          <div class="graph-toolbar">
+            <label class="search-box">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+              <input id="search" type="search" placeholder="Find a relation or schema…" />
+            </label>
+            <button id="fit-graph" class="icon-button" title="Fit graph">
+              <svg viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M8 21H3v-5m13 5h5v-5"/></svg>
+            </button>
+          </div>
+          <div id="graph-wrap" class="graph-wrap">
+            <svg id="concept-graph" viewBox="0 0 900 560" role="img" aria-label="Active concept graph"></svg>
+            <div id="graph-empty" class="graph-empty">The active subgraph will appear here.</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="metrics-section">
+        <div class="section-title-row">
+          <div><span class="panel-index">03</span><h3>Frontier telemetry</h3></div>
+          <p>Counts are exact. Timings are observational.</p>
+        </div>
+        <div id="metrics" class="metric-grid"></div>
+      </section>
+
+      <section class="concept-section">
+        <div class="section-title-row">
+          <div><span class="panel-index">04</span><h3>Simultaneous descriptions</h3></div>
+          <div id="concept-count" class="count-chip">0 active</div>
+        </div>
+        <div id="concepts" class="concept-grid">
+          <div class="concept-placeholder">Choose a fixture or load an image to inspect its active schemas.</div>
+        </div>
+      </section>
+    </main>
+
+    <aside id="drawer" class="drawer" aria-hidden="true">
+      <button id="close-drawer" class="drawer-close" aria-label="Close">×</button>
+      <div id="drawer-content"></div>
+    </aside>
+    <div id="scrim" class="scrim"></div>
+
+    <footer>
+      <span>Reflector-II Phase 1</span>
+      <span>Descriptions coexist. Teacher hypotheses receive no privilege.</span>
+      <span>localhost only</span>
+    </footer>
+    <script src="/inspect/app.js" type="module"></script>
+  </body>
+</html>
