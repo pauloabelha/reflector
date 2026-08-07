@@ -45,6 +45,7 @@ def test_schema_graph_soa_columns_and_provenance_stay_aligned() -> None:
         graph.distinct_contexts,
         graph.support_contexts,
         graph.projection_contexts,
+        graph.projection_binding_signatures,
     )
     edge_columns = (
         graph.src,

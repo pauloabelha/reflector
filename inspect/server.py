@@ -21,13 +21,31 @@ if str(SOURCE_ROOT) not in sys.path:
 
 from reflector2.perception import perceive_grid  # noqa: E402
 from reflector2.raw_frame import load_first_grid  # noqa: E402
-from reflector2.runtime import Runtime  # noqa: E402
+from reflector2.runtime import Limits, Runtime  # noqa: E402
 from reflector2.store import SCHEMA_CANDIDATE, SCHEMA_ESTABLISHED  # noqa: E402
 
 STATIC_ROOT = Path(__file__).resolve().parent / "static"
 ASSIGNMENT_ROOT = Path(__file__).resolve().parent / "assignments"
+PREDICATE_ASSIGNMENT = ASSIGNMENT_ROOT / "predicate-labels.json"
 MAX_BODY_BYTES = 4 * 1024 * 1024
 MAX_SIDE = 128
+INSPECTOR_LIMITS = Limits(
+    # The inspector is an explicitly larger, read-only exploratory view.  It
+    # retains bp35's 191 regions and permits substantially more bounded DAG
+    # construction than the normal cognition profile. Production defaults
+    # remain unchanged.
+    max_active_nodes=2048,
+    max_active_edges=8192,
+    max_binding_candidates=4096,
+    max_facts_per_atom=16384,
+    max_partial_bindings=16384,
+    max_bindings_per_schema=2048,
+    max_composition_proposals=4096,
+    max_new_compositions=2048,
+    max_composition_rounds=16,
+    max_relational_closures=1024,
+    max_queue_items=32768,
+)
 RAW_RECORDING_DIRECTORY = Path(
     "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400"
 )
@@ -68,6 +86,18 @@ def _load_assignment(game_id: str) -> dict[str, Any] | None:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or value.get("kind") != "schema-label-assignment":
         raise ValueError(f"invalid assignment file: {path.name}")
+    return value
+
+
+def _load_predicate_assignment() -> dict[str, Any]:
+    """Read global LLM-authored predicate labels for inspector display only."""
+
+    value = json.loads(PREDICATE_ASSIGNMENT.read_text(encoding="utf-8"))
+    if not isinstance(value, dict) or value.get("kind") != "predicate-label-assignment":
+        raise ValueError("invalid external predicate-label assignment")
+    labels = value.get("labels")
+    if not isinstance(labels, dict):
+        raise ValueError("external predicate-label assignment has no labels")
     return value
 
 
@@ -185,6 +215,31 @@ def _bound_region_ids(
     return sorted(output)
 
 
+def _install_inspector_color_schemas(runtime: Runtime, batch: Any) -> None:
+    """Add one generic color-value pattern per displayed palette value.
+
+    This belongs to the inspector's expanded diagnostic profile, not the
+    production runtime.  The schema still uses the ordinary `Color` predicate
+    and a nominal value; no natural-language color name enters Reflector.
+    """
+
+    color_head = runtime.graph.terms.intern_symbol("Color")
+    values = sorted(
+        {
+            runtime.graph.terms.value(arguments[1])
+            for head, arguments in batch.facts
+            if head == color_head and len(arguments) == 2
+        },
+        key=lambda value: (type(value).__name__, repr(value)),
+    )
+    for value in values:
+        runtime.graph.add_schema(
+            f"ColorPattern:{value}",
+            [("Color", ("?x", value))],
+            provenance="inspector:color-index",
+        )
+
+
 def analyze_grid(
     grid: tuple[tuple[int, ...], ...],
     *,
@@ -195,13 +250,14 @@ def analyze_grid(
     actual_background = (
         max(counts, key=lambda value: (counts[value], -value)) if background is None else background
     )
-    runtime = Runtime()
+    runtime = Runtime(limits=INSPECTOR_LIMITS)
     batch = perceive_grid(
         runtime.graph.terms,
         grid,
         "inspect:frame-0",
         background=actual_background,
     )
+    _install_inspector_color_schemas(runtime, batch)
     workspace = runtime.observe(batch)
     graph = runtime.graph
     terms = graph.terms
@@ -217,9 +273,14 @@ def analyze_grid(
         shadows_by_schema[shadow.schema_id].append(
             {
                 "id": shadow.shadow_id,
+                "partial_binding_id": shadow.partial_binding_id,
                 "status": shadow.status,
                 "carrier": shadow.carrier,
-                "open_roles": [f"?v{value}" for value in shadow.open_roles],
+                "assignments": [
+                    f"?v{variable}={terms.value(term)}"
+                    for variable, term in shadow.assignments
+                ],
+                "open_roles": list(shadow.open_roles),
                 "open_constraints": list(shadow.open_constraints),
                 "child_roles": [
                     {
@@ -238,6 +299,12 @@ def analyze_grid(
                 "completed_constraints": list(shadow.completed_constraints),
                 "activation": round(shadow.activation, 4),
                 "provenance": shadow.provenance,
+                "contradictory_evidence": [
+                    _format_atom(
+                        str(terms.value(head)), tuple(terms.value(term) for term in arguments)
+                    )
+                    for head, arguments in shadow.contradictory_evidence
+                ],
             }
         )
     region_index = {term: index for index, term in enumerate(batch.region_terms)}
@@ -316,6 +383,9 @@ def analyze_grid(
                 "support": graph.support[schema_id],
                 "contradiction": graph.contradiction[schema_id],
                 "uses": graph.use_count[schema_id],
+                "projection_support": graph.projection_support[schema_id],
+                "projection_failure": graph.projection_failure[schema_id],
+                "projection_context_count": len(graph.projection_contexts[schema_id]),
                 "reusable_candidate": schema_id in reusable,
                 "decompositions": decompositions,
             }
@@ -357,6 +427,9 @@ def analyze_grid(
             "total_schemas",
             "active_schemas",
             "active_edges",
+            "partial_bindings",
+            "active_shadows",
+            "average_open_roles_per_shadow",
             "active_edge_visits",
             "candidates_retrieved",
             "candidates_verified",
@@ -370,6 +443,9 @@ def analyze_grid(
             "activation_time_s",
             "composition_time_s",
             "reusable_composite_candidates",
+            "shadow_projections",
+            "shadow_reifications",
+            "shadow_refutations",
             "term_bytes_estimate",
             "graph_bytes_estimate",
         )
@@ -395,8 +471,15 @@ def analyze_grid(
             "composition_rounds": runtime.limits.max_composition_rounds,
             "binding_candidates": runtime.limits.max_binding_candidates,
             "facts_per_atom": runtime.limits.max_facts_per_atom,
+            "partial_bindings": runtime.limits.max_partial_bindings,
+            "bindings_per_schema": runtime.limits.max_bindings_per_schema,
             "transition_correspondences": runtime.limits.max_transition_correspondences,
             "analogy_candidates": runtime.limits.max_analogy_candidates,
+            "shadow_activation_threshold": runtime.limits.shadow_activation_threshold,
+            "shadow_bound_role_fraction": runtime.limits.min_shadow_bound_role_fraction,
+            "shadow_open_roles": runtime.limits.max_shadow_open_roles,
+            "shadow_open_constraints": runtime.limits.max_shadow_open_constraints,
+            "shadow_projections_per_cycle": runtime.limits.max_shadow_projections_per_cycle,
         },
     }
 
@@ -472,7 +555,9 @@ class InspectorHandler(BaseHTTPRequestHandler):
             palette = value.get("palette")
             if palette is not None and not isinstance(palette, dict):
                 raise ValueError("palette must be an object")
-            self._json(analyze_grid(grid, background=background, palette=palette))
+            report = analyze_grid(grid, background=background, palette=palette)
+            report["predicate_assignment"] = _load_predicate_assignment()
+            self._json(report)
         except (ValueError, KeyError, json.JSONDecodeError) as error:
             self._error(str(error))
 

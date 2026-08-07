@@ -40,6 +40,11 @@ def test_inspector_projects_real_runtime_without_global_retrieval() -> None:
         for node in report["nodes"]
     )
     assert all(
+        {"projection_support", "projection_failure", "projection_context_count"} <= set(node)
+        for node in report["nodes"]
+    )
+    assert {"partial_bindings", "active_shadows", "shadow_projections"} <= set(report["metrics"])
+    assert all(
         set(node["region_ids"]) <= {region["id"] for region in report["regions"]}
         for node in report["nodes"]
     )
@@ -98,6 +103,32 @@ def test_ar25_label_assignments_are_external_to_runtime() -> None:
     assert assignment is not None
     assert assignment["kind"] == "schema-label-assignment"
     assert "not stored in" in assignment["scope"]
+
+
+def test_llm_predicate_names_are_external_and_cover_runtime_heads() -> None:
+    assignment = inspector._load_predicate_assignment()
+
+    assert assignment["kind"] == "predicate-label-assignment"
+    assert "not stored in" in assignment["scope"]
+    assert "not" in assignment["scope"] and "supplied to Reflector-II" in assignment["scope"]
+    assert {
+        "Kind",
+        "Connected",
+        "Color",
+        "Form",
+        "Enclosed",
+        "Inside",
+        "EnclosureCount",
+        "Value",
+        "At",
+        "PartOf",
+        "OutlineForm",
+        "Contains",
+    } <= set(assignment["labels"])
+    assert all(
+        {"label", "reading", "rationale"} <= set(label)
+        for label in assignment["labels"].values()
+    )
 
 
 @pytest.mark.skipif(

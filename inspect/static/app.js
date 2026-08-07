@@ -4,7 +4,7 @@ const ARC_COLORS = {
   10: '#62c6d8', 11: '#d8eef2'
 };
 
-const state = { grid: null, palette: {}, analysis: null, assignment: null, overlay: 'schemas', selected: null, hovered: null, graphTransform: {x:0,y:0,k:1} };
+const state = { grid: null, palette: {}, analysis: null, assignment: null, predicateAssignment: null, overlay: 'schemas', selected: null, hovered: null, graphTransform: {x:0,y:0,k:1} };
 const $ = selector => document.querySelector(selector);
 const fixturesEl = $('#fixtures');
 const gridCanvas = $('#grid-canvas');
@@ -46,6 +46,7 @@ function generatedAssignment(node) {
 }
 function assignedLabel(node) { return state.assignment?.labels?.[node.hash] || generatedAssignment(node); }
 function displayName(node) { return assignedLabel(node)?.label || node.name; }
+function assignedPredicate(head) { return state.predicateAssignment?.labels?.[head] || null; }
 
 async function jsonFetch(url, options={}) {
   const response = await fetch(url, options);
@@ -98,6 +99,7 @@ async function analyze(grid, background=null, label='Uploaded image') {
       body: JSON.stringify({grid, background, palette: state.palette})
     });
     state.analysis = analysis;
+    state.predicateAssignment = analysis.predicate_assignment || null;
     state.palette = analysis.palette || state.palette;
     renderAll();
     hideStatus();
@@ -159,6 +161,8 @@ function renderRegionSummary() {
 
 const metricSpec = [
   ['active_schemas','Active schemas','active_nodes','accent'],['active_edges','Active edges','active_edges',''],
+  ['partial_bindings','Partial bindings',null,'accent'],['active_shadows','Active shadows','shadow_projections_per_cycle','accent'],
+  ['shadow_reifications','Reified shadows',null,''],['shadow_refutations','Refuted shadows',null,''],
   ['reusable_composite_candidates','Reusable candidates',null,'accent'],
   ['candidates_retrieved','Retrieved','binding_candidates',''],['candidates_verified','Verified',null,''],
   ['compositions_proposed','Proposed','composition_proposals',''],['compositions_retained','Retained',null,'accent'],
@@ -179,7 +183,7 @@ function renderMetrics() {
 
 function filteredNodes() {
   const query=$('#search').value.trim().toLowerCase();
-  return state.analysis.nodes.filter(node=>!query||displayName(node).toLowerCase().includes(query)||node.name.toLowerCase().includes(query)||node.body.some(atom=>atom.toLowerCase().includes(query)));
+  return state.analysis.nodes.filter(node=>!query||displayName(node).toLowerCase().includes(query)||node.name.toLowerCase().includes(query)||node.body.some(atom=>atom.toLowerCase().includes(query))||node.heads.some(head=>(assignedPredicate(head)?.label||'').toLowerCase().includes(query)));
 }
 function renderConcepts() {
   const nodes=filteredNodes();const el=$('#concepts');el.innerHTML='';$('#concept-count').textContent=`${nodes.length} active`;
@@ -191,34 +195,59 @@ function renderConcepts() {
   }
 }
 
-function graphLayout(nodes) {
-  const groups=new Map();for(const node of nodes){const d=Math.min(node.depth,4);if(!groups.has(d))groups.set(d,[]);groups.get(d).push(node);}
+function graphLayout(nodes, focusId=state.selected) {
+  const focused=nodes.find(node=>node.id===focusId);
+  if (focused) return focusedGraphLayout(nodes, focused);
+  const groups=new Map();for(const node of nodes){const d=node.depth;if(!groups.has(d))groups.set(d,[]);groups.get(d).push(node);}
   const positions=new Map();const depths=[...groups.keys()].sort((a,b)=>a-b);const width=900,height=560;
   depths.forEach((depth,column)=>{const values=groups.get(depth);const x=depths.length===1?width/2:90+column*(width-180)/Math.max(1,depths.length-1);values.forEach((node,i)=>{const spacing=(height-80)/(values.length+1);const jitter=((hashNumber(node.short_hash)%17)-8)*1.3;positions.set(node.id,{x:x+jitter,y:40+(i+1)*spacing});});});
+  return positions;
+}
+function focusedGraphLayout(nodes, focused) {
+  const width=900,height=560,centerX=width/2,centerY=height/2;
+  const groups=new Map();
+  for(const node of nodes){
+    if(node.id===focused.id) continue;
+    const relative=node.depth-focused.depth;
+    if(!groups.has(relative))groups.set(relative,[]);groups.get(relative).push(node);
+  }
+  const positions=new Map([[focused.id,{x:centerX,y:centerY}]]);
+  const maxDistance=Math.max(1,...[...groups.keys()].map(relative=>Math.abs(relative)));
+  const horizontalStep=Math.min(132,(width-120)/(2*maxDistance));
+  for(const [relative,values] of groups){
+    values.sort((left,right)=>left.short_hash.localeCompare(right.short_hash));
+    const x=Math.max(60,Math.min(width-60,centerX+relative*horizontalStep));
+    const spacing=(height-72)/(values.length+1);
+    values.forEach((node,index)=>{
+      const jitter=((hashNumber(node.short_hash)%11)-5)*1.4;
+      positions.set(node.id,{x:x+jitter,y:36+(index+1)*spacing});
+    });
+  }
   return positions;
 }
 function renderGraph() {
   const nodes=state.analysis.nodes;const visible=new Set(filteredNodes().map(n=>n.id));const pos=graphLayout(nodes);
   svg.innerHTML='<g id="viewport"><g id="links"></g><g id="nodes"></g></g>';$('#graph-empty').classList.toggle('hidden',nodes.length>0);
   const linkLayer=svg.querySelector('#links'),nodeLayer=svg.querySelector('#nodes');
-  for(const link of state.analysis.links){if(!pos.has(link.source)||!pos.has(link.target))continue;const a=pos.get(link.source),b=pos.get(link.target);const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);line.setAttribute('class',`graph-link ${link.relation} ${visible.has(link.source)&&visible.has(link.target)?'':'dim'}`);linkLayer.append(line);}
-  for(const node of nodes){const p=pos.get(node.id),g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class',`graph-node ${visible.has(node.id)?'':'dim'} ${state.selected===node.id?'selected':''}`);g.setAttribute('transform',`translate(${p.x} ${p.y})`);g.dataset.id=node.id;const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');const radius=5+Math.min(7,node.bindings*.35)+node.depth*1.4;circle.setAttribute('r',radius);circle.setAttribute('fill',node.depth===0?'#68d9ff':node.depth===1?'#78f0c2':'#b6a0ff');circle.setAttribute('fill-opacity',.42+node.activation*.45);const text=document.createElementNS('http://www.w3.org/2000/svg','text');text.setAttribute('y',radius+12);text.textContent=shortName(displayName(node));g.append(circle,text);g.addEventListener('mouseenter',()=>{state.hovered=node.id;drawOverlay();});g.addEventListener('mouseleave',()=>{if(state.hovered===node.id){state.hovered=null;drawOverlay();}});g.addEventListener('click',event=>{event.stopPropagation();openNode(node);});nodeLayer.append(g);}
+  for(const link of state.analysis.links){if(!pos.has(link.source)||!pos.has(link.target))continue;const a=pos.get(link.source),b=pos.get(link.target);const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);const linked=state.selected!==null&&(link.source===state.selected||link.target===state.selected);line.setAttribute('class',`graph-link ${link.relation} ${linked?'focused-link':''} ${visible.has(link.source)&&visible.has(link.target)?'':'dim'}`);linkLayer.append(line);}
+  for(const node of nodes){const p=pos.get(node.id),g=document.createElementNS('http://www.w3.org/2000/svg','g');const selected=state.selected===node.id;g.setAttribute('class',`graph-node ${visible.has(node.id)?'':'dim'} ${selected?'selected':''}`);g.setAttribute('transform',`translate(${p.x} ${p.y})`);g.dataset.id=node.id;const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');const radius=(selected?11:5)+Math.min(selected?10:7,node.bindings*.35)+node.depth*1.4;circle.setAttribute('r',radius);circle.setAttribute('fill',node.depth===0?'#68d9ff':node.depth===1?'#78f0c2':'#b6a0ff');circle.setAttribute('fill-opacity',selected?1:.42+node.activation*.45);const text=document.createElementNS('http://www.w3.org/2000/svg','text');text.setAttribute('y',radius+12);text.textContent=shortName(displayName(node));g.append(circle,text);g.addEventListener('mouseenter',()=>{state.hovered=node.id;drawOverlay();});g.addEventListener('mouseleave',()=>{if(state.hovered===node.id){state.hovered=null;drawOverlay();}});g.addEventListener('click',event=>{event.stopPropagation();openNode(node);});nodeLayer.append(g);}
   applyGraphTransform();
 }
 function shortName(name){return name.length>19?name.slice(0,17)+'…':name;}
 function hashNumber(value){return [...value].reduce((n,c)=>(n*31+c.charCodeAt(0))>>>0,7);}
 function applyGraphTransform(){const {x,y,k}=state.graphTransform;const viewport=svg.querySelector('#viewport');if(viewport)viewport.setAttribute('transform',`translate(${x} ${y}) scale(${k})`);}
-function resetGraph(){state.graphTransform={x:0,y:0,k:1};applyGraphTransform();}
+function resetGraph(){state.selected=null;state.graphTransform={x:0,y:0,k:1};if(state.analysis)renderGraph();}
 
 function openNode(node) {
-  state.selected=node.id;renderGraph();
+  state.selected=node.id;state.graphTransform={x:0,y:0,k:1};renderGraph();
   const assignment=assignedLabel(node);const assignmentHtml=assignment?`<div class="assignment-detail"><strong>External label assignment</strong><span>Assigned by ${escapeHtml(assignment.author || state.assignment?.author || 'Codex')}. Not learned by Reflector.</span><span>${escapeHtml(assignment.rationale)}</span></div>`:'';
+  const predicateHtml=(node.heads||[]).map(head=>{const assigned=assignedPredicate(head);return assigned?`<div class="predicate-assignment"><div><code>${escapeHtml(head)}</code><strong>${escapeHtml(assigned.label)}</strong></div><span>${escapeHtml(assigned.reading)}</span><p>${escapeHtml(assigned.rationale)}</p></div>`:`<div class="predicate-assignment unassigned"><div><code>${escapeHtml(head)}</code><strong>No external name assigned</strong></div></div>`;}).join('')||'<div class="drawer-muted">No predicate heads.</div>';
   const dagHtml=node.decompositions.length?node.decompositions.map((dag,index)=>`<div class="dag-card"><div class="dag-title">derivation ${index+1} · acyclic</div>${dag.occurrences.map(occ=>{const child=state.analysis.nodes.find(item=>item.id===occ.schema);return `<div class="dag-occurrence"><strong>${escapeHtml(child?displayName(child):occ.name)}</strong><small>${escapeHtml(occ.short_hash)}</small>${occ.interface.length?`<code>${occ.interface.map(escapeHtml).join(' · ')}</code>`:''}</div>`;}).join('')}<div class="dag-provenance">${dag.provenance.map(escapeHtml).join(' · ')}</div></div>`).join(''):'<div class="drawer-muted">Atomic schema; no decomposition.</div>';
   const interfaceHtml=(node.interface||[]).map(value=>`<span class="tag">${escapeHtml(value)}</span>`).join('')||'<span class="drawer-muted">none</span>';
   const constraintHtml=(node.definition_constraints||[]).map(atom=>`<div class="drawer-atom">${escapeHtml(atom)}</div>`).join('')||'<div class="drawer-muted">No parent-level constraints.</div>';
   const bindingHtml=(node.binding_records||[]).map(binding=>`<div class="dag-occurrence"><strong>${escapeHtml(binding.status)}</strong><small>${escapeHtml(binding.carrier)} · ${escapeHtml(binding.provenance)}</small></div>`).join('')||'<div class="drawer-muted">No current realized binding.</div>';
-  const shadowHtml=(node.shadows||[]).map(shadow=>`<div class="dag-occurrence"><strong>${escapeHtml(shadow.status)}</strong><small>${escapeHtml(shadow.carrier)} · ${escapeHtml(shadow.provenance)}</small>${(shadow.child_roles||[]).map(role=>`<code>child role ${role.role}: ${escapeHtml(role.status)} · ${escapeHtml(role.assignments.join(' · ')||'unbound')}</code>`).join('')}${(shadow.constraints||[]).map(constraint=>`<code>constraint ${constraint.constraint}: ${escapeHtml(constraint.status)}</code>`).join('')}<code>open roles: ${shadow.open_roles.map(escapeHtml).join(' · ')||'none'}; completed roles: ${(shadow.completed_roles||[]).join(',')||'none'}</code></div>`).join('')||'<div class="drawer-muted">No projected shadow.</div>';
-  $('#drawer-content').innerHTML=`<div class="eyebrow">Reusable schema definition · ${escapeHtml(node.state)} · depth ${node.depth}${node.reusable_candidate?' · reusable candidate':''}</div><h2>${escapeHtml(displayName(node))}</h2>${assignmentHtml}<div class="drawer-hash">runtime display name: ${escapeHtml(node.name)}<br>identity hash: ${node.hash}</div><div class="drawer-section"><div class="drawer-stats"><div class="drawer-stat"><span>activation</span><strong>${node.activation.toFixed(3)}</strong></div><div class="drawer-stat"><span>bindings</span><strong>${node.bindings}</strong></div><div class="drawer-stat"><span>uses</span><strong>${node.uses}</strong></div><div class="drawer-stat"><span>support</span><strong>${node.support}</strong></div><div class="drawer-stat"><span>contradiction</span><strong>${node.contradiction}</strong></div><div class="drawer-stat"><span>depth</span><strong>${node.depth}</strong></div></div></div><div class="drawer-section"><h5>Exposed interface</h5>${interfaceHtml}</div><div class="drawer-section"><h5>Definition DAG</h5>${dagHtml}</div><div class="drawer-section"><h5>Parent-level constraints</h5>${constraintHtml}</div><div class="drawer-section"><h5>Compiled matcher expansion</h5>${node.body.map(atom=>`<div class="drawer-atom">${escapeHtml(atom)}</div>`).join('')}</div><div class="drawer-section"><h5>Reified bindings</h5>${bindingHtml}</div><div class="drawer-section"><h5>Projected shadows</h5>${shadowHtml}</div><div class="drawer-section"><h5>Relation heads</h5>${node.heads.map(tag=>`<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="drawer-section"><h5>Provenance</h5>${node.provenance.map(tag=>`<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>`;
+  const shadowHtml=(node.shadows||[]).map(shadow=>`<div class="dag-occurrence"><strong>${escapeHtml(shadow.status)}</strong><small>partial binding ${shadow.partial_binding_id} · ${escapeHtml(shadow.carrier)} · ${escapeHtml(shadow.provenance)}</small><code>${escapeHtml((shadow.assignments||[]).join(' · ')||'no interface assignment')}</code>${(shadow.child_roles||[]).map(role=>`<code>child role ${role.role}: ${escapeHtml(role.status)} · ${escapeHtml(role.assignments.join(' · ')||'unbound')}</code>`).join('')}${(shadow.constraints||[]).map(constraint=>`<code>constraint ${constraint.constraint}: ${escapeHtml(constraint.status)}</code>`).join('')}<code>open roles: ${shadow.open_roles.map(escapeHtml).join(' · ')||'none'}; completed roles: ${(shadow.completed_roles||[]).join(',')||'none'}</code>${(shadow.contradictory_evidence||[]).map(atom=>`<code>contradiction: ${escapeHtml(atom)}</code>`).join('')}</div>`).join('')||'<div class="drawer-muted">No projected shadow.</div>';
+  $('#drawer-content').innerHTML=`<div class="eyebrow">Reusable schema definition · ${escapeHtml(node.state)} · depth ${node.depth}${node.reusable_candidate?' · reusable candidate':''}</div><h2>${escapeHtml(displayName(node))}</h2>${assignmentHtml}<div class="drawer-section predicate-section"><h5>External LLM predicate names</h5><div class="external-scope">Inspector annotation only · not learned by or supplied to Reflector</div>${predicateHtml}</div><div class="drawer-hash">runtime display name: ${escapeHtml(node.name)}<br>identity hash: ${node.hash}</div><div class="drawer-section"><div class="drawer-stats"><div class="drawer-stat"><span>activation</span><strong>${node.activation.toFixed(3)}</strong></div><div class="drawer-stat"><span>bindings</span><strong>${node.bindings}</strong></div><div class="drawer-stat"><span>uses</span><strong>${node.uses}</strong></div><div class="drawer-stat"><span>support</span><strong>${node.support}</strong></div><div class="drawer-stat"><span>contradiction</span><strong>${node.contradiction}</strong></div><div class="drawer-stat"><span>projection support</span><strong>${node.projection_support}</strong></div><div class="drawer-stat"><span>projection failure</span><strong>${node.projection_failure}</strong></div><div class="drawer-stat"><span>projection contexts</span><strong>${node.projection_context_count}</strong></div><div class="drawer-stat"><span>depth</span><strong>${node.depth}</strong></div></div></div><div class="drawer-section"><h5>Exposed interface</h5>${interfaceHtml}</div><div class="drawer-section"><h5>Definition DAG</h5>${dagHtml}</div><div class="drawer-section"><h5>Parent-level constraints</h5>${constraintHtml}</div><div class="drawer-section"><h5>Compiled matcher expansion</h5>${node.body.map(atom=>`<div class="drawer-atom">${escapeHtml(atom)}</div>`).join('')}</div><div class="drawer-section"><h5>Reified bindings</h5>${bindingHtml}</div><div class="drawer-section"><h5>Projected shadows</h5>${shadowHtml}</div><div class="drawer-section"><h5>Runtime predicate tokens</h5>${node.heads.map(tag=>`<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div><div class="drawer-section"><h5>Provenance</h5>${node.provenance.map(tag=>`<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>`;
   $('#drawer').classList.add('open');$('#drawer').setAttribute('aria-hidden','false');$('#scrim').classList.add('open');
 }
 function closeDrawer(){state.selected=null;$('#drawer').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true');$('#scrim').classList.remove('open');if(state.analysis)renderGraph();}

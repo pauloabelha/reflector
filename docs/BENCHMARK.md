@@ -85,6 +85,11 @@ counter retention after a falsifier, acyclic occurrence decompositions with
 valid variable interfaces, multiple derivations for one semantic body, and
 deterministic replay.
 
+The focused shadow suite adds tests A-H from missing-role projection through
+reification/refutation, recursive frontier bounding, structural sharing,
+dormant-store independence, and the epistemic firewall. See
+[`SHADOWS.md`](SHADOWS.md) for the exact policy and results.
+
 ## 4. Instrumentation contract
 
 Each run emits one JSON-compatible report containing:
@@ -195,3 +200,10 @@ endogenous composite with a valid decomposition DAG and at least two distinct
 ground bindings. This establishes reusable structural utility within one
 frame; it deliberately does not claim predictive or action utility without a
 transition.
+
+The current shadow diagnostic also ran `ar25`, `m0r0`, and `vc33`. Fresh stores
+projected zero shadows, with respectively 388, 1,090, and 1,185 work items and
+1,894, 10,602, and 6,133 reified input facts. This is the expected static
+baseline: no previously learned higher DAG is available for partial completion,
+and same-frame compositions arise only after the projection point from complete
+bindings. All frames preserved the shadow/fact firewall and stayed bounded.

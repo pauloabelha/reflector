@@ -42,6 +42,7 @@ def run_raw_frame(recording: Path) -> dict[str, Any]:
     runtime_time = time.perf_counter() - start
     reusable = runtime.reusable_composite_candidates()
     truncation_events = [event for event in runtime.trace if event["event"] == "truncation"]
+    shadows = list(runtime.shadows.values())
     return {
         "recording": str(recording),
         "shape": [len(grid), len(grid[0])],
@@ -50,11 +51,24 @@ def run_raw_frame(recording: Path) -> dict[str, Any]:
         "facts": len(batch.facts),
         "regions": len(batch.region_terms),
         "distinct_forms": len(set(batch.form_terms)),
+        "reified_facts": len(batch.facts),
+        "complete_bindings": len(workspace.bindings),
         "active_schemas": len(workspace.activation),
         "active_edges": len(workspace.active_edge_ids),
         "total_schemas": runtime.graph.schema_count,
         "candidates_retrieved": runtime.metrics.candidates_retrieved,
         "candidates_verified": runtime.metrics.candidates_verified,
+        "partial_bindings": len(runtime.partial_bindings),
+        "shadows_projected": runtime.metrics.shadow_projections,
+        "average_open_roles_per_shadow": (
+            sum(len(shadow.open_roles) for shadow in shadows) / len(shadows)
+            if shadows
+            else 0.0
+        ),
+        "shadow_reified_separation": all(
+            shadow.status != "REIFIED" or shadow.reified_assignments is not None
+            for shadow in shadows
+        ),
         "compositions_proposed": runtime.metrics.compositions_proposed,
         "compositions_retained": runtime.metrics.compositions_retained,
         "limits": {

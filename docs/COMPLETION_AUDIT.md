@@ -10,6 +10,15 @@ symmetry/contrast, bounded pair-generation, and `ar25` oracle regressions; the
 25-game first-frame audit remains 25/25 within workspace limits. See
 [`MULTILEVEL_DISCOVERY.md`](MULTILEVEL_DISCOVERY.md).
 
+## Current generative-completion update
+
+The runtime now promotes compatible child-role matches into compact partial
+bindings and bounded immediate-frontier shadows during `observe`, then records
+exact-once confirmation or positive-evidence-only refutation without adding
+projected structure to facts. The pre-change audit, policy, A-H tests, dormant
+stress result, and three-frame static diagnostic are in
+[`SHADOWS.md`](SHADOWS.md).
+
 Audit date: 2026-08-07. This audit evaluates the requested design-first phase
 and smallest executable vertical slice. It does not redefine future-phase goals
 (GPU kernels, a full ARC harness, policy, or planning) as Phase-1 deliverables.
@@ -58,7 +67,7 @@ and smallest executable vertical slice. It does not redefine future-phase goals
 
 ```text
 python3 -m pytest -q
-  28 passed
+  56 passed
 
 node --check inspect/static/app.js
 python3 -m compileall -q src tests inspect

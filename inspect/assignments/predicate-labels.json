@@ -1,0 +1,132 @@
+{
+  "kind": "predicate-label-assignment",
+  "scope": "Inspector-only LLM annotation. It is not stored in, learned by, hashed by, or supplied to Reflector-II.",
+  "author": "Codex (LLM), from the displayed predicate signatures and audited runtime emitters",
+  "labels": {
+    "Kind": {
+      "label": "has sensory entity kind",
+      "reading": "Kind(entity, kind)",
+      "rationale": "Associates an entity with an emitted carrier-level kind such as Cell, Region, or Figure."
+    },
+    "Connected": {
+      "label": "is four-neighbor connected",
+      "reading": "Connected(region)",
+      "rationale": "Marks a region produced as one same-valued four-neighbor connected component."
+    },
+    "Color": {
+      "label": "has palette value",
+      "reading": "Color(entity, value)",
+      "rationale": "Associates a perceived entity with its nominal grid or palette value."
+    },
+    "Form": {
+      "label": "has normalized occupancy form",
+      "reading": "Form(entity, form-fingerprint)",
+      "rationale": "Associates a region with its translation-normalized occupied-cell fingerprint."
+    },
+    "Enclosed": {
+      "label": "is an enclosed background region",
+      "reading": "Enclosed(region)",
+      "rationale": "Marks a background component that does not connect to the frame boundary."
+    },
+    "Inside": {
+      "label": "lies inside an owning region",
+      "reading": "Inside(inner-region, outer-region)",
+      "rationale": "Relates an enclosed background component to the foreground region that contains it."
+    },
+    "EnclosureCount": {
+      "label": "has enclosed-region count",
+      "reading": "EnclosureCount(entity, count)",
+      "rationale": "Records how many enclosed background components are owned by a perceived region."
+    },
+    "Count": {
+      "label": "has element count",
+      "reading": "Count(entity, count)",
+      "rationale": "Records the audited cardinality of a perceived component."
+    },
+    "Value": {
+      "label": "has scalar cell value",
+      "reading": "Value(cell, value)",
+      "rationale": "Associates a cell entity with its nominal observed grid value."
+    },
+    "At": {
+      "label": "is at local coordinates",
+      "reading": "At(cell, x, y)",
+      "rationale": "Places a cell at coordinates relative to its containing region's bounding box."
+    },
+    "PartOf": {
+      "label": "is part of a region",
+      "reading": "PartOf(cell, region)",
+      "rationale": "Relates an emitted cell entity to its containing connected region."
+    },
+    "OutlineForm": {
+      "label": "has outer-outline form",
+      "reading": "OutlineForm(figure, outline-fingerprint)",
+      "rationale": "Associates a figure with the normalized fingerprint of its hole-filled outer occupancy."
+    },
+    "InteriorContrastCount": {
+      "label": "has interior-contrast count",
+      "reading": "InteriorContrastCount(figure, count)",
+      "rationale": "Counts distinct interior contrast regions grouped beneath the same outer outline."
+    },
+    "Contains": {
+      "label": "contains a component region",
+      "reading": "Contains(figure, region)",
+      "rationale": "Relates a grouped figure to one of the perceived regions it contains."
+    },
+    "SameOutline": {
+      "label": "has the same outer outline as",
+      "reading": "SameOutline(left-figure, right-figure)",
+      "rationale": "Relates two figures whose outer-outline fingerprints are equal."
+    },
+    "SameInteriorContrast": {
+      "label": "has matching interior contrast",
+      "reading": "SameInteriorContrast(left-figure, right-figure)",
+      "rationale": "Relates same-outline figures with equal interior-contrast counts."
+    },
+    "DifferentInteriorContrast": {
+      "label": "has different interior contrast",
+      "reading": "DifferentInteriorContrast(left-figure, right-figure)",
+      "rationale": "Relates same-outline figures whose interior-contrast counts differ."
+    },
+    "Domain": {
+      "label": "is the source state of a mapping",
+      "reading": "Domain(state)",
+      "rationale": "Marks the source-side state variable of a learned relational mapping."
+    },
+    "Codomain": {
+      "label": "is the destination state of a mapping",
+      "reading": "Codomain(state)",
+      "rationale": "Marks the destination-side state variable of a learned relational mapping."
+    },
+    "Intervention": {
+      "label": "uses intervention token",
+      "reading": "Intervention(action)",
+      "rationale": "Records the opaque action token associated with a transition."
+    },
+    "Before": {
+      "label": "holds before the transition",
+      "reading": "Before(state, relation, value)",
+      "rationale": "Records a relation value on the source side of a learned transition."
+    },
+    "After": {
+      "label": "holds after the transition",
+      "reading": "After(state, relation, value)",
+      "rationale": "Records a relation value on the destination side of a learned transition."
+    },
+    "Preserve": {
+      "label": "is preserved by the transition",
+      "reading": "Preserve(relation)",
+      "rationale": "Marks a relation whose selected value remains unchanged across a transition."
+    },
+    "Change": {
+      "label": "changes across the transition",
+      "reading": "Change(relation)",
+      "rationale": "Marks a relation whose selected value differs across a transition."
+    },
+    "Less": {
+      "label": "is quantitatively less than",
+      "reading": "Less(before-value, after-value)",
+      "rationale": "Records an audited increasing relation between ordered quantitative values."
+    }
+  }
+}

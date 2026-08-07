@@ -199,9 +199,11 @@ cleared; an epoch/touched-ID scheme resets sparse state.
 
 A binding is a compact envelope: `(schema_id, sorted(variable_id, term_id)
 assignments, carrier, activation, provenance)`. It is distinct from the
-immutable schema store. A shadow is similarly small: `(parent_schema_id,
-partial assignments, child occurrence states, parent-constraint states,
-carrier, activation, provenance, status)`. A child occurrence state carries
+immutable schema store. A partial binding adds compact bound/open role IDs,
+satisfied/open/incompatible constraint IDs, and supporting child references.
+A shadow references it and is similarly small: `(parent_schema_id,
+partial_binding_id, partial assignments, child occurrence states,
+parent-constraint states, carrier, activation, provenance, status)`. A child occurrence state carries
 its child schema ID, mapped child-variable assignments, and `REIFIED`/`SHADOW`
 status; a parent constraint is `REIFIED` or `PROJECTED`. `PROJECT_SHADOW` is
 requested by one partial binding and accesses one schema slice only; it does
@@ -212,6 +214,16 @@ reports the roles and constraints completed, then adds evidence to the parent
 definition pathway—not to its flattened atoms. The flat matcher remains a
 temporary compiler backend and is explicitly not permitted to define shadow
 semantics.
+
+Phase-1 automatic projection considers only the current observation's bounded
+retrieved DAG candidates. One grounded child binding seeds a candidate partial
+binding. Defaults require activation and bound-role fraction at least `0.5`, at
+most four immediate open child roles and eight open parent constraints, and at
+most 64 new shadows per observation. These are explicit `Limits` fields.
+Earlier shadows are tested against a later carrier before new shadows are
+opened. Refutation is never inferred from a failed full match: it requires
+explicit incompatible open-constraint IDs and positive grounded contradictory
+evidence from an applicable carrier.
 
 Support, inhibit, specialization, decomposition, prediction, and analogy links
 start as a deliberately small structural link vocabulary (`part`, `supports`,
@@ -309,6 +321,9 @@ max_new_compositions
 max_composition_body          max_transition_correspondences
 max_analogy_candidates        max_expansion_rounds
 max_queue_items               per-cycle time/operation budget
+shadow_activation_threshold  min_shadow_bound_role_fraction
+max_shadow_open_roles        max_shadow_open_constraints
+max_shadow_projections_per_cycle
 ```
 
 Overflow is a first-class trace/metric event. Lowest priority work is dropped;

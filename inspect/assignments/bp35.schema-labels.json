@@ -1,0 +1,28 @@
+{
+  "kind": "schema-label-assignment",
+  "scope": "Inspector-only display annotation. It is not stored in, learned by, or supplied to Reflector-II.",
+  "game": "bp35",
+  "author": "Codex (LLM), based on the first rendered frame and external display palette only",
+  "labels": {
+    "a3b1d22cc8ad769af2b3f06fbc4579a42fe38a2c74851268691b71a4d6bfdca4": {
+      "label": "seven yellow components",
+      "rationale": "The external display palette renders value 14 as yellow; this generic Color(value-14) schema binds seven regions."
+    },
+    "c97d2f6e58154b4ec830c4b10883638bce6e57def5c7d47638b3200fee656712": {
+      "label": "seven yellow 5×5 motifs",
+      "rationale": "The schema jointly binds the externally yellow value-14 regions and their shared 5×5 occupancy form."
+    },
+    "5aa326d1a021f626cb7e0a1e26cadaa020e606ddc5f89fe2aeaedfb2d1580a87": {
+      "label": "one green marker",
+      "rationale": "The external display palette renders value 15 as green; this generic Color(value-15) schema binds one region."
+    },
+    "1e1e8de36629f9192c3faf8857d753beb14fd3a60a76f1958ee2d4418d09bc46": {
+      "label": "one green single-cell marker",
+      "rationale": "The schema jointly binds the externally green value-15 region and its single-cell occupancy form."
+    },
+    "5d6634a4e5540773f7df6f4f9f276c85b06617584d31c1a0e869150178257c48": {
+      "label": "seven repeated 5×5 motifs",
+      "rationale": "The form schema binds the same seven 5×5 regions; color is intentionally not part of this Reflector schema."
+    }
+  }
+}

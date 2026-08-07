@@ -42,6 +42,11 @@ class Limits:
     max_transition_correspondences: int = 128
     max_analogy_candidates: int = 128
     max_queue_items: int = 4096
+    shadow_activation_threshold: float = 0.5
+    min_shadow_bound_role_fraction: float = 0.5
+    max_shadow_open_roles: int = 4
+    max_shadow_open_constraints: int = 8
+    max_shadow_projections_per_cycle: int = 64
 
 
 @dataclass(slots=True)
@@ -86,6 +91,7 @@ class Workspace:
     bindings: list["Binding"] = field(default_factory=list)
     active_edge_ids: set[int] = field(default_factory=set)
     shadow_ids: list[int] = field(default_factory=list)
+    partial_binding_ids: list[int] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,12 +139,32 @@ class ConstraintState:
     status: str
 
 
+@dataclass(frozen=True, slots=True)
+class PartialBinding:
+    """Compact compatible subset of one immutable schema definition DAG."""
+
+    partial_binding_id: int
+    schema_id: int
+    assignments: tuple[tuple[int, int], ...]
+    bound_roles: tuple[int, ...]
+    unresolved_roles: tuple[int, ...]
+    satisfied_constraints: tuple[int, ...]
+    unresolved_constraints: tuple[int, ...]
+    incompatible_constraints: tuple[int, ...]
+    support: tuple[tuple[int, int], ...]
+    carrier: str
+    activation: float
+    provenance: str
+    decomposition_id: int | None = None
+
+
 @dataclass(slots=True)
 class Shadow:
     """A demand-driven, partially bound projection of one schema DAG."""
 
     shadow_id: int
     schema_id: int
+    partial_binding_id: int
     assignments: tuple[tuple[int, int], ...]
     carrier: str
     open_roles: tuple[int, ...]
@@ -152,6 +178,7 @@ class Shadow:
     reified_assignments: tuple[tuple[int, int], ...] | None = None
     completed_roles: tuple[int, ...] = ()
     completed_constraints: tuple[int, ...] = ()
+    contradictory_evidence: tuple[GroundAtom, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,10 +201,16 @@ class Runtime:
         self.workspace: Workspace | None = None
         self._next_prediction = 0
         self._next_shadow = 0
+        self._next_partial_binding = 0
         self._pending: dict[int, PendingPrediction] = {}
         self.shadows: dict[int, Shadow] = {}
+        self._active_shadow_ids: set[int] = set()
+        self.partial_bindings: dict[int, PartialBinding] = {}
         self._parent_binding_memo: dict[tuple[object, ...], int] = {}
         self._parent_match_memo: dict[tuple[object, ...], tuple[tuple[int, int], ...] | None] = {}
+        self._partial_binding_memo: dict[tuple[object, ...], int] = {}
+        self._shadow_budget_cycle = -1
+        self._shadow_budget_used = 0
         # Audited quantitative sensory relations. Numeric palette/value IDs are
         # nominal and must never acquire order semantics from their encoding.
         self.ordered_relations = frozenset({"Count", "EnclosureCount"})
@@ -217,7 +250,6 @@ class Runtime:
                 [("Form", ("?x", form_value))],
                 provenance="endogenous:form-index",
             )
-
     def _ensure_figure_schemas(self, batch: PerceptionBatch) -> None:
         relation_names = {
             str(self.graph.terms.value(head))
@@ -296,6 +328,16 @@ class Runtime:
                 {"event": "binding", "cycle": self.cycle, "context": batch.context, "schema": self.graph.canonical_hash[schema_id]}
             )
         self.metrics.matching_time_s += time.perf_counter() - start
+
+        # A new carrier first tests earlier projections, then may open new
+        # frontiers.  Both operations are restricted to already active shadow
+        # records or this observation's bounded retrieval result.
+        self.workspace = workspace
+        for shadow_id in sorted(self._active_shadow_ids):
+            shadow = self.shadows[shadow_id]
+            if shadow.carrier != batch.context:
+                self.reconcile_shadow(shadow_id, batch, workspace=workspace)
+        self._project_candidate_partials(candidates, workspace, batch)
 
         self._prune(workspace)
         self._expand(workspace)
@@ -428,6 +470,97 @@ class Runtime:
             values.sort()
         return fact_index, fact_slot_index
 
+    def _project_candidate_partials(
+        self,
+        candidates: list[int],
+        workspace: Workspace,
+        observed: PerceptionBatch,
+    ) -> None:
+        """Project bounded immediate frontiers from locally retrieved DAGs."""
+
+        bindings_by_schema: dict[int, list[Binding]] = defaultdict(list)
+        for binding in workspace.bindings:
+            bindings_by_schema[binding.schema_id].append(binding)
+        full_by_schema = bindings_by_schema
+        projected = 0
+        observed_facts = set(observed.facts)
+        for schema_id in candidates:
+            decomposition_ids = self.graph.decomposition_out_index.get(schema_id, ())
+            if not decomposition_ids:
+                continue
+            decomposition_id = decomposition_ids[0]
+            occurrences = self.graph.decomposition_occurrences(decomposition_id)
+            if not occurrences:
+                continue
+            for role_index, (child_schema_id, interface) in enumerate(occurrences):
+                for child_binding in bindings_by_schema.get(child_schema_id, ()):
+                    assignments = {
+                        parent_variable: child_binding.as_dict()[child_variable]
+                        for child_variable, parent_variable in interface
+                    }
+                    if any(
+                        all(binding.as_dict().get(key) == value for key, value in assignments.items())
+                        for binding in full_by_schema.get(schema_id, ())
+                    ):
+                        continue
+                    verified_constraints = self._verified_constraints(
+                        schema_id, assignments, observed_facts
+                    )
+                    bound_fraction = 1.0 / len(occurrences)
+                    open_role_count = len(occurrences) - 1
+                    open_constraint_count = (
+                        len(self.graph.definition_constraint_atoms(schema_id))
+                        - len(verified_constraints)
+                    )
+                    activation = max(
+                        bound_fraction, workspace.activation.get(schema_id, 0.0)
+                    )
+                    if (
+                        activation < self.limits.shadow_activation_threshold
+                        or bound_fraction < self.limits.min_shadow_bound_role_fraction
+                        or open_role_count > self.limits.max_shadow_open_roles
+                        or open_constraint_count > self.limits.max_shadow_open_constraints
+                    ):
+                        continue
+                    if projected >= self.limits.max_shadow_projections_per_cycle:
+                        self._truncation("shadow-projection-budget")
+                        return
+                    before = self.metrics.shadow_projections
+                    self.project_shadow(
+                        schema_id,
+                        assignments,
+                        child_bindings={role_index: child_binding},
+                        verified_constraints=verified_constraints,
+                        carrier=observed.context,
+                        activation=activation,
+                        provenance="observation:partial-schema-match",
+                    )
+                    projected += self.metrics.shadow_projections - before
+
+    def _verified_constraints(
+        self,
+        schema_id: int,
+        assignments: dict[int, int],
+        observed_facts: set[GroundAtom],
+    ) -> set[int]:
+        verified: set[int] = set()
+        constraints = self.graph.definition_constraint_atoms(schema_id)
+        for index, (head, args) in enumerate(constraints):
+            grounded: list[int] = []
+            for argument in args:
+                if isinstance(argument, str) and argument.startswith("?v"):
+                    value = assignments.get(int(argument[2:]))
+                    if value is None:
+                        break
+                    grounded.append(value)
+                else:
+                    grounded.append(self.graph.terms.intern_symbol(argument))
+            else:
+                atom = (self.graph.terms.intern_symbol(head), tuple(grounded))
+                if atom in observed_facts:
+                    verified.add(index)
+        return verified
+
     def project_shadow(
         self,
         schema_id: int,
@@ -499,7 +632,14 @@ class Runtime:
             for index, _constraint in enumerate(self.graph.definition_constraint_atoms(schema_id))
         )
         assignments = tuple(sorted(assignments_by_variable.items()))
-        open_roles = tuple(sorted(variables - set(assignments_by_variable)))
+        bound_roles = tuple(
+            state.role_index for state in role_states if state.status == REIFIED
+        )
+        open_roles = (
+            tuple(state.role_index for state in role_states if state.status != REIFIED)
+            if role_states
+            else tuple(sorted(variables - set(assignments_by_variable)))
+        )
         open_constraints = (
             tuple(state.constraint_index for state in constraint_states if state.status != REIFIED)
             if constraint_states
@@ -509,14 +649,26 @@ class Runtime:
                 if any(tag == "v" and value not in assignments_by_variable for tag, value in args)
             )
         )
-        completed = sum(state.status == REIFIED for state in role_states) + sum(
-            state.status == REIFIED for state in constraint_states
+        if not bound_roles and role_states:
+            raise ValueError("a partial DAG binding must ground at least one child role")
+        if not open_roles and not open_constraints:
+            raise ValueError("a complete binding has no unresolved frontier to project")
+        incremental_activation = (
+            len(bound_roles) / len(role_states)
+            if role_states
+            else len(assignments) / max(1, len(variables))
         )
-        total = len(role_states) + len(constraint_states)
-        incremental_activation = 0.0 if total == 0 else completed / total
         shadow_activation = incremental_activation if activation is None else max(
             incremental_activation, max(0.0, min(1.0, activation))
         )
+        if shadow_activation < self.limits.shadow_activation_threshold:
+            raise ValueError("partial binding activation is below the projection threshold")
+        if incremental_activation < self.limits.min_shadow_bound_role_fraction:
+            raise ValueError("partial binding support is below the bound-role threshold")
+        if len(open_roles) > self.limits.max_shadow_open_roles:
+            raise ValueError("partial binding exceeds the open-role projection budget")
+        if len(open_constraints) > self.limits.max_shadow_open_constraints:
+            raise ValueError("partial binding exceeds the open-constraint projection budget")
         memo_key = (
             schema_id,
             carrier_id,
@@ -530,21 +682,62 @@ class Runtime:
             self.metrics.parent_binding_memo_hits += 1
             self.metrics.work("MEMO_PARENT_BINDING")
             return self.shadows[memoized_id]
+        if self._shadow_budget_cycle != self.cycle:
+            self._shadow_budget_cycle = self.cycle
+            self._shadow_budget_used = 0
+        if self._shadow_budget_used >= self.limits.max_shadow_projections_per_cycle:
+            self._truncation("shadow-projection-budget")
+            raise RuntimeError("shadow projection budget exhausted")
+        partial_key = memo_key
+        partial_id = self._partial_binding_memo.get(partial_key)
+        if partial_id is None:
+            partial_id = self._next_partial_binding
+            self._next_partial_binding += 1
+            partial = PartialBinding(
+                partial_binding_id=partial_id,
+                schema_id=schema_id,
+                assignments=assignments,
+                bound_roles=bound_roles,
+                unresolved_roles=open_roles,
+                satisfied_constraints=tuple(
+                    state.constraint_index
+                    for state in constraint_states
+                    if state.status == REIFIED
+                ),
+                unresolved_constraints=open_constraints,
+                incompatible_constraints=(),
+                support=tuple(
+                    (state.role_index, state.child_schema_id)
+                    for state in role_states
+                    if state.status == REIFIED
+                ),
+                carrier=carrier_id,
+                activation=shadow_activation,
+                provenance=provenance,
+                decomposition_id=decomposition_id,
+            )
+            self.partial_bindings[partial_id] = partial
+            self._partial_binding_memo[partial_key] = partial_id
+            if self.workspace is not None and self.workspace.context == carrier_id:
+                self.workspace.partial_binding_ids.append(partial_id)
         shadow = Shadow(
-            self._next_shadow,
-            schema_id,
-            assignments,
-            carrier_id,
-            open_roles,
-            open_constraints,
-            shadow_activation,
-            provenance,
-            decomposition_id,
-            tuple(role_states),
-            constraint_states,
+            shadow_id=self._next_shadow,
+            schema_id=schema_id,
+            partial_binding_id=partial_id,
+            assignments=assignments,
+            carrier=carrier_id,
+            open_roles=open_roles,
+            open_constraints=open_constraints,
+            activation=shadow_activation,
+            provenance=provenance,
+            decomposition_id=decomposition_id,
+            child_roles=tuple(role_states),
+            constraints=constraint_states,
         )
         self._next_shadow += 1
+        self._shadow_budget_used += 1
         self.shadows[shadow.shadow_id] = shadow
+        self._active_shadow_ids.add(shadow.shadow_id)
         self._parent_binding_memo[memo_key] = shadow.shadow_id
         if self.workspace is not None and self.workspace.context == shadow.carrier:
             self.workspace.shadow_ids.append(shadow.shadow_id)
@@ -558,6 +751,7 @@ class Runtime:
                 "event": "shadow-projection",
                 "cycle": self.cycle,
                 "shadow": shadow.shadow_id,
+                "partial_binding": shadow.partial_binding_id,
                 "schema": self.graph.canonical_hash[schema_id],
                 "carrier": shadow.carrier,
                 "open_roles": list(open_roles),
@@ -567,7 +761,13 @@ class Runtime:
         )
         return shadow
 
-    def reconcile_shadow(self, shadow_id: int, observed: PerceptionBatch) -> bool:
+    def reconcile_shadow(
+        self,
+        shadow_id: int,
+        observed: PerceptionBatch,
+        *,
+        workspace: Workspace | None = None,
+    ) -> bool:
         """Reify a projected frontier if later evidence supplies a full match."""
 
         shadow = self.shadows[shadow_id]
@@ -596,6 +796,7 @@ class Runtime:
             return False
         match = dict(cached)
         shadow.status = REIFIED
+        self._active_shadow_ids.discard(shadow_id)
         shadow.reified_assignments = cached
         old_role_states = shadow.child_roles
         new_role_states: list[ChildRoleState] = []
@@ -616,6 +817,28 @@ class Runtime:
         )
         shadow.child_roles = tuple(new_role_states)
         shadow.constraints = tuple(ConstraintState(state.constraint_index, REIFIED) for state in shadow.constraints)
+        target_workspace = workspace
+        if target_workspace is None and self.workspace is not None and self.workspace.context == observed.context:
+            target_workspace = self.workspace
+        if target_workspace is not None:
+            binding_key = (shadow.schema_id, cached)
+            existing = {
+                (binding.schema_id, binding.assignments)
+                for binding in target_workspace.bindings
+            }
+            if binding_key not in existing:
+                target_workspace.bindings.append(
+                    Binding(
+                        shadow.schema_id,
+                        cached,
+                        observed.context,
+                        provenance="shadow:reified",
+                    )
+                )
+                self.graph.use_count[shadow.schema_id] += 1
+            target_workspace.activation[shadow.schema_id] = max(
+                target_workspace.activation.get(shadow.schema_id, 0.0), 1.0
+            )
         self.graph.add_projection_pathway_evidence(
             shadow.schema_id,
             shadow.decomposition_id,
@@ -625,15 +848,18 @@ class Runtime:
             observed.context,
             self.cycle,
             source="shadow:reified",
+            binding_signature=self._projection_binding_signature(shadow, cached),
         )
         self.metrics.shadow_reifications += 1
         self.metrics.work("REIFY_SHADOW")
         self.trace.append(
             {
-                "event": "shadow-reified",
+                "event": "ProjectionConfirmed",
                 "cycle": self.cycle,
                 "shadow": shadow_id,
                 "schema": self.graph.canonical_hash[shadow.schema_id],
+                "generating_schema": self.graph.canonical_hash[shadow.schema_id],
+                "grounded_binding": list(cached),
                 "carrier": observed.context,
                 "completed_roles": list(shadow.completed_roles),
                 "completed_constraints": list(shadow.completed_constraints),
@@ -641,13 +867,62 @@ class Runtime:
         )
         return True
 
-    def refute_shadow(self, shadow_id: int, *, context: str | None = None, provenance: str = "environment") -> None:
-        """Record an applicable contradiction without turning the projection into a fact."""
+    @staticmethod
+    def _projection_binding_signature(
+        shadow: Shadow, assignments: tuple[tuple[int, int], ...]
+    ) -> str:
+        return f"partial:{shadow.assignments};grounded:{assignments}"
+
+    def refute_shadow(
+        self,
+        shadow_id: int,
+        *,
+        incompatible_constraints: set[int],
+        contradictory_evidence: tuple[GroundAtom, ...],
+        context: str | None = None,
+        provenance: str = "environment",
+    ) -> None:
+        """Refute only an explicitly testable frontier with positive conflict evidence.
+
+        Phase 1 has no negation or closed-world assumption.  The carrier must
+        therefore identify which open constraints are incompatible and supply
+        the grounded evidence witnessing that incompatibility.  Mere absence
+        of a completion cannot call this method successfully.
+        """
 
         shadow = self.shadows[shadow_id]
         if shadow.status != SHADOW:
             raise ValueError("only unresolved shadows may be refuted")
+        if not contradictory_evidence:
+            raise ValueError("refutation requires positive contradictory evidence")
+        if not incompatible_constraints or not incompatible_constraints <= set(shadow.open_constraints):
+            raise ValueError("refutation must identify incompatible open constraints")
         shadow.status = REFUTED
+        self._active_shadow_ids.discard(shadow_id)
+        shadow.contradictory_evidence = contradictory_evidence
+        shadow.constraints = tuple(
+            ConstraintState(
+                state.constraint_index,
+                REFUTED if state.constraint_index in incompatible_constraints else state.status,
+            )
+            for state in shadow.constraints
+        )
+        partial = self.partial_bindings[shadow.partial_binding_id]
+        self.partial_bindings[shadow.partial_binding_id] = PartialBinding(
+            partial.partial_binding_id,
+            partial.schema_id,
+            partial.assignments,
+            partial.bound_roles,
+            partial.unresolved_roles,
+            partial.satisfied_constraints,
+            partial.unresolved_constraints,
+            tuple(sorted(incompatible_constraints)),
+            partial.support,
+            partial.carrier,
+            partial.activation,
+            partial.provenance,
+            partial.decomposition_id,
+        )
         failure_context = context or shadow.carrier
         self.graph.add_projection_pathway_evidence(
             shadow.schema_id,
@@ -658,16 +933,20 @@ class Runtime:
             failure_context,
             self.cycle,
             source=provenance,
+            binding_signature=f"partial:{shadow.assignments};conflict:{contradictory_evidence}",
         )
         self.metrics.shadow_refutations += 1
         self.metrics.work("REFUTE_SHADOW")
         self.trace.append(
             {
-                "event": "shadow-refuted",
+                "event": "ProjectionRefuted",
                 "cycle": self.cycle,
                 "shadow": shadow_id,
                 "schema": self.graph.canonical_hash[shadow.schema_id],
+                "generating_schema": self.graph.canonical_hash[shadow.schema_id],
                 "carrier": failure_context,
+                "incompatible_constraints": sorted(incompatible_constraints),
+                "contradictory_evidence": list(contradictory_evidence),
             }
         )
 
@@ -1176,6 +1455,13 @@ class Runtime:
             "total_schemas": self.graph.schema_count,
             "active_schemas": 0 if workspace is None else len(workspace.activation),
             "active_edges": 0 if workspace is None else len(workspace.active_edge_ids),
+            "partial_bindings": len(self.partial_bindings),
+            "active_shadows": len(self._active_shadow_ids),
+            "average_open_roles_per_shadow": (
+                sum(len(shadow.open_roles) for shadow in self.shadows.values()) / len(self.shadows)
+                if self.shadows
+                else 0.0
+            ),
             **asdict(self.metrics),
             "term_bytes_estimate": self.graph.terms.estimate_bytes(),
             "graph_bytes_estimate": self.graph.estimate_bytes(),

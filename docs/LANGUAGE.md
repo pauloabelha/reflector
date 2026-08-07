@@ -288,10 +288,15 @@ version and must specify whether they affect evidence, never identity.
 
 The compiler stores child schema IDs and interface maps once, then compiles the
 child expansions plus relations into a bounded matcher slice. A partial runtime
-binding is not serialized as a schema or a fact: it is a `SHADOW` record over
-one schema ID with assignments, child-role states, parent-constraint states,
-carrier, activation, provenance, and later `REIFIED` or `REFUTED` status.
+binding is not serialized as a schema or a fact: it is a compact
+`PartialBinding` record over one schema ID. A `Shadow` references that record
+and stores only open child-role and parent-constraint IDs plus carrier,
+activation, provenance, and later `REIFIED` or `REFUTED` status.
 Child-role state is `REIFIED` only by a child binding and otherwise `SHADOW`;
-constraint state is `REIFIED` only by verification and otherwise `PROJECTED`.
+constraint state is `REIFIED` only by verification, `REFUTED` only by explicit
+positive contradiction evidence, and otherwise `PROJECTED`.
 The compiled atom expansion may complete a DAG check but does not define this
 partial-binding ontology.
+
+No shadow syntax is added to the DSL. Inspector/debug JSON may serialize these
+runtime records, but doing so never compiles them into facts or schemas.

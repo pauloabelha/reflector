@@ -158,7 +158,11 @@ def test_partial_binding_projects_shadow_then_reifies_or_refutes_without_facts()
         child_bindings={a_role: Binding(a_schema, ((0, a_term),), "ctx-refuted")},
         carrier="ctx-refuted",
     )
-    runtime.refute_shadow(refuted.shadow_id)
+    runtime.refute_shadow(
+        refuted.shadow_id,
+        incompatible_constraints={0},
+        contradictory_evidence=(graph.terms.ground_atom("R", ("a", "not-b")),),
+    )
     assert refuted.status == REFUTED
     assert graph.projection_failure[parent] == 1
     assert graph.evidence_log[-1]["kind"] == "projection-failure"

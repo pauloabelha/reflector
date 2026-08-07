@@ -76,15 +76,17 @@ compaction, migration, and integrity audits.
     name or teacher origin.
 24. A binding is separate from a schema definition and includes a carrier/
     context. Multiple bindings of one schema never create new schema IDs.
-25. A shadow is a partial binding, not an observed fact or copied hypothetical
-    graph. Only its requested schema frontier is projected. Its unresolved
+25. A partial binding and its shadow are not observed facts or copied
+    hypothetical graphs. The shadow references the partial binding and the
+    immutable schema DAG by ID. Only its requested immediate schema frontier is projected. Its unresolved
     state is expressed as child-occurrence roles and parent constraints, not
     merely missing flattened atoms. Unchanged role/constraint signatures may
     be memoized. `SHADOW -> REIFIED` requires compatible later evidence,
     identifies completed roles/constraints, and logs parent-pathway
     projection-success;
     `SHADOW -> REFUTED` requires an applicable contradiction and logs
-    projection-failure.
+    projection-failure. Absence or a failed match alone can never refute a
+    shadow. No `SHADOW` role or constraint may enter a grounded fact batch.
 
 ## Teacher and domain firewall
 
@@ -130,3 +132,6 @@ compaction, migration, and integrity audits.
   overinterpreted.
 - Canonical replay produces identical schema hashes, active IDs, transformation
   evidence, and metrics other than elapsed time.
+- Synthetic shadow checks A-H pass, including exact-once reification evidence,
+  positive-evidence-only refutation, immediate recursive frontier projection,
+  structural DAG sharing, and the `SHADOW != FACT` firewall.

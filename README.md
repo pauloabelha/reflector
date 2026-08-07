@@ -14,29 +14,31 @@ recognizers, or custom GPU code.
 
 ## Design contracts
 
-- [`ACTIVE_EQUILIBRATION.md`](ACTIVE_EQUILIBRATION.md): conceptual front door:
+- [`ACTIVE_EQUILIBRATION.md`](docs/ACTIVE_EQUILIBRATION.md): conceptual front door:
   schema DAGs, bindings across space/time/intervention, deductive and
   conjectural shadows, executable explanations, epistemic action, goals,
   solutions, and teacher/LLM adjudication. It clearly marks next-phase ideas.
-- [`THEORY.md`](THEORY.md): operational epistemic definitions and Schema-0.
-- [`LANGUAGE.md`](LANGUAGE.md): the minimal term/conjunction DSL.
-- [`ARCHITECTURE.md`](ARCHITECTURE.md): indexed active-frontier runtime and
+- [`THEORY.md`](docs/THEORY.md): operational epistemic definitions and Schema-0.
+- [`LANGUAGE.md`](docs/LANGUAGE.md): the minimal term/conjunction DSL.
+- [`ARCHITECTURE.md`](docs/ARCHITECTURE.md): indexed active-frontier runtime and
   Reflector-1 archaeology ledger.
-- [`GPU_PLAN.md`](GPU_PLAN.md): measured CPU/GPU migration decisions by hot
+- [`GPU_PLAN.md`](docs/GPU_PLAN.md): measured CPU/GPU migration decisions by hot
   operation.
-- [`INVARIANTS.md`](INVARIANTS.md): executable representation, sparsity,
+- [`INVARIANTS.md`](docs/INVARIANTS.md): executable representation, sparsity,
   epistemic, teacher, and determinism constraints.
-- [`BENCHMARK.md`](BENCHMARK.md): the synthetic form/enclosure and dormant-store
+- [`BENCHMARK.md`](docs/BENCHMARK.md): the synthetic form/enclosure and dormant-store
   protocols.
-- [`FIRST_FRAME_EVALUATION.md`](FIRST_FRAME_EVALUATION.md): the raw first-frame
+- [`FIRST_FRAME_EVALUATION.md`](docs/FIRST_FRAME_EVALUATION.md): the raw first-frame
   results for all 25 public games, including structural and richer-schema tiers.
-- [`MULTILEVEL_DISCOVERY.md`](MULTILEVEL_DISCOVERY.md): bounded generic
+- [`MULTILEVEL_DISCOVERY.md`](docs/MULTILEVEL_DISCOVERY.md): bounded generic
   relational closure, the `ar25` depth-2 oracle, and CPU-parallel evaluation.
-- [`COMPLETION_AUDIT.md`](COMPLETION_AUDIT.md): requirement-by-requirement
+- [`SHADOWS.md`](docs/SHADOWS.md): Phase-1 partial-binding audit, bounded
+  projection policy, reification/refutation criteria, and A-H evidence.
+- [`COMPLETION_AUDIT.md`](docs/COMPLETION_AUDIT.md): requirement-by-requirement
   evidence and explicit Phase-1 boundaries.
 
-Start with `ACTIVE_EQUILIBRATION.md` for the unified model, then use
-`THEORY.md`, `LANGUAGE.md`, and `ARCHITECTURE.md` for executable contracts.
+Start with `docs/ACTIVE_EQUILIBRATION.md` for the unified model, then use
+`docs/THEORY.md`, `docs/LANGUAGE.md`, and `docs/ARCHITECTURE.md` for executable contracts.
 Benchmark and audit documents report only what the current Phase-1 runtime has
 actually demonstrated.
 

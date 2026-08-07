@@ -250,6 +250,7 @@ class SchemaGraph:
         self.distinct_contexts: list[set[str]] = []
         self.support_contexts: list[set[str]] = []
         self.projection_contexts: list[set[str]] = []
+        self.projection_binding_signatures: list[set[str]] = []
         # Cold, path-specific evidence.  The key names a parent definition and
         # the roles/constraints that constituted one projected pathway; atoms
         # are deliberately not evidence targets here.
@@ -385,6 +386,7 @@ class SchemaGraph:
         self.distinct_contexts.append(set())
         self.support_contexts.append(set())
         self.projection_contexts.append(set())
+        self.projection_binding_signatures.append(set())
         self._hash_to_schema[digest] = schema_id
         self._name_to_schemas[name].add(schema_id)
 
@@ -672,6 +674,7 @@ class SchemaGraph:
         cycle: int,
         *,
         source: str,
+        binding_signature: str,
     ) -> None:
         """Attach projection evidence to a parent definition pathway, not atoms."""
 
@@ -682,7 +685,10 @@ class SchemaGraph:
         target = self.projection_pathway_support if kind == "projection-success" else self.projection_pathway_failure
         target[key] += 1
         self.projection_pathway_contexts[key].add(context)
+        if kind == "projection-success":
+            self.projection_binding_signatures[schema_id].add(binding_signature)
         self.evidence_log[-1]["pathway"] = f"definition:{decomposition_id};roles:{key[2]};constraints:{key[3]}"
+        self.evidence_log[-1]["binding_signature"] = binding_signature
 
     def source_atoms(self, schema_id: int) -> tuple[SourceAtom, ...]:
         output: list[SourceAtom] = []

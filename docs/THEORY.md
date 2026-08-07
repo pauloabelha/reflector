@@ -63,15 +63,17 @@ have many bindings, and a binding never creates a new schema. A carrier is
 abstract: Phase 1 uses a spatial observation, while later carriers may include
 time or intervention without changing schema meaning.
 
-**Shadow.** A demand-driven partial binding of an active schema DAG. It stores
-the parent schema ID, assigned interface variables, child-role state, parent
-constraint state, carrier, activation, provenance, and status `SHADOW`,
-`REIFIED`, or `REFUTED`. A child role is `REIFIED` only by a child binding;
-otherwise it is `SHADOW`. A parent constraint is `REIFIED` only when verified
-and is otherwise `PROJECTED`. Compatible later evidence reifies the particular
+**Partial binding and shadow.** A partial binding is a compatible subset of an
+active schema DAG: compact interface assignments, bound/unresolved child-role
+IDs, satisfied/unresolved/incompatible parent-constraint IDs, supporting child
+references, carrier, activation, and provenance. A shadow references that
+partial binding and contains only its demand-driven immediate unresolved
+frontier, with status `SHADOW`, `REIFIED`, or `REFUTED`. A child role is
+grounded only by a child binding; a parent constraint is satisfied only by a
+verified grounded fact. Compatible later evidence reifies the particular
 roles/constraints completed and records parent-pathway `projection-success`;
-an applicable contradiction records pathway `projection-failure`. No
-consequence enumeration occurs.
+positive carrier-adjudicated contradiction evidence records
+`projection-failure`. Absence never refutes. No consequence enumeration occurs.
 
 **Projection origin.** A shadow is *deductive* when an accepted schema and
 partial binding entail its unresolved roles/constraints under the schema's
@@ -138,11 +140,11 @@ of these counters; Phase 1 uses Laplace-smoothed support
 needed.
 
 **Cross-context projection evidence.** Projection success/failure is retained
-separately from ordinary binding support. Success across varied bindings or
-carriers is stronger evidence for an abstraction than repeated success in one
-near-identical context. Phase 1 records prediction and shadow pathways; a
-future promotion policy may use diversity-aware support only with explicit,
-auditable context criteria.
+separately from ordinary binding count. Phase 1 records distinct confirmation
+carriers and exact partial/grounded binding signatures as well as definition
+pathways, so repeated exact completions can later be distinguished from varied
+bindings. A future promotion policy may use diversity-aware support only with
+explicit, auditable context criteria.
 
 **Prediction.** A morphism bound to a present domain and action that emits an
 expected codomain/preservation/change term before the successor is observed.
