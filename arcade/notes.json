@@ -1,0 +1,73 @@
+[
+  {
+    "id": "note-18c98aba120012f1",
+    "game": "wa30",
+    "turn": 0,
+    "text": "First I noticed there are three similar shapes. Two of them solid colored. One has holes.\n\nThen I noticed my action moves both the yellow and the holed shape.\n\nThen I noticed as I fit the yellow into the blue it gets holes.\n\nSO I thought... I have to match the holes",
+    "created_at": "2026-08-07T14:00:58Z"
+  },
+  {
+    "id": "note-18c98ad6423d5dbb",
+    "game": "ar25",
+    "level": 1,
+    "turn": 0,
+    "text": "I also noticed there is a division in the screen. This must separate conceptual parts of the game",
+    "created_at": "2026-08-07T14:03:00Z"
+  },
+  {
+    "id": "note-18c98b0764810c39",
+    "game": "ar25",
+    "level": 1,
+    "turn": 0,
+    "text": "I noticed three equal shapes\nI noticed they have different colors\nI noticed onehas holes\nI noticed I want to try to fit one shape onto another\nI noticed as a fit it, it gain some holes, so I should probably fit the whoel yellow onto blue and make it equal to the holed one\n\nI noticed that my movement action was moving two parts at the same time",
+    "created_at": "2026-08-07T14:06:31Z"
+  },
+  {
+    "id": "note-18c98b243648fa42",
+    "game": "ar25",
+    "level": 2,
+    "turn": 36,
+    "text": "I noticed I was moving the bar, which felt weird\nThen, I noticed there is a new action that toggles two mdos (?). One is for giving balck holes to \nthe bar and another to give balck \nholes to the shape\nso that means I should probably toggle to amke the level as level 1 (black hoeld shape) and then move the yellow to the blue like before",
+    "created_at": "2026-08-07T14:08:34Z"
+  },
+  {
+    "id": "note-18c98b3aefe6660c",
+    "game": "ar25",
+    "level": 3,
+    "turn": 47,
+    "text": "I noticed now that the toggle action can toggle three things now each grey shape and the bar. So it probably generalizes to 'toggle between grey shapes and the bar'\nAnd that means I ahve to keep toggling, get a blue to fit, toggle agian maybe etc.",
+    "created_at": "2026-08-07T14:10:12Z"
+  },
+  {
+    "id": "note-18c98b4b48ac4442",
+    "game": "ar25",
+    "level": 3,
+    "turn": 89,
+    "text": "I noticed that the yellow shapes were hidden aprranetly but I could bring them into view by moving the bar up",
+    "created_at": "2026-08-07T14:11:22Z"
+  },
+  {
+    "id": "note-18c98b809dc825d8",
+    "game": "ar25",
+    "level": 2,
+    "turn": 41,
+    "text": "I noticed the gray shape couldnt mode anymore, so (form level 3 I had learned), I could also toggle here the bar and move the bar",
+    "created_at": "2026-08-07T14:15:11Z"
+  },
+  {
+    "id": "note-18c98ba386e5372b",
+    "game": "ar25",
+    "level": 3,
+    "turn": 139,
+    "text": "I noticed I have to fit the T shape upside down, but I don't know how to rotate it...\nPerhaps there is a yellow down T somehwere...?",
+    "created_at": "2026-08-07T14:17:41Z"
+  },
+  {
+    "id": "note-18c98be1481f3b34",
+    "game": "ar25",
+    "level": 2,
+    "turn": 15,
+    "text": "I noticed that when toggled the bar, it moved two spaces by two spaces, when toggling the gray onyl one space move, so I shuold be wary of this",
+    "created_at": "2026-08-07T14:22:06Z"
+  }
+]

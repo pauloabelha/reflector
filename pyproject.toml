@@ -12,9 +12,14 @@ requires-python = ">=3.11"
 reflector2-benchmark = "reflector2.benchmark:main"
 reflector2-raw-frame = "reflector2.raw_frame:main"
 reflector2-evaluate-first-frames = "reflector2.evaluate_first_frames:main"
+reflector2-arcade = "arcade.server:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "."]
+include = ["reflector2*", "arcade*"]
+
+[tool.setuptools.package-data]
+arcade = ["notes.json"]
 
 [tool.pytest.ini_options]
 addopts = "-q"
