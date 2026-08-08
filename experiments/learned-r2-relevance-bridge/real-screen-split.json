@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "frozen_before_evaluation": true,
+  "learning_sources": [
+    "/home/pauloabelha/reflector_old/artifacts/game_mastery/sc25/curriculum-hierarchical-prior-r6-recordings/sc25/sc25.reflectoragent.6864b530-2854-41e2-baad-c8e8a0933314.recording.jsonl",
+    "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/lf52.reflectoragent.2f6aff74-d527-4ec2-a9a2-a837b09dd20e.recording.jsonl"
+  ],
+  "held_out_sources": [
+    "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/r11l.reflectoragent.65c6b7f2-1806-4480-abe5-e8ef8b6684dc.recording.jsonl"
+  ],
+  "split_rule": "Hold out the public positive r11l trajectory completely. Learn from the highest-progress historical sc25 trajectory plus the distinct public positive lf52 baseline. No r11l packet may enter construction, promotion, confidence, matching, or ranking.",
+  "offline_go": [
+    "at least one promoted relevance schema",
+    "at least one eligible positive held-out commitment",
+    "real precision and calibration materially exceed both frozen permutation controls"
+  ],
+  "intervention_only_if_all_offline_go_pass": true,
+  "intervention_cohort": [
+    "ar25",
+    "bp35",
+    "dc22",
+    "ls20",
+    "tr87"
+  ],
+  "intervention_seed": 0,
+  "intervention_max_transitions": 80
+}

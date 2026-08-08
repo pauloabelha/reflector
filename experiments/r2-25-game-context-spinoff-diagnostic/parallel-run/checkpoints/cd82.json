@@ -1,0 +1,3316 @@
+{
+  "checkpoint_format": 1,
+  "completed_at": "2026-08-08T12:29:36.872000+00:00",
+  "key": "467fff3bf9894326991b7eba7433d4abee85841a26182a0c2f688fca8f2cb2cf",
+  "result": {
+    "deterministic": {
+      "abstentions": {
+        "action-data-required": 2,
+        "no-eligible-context": 71,
+        "parent-not-ambiguous": 2
+      },
+      "chronological_transitions": 98,
+      "completed_level_delta_vs_control": 0,
+      "contexts": {
+        "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454": 25
+      },
+      "executed_action_changes": 0,
+      "final_schema_count": 226,
+      "game": "cd82",
+      "improve": 0,
+      "initial_kernel_fingerprint": "8e843e971148c5c659bfff1d64cbe68bfd91d61f80eda8e399fff7c00c7a2efc",
+      "initial_schema_count": 9,
+      "opportunities": 25,
+      "opportunity_records": [
+        {
+          "abstention_reason": "action-data-required",
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 26
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": true,
+          "child_hash": "1a1ed8f4e81c009a58ab904e41f6c9d6b47b13c10705bcc654f283378bb492fc",
+          "classification": null,
+          "context_polarity": "present",
+          "context_purity": 1.0,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 2,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:74:1a1ed8f4e81c",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "8e500f0707c58f2a12f1161b47f07ebb706286e7b693ae7b9e1aec15c3010f04",
+          "spinoff_edge": 402,
+          "top_action_changed": true,
+          "transition_index": 74,
+          "treatment_ranking": [
+            {
+              "action": 4,
+              "child_support": 2,
+              "parent_support": 9
+            },
+            {
+              "action": 6,
+              "child_support": 0,
+              "parent_support": 26
+            },
+            {
+              "action": 2,
+              "child_support": 0,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "child_support": 0,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "child_support": 0,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "child_support": 0,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 4
+        },
+        {
+          "abstention_reason": "action-data-required",
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 27
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "1a1ed8f4e81c009a58ab904e41f6c9d6b47b13c10705bcc654f283378bb492fc",
+          "classification": null,
+          "context_polarity": "present",
+          "context_purity": 0.6666666666666666,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 3,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 5,
+          "opportunity_id": "cd82:75:1a1ed8f4e81c",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "bc1b2f2ce96e4c6013c3ccaa0912003a2e121f8ee5f36123df4f7093fe4adc0d",
+          "spinoff_edge": 402,
+          "top_action_changed": true,
+          "transition_index": 75,
+          "treatment_ranking": [
+            {
+              "action": 4,
+              "child_support": 2,
+              "parent_support": 9
+            },
+            {
+              "action": 6,
+              "child_support": 1,
+              "parent_support": 27
+            },
+            {
+              "action": 2,
+              "child_support": 0,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "child_support": 0,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "child_support": 0,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "child_support": 0,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 4
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 27
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": true,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.36619718309859156,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 71,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:76:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "12cfb4b46000b5998dcc22311ed7b8c92b7b91cb02162e5972ae3289a775b782",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 76,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 26,
+              "parent_support": 27
+            },
+            {
+              "action": 2,
+              "child_support": 13,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 8,
+              "parent_support": 8
+            },
+            {
+              "action": 4,
+              "child_support": 7,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 6,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 28
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.375,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 72,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:77:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "c85ee544e991999103172e4bbae9128be998264286bc7003149ac1ba20c30efe",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 77,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 27,
+              "parent_support": 28
+            },
+            {
+              "action": 2,
+              "child_support": 13,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 8,
+              "parent_support": 8
+            },
+            {
+              "action": 4,
+              "child_support": 7,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 6,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 29
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.3835616438356164,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 73,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:78:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "77d2b12697d68b85e32597cff9151cc8bce62b6355a44312e8275e3c98a32974",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 78,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 28,
+              "parent_support": 29
+            },
+            {
+              "action": 2,
+              "child_support": 13,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 8,
+              "parent_support": 8
+            },
+            {
+              "action": 4,
+              "child_support": 7,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 6,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.3918918918918919,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 74,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 3,
+          "opportunity_id": "cd82:79:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "cc546160150359d5aad9b6ced95034aea810aac17f4cf49004a8ebc135eef1e9",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 79,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 29,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "child_support": 13,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 8,
+              "parent_support": 8
+            },
+            {
+              "action": 4,
+              "child_support": 7,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 6,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.38666666666666666,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 75,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 2,
+          "opportunity_id": "cd82:80:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "1983baa9f8b4a238280b5dacbc7803bd9a46bde9c19887d2ce7aeb03870cc9e1",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 80,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 29,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "child_support": 13,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "child_support": 7,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 6,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.3815789473684211,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 76,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:81:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "0be5ee19e1a39309704645db140ef8f749b2d750a7118556b424cd821708ad71",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 81,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 29,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "child_support": 14,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "child_support": 7,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 6,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.38961038961038963,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 77,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 1,
+          "opportunity_id": "cd82:82:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "6ac24ccd21ad235593106b3b17d8790867cebbe96d023c639c83550fd0f93634",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 82,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 30,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "child_support": 14,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "child_support": 7,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 6,
+              "parent_support": 6
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.38461538461538464,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 78,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 4,
+          "opportunity_id": "cd82:83:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "ca57635d022384bfaf11492137d16e5cf9b658898022821b57d9c4ee999880ad",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 83,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 30,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "child_support": 14,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "child_support": 7,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 7,
+              "parent_support": 7
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 10
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.379746835443038,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 79,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 4,
+          "opportunity_id": "cd82:84:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "b7c2e2c42be978dec5e4f0a2c069bcd3c812b880f0ee2c021defd83d1f0f8466",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 84,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 30,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "child_support": 14,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "child_support": 8,
+              "parent_support": 10
+            },
+            {
+              "action": 1,
+              "child_support": 7,
+              "parent_support": 7
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.375,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 80,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 2,
+          "opportunity_id": "cd82:85:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "2d397ea65a8535be1238453bf9cccbe06e5db2fa23ce6a35983b255411e16356",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 85,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 30,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "child_support": 14,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 7,
+              "parent_support": 7
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.37037037037037035,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 81,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 5,
+          "opportunity_id": "cd82:86:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "a6da404179b7720f5956146e2125ea3b4cae5e658dce0657f3158e4ee0d82cee",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 86,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 30,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "child_support": 15,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "child_support": 11,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 7,
+              "parent_support": 7
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.36585365853658536,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 82,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:87:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "6228a3edcddc09e071daa0f4f33f427041ee5db227dc1ab660ce9786463dec36",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 87,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 30,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "child_support": 15,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "child_support": 12,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 7,
+              "parent_support": 7
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.37349397590361444,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 83,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 1,
+          "opportunity_id": "cd82:88:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "76ed53f1ab2f459b7359feb1d688bb764858968f67b3d724e1361684ae9951dd",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 88,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 31,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "child_support": 15,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "child_support": 12,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 7,
+              "parent_support": 7
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.36904761904761907,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 84,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 3,
+          "opportunity_id": "cd82:89:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "89098f66edeac3609104babc47e1fcba7fbd35813a16e8c306b3a36dab406325",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 89,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 31,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "child_support": 15,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "child_support": 12,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "child_support": 9,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "child_support": 8,
+              "parent_support": 8
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 10
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.36470588235294116,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 85,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 3,
+          "opportunity_id": "cd82:90:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "ca4f0ea5c3aac1f6afa450c91be56088ca66f1f28aa2498af321b5bbe7626d9d",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 90,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 31,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "child_support": 15,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "child_support": 12,
+              "parent_support": 13
+            },
+            {
+              "action": 3,
+              "child_support": 10,
+              "parent_support": 10
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "child_support": 8,
+              "parent_support": 8
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.36046511627906974,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 86,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 5,
+          "opportunity_id": "cd82:91:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "7a691c43ed946bb3fef17a9b6b28b24e3f19caab5564e292a41ac39b632be92d",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 91,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 31,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "child_support": 15,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "child_support": 12,
+              "parent_support": 13
+            },
+            {
+              "action": 3,
+              "child_support": 11,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "child_support": 8,
+              "parent_support": 8
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.3563218390804598,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 87,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:92:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "58ee0e77db07dcad797613e9d84c5c496ffae3fccc8f09b30be290eb38c6eff6",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 92,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 31,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "child_support": 15,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "child_support": 13,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "child_support": 11,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "child_support": 8,
+              "parent_support": 8
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 33
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.36363636363636365,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 88,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 2,
+          "opportunity_id": "cd82:93:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "808827e6fb701b157d7c62ff56c5139aec0febad1237543791e39fcdbf28fa7c",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 93,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 32,
+              "parent_support": 33
+            },
+            {
+              "action": 2,
+              "child_support": 15,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "child_support": 13,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "child_support": 11,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "child_support": 8,
+              "parent_support": 8
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 33
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.3595505617977528,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 89,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:94:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "63972ce2749d23b1f857c02b6d1091817bbd84158acc623392973bec3641b875",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 94,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 32,
+              "parent_support": 33
+            },
+            {
+              "action": 2,
+              "child_support": 16,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "child_support": 13,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "child_support": 11,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "child_support": 8,
+              "parent_support": 8
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 34
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.36666666666666664,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 90,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:95:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "9347fa30489e85b0318f9930aa7a4e4a07c2d364ab8a9bac393c5a86c3a780d6",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 95,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 33,
+              "parent_support": 34
+            },
+            {
+              "action": 2,
+              "child_support": 16,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "child_support": 13,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "child_support": 11,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "child_support": 8,
+              "parent_support": 8
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.37362637362637363,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 91,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 1,
+          "opportunity_id": "cd82:96:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "a23261d071272ad870ce76cee0c7d0ddf412eca688ff01e359001047062a84b7",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 96,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 34,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "child_support": 16,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "child_support": 13,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "child_support": 11,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "child_support": 8,
+              "parent_support": 8
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 9
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.3695652173913043,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 92,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 4,
+          "opportunity_id": "cd82:97:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "975141a30b48d23e1a9e847709629ca15cb8323698ba24d3c1af0b7ad064fd72",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 97,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 34,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "child_support": 16,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "child_support": 13,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "child_support": 11,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "child_support": 9,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "child_support": 9,
+              "parent_support": 9
+            }
+          ],
+          "treatment_top": 6
+        },
+        {
+          "abstention_reason": null,
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 4,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 9
+            }
+          ],
+          "baseline_top": 6,
+          "child_created": false,
+          "child_hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "classification": null,
+          "context_polarity": "absent",
+          "context_purity": 0.3655913978494624,
+          "context_relation": "SameInteriorContrast",
+          "context_schema_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "context_support": 93,
+          "executed": false,
+          "game": "cd82",
+          "held_out_recorded_action": 6,
+          "opportunity_id": "cd82:98:e4d3812a7ae5",
+          "parent_hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "predecessor_frame_sha256": "87c332b0e7958f9fa6a018f0b2656589058c36fe4f26c1ac521f16dc99e48b31",
+          "spinoff_edge": 405,
+          "top_action_changed": false,
+          "transition_index": 98,
+          "treatment_ranking": [
+            {
+              "action": 6,
+              "child_support": 34,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "child_support": 16,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "child_support": 13,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "child_support": 11,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "child_support": 10,
+              "parent_support": 12
+            },
+            {
+              "action": 1,
+              "child_support": 9,
+              "parent_support": 9
+            }
+          ],
+          "treatment_top": 6
+        }
+      ],
+      "packets": 99,
+      "parent": {
+        "atoms": [
+          [
+            "After",
+            [
+              "?v0",
+              "ActiveSchema",
+              "?v1"
+            ]
+          ],
+          [
+            "Before",
+            [
+              "?v2",
+              "ActiveSchema",
+              "?v3"
+            ]
+          ],
+          [
+            "Codomain",
+            [
+              "?v0"
+            ]
+          ],
+          [
+            "Domain",
+            [
+              "?v2"
+            ]
+          ],
+          [
+            "Intervention",
+            [
+              "?v4"
+            ]
+          ]
+        ],
+        "hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+      },
+      "parent_intact": true,
+      "prediction": {
+        "child_refuted": 0,
+        "child_reified": 0,
+        "parent_refuted": 0,
+        "parent_reified": 0
+      },
+      "recording": "/home/pauloabelha/reflector-v164-pivot-goal/reports/v164-public-r1-recordings/cd82/cd82.reflectoragent.fb4f2b60-1d28-49df-9f63-8172656f0ae2.recording.jsonl",
+      "recording_sha256": "2abc9b9e4e9edaa60b5559dd6572541414130d2e27f8cff96c88302afc6211ed",
+      "score_delta_vs_control": null,
+      "spinoffs_created": 2,
+      "tie": 0,
+      "top_action_changes": 2,
+      "trace": [
+        {
+          "event": "game-start",
+          "game": "cd82",
+          "initial_schema_count": 9,
+          "kernel_fingerprint": "8e843e971148c5c659bfff1d64cbe68bfd91d61f80eda8e399fff7c00c7a2efc",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "recording_sha256": "2abc9b9e4e9edaa60b5559dd6572541414130d2e27f8cff96c88302afc6211ed"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 26
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:74:1a1ed8f4e81c",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:74:1a1ed8f4e81c",
+          "polarity": "present",
+          "purity": 1.0,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 2
+        },
+        {
+          "child": "1a1ed8f4e81c009a58ab904e41f6c9d6b47b13c10705bcc654f283378bb492fc",
+          "created": true,
+          "edge": 402,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:74:1a1ed8f4e81c",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_top": 6,
+          "event": "action-ranking-changed",
+          "opportunity_id": "cd82:74:1a1ed8f4e81c",
+          "treatment_top": 4
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 27
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:75:1a1ed8f4e81c",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:75:1a1ed8f4e81c",
+          "polarity": "present",
+          "purity": 0.6666666666666666,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 3
+        },
+        {
+          "child": "1a1ed8f4e81c009a58ab904e41f6c9d6b47b13c10705bcc654f283378bb492fc",
+          "created": false,
+          "edge": 402,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:75:1a1ed8f4e81c",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_top": 6,
+          "event": "action-ranking-changed",
+          "opportunity_id": "cd82:75:1a1ed8f4e81c",
+          "treatment_top": 4
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 27
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:76:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:76:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.36619718309859156,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 71
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": true,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:76:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 28
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:77:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:77:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.375,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 72
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:77:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 29
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:78:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:78:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.3835616438356164,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 73
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:78:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 3,
+              "parent_support": 8
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:79:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:79:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.3918918918918919,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 74
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:79:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "parent_support": 13
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:80:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:80:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.38666666666666666,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 75
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:80:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 30
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:81:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:81:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.3815789473684211,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 76
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:81:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 6
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:82:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:82:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.38961038961038963,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 77
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:82:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 4,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:83:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:83:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.38461538461538464,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 78
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:83:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 10
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:84:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:84:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.379746835443038,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 79
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:84:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 14
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:85:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:85:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.375,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 80
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:85:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 12
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:86:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:86:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.37037037037037035,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 81
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:86:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 31
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:87:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:87:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.36585365853658536,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 82
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:87:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 7
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:88:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:88:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.37349397590361444,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 83
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:88:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 9
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:89:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:89:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.36904761904761907,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 84
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:89:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 3,
+              "parent_support": 10
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:90:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:90:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.36470588235294116,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 85
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:90:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 13
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:91:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:91:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.36046511627906974,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 86
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:91:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 32
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:92:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:92:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.3563218390804598,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 87
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:92:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 33
+            },
+            {
+              "action": 2,
+              "parent_support": 15
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:93:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:93:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.36363636363636365,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 88
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:93:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 33
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:94:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:94:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.3595505617977528,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 89
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:94:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 34
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:95:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:95:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.36666666666666664,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 90
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:95:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 8
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:96:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:96:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.37362637362637363,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 91
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:96:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 4,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 9
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:97:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:97:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.3695652173913043,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 92
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:97:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "baseline_ranking": [
+            {
+              "action": 6,
+              "parent_support": 35
+            },
+            {
+              "action": 2,
+              "parent_support": 16
+            },
+            {
+              "action": 5,
+              "parent_support": 14
+            },
+            {
+              "action": 4,
+              "parent_support": 12
+            },
+            {
+              "action": 3,
+              "parent_support": 11
+            },
+            {
+              "action": 1,
+              "parent_support": 9
+            }
+          ],
+          "event": "ambiguity",
+          "opportunity_id": "cd82:98:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "context-discovered",
+          "opportunity_id": "cd82:98:e4d3812a7ae5",
+          "polarity": "absent",
+          "purity": 0.3655913978494624,
+          "relation": "SameInteriorContrast",
+          "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+          "support": 93
+        },
+        {
+          "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+          "created": false,
+          "edge": 405,
+          "event": "schema-spinoff",
+          "opportunity_id": "cd82:98:e4d3812a7ae5",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+        },
+        {
+          "event": "game-end",
+          "executed_action_changes": 0,
+          "game": "cd82",
+          "opportunities": 25,
+          "top_action_changes": 2
+        }
+      ],
+      "worsen": 0
+    },
+    "timing": {
+      "cpu_seconds": 1689.17583367,
+      "game": "cd82",
+      "wall_seconds": 1758.7516771229998
+    }
+  }
+}

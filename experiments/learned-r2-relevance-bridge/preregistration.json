@@ -1,0 +1,45 @@
+{
+  "experiment": "learned-r2-relevance-bridge",
+  "version": 1,
+  "hypothesis": "A prospectively predicted structural consequence receives action value only by binding a promoted, previously learned consequence-to-observed-progress schema.",
+  "arms": [
+    "random",
+    "local-schema",
+    "explanation",
+    "explanation+learned-relevance"
+  ],
+  "frozen_thresholds": {
+    "minimum_support": 2,
+    "minimum_distinct_contexts": 2,
+    "minimum_confidence": 0.6666666666666666,
+    "relevance_weight": 1.0,
+    "max_commitments_per_decision": 8,
+    "permutation_seed": 1729
+  },
+  "primary_metric": "positive_progress_after_arm4_only_changes / arm4_only_changes",
+  "null_controls": [
+    "reward-label permutation within trajectory",
+    "consequence/progress pairing permutation within matched context stratum"
+  ],
+  "transfer_classes": {
+    "1": "exact previous consequence binding",
+    "2": "different binding of the same consequence schema",
+    "3": "structurally related/composed consequence not directly paired with progress"
+  },
+  "action_gate": [
+    "arm 4 differs from frozen explanation",
+    "the selected divergence has a promoted relevance match",
+    "confidence meets the frozen threshold",
+    "an R2 progress shadow is logged before the successor",
+    "the successor can reify or refute that shadow"
+  ],
+  "promotion_requires": [
+    "schemas form only from already observed consequence/progress pairs",
+    "held-out prospective predictions occur",
+    "arm 4 changes actions versus frozen explanation",
+    "positive behavioral advantage",
+    "material advantage over both nulls",
+    "changes are not confined to one game",
+    "deterministic replay"
+  ]
+}

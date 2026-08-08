@@ -1,0 +1,20 @@
+{
+  "ordered_evidence_digest": "61d6df9281e57a086be71bfada98cc470c52d04098174e01c0671bc02f16f242",
+  "positive_progress_records": 1,
+  "records": 393,
+  "traces": [
+    {
+      "format": "arc-toolkit-recording",
+      "outcomes": {
+        "neutral": 392,
+        "positive": 1
+      },
+      "path": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/r11l.reflectoragent.65c6b7f2-1806-4480-abe5-e8ef8b6684dc.recording.jsonl",
+      "records": 393,
+      "skipped_no_structural_effect": 0,
+      "skipped_reset": 6,
+      "trace_digest": "863168110cbc1c24ac13147e57a689505ccc9cc07cc3ed8de7f52645992a2d9e",
+      "transitions": 399
+    }
+  ]
+}

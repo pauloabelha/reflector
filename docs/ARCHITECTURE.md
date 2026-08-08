@@ -1,464 +1,484 @@
 # Reflector-II architecture
 
-Status: Phase-1 decision record. This document specifies the target design and
-marks what the initial vertical slice must demonstrate.
+Status: as-built architecture for the current repository. This document
+describes what the code executes now. Conceptual extensions
+belong in [`ACTIVE_EQUILIBRATION.md`](ACTIVE_EQUILIBRATION.md); future CPU/GPU
+layout decisions belong in [`GPU_PLAN.md`](GPU_PLAN.md).
 
-## 1. Runtime shape
+## 1. System boundary
 
-```text
-grid / DSL / prior
-  -> audited adapters and compiler
-  -> ground term batch + compact signatures
-  -> indexed candidate retrieval
-  -> bounded MATCH work items
-  -> evidence seeds
-  -> sparse ACTIVATE/EXPAND frontier
-  -> bounded COMPOSE and MAP candidates
-  -> canonicalize/hash-cons in DeltaG
-  -> local evidence update and PRUNE
-  -> trace + metrics
-```
-
-There is no level pipeline in this flow. “Perception” indicates an input
-boundary, not a privileged descriptive layer. Previously learned composites
-can be retrieved directly from evidence; their activation can enqueue
-lower-level searches through graph links in the same cycle.
-
-The logical model is many small epistemic processes. The physical model is a
-small set of work-item kinds, grouped into deterministic batches:
-
-`TRY_BIND`, `VERIFY_BINDING`, `EXPAND`, `TRY_COMPOSE`, `SCORE_MAPPING`,
-`CHECK_PREDICTION`, and `APPLY_EVIDENCE`.
-
-## 2. One generic representation
-
-### 2.1 Term store
-
-Terms are hash-consed and stored structure-of-arrays (SoA):
+Reflector-II is an in-memory symbolic research runtime with several adapters
+and evaluation tools around it. The core owns no game rules, natural-language
+ontology, goal model, or planner.
 
 ```text
-term_kind[]       uint8       # SYMBOL, VARIABLE, APPLICATION
-term_symbol[]     int32       # symbol/head/variable ordinal
-child_offset[]    int64
-child_count[]     uint8
-children[]        int32
+grid / DSL / ARC observation
+          |
+          v
+  audited input adapters
+          |
+          v
+ ground relational facts -----> TermStore
+          |                         |
+          v                         v
+  postings retrieval -------> SchemaGraph
+          |                  schemas, DAGs, links,
+          v                  evidence, provenance
+ bounded Runtime cycle <------------+
+  match -> project/reconcile -> activate -> compose
+          |
+          +--> Workspace / Binding / Shadow (transient)
+          +--> learned transition schemas (persistent in memory)
+          +--> traces, reports, inspector JSON
+          |
+          v
+ optional ARC action controller
+ random | local-schema | explanation
 ```
 
-Symbol bytes and display labels are cold side tables. A schema body is a sorted
-slice in `body_roots[]`; nesting is represented by application nodes, not
-Python references. Structural identity is computed bottom-up, then the
-canonical key is hash-consed. The Python prototype may use growable integer
-lists, but exposes contiguous arrays and does not place per-term Python objects
-in matching loops.
+“Persistent” in this document means persistent across cycles in one Python
+process. There is no implemented schema snapshot loader, stable on-disk store,
+CSR compactor, database, or cross-process graph service. JSON/JSONL files
+persist traces and reports, not a reloadable live `SchemaGraph` generation.
 
-### 2.2 Schema and link store
+## 2. Repository components
+
+| Component | Responsibility |
+|---|---|
+| `store.py` | term interning, schema canonicalization, schema/link/decomposition columns, evidence, retrieval indices |
+| `perception.py` | deterministic grid-to-fact adapter and structural fingerprints |
+| `runtime.py` | matching, activation, composition, partial projection, transition learning, prediction, metrics |
+| `dsl.py` | transactional cold-path S-expression compiler |
+| `benchmark.py` | four-frame vertical slice and dormant-schema stress test |
+| `raw_frame.py` | first-packet recording adapter |
+| `evaluate_first_frames.py` | corpus evaluation and directed structural-transfer matrix |
+| `arc_harness.py` | offline ARC-AGI-3 transport, lifecycle, tracing, and policy boundary |
+| `explanations.py` | episode-local explanation beam, prospective commitments, action ranking |
+| `explanation_experiment.py` | matched random/local-schema/explanation experiment runner |
+| `inspect/` | loopback read-only runtime visualizer with external annotations |
+| `arcade/` | loopback human action interface and journal |
+| `experiments/` | isolated research mechanisms and evidence; not installed core architecture |
+
+`reflector1-learnings/` is archaeological material. Nothing in it is imported
+by `src/reflector2`.
+
+## 3. State model
+
+### 3.1 Terms
+
+`TermStore` hash-conses three term kinds:
 
 ```text
-body_offset[]       int64          support[]             uint32
-body_count[]        uint8          contradiction[]       uint32
-canonical_hash[]    128/256 bits   prediction_success[]  uint32
-provenance_offset[] int64          prediction_failure[]  uint32
-flags[]             packed         use_count[]           uint32
-depth[]             uint16         last_used[]           uint64
-schema_state[]      uint8          # candidate / established / promoted
-                                    activation[]          fp32 (workspace-owned)
-
-src[]       int32
-relation[]  uint16
-dst[]       int32
-weight[]    fp32
-flags[]     packed
-edge_provenance_offset[] int64
-
-decomposition_owner[]             int32
-decomposition_occurrence_offset[] int64
-decomposition_occurrence_count[]  uint8
-occurrence_schema[]               int32
-occurrence_map_offset[]           int64
-occurrence_map_count[]            uint8
-occurrence_child_variable[]       uint8
-occurrence_owner_variable[]       uint8
-
-constraint_offset[]               int64   # parent-level relation slice
-constraint_count[]                uint8
-constraint_roots[]                int32
-interface_offset[]                int64
-interface_count[]                 uint8
-interface_variables[]             uint8
+SYMBOL       scalar identity (str, int, or float)
+VARIABLE     canonical schema-local ordinal
+APPLICATION  head symbol plus ordered child term IDs
 ```
 
-These rows represent atomic descriptors, composites, transformations, teacher
-proposals, actions, and analogies uniformly. Flags identify storage state and
-validation status, not semantic object classes. Provenance is an append-only
-cold table and can contain multiple sources for one hash-consed schema.
+The implementation uses parallel Python lists (`term_kind`, `term_symbol`,
+`child_offset`, `child_count`, and `children`) and lookup dictionaries. This is
+a structure-of-arrays-shaped prototype, not a NumPy/C array or a GPU buffer.
+Booleans are rejected as symbols so they cannot alias integer identities.
 
-Semantic identity and construction identity are deliberately separate. One
-canonical conjunctive body may have several decomposition derivations. A child
-row is an occurrence, not merely a set member, so the same schema can occupy
-two roles with different variable-interface maps. Recursively following
-occurrences forms a DAG certified by `child.depth < owner.depth`. Semantic term
-relations may still contain cycles. Flattening the occurrence DAG yields the
-canonical conjunction used by the current matcher; the DAG preserves
-explanation, alternative chunkings, and future topological batch scheduling.
-
-For the `schema-dag` language form, the role-occurrence slice plus the
-constraint slice are the content-addressed definition. Its hash includes child
-hashes, normalized child-to-owner interface maps, parent-level constraints, and
-the exposed interface. `body_roots[]` is only the compiled matcher expansion.
-This permits an atomic-from-above schema ID while retaining a structured-from-
-below DAG without copying a child graph. The older composition path remains a
-compatible flattened-conjunction producer; new reusable structural schemas use
-the explicit DAG form.
-
-SoA is chosen because matching and activation read the same field across many
-rows and because arrays transfer directly to accelerator memory. Object-rich
-Python is retained only for configuration, compiler diagnostics, trace views,
-and immutable result envelopes.
-
-### 2.3 Stable graph plus delta
-
-`G_stable` is canonical, deduplicated, indexed CSR grouped by source and
-relation, memory-mappable on CPU, and uploadable to GPU. `DeltaG` contains
-append-only term/schema/link rows plus hash maps and adjacency lists for recent
-constructions. A read checks delta first and stable second. Frontier expansion
-concatenates the stable CSR slice and the source's delta slice.
-
-Compaction is an explicit cold-path transaction: freeze ingestion, sort/dedupe
-delta by canonical identity, remap IDs, merge indices/CSR, atomically publish a
-new generation, then retire the prior generation after readers finish. It is
-never triggered inside a cognition cycle and therefore never makes one new
-schema rebuild the GPU graph.
-
-The initial vertical slice implements the delta-shaped append store and indexed
-adjacency. Stable CSR compaction is specified and tested at the interface, not
-claimed as a GPU implementation.
-
-## 3. Indices and the no-scan rule
-
-Observation adapters emit ground facts and a compact signature containing
-application `(head,arity)` keys, selected ground argument fingerprints, local
-degree/count buckets, and canonical form hashes. Indices are deterministic:
+Ground facts are compact tuples:
 
 ```text
-(head, arity)                         -> schema IDs / fact IDs
-(head, arity, grounded-position,value)-> schema IDs / fact IDs
-canonical body hash                   -> schema ID
-structural form hash                  -> form-schema IDs
-action token + changed-head set       -> morphism IDs
+(head_term_id, (argument_term_id, ...))
 ```
 
-Retrieval intersects the smallest available postings lists and stops at
-`max_binding_candidates`. It never iterates `0..schema_count`. New relation
-symbols can be added without changing the index design. Embeddings and LSH are
-unnecessary until deterministic fingerprints fail on measured workloads.
+They belong to a `PerceptionBatch`; they are not inserted as persistent graph
+nodes.
 
-Normal cost is
+### 3.2 Schemas
 
-`O(sum postings looked up + candidates verified + active outgoing edges)`.
+`SchemaGraph` stores one aligned row per schema. The hot/current columns include
+compiled body slices, canonical hashes, patterns, depth, lifecycle state,
+evidence counters, use counts, context sets, and provenance.
 
-Adding dormant schemas under unrelated keys changes dictionary size and memory,
-not the count of cognition-loop rows touched. Maintenance, reporting, explicit
-compaction, and offline audits may scan the store but are labeled cold-path
-operations in traces.
+There are two construction forms:
 
-## 4. Matching
+1. `add_schema` stores a canonical positive conjunction. It is used by kernel
+   patterns, endogenous flat composition, and learned transition schemas.
+2. `add_dag_schema` stores child-schema role occurrences, child-to-owner
+   interface maps, parent-level constraints, and an exposed interface. It also
+   compiles a flattened pattern for the current matcher.
 
-The schema-pattern language is a positive conjunctive query with typed-by-data
-variables, arity at most 8, at most 16 atoms, nesting depth at most 4, and no
-recursive rules. Verification orders pattern atoms by estimated postings size,
-then performs indexed nested-loop joins with early equality rejection.
+For ordinary schemas, identity is the SHA-256 digest of the alpha-normalized,
+deduplicated conjunction. For explicit DAG schemas, identity additionally
+depends on child schema hashes, normalized interface maps, parent constraints,
+and the exposed interface. Display names, provenance, evidence, activation,
+and construction order do not affect identity.
 
-For pattern atoms `P1..Pk`, postings sizes `m1..mk`, naive worst case is
-`O(product(mi))`, which remains exponential in the query size. It is made an
-anytime bounded algorithm by constant `k<=16`, `mi<=max_facts_per_atom`, a
-global `max_partial_bindings`, and `max_bindings_per_schema`. The runtime reports
-truncation. For the common star/equality patterns, hashing bound variables makes
-expected work `O(sum(mi) + outputs)` after retrieval. There is no unrestricted
-subgraph isomorphism or arbitrary path query.
+The alpha-normalizer refines variables by structural role and permutes only
+remaining symmetric classes. Schemas are limited to eight variables, sixteen
+applications, and arity eight, bounding the residual worst case.
 
-Candidate filtering by head/arity and grounded slots is `O(k)` expected hash
-lookups plus postings visited. Canonical form equality is `O(1)` expected after
-hash computation and exact `O(n)` verification on hash collision.
+### 3.3 Decompositions and links
 
-## 5. Workspace and activation
+A semantic schema may retain multiple decomposition derivations. Each
+derivation references child schema IDs and exact child-variable to
+owner-variable mappings. Strictly decreasing `depth` is the topological
+certificate: self-occurrences and non-decreasing alternatives are rejected.
 
-The workspace owns sparse arrays of active schema IDs, activations, bindings,
-and queue spans. At cycle start, bottom-up matches and unresolved predictions
-seed signed evidence. Expansion consumes only the current frontier:
-
-1. Gather stable and delta outgoing edge slices for each frontier node.
-2. Emit `(destination, weighted_delta)` records.
-3. Sort or hash-reduce by destination deterministically.
-4. Add local evidence/cost, clip, and retain values over `epsilon`.
-5. Stable top-k prune by `(activation, evidence, -cost, canonical_id)`.
-
-With `V_f` frontier nodes and `E_f` outgoing edges, one round is
-`O(V_f + E_f + R log R)` using sort-reduce or expected `O(V_f+E_f)` with a
-hash accumulator, plus `O(R log K)` top-k. No graph-wide activation vector is
-cleared; an epoch/touched-ID scheme resets sparse state.
-
-A binding is a compact envelope: `(schema_id, sorted(variable_id, term_id)
-assignments, carrier, activation, provenance)`. It is distinct from the
-immutable schema store. A partial binding adds compact bound/open role IDs,
-satisfied/open/incompatible constraint IDs, and supporting child references.
-A shadow references it and is similarly small: `(parent_schema_id,
-partial_binding_id, partial assignments, child occurrence states,
-parent-constraint states, carrier, activation, provenance, status)`. A child occurrence state carries
-its child schema ID, mapped child-variable assignments, and `REIFIED`/`SHADOW`
-status; a parent constraint is `REIFIED` or `PROJECTED`. `PROJECT_SHADOW` is
-requested by one partial binding and accesses one schema slice only; it does
-not scan dormant schemas or copy a hypothetical graph. A role/constraint
-signature memoizes unchanged partial parent state, while a bounded full-match
-cache keys the parent, partial assignments, carrier, and fact batch. Reification
-reports the roles and constraints completed, then adds evidence to the parent
-definition pathway—not to its flattened atoms. The flat matcher remains a
-temporary compiler backend and is explicitly not permitted to define shadow
-semantics.
-
-Phase-1 automatic projection considers only the current observation's bounded
-retrieved DAG candidates. One grounded child binding seeds a candidate partial
-binding. Defaults require activation and bound-role fraction at least `0.5`, at
-most four immediate open child roles and eight open parent constraints, and at
-most 64 new shadows per observation. These are explicit `Limits` fields.
-Earlier shadows are tested against a later carrier before new shadows are
-opened. Refutation is never inferred from a failed full match: it requires
-explicit incompatible open-constraint IDs and positive grounded contradictory
-evidence from an applicable carrier.
-
-Support, inhibit, specialization, decomposition, prediction, and analogy links
-start as a deliberately small structural link vocabulary (`part`, `supports`,
-`opposes`, `derived-from`). Richer semantics are application terms and can be
-learned. Adding a link kind requires a distinct scheduling consequence; merely
-wanting a label is insufficient.
-
-## 6. Construction, canonicalization, and persistence
-
-`TRY_COMPOSE` is generated only from active bindings that share a bound anchor
-term (a term occurring as a fact subject) or are connected by an active fact.
-This generic role filter prevents coincident scalar values in unrelated slots
-from creating spurious joins. Pairs are ranked by estimated reuse/prediction
-gain over body size and verification cost. Each cycle has hard limits on pairs,
-body size, and retained constructions.
-
-Composition unifies shared variables, unions the bodies, removes duplicates,
-alpha-normalizes, sorts structural encodings, and hashes. Structural partition
-refinement is `O(i * v * b * a log(ba))` for refinement rounds `i`, variables
-`v<=8`, body size `b<=16`, and arity `a<=8`. Only variables left in an
-indistinguishable symmetry class are permuted, giving a residual factor
-`product_c |class_c|!` and the explicitly bounded worst case `8!`. Hash lookup
-is expected `O(1)`; collision resolution compares canonical bodies. A hit
-reuses the node and adds provenance and evidence. A miss appends a weak
-candidate to `DeltaG` with an occurrence decomposition, variable-interface
-maps, provenance, projected `part`/`supports` links, and construction context.
-Hash hits may add an alternative derivation only when every child has strictly
-smaller depth. Self-occurrences and depth-nondecreasing alternatives are
-rejected, so construction dependencies remain acyclic. Candidates are promoted
-only by ordinary evidence: Phase 1 requires support in two distinct contexts or
-two prediction successes. Later policies may additionally measure retrieval
-savings or compression, but cannot bypass evidence provenance. Unused weak
-candidates decay and can be tombstoned in cold maintenance.
-
-Constructing every representable conjunction is forbidden. Promotion does not
-delete decomposition. `depth = 1 + max(child.depth)` is a topological
-certificate, not an execution stage.
-
-## 7. Transition and morphism learning
-
-Given fact batches at `t` and `t+1` plus an optional action term:
-
-1. Retrieve correspondence candidates using stable identity, canonical form,
-   shared relations, and bounded local signatures.
-2. Score candidates lexicographically by invariant agreement, contradiction,
-   and structural cost; retain a bounded version space when ambiguous.
-3. For each mapping, emit preserved, changed, appeared, and disappeared
-   application roles. Component cardinality changes can emit split/merge data,
-   never authoritative identity.
-4. Anti-unify values across the before/after pair: equal values share a
-   variable; differing values become a typed change or verified relation such
-   as `Less`/`Offset`.
-5. Canonicalize the resulting before/action/after conjunction and retrieve or
-   create the morphism schema.
-6. Update support only after comparison; retain counterexamples and ambiguous
-   alternatives.
-
-For `n` and `m` active entities, signature bucketing is `O(n+m)` and bounded
-candidate scoring is `O(C*r)`, where `C` is capped correspondence candidates
-and `r` the local relation count cap. General bipartite assignment is not in
-the normal loop. Split/merge search is limited to component groups of configured
-size/radius.
-
-Morphisms compose by unifying the first codomain pattern with the second domain
-pattern under the same bounded matcher. Approximate commuting diagrams are
-claims that two bounded composed paths predict equal selected relation terms;
-they receive ordinary success/failure evidence. No category library or global
-diagram enumeration is required.
-
-## 8. Prediction, evidence, and Piagetian operations
-
-Prediction creates an immutable pending record before intervention. Resolution
-compares its ground expected terms with indexed successor facts. Batched checks
-cost `O(predictions + indexed fact lookups)`. Evidence events are append-only;
-counter reduction is associative integer addition and can be batched.
-
-- assimilation = existing-schema match and support update;
-- accommodation = mismatch-triggered bounded composition/anti-unification;
-- chunking = retention of a useful canonical composition;
-- equilibration = the resulting local evidence/activation/resource dynamics.
-
-They are trace interpretations of generic work items, never four code paths.
-
-## 9. Worker queues, budgets, and determinism
-
-Every work item contains kind, target IDs, context ID, priority components,
-estimated cost, and deterministic tie key. Approximate priority is
-`expected_gain / max(cost,1)`. The engine uses explicit configuration:
+Decompositions and semantic/activation links are distinct:
 
 ```text
-max_active_nodes              max_active_edges
-max_binding_candidates        max_partial_bindings
-max_bindings_per_schema       max_composition_proposals
-max_new_compositions
-max_composition_body          max_transition_correspondences
-max_analogy_candidates        max_expansion_rounds
-max_queue_items               per-cycle time/operation budget
-shadow_activation_threshold  min_shadow_bound_role_fraction
-max_shadow_open_roles        max_shadow_open_constraints
-max_shadow_projections_per_cycle
+decomposition DAG: immutable construction/explanation structure; acyclic
+link network:      `part`, `supports`, and other scheduled relations; may cycle
 ```
 
-Overflow is a first-class trace/metric event. Lowest priority work is dropped;
-already accepted lower-level descriptions are not erased merely to admit a
-composite. The system therefore returns its best current workspace at any
-budget.
+Adding a decomposition creates `whole -part-> child` and
+`child -supports-> whole` links when absent. The occurrence records remain the
+lossless representation; links are only a traversal projection.
 
-Phase 1 is deterministic: queues are stable-sorted, reductions use a fixed
-order, integer counters are exact, and coordinator-only graph mutations occur
-after pure batch results. Later asynchronous CPU/GPU workers may generate
-candidates against a generation snapshot; a bounded reconciliation barrier
-sorts and commits results. Completion order has no semantic effect. This
-adapts a validated Reflector-1 transaction lesson without importing its schema
-calculus.
+### 3.4 Lifecycle and evidence
 
-## 10. Teacher compiler
+Schemas are `candidate`, `established`, or `promoted`. Kernel schemas are
+established. Endogenous and teacher proposals begin as candidates. A candidate
+is promoted after support in at least two distinct contexts or after two
+prediction successes.
 
-The DSL compiler tokenizes, validates resource limits, resolves variables,
-constructs term arrays in a temporary transaction, canonicalizes, and commits
-only if the whole submission is valid. Both pre-game prior packets and in-game
-workspace-conditioned proposals use it. Allowed proposal payloads are facts,
-schemas (including mappings/actions), evidence-free discriminating experiment
-descriptions.
-
-Teacher-origin nodes are hash-consed with endogenous nodes. Provenance is
-merged, truth is not. Teacher input cannot invoke kernels, set statistics,
-choose persistent IDs, bypass budgets, or install executable code. Metrics group
-ordinary evidence by provenance to report acceptance, prediction, false
-proposal, transfer, and acceleration rates.
-
-## 11. Perception boundary
-
-The first adapter enumerates cells and values, performs deterministic bounded
-four-neighbor flood fill, finds frame-connected versus enclosed background
-components, and emits ground relational terms. Normalized occupancy and
-hole-filled outer occupancy are canonical fingerprints, not names such as L,
-Z, or perforated. Generic schemas can bind these values and compose them.
-Background identity is explicit sensory-channel configuration when supplied;
-a modal-value fallback is convenience inference and must not be confused with
-a learned semantic claim.
-
-Flood fill is `O(HW)` per frame with `O(HW)` temporary bits. Fact generation is
-linear in emitted cells/components and subject to a cap. The adapter is audited
-as a computational primitive and can be replaced without changing the graph
-semantics.
-
-## 12. Persistence and observability
-
-A generation snapshot contains versioned term/schema/link arrays, canonical
-indices, evidence counters, and provenance log. Transient observations,
-bindings, activations, queues, and pending predictions live in episode/cycle
-state and are separately replayable. Serialization is canonical and includes
-language/runtime versions.
-
-Every cycle records total schemas, active schemas/edges, retrieved and verified
-candidates, proposed/retained compositions, work items by kind, frontier sizes,
-peak workspace, truncations, timings by phase, and estimated/resident memory.
-Trace events refer to canonical IDs and exact contexts. Reports never infer a
-capability from a counter alone.
-
-## 13. Reflector-1 archaeology ledger
-
-No old module is imported. The following mechanisms were inspected as
-archaeological candidates.
-
-### Palette-free connected component extraction
+Evidence is append-only at the event level and reduced into integer columns:
 
 ```text
-old mechanism: SceneTracker._components / enclosed-region flood fill
-epistemic meaning in new system: audited sensory grouping that emits defeasible
-  Connected, Boundary, Enclosed, and Inside facts
-dependency footprint: grid enumeration, deque, coordinate/value equality
-reusable unchanged? no
-adapt? retain bounded deterministic flood-fill algorithm; remove ObjectState,
-  color-preserving identity assumptions, named visual ontology, and policy ties
-reason to retain: linear, inspectable sensory kernel avoids absurd learned flood fill
+support / contradiction
+prediction_success / prediction_failure
+projection_support / projection_failure
 ```
 
-### Normalized occupancy fingerprints
+Projection evidence is also keyed to the parent definition pathway (specific
+decomposition, roles, and constraints). Evidence never mutates a schema body
+or changes its canonical identity.
+
+## 4. Perception boundary
+
+`perceive_grid` accepts a non-empty rectangular integer grid and emits generic
+facts. If background is not supplied, the modal value (lowest value on ties) is
+used as a convenience inference.
+
+The adapter performs:
+
+- four-neighbor connected components per non-background value;
+- enclosed-background detection;
+- translation-normalized, hole-filled outer-form hashing;
+- cell, location, value, region, and containment facts;
+- color-agnostic foreground figures;
+- outline hashes invariant to translation, quarter turns, and reflections;
+- bounded same-outline and interior-contrast pair relations.
+
+The adapter does not recognize named shapes, game roles, or action meanings.
+Region/cell identifiers include the observation context, preventing accidental
+identity reuse across carriers. Pair generation is capped at 128.
+
+## 5. One observation cycle
+
+`Runtime.observe(batch)` is a deterministic single-coordinator mutation cycle:
+
+1. Increment the cycle and install form/outline-specific retrieval schemas for
+   fingerprints present in the batch.
+2. Retrieve candidate schemas through `(head, arity)` and grounded-slot
+   postings. Stop at `max_binding_candidates`.
+3. Build observation-local fact and grounded-slot indices.
+4. Verify each candidate with a bounded positive-conjunctive join. Emit
+   `Binding` records and seed matched schema activation.
+5. Reconcile unresolved shadows from earlier carriers against the new batch.
+6. For locally retrieved explicit DAG schemas, use grounded child bindings to
+   open bounded partial bindings and immediate-frontier shadows.
+7. Prune the workspace, then propagate activation through outgoing links for a
+   bounded number of rounds.
+8. Unless disabled, run up to four breadth-first pair-composition rounds over
+   active bindings sharing a grounded subject/anchor value.
+9. Run one bounded relational-closure pass that combines binary relations with
+   one composite descriptor per endpoint.
+10. Prune again and publish the resulting `Workspace` on the runtime.
+
+Normal candidate discovery does not iterate over every schema. Expansion reads
+only outgoing edges of active frontier nodes. Composition reads only current
+bindings. Reporting, explicit evaluation, deep-copy transfer experiments, and
+offline audits may scan the graph and are not cognition-loop operations.
+
+### Matching bounds
+
+Pattern atoms are ordered by the smallest available posting estimate. Bound
+variables and constants select grounded-slot postings when possible. Every
+potentially explosive dimension has a hard limit: facts per atom, partial
+bindings, bindings per schema, candidate schemas, body size, proposals,
+retentions, active nodes/edges, relational closures, and transition
+correspondences. A bound hit adds a traceable truncation event and returns a
+deterministic partial result.
+
+### Activation
+
+The current activation policy is intentionally small. A successful binding
+adds up to `0.5` activation; composed schemas are seeded at `0.2` or `0.3`;
+outgoing link weights add clipped deltas over at most two default rounds.
+Stable top-k pruning uses activation and canonical hash. There is no dense
+graph-wide activation vector, decay pass, learned activation weight, or GPU
+sparse-matrix operation in the implementation.
+
+### Composition
+
+Pair composition converts two bound canonical patterns back to source atoms,
+uses shared ground values to unify owner variables, unions/canonicalizes the
+body, and hash-conses it. A retained result records both operands as child
+occurrences. New bindings are verified against the same observation before
+entering the workspace.
+
+Relational closure is similarly bounded. It groups depth-zero binary relation
+bindings by two typed entities, combines them with a small number of deeper
+endpoint descriptors, and records all inputs in the decomposition.
+
+## 6. Bindings, partial bindings, and shadows
+
+A `Binding` is a transient realization:
 
 ```text
-old mechanism: translation-normalized ObjectState.shape and shape hashes
-epistemic meaning in new system: discriminative retrieval value for a relation,
-  never an object class or complete parse
-dependency footprint: sorted integer coordinate tuples and canonical hash
-reusable unchanged? no
-adapt? represent the fingerprint as an interned term value; add outer-fill
-  fingerprint so enclosure can vary independently of form
-reason to retain: deterministic O(area log area) retrieval without embeddings
+(schema_id, sorted assignments, carrier, activation, provenance)
 ```
 
-### Predecessor/successor attribution and bounded correspondence
+It never creates another schema definition. A `PartialBinding` names grounded
+and unresolved child roles, satisfied/unresolved/incompatible parent
+constraints, supporting children, carrier, activation, and provenance.
+
+A `Shadow` references one partial binding and one immutable schema definition.
+It stores only the immediate unresolved frontier; it does not copy a graph or
+insert expected facts. Its lifecycle is:
 
 ```text
-old mechanism: effect-attribution experiments and SceneTracker identity/events
-epistemic meaning in new system: bounded candidate MAP work over active relation
-  signatures with ambiguity retained
-dependency footprint: old ObjectState/Scene ontology and numerous policy modules
-reusable unchanged? no
-adapt? keep only staged signature retrieval, preservation/change accounting,
-  explicit split/merge uncertainty, and prospective scoring discipline
-reason to retain: experiments found useful trace compression but also false
-  authority; the new evidence model preserves both result and falsifier
+SHADOW --compatible later full match--> REIFIED
+SHADOW --explicit positive conflict---> REFUTED
 ```
 
-### Canonical trace/replay and coordinator commit
+Failed matching or absence cannot refute a shadow. Reification inserts an
+ordinary binding into the successor workspace and records exact-once parent
+pathway evidence. Refutation requires caller-supplied incompatible open
+constraint IDs and grounded contradictory facts. Parent-binding and full-match
+memo tables prevent repeated work for identical signatures.
+
+Automatic observation projection considers only currently retrieved DAGs. A
+single grounded child role may seed a projection; open-role, open-constraint,
+activation, bound-fraction, and per-cycle caps constrain it. Prospective action
+shadows have a separate smaller budget so sensory projection cannot consume the
+entire control boundary.
+
+## 7. Transition learning and prediction
+
+`learn_transition(before, after, action)` is a bounded structural
+anti-unification step:
+
+1. Match regions by exact shared form fingerprint, capped by transition and
+   analogy limits.
+2. For the first correspondence, compare binary attributes anchored at the
+   before/after regions.
+3. Emit shared variables plus `Preserve(head)` for equal values, or separate
+   variables plus `Change(head)` for different values.
+4. Emit `Less` only for the audited ordered relations `Count` and
+   `EnclosureCount` when the numeric value increases.
+5. Add ordinary `Domain`, `Codomain`, and opaque `Intervention` atoms,
+   canonicalize the schema, and add support evidence.
+6. Link bounded predecessor-bound schemas to the learned transition with
+   `supports`, making it reachable from a later active frontier.
+
+If no visual correspondence exists, the runtime still records a minimal
+domain/action/codomain transition candidate. This learner is intentionally not
+a general entity tracker, assignment solver, causal model, or action semantic
+decoder.
+
+The lower-level `predict` API creates an immutable pending ground-atom check
+before observation. Resolution adds prediction success or failure; failure
+also adds contradiction.
+
+## 8. Explanation-driven control
+
+`ExplanationEngine` is episode-local state over the same graph. It introduces
+no schema language and does not persist explanation objects as graph schemas.
+
+For `local-schema` and `explanation` policies, it:
+
+1. reads only active transition schemas whose opaque action token is legal;
+2. optionally attaches currently bound predecessor schemas connected through
+   active `supports` links;
+3. keeps a stable top-k explanation beam;
+4. derives effect signatures from existing `Change` and `Preserve` atoms;
+5. ranks actions by observed progress history, structural/evidence risk,
+   support, and—in explanation mode—within-action disagreement;
+6. partially grounds selected predictions and commits them as ordinary shadows
+   before the environment step;
+7. reifies or positively refutes those commitments from the actual learned
+   successor transition.
+
+The default ARC policy remains seeded uniform random. Explanation scores are
+disposable episode state. Results in `docs/EXPLANATIONS.md` and `experiments/`
+show that the mechanism changes actions and reconciles predictions, but do not
+establish general ARC progress.
+
+## 9. ARC-AGI-3 adapter
+
+`arc_harness.py` isolates transport concerns from the runtime:
+
+- toolkit action IDs become opaque `arc-action:N` tokens;
+- ordered frame packets are preserved, while only the final support is fed to
+  the action-facing runtime cycle;
+- complex-action coordinates are sampled from grid bounds after action-ID
+  selection;
+- `NOT_PLAYED` and `GAME_OVER` force reset, and `WIN` terminates;
+- per-game action and environment seeds are derived independently from the
+  master seed and game ID;
+- each game owns a fresh `Runtime`;
+- transport and R2 traces are written separately.
+
+The harness knows game identity for environment loading and provenance only.
+The perception/runtime/explanation ranking receives no game-specific branch.
+
+## 10. DSL and teacher boundary
+
+`Compiler.compile` parses the cold-path S-expression language documented in
+[`LANGUAGE.md`](LANGUAGE.md). It validates every form before committing any of
+them. Supported envelopes are flat schemas, explicit schema DAGs, ground facts,
+and native evidence.
+
+Teacher provenance such as `teacher:qwen` receives no authority. It uses the
+same canonicalizer and candidate state as endogenous construction. The
+compiler rejects teacher-origin evidence injection, unknown metadata, nested
+applications, undeclared variables, non-ground facts, non-finite numbers, and
+over-budget structures.
+
+There is no live LLM connector in this repository. Inspector label assignments
+are loaded only after runtime analysis and remain a one-way presentation layer.
+
+## 11. Interfaces, reports, and persistence artifacts
+
+The benchmark and evaluation CLIs return JSON reports containing schema and
+workspace sizes, retrieval/verification counts, composition counts, work-kind
+counters, frontier sizes, truncations, phase timings, and memory estimates.
+
+The ARC harness writes:
 
 ```text
-old mechanism: immutable TraceStep/EpisodeTrace values and deterministic worker
-  collection/transaction
-epistemic meaning in new system: evidence audit trail and order-independent
-  reconciliation of batched epistemic work
-dependency footprint: JSON serialization and cold immutable envelopes
-reusable unchanged? no
-adapt? use term/schema canonical IDs and workspace metrics instead of old policy
-  classes; preserve append-only event ordering and coordinator-only mutation
-reason to retain: validated determinism and falsifiability infrastructure
+GAME.trace.jsonl  normalized observations, actions, lifecycle, progress
+GAME.r2.jsonl     native runtime events
+summary.json      per-game and suite result
 ```
 
-### Old Schema[A,B] AST and policy hierarchy
+The inspector HTTP API serves fixtures and accepts a bounded grid for analysis.
+It creates a fresh runtime per analysis with a deliberately larger diagnostic
+`Limits` profile and inspector-only nominal color-value patterns. The human
+arcade is a separate environment controller guarded by a reentrant lock; it
+does not call `Runtime` or implement an agent policy.
 
-```text
-old mechanism: separate typed AST, Mind, scenes, concepts, events, strategies,
-  planning and large policy object graph
-epistemic meaning in new system: none as a unit
-dependency footprint: broad old ontology and runtime
-reusable unchanged? no
-adapt? do not adapt; isolated lessons above are re-expressed as generic terms
-reason to retain: none; it conflicts with one graph representation and clean reboot
-```
+## 12. Concurrency and determinism
 
-## 14. Phase boundaries
+One `Runtime.observe` call is sequential because it mutates one graph. There
+are no internal worker queues, locks, async tasks, or GPU streams in the core
+runtime. Work-item names such as `TRY_BIND`, `EXPAND`, and `TRY_COMPOSE` are
+instrumentation categories, not independently scheduled worker objects.
 
-Phase 1 implements CPU term storage, indices, bounded matching, sparse
-activation, composition/hash-consing, a simple transition anti-unifier, the
-synthetic benchmark, and complete instrumentation. It must not contain an ARC
-harness, policy, planner, neural model, embeddings, or custom CUDA. GPU and CSR
-code begins only after profiles show a batch large and regular enough to win.
+Parallelism is outside the graph boundary:
+
+- first-frame evaluation uses a process pool over independent games;
+- matched explanation experiments use isolated per-game processes;
+- transfer-matrix cells deep-copy a completed source graph and run serially in
+  the current implementation;
+- the loopback HTTP servers may handle requests concurrently, but each
+  inspector analysis owns a fresh runtime and the human arcade serializes
+  mutable environment access.
+
+Determinism comes from sorted iteration, canonical hashes, stable tie keys,
+fixed-order reductions, integer evidence counters, per-game derived RNG seeds,
+and coordinator-only mutation. Elapsed time and RSS are observational and are
+excluded from structural replay equality.
+
+## 13. Limits and failure behavior
+
+`Limits` is the runtime resource contract. Defaults currently include:
+
+| Area | Default |
+|---|---:|
+| active schemas / active edges | 256 / 1,024 |
+| candidate schemas | 512 |
+| facts per atom / partial bindings | 2,048 / 1,024 |
+| bindings per schema | 64 |
+| pair proposals / new compositions | 256 / 128 |
+| composition rounds / body atoms | 4 / 16 |
+| relational closures | 64 |
+| expansion rounds | 2 |
+| transition correspondences / analogy candidates | 128 / 128 |
+| normal shadow projections per cycle | 64 |
+| action shadow projections per cycle | 8 |
+
+Overflows record a reason and return bounded partial state. Some direct APIs
+raise `ValueError` or `RuntimeError` when the caller requests an invalid or
+over-budget projection. The normal observation path converts its own bounded
+search exhaustion into traceable truncation rather than an unbounded fallback.
+
+## 14. Verification architecture
+
+Tests are organized around boundaries rather than internal implementation
+details:
+
+- store/DSL tests cover alpha-equivalence, provenance merging, transactional
+  validation, candidate promotion, and resource rejection;
+- vertical-slice tests cover simultaneous activation, composition,
+  transition reuse, prediction chronology, dormant-store invariance, and DAG
+  acyclicity;
+- schema-DAG/shadow tests cover multiple bindings, structural sharing,
+  immediate-frontier projection, exact-once reification, and positive-evidence
+  refutation;
+- ARC tests use fake transports to verify packet ordering, opaque actions,
+  reset boundaries, deterministic payload sampling, scorecards, and traces;
+- explanation tests verify pre-successor commitments, normal shadow
+  settlement, bounded active-frontier construction, and process isolation;
+- inspector/evaluator tests verify actual runtime projection, HTTP input
+  validation, corpus selection, process order, and transfer-cell isolation.
+
+The synthetic dormant-store benchmark is the executable no-scan proof: adding
+1k, 10k, or 100k unrelated schemas changes store construction and memory but
+not relevant structural results or cognition-loop operation counts.
+
+## 15. Experimental layer
+
+Research code under `experiments/` may import the installed core and add
+temporary mechanisms, runners, checkpoints, null controls, or evidence
+formats. It is intentionally outside `src/reflector2` so a positive or negative
+experiment does not silently become production architecture.
+
+Current experiment families include explanation-driven control, prospective
+context specialization, a 25-game context-spinoff diagnostic, and a learned
+structural-consequence/progress relevance bridge. Their Markdown and JSON
+artifacts are scientific records. Only `explanations.py` and its harness hooks
+have been promoted into the core package; other experiment-local mechanisms
+must not be described as core runtime capabilities.
+
+## 16. Not implemented
+
+The following are design targets or explicit omissions:
+
+- stable CSR graph generations, delta compaction, memory mapping, and reloadable
+  graph snapshots;
+- GPU buffers, kernels, CUDA, sparse-matrix execution, or CPU/GPU parity paths;
+- concurrent mutation of one schema graph or a distributed graph service;
+- unrestricted graph matching, recursion, negation-as-failure, or arbitrary
+  executable teacher code;
+- learned goals, general planning, rollout/tree search, options, or a solver;
+- neural perception, embeddings, LSH, or a live LLM teacher;
+- automatic semantic interpretation of actions, colors, objects, rewards, or
+  game roles.
+
+These boundaries are architectural constraints, not missing claims to be
+papered over. New mechanisms should enter through an experiment, preserve the
+one-representation and provenance rules, acquire explicit bounds, and be
+promoted into `src/reflector2` only after tests and measured evidence justify
+the change.
+
+## 17. Archaeological decisions
+
+Reflector-I contributed lessons, not modules. The current code re-expresses a
+small set of mechanisms without importing the old ontology:
+
+- deterministic four-neighbor component/enclosure extraction;
+- translation-normalized structural fingerprints;
+- bounded predecessor/successor comparison with ambiguity retained;
+- append-only traces and coordinator-ordered commits.
+
+The old typed schema AST, `Mind`, scenes, concepts, strategies, planner, and
+policy object hierarchy were deliberately not reused because they conflict
+with the single generic term/schema representation and the clean restart.

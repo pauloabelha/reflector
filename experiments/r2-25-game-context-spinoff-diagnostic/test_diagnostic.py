@@ -127,9 +127,41 @@ def test_serial_and_parallel_mapping_are_identical() -> None:
 
 
 def test_each_worker_starts_with_isolated_r2_state() -> None:
-    results = RUNNER._ordered_process_map(RUNNER._identity_worker, [11, 12], 2)
-    assert len(results) == 2
-    assert {item["value"] for item in results} == {11, 12}
-    assert len({item["kernel"] for item in results}) == 1
-    for item in results:
-        assert item["initial_schema_count"] + 1 == item["final_schema_count"]
+    for workers in (1, 2):
+        results = RUNNER._ordered_process_map(
+            RUNNER._identity_worker, [11, 12], workers
+        )
+        assert len(results) == 2
+        assert {item["value"] for item in results} == {11, 12}
+        assert len({item["kernel"] for item in results}) == 1
+        for item in results:
+            assert item["initial_schema_count"] + 1 == item["final_schema_count"]
+
+
+def test_checkpoint_is_atomic_keyed_and_resumable(tmp_path: Path) -> None:
+    recording = tmp_path / "sample.recording.jsonl"
+    recording.write_text("stable input\n", encoding="utf-8")
+    checkpoint = tmp_path / "checkpoint.json"
+    job = {
+        "game": "opaque",
+        "recording": str(recording),
+        "environments_root": str(tmp_path / "environments"),
+        "config": RUNNER.asdict(RUNNER.DiagnosticConfig()),
+        "checkpoint": str(checkpoint),
+    }
+    result = {"deterministic": {"game": "opaque"}, "timing": {}}
+    RUNNER._atomic_json(
+        checkpoint,
+        {
+            "checkpoint_format": RUNNER.CHECKPOINT_FORMAT,
+            "key": RUNNER._checkpoint_key(job),
+            "result": result,
+        },
+    )
+
+    assert RUNNER._load_checkpoint(job) == result
+    assert not list(tmp_path.glob(".*.tmp"))
+
+    changed = dict(job)
+    changed["config"] = {**job["config"], "min_context_support": 3}
+    assert RUNNER._load_checkpoint(changed) is None
