@@ -40,9 +40,9 @@ current Workspace bindings and activation
   remain append-only evidence.  Explanation support is a transient view over
   those counters plus its own resolved commitments.
 
-The context-spinoff experiments present in the working tree are not imported
-or duplicated.  They demonstrated that current bindings can condition action
-effects, but their recording-specific runner is not part of this controller.
+The committed context-spinoff experiments are not imported or duplicated.
+They demonstrated that current bindings can condition action effects, but
+their recording-specific runner is not part of this controller.
 
 ## Minimal `Explanation`
 
@@ -108,3 +108,58 @@ The experiment runner compares random, local-schema, and explanation policies
 with matched game, seed, budget, perception, and schema learning.  It
 parallelizes only independent games; each game trajectory remains sequential
 and owns a fresh runtime.
+
+## Running the controls
+
+Run one harness policy directly with:
+
+```bash
+.venv/bin/reflector2-arc \
+  --policy explanation \
+  --game ar25 \
+  --seed 0 \
+  --max-transitions 30 \
+  --max-explanations 8
+```
+
+Run the matched random/local-schema/explanation experiment with:
+
+```bash
+.venv/bin/reflector2-explanations \
+  --game ar25 \
+  --seed 0 \
+  --max-transitions 30 \
+  --workers 1 \
+  --output-dir experiments/minimal-explanation-driven-control/rerun
+```
+
+The direct harness records `explanation-decision` before intervention and
+`explanation-resolution` after the observed successor. The matched runner
+keeps each policy in a fresh runtime and aggregates action changes, prospective
+commitments, shadow outcomes, discrimination settlements, and progress after
+changed actions.
+
+## Current evidence and boundary
+
+The preregistered experiment verdict is **CONTINUE-DIAGNOSTIC**. Explanations
+formed in every game in the fixed 25-game cohort, made prospective
+commitments, changed opaque actions, and reconciled predictions through normal
+shadow reification/refutation. They produced no progress or completed levels
+under the tested action budgets. The result therefore supports executable
+situated explanation, not improved task control.
+
+The measured missing bridge is:
+
+```text
+predicted transition consequence -> legally observed progress
+```
+
+The next experiment should freeze the explanation machinery and learn that
+association from repeated evidence across distinct contexts. Action value must
+flow through a prospectively predicted consequence that binds such an
+association. Reward-label permutation and matched consequence/progress
+permutation are required controls; deeper planning and domain roles remain out
+of scope until prospective action-changing precision becomes positive.
+
+Full measurements and traces are documented in
+[`../experiments/minimal-explanation-driven-control/results.md`](../experiments/minimal-explanation-driven-control/results.md).

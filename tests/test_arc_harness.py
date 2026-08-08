@@ -6,6 +6,8 @@ from enum import Enum
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from reflector2.arc_harness import (
     ArcGameSession,
     JsonlTrace,
@@ -13,6 +15,7 @@ from reflector2.arc_harness import (
     normalize_observation,
     run_suite,
 )
+from reflector2.explanations import ExplanationConfig
 from reflector2.perception import PerceptionBatch
 from reflector2.runtime import Runtime
 
@@ -219,6 +222,56 @@ def test_explicitly_disabled_explanations_reproduce_default_random_policy(
     )
 
 
+@pytest.mark.parametrize(
+    ("policy", "expects_resolution"),
+    (("local-schema", False), ("explanation", True)),
+)
+def test_nonrandom_policy_emits_inspectable_decision_and_runtime_report(
+    tmp_path: Path, policy: str, expects_resolution: bool
+) -> None:
+    environment = FakeEnvironment()
+    sink = JsonlTrace(tmp_path / f"{policy}.jsonl")
+    result = ArcGameSession(
+        environment,
+        requested_game_id="fake-v1",
+        runtime=Runtime(),
+        random_seed=0,
+        environment_seed=0,
+        max_transitions=1,
+        trace=sink,
+        action_from_id=ACTIONS.__getitem__,
+        policy=policy,
+        explanation_config=ExplanationConfig(max_explanations=2),
+    ).run()
+
+    events = [event["event"] for event in sink.events]
+    assert events[:3] == ["observation", "explanation-decision", "transition"]
+    assert ("explanation-resolution" in events) is expects_resolution
+    decision = sink.events[1]
+    assert decision["mode"] == policy
+    assert decision["selected"] in {1, 6}
+    assert decision["baseline_top"] in {1, 6}
+    assert {rank["action_id"] for rank in decision["action_ranking"]} == {1, 6}
+    report = result.runtime["explanations"]
+    assert report["decisions"] == 1
+    assert report["prediction_commitments"] == 0
+
+
+def test_arc_session_rejects_unknown_policy(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="unsupported ARC policy"):
+        ArcGameSession(
+            FakeEnvironment(),
+            requested_game_id="fake-v1",
+            runtime=Runtime(),
+            random_seed=0,
+            environment_seed=0,
+            max_transitions=1,
+            trace=JsonlTrace(tmp_path / "invalid.jsonl"),
+            action_from_id=ACTIONS.__getitem__,
+            policy="semantic-shortcut",
+        )
+
+
 def test_game_over_forces_reset_with_opaque_reset_provenance(tmp_path: Path) -> None:
     environment = FakeEnvironment()
     environment.observation_space = Raw(
@@ -278,8 +331,10 @@ class FakeArcade:
             SimpleNamespace(game_id="a-v1"),
         ]
         self.made: list[str] = []
+        self.opened_with: list[dict[str, object]] = []
 
-    def open_scorecard(self, **_kwargs) -> str:
+    def open_scorecard(self, **kwargs) -> str:
+        self.opened_with.append(kwargs)
         return "card"
 
     def make(self, game_id: str, **_kwargs):
@@ -308,8 +363,15 @@ def test_suite_discovers_games_scores_and_writes_both_trace_layers(
     )
 
     assert summary["errors"] == []
+    assert summary["policy"] == "random"
+    assert arcade.opened_with == [
+        {"tags": ["reflector2", "random", "seed-42"]}
+    ]
     assert summary["games_completed_without_error"] == 2
     assert [game["score"] for game in summary["games"]] == [1.0, 2.0]
+    assert all(
+        "explanations" not in game["runtime"] for game in summary["games"]
+    )
     assert (tmp_path / "a-v1.trace.jsonl").is_file()
     assert (tmp_path / "a-v1.r2.jsonl").is_file()
     assert json.loads((tmp_path / "summary.json").read_text())["seed"] == 42

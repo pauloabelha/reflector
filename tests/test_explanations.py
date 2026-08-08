@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+import pytest
+
 from reflector2.explanation_experiment import ordered_process_map
 from reflector2.explanations import ExplanationConfig, ExplanationEngine
 from reflector2.perception import PerceptionBatch
@@ -127,6 +129,20 @@ def test_predictions_are_projected_before_successor_and_resolve_as_normal_shadow
     assert engine.metrics.shadows_reified == 1
     assert engine.metrics.shadows_refuted == 1
 
+    next_decision = engine.decide(
+        mode="explanation",
+        workspace=workspace,
+        observed=current,
+        legal_action_ids=(1, 2),
+        baseline_action_id=2,
+    )
+    learned_prediction = next(
+        prediction
+        for prediction in next_decision.predictions
+        if prediction.schema_id == change_schema
+    )
+    assert learned_prediction.progress == 1.0
+
 
 def test_construction_is_bounded_and_dormant_schemas_do_not_enter_candidates() -> None:
     runtime, engine, workspace, current, *_rest = _fixture(max_explanations=1)
@@ -201,3 +217,18 @@ def test_parallel_game_mapping_is_isolated_ordered_and_deterministic() -> None:
     assert parallel == serial
     assert all(final == initial + 1 for initial, final, _kernel in parallel)
     assert len({kernel for _initial, _final, kernel in parallel}) == 1
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    (
+        {"max_explanations": 0},
+        {"max_explanations": 65},
+        {"max_constituents": 0},
+        {"max_constituents": 17},
+        {"retire_after_refutations": 0},
+    ),
+)
+def test_explanation_config_rejects_unbounded_or_empty_limits(kwargs) -> None:
+    with pytest.raises(ValueError):
+        ExplanationConfig(**kwargs)

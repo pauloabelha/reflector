@@ -8,9 +8,10 @@ language as ordinary concepts. Its conceptual direction is **active
 equilibration**: construct structure, project beyond experience, act,
 reify/refute, and reorganize.
 
-This repository is a design-first Phase-1 research substrate, not an ARC
-solver. It contains no policy, planner, neural model, embeddings, game-specific
-recognizers, or custom GPU code.
+This repository is a design-first research substrate, not an ARC solver. It
+contains three deliberately small ARC control conditions—seeded random,
+local-schema, and explanation-driven—but no game-specific policy, planner,
+neural model, embeddings, semantic recognizers, or custom GPU code.
 
 ## Design contracts
 
@@ -34,6 +35,11 @@ recognizers, or custom GPU code.
   relational closure, the `ar25` depth-2 oracle, and CPU-parallel evaluation.
 - [`SHADOWS.md`](docs/SHADOWS.md): Phase-1 partial-binding audit, bounded
   projection policy, reification/refutation criteria, and A-H evidence.
+- [`EXPLANATIONS.md`](docs/EXPLANATIONS.md): the implemented bounded explanation
+  controller, prospective commitments, outcome reconciliation, and measured
+  experimental boundary.
+- [`ARC_HARNESS.md`](docs/ARC_HARNESS.md): ARC transport, lifecycle, policy modes,
+  reproducibility, and trace/report contracts.
 - [`COMPLETION_AUDIT.md`](docs/COMPLETION_AUDIT.md): requirement-by-requirement
   evidence and explicit Phase-1 boundaries.
 
@@ -84,14 +90,23 @@ PYTHONPATH=src python3 -m reflector2.evaluate_first_frames \
 PYTHONPATH=src python3 -m reflector2.evaluate_first_frames \
   /path/to/one-recording-per-game --expected-games 25 --transfer-matrix
 PYTHONPATH=src python3 inspect/server.py --port 8765
-.venv/bin/reflector2-arc --expected-games 25 --seed 0 --max-transitions 80
+.venv/bin/reflector2-arc \
+  --policy random --expected-games 25 --seed 0 --max-transitions 80
+.venv/bin/reflector2-arc \
+  --policy explanation --game ar25 --seed 0 --max-transitions 30
+.venv/bin/reflector2-explanations \
+  --game ar25 --seed 0 --max-transitions 30 --workers 1 \
+  --output-dir experiments/minimal-explanation-driven-control/rerun
 ```
 
-The final command runs the bundled 25-game public ARC-AGI-3 suite using only
-uniformly random legal actions. See [`ARC_HARNESS.md`](docs/ARC_HARNESS.md) for
-the adapter boundary, lifecycle rules, trace formats, and shorter smoke runs.
+The ARC harness defaults to seeded random control; `--policy local-schema` and
+`--policy explanation` activate the two experimental controls. The matched
+experiment command runs all three policies from isolated runtimes. See
+[`ARC_HARNESS.md`](docs/ARC_HARNESS.md) for the adapter and trace contracts and
+[`EXPLANATIONS.md`](docs/EXPLANATIONS.md) for interpretation of the explanation
+condition.
 
-The last command starts the local visual inspector. Open
+The inspector command starts the local visual inspector. Open
 <http://127.0.0.1:8765/inspect/> to upload an image or select a bundled synthetic/raw
 fixture, then inspect foreground regions, simultaneous active schemas,
 reusable candidates, acyclic decomposition DAGs and variable interfaces,

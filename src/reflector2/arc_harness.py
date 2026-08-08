@@ -1,7 +1,9 @@
-"""Thin ARC-AGI-3 environment adapter and reproducible random baseline.
+"""Thin ARC-AGI-3 adapter with reproducible final-boundary controls.
 
 The module deliberately knows only the public toolkit transport contract.  It
-does not name games, interpret action identities, or contain a solving policy.
+does not name games, interpret action identities, or contain game-specific
+solving policy.  Its generic random, local-schema, and explanation conditions
+share the same transport, perception, and transition-learning path.
 """
 
 from __future__ import annotations
