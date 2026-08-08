@@ -47,6 +47,28 @@ The source material copied from Reflector 1 is under
 replacing their original `/` with `__`. Nothing in that directory is imported
 by the new runtime.
 
+## Experiment convention
+
+Every experiment we run has a name and lives under
+`/experiments/SLUGIFIED_NAME/`. The name may be supplied explicitly; when it is
+not, we assign a short descriptive name. In either case, the directory name is
+the slugified form of that name. Every file and artifact belonging to an
+experiment must be stored somewhere under its
+`/experiments/SLUGIFIED_NAME/` directory.
+
+Each experiment directory contains:
+
+```text
+experiments/SLUGIFIED_NAME/
+├── metadata.md
+├── proposal.md
+└── results.md
+```
+
+`metadata.md` records, at minimum, the experiment's timestamp and the prompt
+that initiated it. `proposal.md` states what we intend to test and how, while
+`results.md` records the outcome, evidence, and conclusions.
+
 ## Run
 
 ```bash

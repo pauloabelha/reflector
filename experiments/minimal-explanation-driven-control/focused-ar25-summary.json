@@ -1,0 +1,51 @@
+{
+  "experiment": "minimal-explanation-driven-control",
+  "game": "ar25",
+  "seed": 0,
+  "max_transitions": 30,
+  "policies": {
+    "random": {
+      "actions": 30,
+      "progress": 0.0,
+      "completed_levels": 0,
+      "score": 0.0
+    },
+    "local-schema": {
+      "actions": 30,
+      "progress": 0.0,
+      "completed_levels": 0,
+      "score": 0.0
+    },
+    "explanation": {
+      "actions": 30,
+      "progress": 0.0,
+      "completed_levels": 0,
+      "score": 0.0,
+      "explanations_constructed": 25,
+      "prediction_commitments": 50,
+      "shadows_reified": 24,
+      "shadows_refuted": 26,
+      "action_changes": 23,
+      "discrimination_selections": 24,
+      "discrimination_settlements": 24
+    }
+  },
+  "representative_trace": {
+    "decision": 7,
+    "baseline_action": 6,
+    "selected_action": 3,
+    "changed_top_action": true,
+    "discrimination": 0.4,
+    "projected_shadows": {
+      "4": 382,
+      "5": 381
+    },
+    "resolutions": {
+      "4": "REFUTED",
+      "5": "REIFIED"
+    },
+    "ambiguity_before": 2,
+    "ambiguity_after": 1,
+    "progress_delta": 0
+  }
+}

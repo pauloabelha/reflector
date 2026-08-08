@@ -1,0 +1,157 @@
+{
+  "adapter": "reflector2-arc-harness/v1",
+  "errors": [],
+  "games": [
+    {
+      "completed": false,
+      "environment_seed": 1864336079036015378,
+      "final_state": "NOT_FINISHED",
+      "game_id": "s5i5-18d95033",
+      "levels_completed": 0,
+      "peak_levels_completed": 0,
+      "progress": 0.0,
+      "random_actions": 5,
+      "random_seed": 5722904540674717656,
+      "requested_game_id": "s5i5",
+      "resets": 0,
+      "runtime": {
+        "active_shadows": 320,
+        "cycles": 6,
+        "explanations": {
+          "action_changes": 0,
+          "action_changing_precision": null,
+          "active_counts": [
+            0,
+            1,
+            1,
+            1,
+            1
+          ],
+          "calibration": [
+            [
+              0.6666666666666666,
+              1
+            ],
+            [
+              0.8,
+              1
+            ],
+            [
+              0.8571428571428571,
+              1
+            ],
+            [
+              0.8888888888888888,
+              1
+            ]
+          ],
+          "calibration_confirmation_rate": 1.0,
+          "calibration_mean_support": 0.8031746031746032,
+          "completions_after_changed_actions": 0,
+          "constituent_counts": [
+            3
+          ],
+          "decisions": 5,
+          "discrimination_selections": 0,
+          "discrimination_settlements": 0,
+          "explanation_changes": 0,
+          "explanation_lifetimes": [],
+          "explanations_constructed": 1,
+          "explanations_retired": 0,
+          "max_active_explanations": 1,
+          "mean_active_explanations": 0.8,
+          "mean_constituent_schema_count": 3.0,
+          "mean_explanation_lifetime": 0.0,
+          "no_action_prediction": 1,
+          "no_usable_explanation": 1,
+          "prediction_commitments": 4,
+          "progress_after_changed_actions": 0,
+          "regressions_after_changed_actions": 0,
+          "shadows_abstained": 0,
+          "shadows_refuted": 0,
+          "shadows_reified": 4,
+          "single_trivial_explanation": 0
+        },
+        "metrics": {
+          "active_edge_visits": 5525,
+          "candidates_retrieved": 349,
+          "candidates_verified": 349,
+          "compositions_proposed": 1326,
+          "compositions_retained": 32,
+          "frontier_sizes": [
+            35,
+            58,
+            58,
+            58,
+            58,
+            60,
+            60,
+            1,
+            62,
+            62,
+            62,
+            62,
+            62,
+            60,
+            3,
+            65,
+            65,
+            65,
+            65,
+            65,
+            61,
+            4,
+            69,
+            69,
+            69,
+            69,
+            69,
+            60,
+            6,
+            71,
+            71,
+            71,
+            71,
+            71,
+            61,
+            7,
+            75,
+            75,
+            75,
+            75,
+            75
+          ],
+          "parent_binding_memo_hits": 0,
+          "parent_match_memo_hits": 0,
+          "peak_workspace": 75,
+          "shadow_projections": 324,
+          "shadow_refutations": 0,
+          "shadow_reifications": 4,
+          "truncations": 213,
+          "work_items_by_kind": {
+            "EXPAND": 5525,
+            "PROJECT_SHADOW": 324,
+            "REIFY_SHADOW": 4,
+            "SCORE_MAPPING": 5,
+            "TRY_BIND": 349,
+            "TRY_COMPOSE": 1152,
+            "TRY_RELATIONAL_CLOSURE": 174
+          },
+          "work_items_processed": 7533
+        },
+        "schemas": 78
+      },
+      "score": 0.0,
+      "transitions": 5,
+      "win_levels": 8
+    }
+  ],
+  "games_completed_without_error": 1,
+  "games_requested": 1,
+  "max_transitions_per_game": 5,
+  "policy": "explanation",
+  "score": 0.0,
+  "seed": 0,
+  "total_levels_completed": 0,
+  "total_transitions": 5
+}

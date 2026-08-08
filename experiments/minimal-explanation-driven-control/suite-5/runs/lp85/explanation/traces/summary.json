@@ -1,0 +1,160 @@
+{
+  "adapter": "reflector2-arc-harness/v1",
+  "errors": [],
+  "games": [
+    {
+      "completed": false,
+      "environment_seed": 11012867370013282763,
+      "final_state": "NOT_FINISHED",
+      "game_id": "lp85-305b61c3",
+      "levels_completed": 0,
+      "peak_levels_completed": 0,
+      "progress": 0.0,
+      "random_actions": 5,
+      "random_seed": 2535214552845587436,
+      "requested_game_id": "lp85",
+      "resets": 0,
+      "runtime": {
+        "active_shadows": 320,
+        "cycles": 6,
+        "explanations": {
+          "action_changes": 0,
+          "action_changing_precision": null,
+          "active_counts": [
+            0,
+            1,
+            1,
+            1,
+            1
+          ],
+          "calibration": [
+            [
+              0.6666666666666666,
+              0
+            ],
+            [
+              0.6,
+              0
+            ],
+            [
+              0.5714285714285714,
+              0
+            ],
+            [
+              0.5555555555555556,
+              0
+            ]
+          ],
+          "calibration_confirmation_rate": 0.0,
+          "calibration_mean_support": 0.5984126984126984,
+          "completions_after_changed_actions": 0,
+          "constituent_counts": [
+            2,
+            2
+          ],
+          "decisions": 5,
+          "discrimination_selections": 0,
+          "discrimination_settlements": 0,
+          "explanation_changes": 1,
+          "explanation_lifetimes": [
+            1,
+            1
+          ],
+          "explanations_constructed": 2,
+          "explanations_retired": 2,
+          "max_active_explanations": 1,
+          "mean_active_explanations": 0.8,
+          "mean_constituent_schema_count": 2.0,
+          "mean_explanation_lifetime": 1.0,
+          "no_action_prediction": 1,
+          "no_usable_explanation": 1,
+          "prediction_commitments": 4,
+          "progress_after_changed_actions": 0,
+          "regressions_after_changed_actions": 0,
+          "shadows_abstained": 0,
+          "shadows_refuted": 4,
+          "shadows_reified": 0,
+          "single_trivial_explanation": 0
+        },
+        "metrics": {
+          "active_edge_visits": 1652,
+          "candidates_retrieved": 174,
+          "candidates_verified": 174,
+          "compositions_proposed": 1536,
+          "compositions_retained": 6,
+          "frontier_sizes": [
+            24,
+            28,
+            28,
+            28,
+            28,
+            30,
+            30,
+            30,
+            30,
+            30,
+            30,
+            30,
+            30,
+            1,
+            31,
+            31,
+            31,
+            31,
+            31,
+            30,
+            1,
+            31,
+            31,
+            31,
+            31,
+            31,
+            30,
+            1,
+            31,
+            31,
+            31,
+            31,
+            31,
+            30,
+            1,
+            31,
+            31,
+            31,
+            31,
+            31
+          ],
+          "parent_binding_memo_hits": 0,
+          "parent_match_memo_hits": 0,
+          "peak_workspace": 31,
+          "shadow_projections": 324,
+          "shadow_refutations": 4,
+          "shadow_reifications": 0,
+          "truncations": 412,
+          "work_items_by_kind": {
+            "EXPAND": 1652,
+            "PROJECT_SHADOW": 324,
+            "REFUTE_SHADOW": 4,
+            "SCORE_MAPPING": 5,
+            "TRY_BIND": 174,
+            "TRY_COMPOSE": 1152,
+            "TRY_RELATIONAL_CLOSURE": 384
+          },
+          "work_items_processed": 3695
+        },
+        "schemas": 34
+      },
+      "score": 0.0,
+      "transitions": 5,
+      "win_levels": 8
+    }
+  ],
+  "games_completed_without_error": 1,
+  "games_requested": 1,
+  "max_transitions_per_game": 5,
+  "policy": "explanation",
+  "score": 0.0,
+  "seed": 0,
+  "total_levels_completed": 0,
+  "total_transitions": 5
+}

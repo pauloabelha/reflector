@@ -195,6 +195,30 @@ def test_seed_replays_action_and_complex_payload_exactly(tmp_path: Path) -> None
     assert play(tmp_path / "one.jsonl") == play(tmp_path / "two.jsonl")
 
 
+def test_explicitly_disabled_explanations_reproduce_default_random_policy(
+    tmp_path: Path,
+) -> None:
+    def play(path: Path, **kwargs):
+        environment = FakeEnvironment()
+        sink = JsonlTrace(path)
+        result = ArcGameSession(
+            environment,
+            requested_game_id="fake-v1",
+            runtime=Runtime(),
+            random_seed=0,
+            environment_seed=0,
+            max_transitions=1,
+            trace=sink,
+            action_from_id=ACTIONS.__getitem__,
+            **kwargs,
+        ).run()
+        return environment.actions, sink.events, result.to_dict()
+
+    assert play(tmp_path / "default.jsonl") == play(
+        tmp_path / "disabled.jsonl", policy="random"
+    )
+
+
 def test_game_over_forces_reset_with_opaque_reset_provenance(tmp_path: Path) -> None:
     environment = FakeEnvironment()
     environment.observation_space = Raw(

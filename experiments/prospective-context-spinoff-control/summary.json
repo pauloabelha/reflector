@@ -1,0 +1,179 @@
+{
+  "baseline_ranking": [
+    {
+      "action": 2,
+      "parent_support": 11
+    },
+    {
+      "action": 3,
+      "parent_support": 4
+    },
+    {
+      "action": 1,
+      "parent_support": 1
+    }
+  ],
+  "causal_chain": [
+    "ambiguity",
+    "context-discovered",
+    "schema-spinoff",
+    "action-ranking-changed",
+    "prediction",
+    "prospective-action",
+    "prediction-resolution",
+    "prospective-outcome"
+  ],
+  "child": {
+    "atoms": [
+      [
+        "After",
+        [
+          "?v0",
+          "ActiveSchema",
+          "?v1"
+        ]
+      ],
+      [
+        "Before",
+        [
+          "?v2",
+          "ActiveSchema",
+          "?v3"
+        ]
+      ],
+      [
+        "Before",
+        [
+          "?v2",
+          "BindingAbsent",
+          "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454"
+        ]
+      ],
+      [
+        "Codomain",
+        [
+          "?v0"
+        ]
+      ],
+      [
+        "Domain",
+        [
+          "?v2"
+        ]
+      ],
+      [
+        "Intervention",
+        [
+          "?v4"
+        ]
+      ]
+    ],
+    "hash": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+    "id": 109
+  },
+  "context": {
+    "atoms": [
+      [
+        "SameInteriorContrast",
+        [
+          "?v0",
+          "?v1"
+        ]
+      ]
+    ],
+    "hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+    "id": 20,
+    "polarity": "absent",
+    "purity": 1.0,
+    "support": 2
+  },
+  "control": {
+    "action": 2,
+    "changed_cells": 106,
+    "level_after": 0,
+    "level_before": 0,
+    "level_delta": 0,
+    "predecessor_frame_sha256": "10c623b65d4685c4951088ecde882989f1c370f31d7d795c1e26fdbfaf66d1ab",
+    "successor_frame_sha256": "b999c5aa8743c9f61cce7257309d268e0d0aaa76d8db77b5a7e032d58cde59a8"
+  },
+  "experiment": "prospective-context-spinoff-control",
+  "game": "ar25",
+  "held_out_predecessor_frame_sha256": "10c623b65d4685c4951088ecde882989f1c370f31d7d795c1e26fdbfaf66d1ab",
+  "held_out_transition_count": 1,
+  "level": 1,
+  "parent": {
+    "atoms": [
+      [
+        "After",
+        [
+          "?v0",
+          "ActiveSchema",
+          "?v1"
+        ]
+      ],
+      [
+        "Before",
+        [
+          "?v2",
+          "ActiveSchema",
+          "?v3"
+        ]
+      ],
+      [
+        "Codomain",
+        [
+          "?v0"
+        ]
+      ],
+      [
+        "Domain",
+        [
+          "?v2"
+        ]
+      ],
+      [
+        "Intervention",
+        [
+          "?v4"
+        ]
+      ]
+    ],
+    "hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+    "id": 108
+  },
+  "pass": true,
+  "source_recording": "/home/pauloabelha/reflector-v164-pivot-goal/reports/v164-public-r1-recordings/ar25/ar25.reflectoragent.7c920744-1244-4c2d-bd8c-43c74f252adb.recording.jsonl",
+  "source_recording_sha256": "b7859f018249af517cb5052ce27e22c08dde76ca635e0e3cb2703bbe23bfb102",
+  "training_transition_count": 16,
+  "treatment": {
+    "action": 3,
+    "changed_cells": 710,
+    "level_after": 1,
+    "level_before": 0,
+    "level_delta": 1,
+    "observed_structural_delta": "changed",
+    "predecessor_frame_sha256": "10c623b65d4685c4951088ecde882989f1c370f31d7d795c1e26fdbfaf66d1ab",
+    "predicted_structural_delta": "changed",
+    "prediction_reified": true,
+    "prediction_training_support": 2,
+    "recording_held_out_action": 3,
+    "successor_frame_sha256": "e24b15aba552b625d34ae81c6d07f67fb13e6de0e5443e548eb3d3d887aa67af"
+  },
+  "treatment_ranking": [
+    {
+      "action": 3,
+      "child_support": 2,
+      "parent_support": 4
+    },
+    {
+      "action": 2,
+      "child_support": 0,
+      "parent_support": 11
+    },
+    {
+      "action": 1,
+      "child_support": 0,
+      "parent_support": 1
+    }
+  ]
+}

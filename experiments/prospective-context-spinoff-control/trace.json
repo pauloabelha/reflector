@@ -1,0 +1,139 @@
+[
+  {
+    "action_ranking": [
+      {
+        "action": 2,
+        "parent_support": 11
+      },
+      {
+        "action": 3,
+        "parent_support": 4
+      },
+      {
+        "action": 1,
+        "parent_support": 1
+      }
+    ],
+    "cycle": 17,
+    "event": "ambiguity",
+    "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+    "successor_shadows": {
+      "1": [
+        "changed"
+      ],
+      "2": [
+        "changed"
+      ],
+      "3": [
+        "changed"
+      ]
+    }
+  },
+  {
+    "atoms": [
+      [
+        "SameInteriorContrast",
+        [
+          "?v0",
+          "?v1"
+        ]
+      ]
+    ],
+    "cycle": 17,
+    "event": "context-discovered",
+    "polarity": "absent",
+    "purity": 1.0,
+    "schema": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
+    "selected_action": 3,
+    "support": 2
+  },
+  {
+    "child": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+    "cycle": 17,
+    "edge": 202,
+    "event": "schema-spinoff",
+    "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+    "relation": "spinoff"
+  },
+  {
+    "baseline": [
+      {
+        "action": 2,
+        "parent_support": 11
+      },
+      {
+        "action": 3,
+        "parent_support": 4
+      },
+      {
+        "action": 1,
+        "parent_support": 1
+      }
+    ],
+    "baseline_top": 2,
+    "cycle": 17,
+    "event": "action-ranking-changed",
+    "treatment_top": 3,
+    "with_child": [
+      {
+        "action": 3,
+        "child_support": 2,
+        "parent_support": 4
+      },
+      {
+        "action": 2,
+        "child_support": 0,
+        "parent_support": 11
+      },
+      {
+        "action": 1,
+        "child_support": 0,
+        "parent_support": 1
+      }
+    ]
+  },
+  {
+    "context": "held-out:ar25:level:1",
+    "cycle": 17,
+    "event": "prediction",
+    "prediction": 0,
+    "schema": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0"
+  },
+  {
+    "action": 3,
+    "cycle": 17,
+    "event": "prospective-action",
+    "expected": [
+      "StructuralDelta",
+      [
+        "changed"
+      ]
+    ],
+    "prediction": 0,
+    "training_support": 2
+  },
+  {
+    "context": "held-out:ar25:level:1",
+    "cycle": 18,
+    "event": "prediction-resolution",
+    "prediction": 0,
+    "schema": "e4d3812a7ae5f3c0efd59918f0d45ca3218e167384dd1e3fb8f88843d8b197b0",
+    "success": true
+  },
+  {
+    "action": 3,
+    "changed_cells": 710,
+    "cycle": 18,
+    "event": "prospective-outcome",
+    "level_after": 1,
+    "level_before": 0,
+    "level_delta": 1,
+    "observed_structural_delta": "changed",
+    "predecessor_frame_sha256": "10c623b65d4685c4951088ecde882989f1c370f31d7d795c1e26fdbfaf66d1ab",
+    "predicted_structural_delta": "changed",
+    "prediction_reified": true,
+    "prediction_training_support": 2,
+    "recording_held_out_action": 3,
+    "successor_frame_sha256": "e24b15aba552b625d34ae81c6d07f67fb13e6de0e5443e548eb3d3d887aa67af"
+  }
+]

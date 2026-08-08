@@ -15,6 +15,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, cast
 
+from .explanations import (
+    ExplanationConfig,
+    ExplanationDecision,
+    ExplanationEngine,
+    bound_schema_ids,
+)
 from .perception import Grid, PerceptionBatch, perceive_grid
 from .runtime import Runtime
 
@@ -310,7 +316,7 @@ class GameRunResult:
 
 
 class ArcGameSession:
-    """One environment, one R2 runtime, and one uniform-random controller."""
+    """One environment, one R2 runtime, and one final-boundary controller."""
 
     def __init__(
         self,
@@ -324,7 +330,11 @@ class ArcGameSession:
         trace: JsonlTrace,
         action_from_id: Callable[[int], object],
         include_grids: bool = True,
+        policy: str = "random",
+        explanation_config: ExplanationConfig | None = None,
     ) -> None:
+        if policy not in {"random", "local-schema", "explanation"}:
+            raise ValueError(f"unsupported ARC policy: {policy}")
         self.environment = environment
         self.requested_game_id = requested_game_id
         self.runtime = runtime
@@ -334,8 +344,14 @@ class ArcGameSession:
         self.trace = trace
         self.action_from_id = action_from_id
         self.include_grids = include_grids
+        self.policy = policy
         self.rng = random.Random(random_seed)
         self.episode = 0
+        self.explanations = (
+            None
+            if policy == "random"
+            else ExplanationEngine(runtime, explanation_config)
+        )
 
     def _observe(self, raw: object, observation_id: int) -> ArcObservation:
         observation = normalize_observation(
@@ -387,21 +403,40 @@ class ArcGameSession:
 
     def _choose(
         self, observation: ArcObservation
-    ) -> tuple[OpaqueAction, object, dict[str, int], bool]:
+    ) -> tuple[OpaqueAction, object, dict[str, int], bool, ExplanationDecision | None]:
         if observation.state in {"NOT_PLAYED", "GAME_OVER"}:
             opaque = OpaqueAction.from_id(0)
-            return opaque, self.action_from_id(0), {}, True
+            return opaque, self.action_from_id(0), {}, True, None
         legal = self._legal_transport_actions(observation)
         if not legal:
             raise RuntimeError(
                 f"{observation.game_id} exposed no legal actions in {observation.state}"
             )
-        opaque, transport = self.rng.choice(legal)
+        baseline_opaque, baseline_transport = self.rng.choice(legal)
+        opaque, transport = baseline_opaque, baseline_transport
+        decision = None
+        if self.explanations is not None:
+            workspace = self.runtime.workspace
+            if workspace is None:
+                raise RuntimeError("R2 has no active workspace at action selection")
+            decision = self.explanations.decide(
+                mode=self.policy,
+                workspace=workspace,
+                observed=observation.final_support.batch,
+                legal_action_ids=[item[0].action_id for item in legal],
+                baseline_action_id=baseline_opaque.action_id,
+            )
+            opaque, transport = next(
+                item
+                for item in legal
+                if item[0].action_id == decision.selected_action_id
+            )
         return (
             opaque,
             transport,
             self._sample_data(transport, observation.final_support),
             False,
+            decision,
         )
 
     def run(self) -> GameRunResult:
@@ -419,8 +454,13 @@ class ArcGameSession:
         transitions = 0
 
         while transitions < self.max_transitions and not current.complete:
-            opaque, transport, data, forced_reset = self._choose(current)
             r2_start = len(self.runtime.trace)
+            predecessor_bindings = tuple(
+                self.runtime.workspace.bindings if self.runtime.workspace else ()
+            )
+            opaque, transport, data, forced_reset, decision = self._choose(current)
+            if decision is not None and self.explanations is not None:
+                self.trace.emit(self.explanations.decision_trace(decision))
             if forced_reset:
                 successor_raw = self.environment.reset()
                 resets += 1
@@ -443,9 +483,22 @@ class ArcGameSession:
                 current.final_support.batch,
                 successor.final_support.batch,
                 opaque.token,
+                predecessor_schema_ids=bound_schema_ids(predecessor_bindings),
             )
             transitions += 1
             progress_delta = successor.levels_completed - current.levels_completed
+            resolution = None
+            if self.explanations is not None:
+                resolution = self.explanations.observe_outcome(
+                    decision,
+                    before=current.final_support.batch,
+                    after=successor.final_support.batch,
+                    observed_schema_id=morphism_id,
+                    progress_delta=progress_delta,
+                    reward=successor.reward,
+                )
+                if forced_reset:
+                    self.explanations.reset_episode()
             peak_levels = max(peak_levels, successor.levels_completed)
             self.trace.emit(
                 {
@@ -467,6 +520,8 @@ class ArcGameSession:
                     "r2_event_end": len(self.runtime.trace),
                 }
             )
+            if resolution is not None:
+                self.trace.emit(resolution)
             self.trace.emit(successor.to_dict(include_grid=self.include_grids))
             current = successor
 
@@ -483,6 +538,8 @@ class ArcGameSession:
             ),
             "metrics": deterministic_metrics,
         }
+        if self.explanations is not None:
+            runtime_report["explanations"] = self.explanations.report()
         return GameRunResult(
             requested_game_id=self.requested_game_id,
             game_id=current.game_id,
@@ -535,6 +592,8 @@ def run_suite(
     action_from_id: Callable[[int], object],
     expected_games: int | None = None,
     include_grids: bool = True,
+    policy: str = "random",
+    explanation_config: ExplanationConfig | None = None,
 ) -> dict[str, object]:
     """Run isolated R2 runtimes under one official toolkit scorecard."""
 
@@ -545,7 +604,7 @@ def run_suite(
         )
     trace_dir.mkdir(parents=True, exist_ok=True)
     card_id = arcade.open_scorecard(
-        tags=["reflector2", "uniform-random", f"seed-{seed}"]
+        tags=["reflector2", policy, f"seed-{seed}"]
     )
     results: list[GameRunResult] = []
     errors: list[dict[str, str]] = []
@@ -580,6 +639,8 @@ def run_suite(
                     trace=trace,
                     action_from_id=action_from_id,
                     include_grids=include_grids,
+                    policy=policy,
+                    explanation_config=explanation_config,
                 ).run()
                 results.append(result)
             except Exception as error:  # keep suite coverage visible in the summary
@@ -608,7 +669,7 @@ def run_suite(
 
     summary: dict[str, object] = {
         "adapter": "reflector2-arc-harness/v1",
-        "policy": "uniform-random-legal-action",
+        "policy": policy,
         "seed": seed,
         "max_transitions_per_game": max_transitions,
         "games_requested": len(selected),
@@ -673,6 +734,12 @@ def main() -> None:
     )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max-transitions", type=int, default=80)
+    parser.add_argument(
+        "--policy",
+        choices=("random", "local-schema", "explanation"),
+        default="random",
+    )
+    parser.add_argument("--max-explanations", type=int, default=8)
     parser.add_argument("--expected-games", type=int)
     parser.add_argument("--omit-grids", action="store_true")
     args = parser.parse_args()
@@ -690,6 +757,10 @@ def main() -> None:
         action_from_id=action_from_id,
         expected_games=args.expected_games,
         include_grids=not args.omit_grids,
+        policy=args.policy,
+        explanation_config=ExplanationConfig(
+            max_explanations=args.max_explanations
+        ),
     )
     print(json.dumps(summary, indent=2, sort_keys=True))
     if summary["errors"]:

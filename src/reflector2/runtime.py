@@ -6,7 +6,7 @@ import resource
 import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
-from typing import Any
+from typing import Any, Iterable
 
 from .perception import PerceptionBatch
 from .store import (
@@ -47,6 +47,8 @@ class Limits:
     max_shadow_open_roles: int = 4
     max_shadow_open_constraints: int = 8
     max_shadow_projections_per_cycle: int = 64
+    max_action_shadow_open_constraints: int = 16
+    max_action_shadow_projections_per_cycle: int = 8
 
 
 @dataclass(slots=True)
@@ -211,6 +213,8 @@ class Runtime:
         self._partial_binding_memo: dict[tuple[object, ...], int] = {}
         self._shadow_budget_cycle = -1
         self._shadow_budget_used = 0
+        self._action_shadow_budget_cycle = -1
+        self._action_shadow_budget_used = 0
         # Audited quantitative sensory relations. Numeric palette/value IDs are
         # nominal and must never acquire order semantics from their encoding.
         self.ordered_relations = frozenset({"Count", "EnclosureCount"})
@@ -571,6 +575,7 @@ class Runtime:
         carrier: str | None = None,
         activation: float | None = None,
         provenance: str = "schema-completion",
+        prospective_action: bool = False,
     ) -> Shadow:
         """Project one requested schema DAG from explicit child-role state.
 
@@ -667,7 +672,12 @@ class Runtime:
             raise ValueError("partial binding support is below the bound-role threshold")
         if len(open_roles) > self.limits.max_shadow_open_roles:
             raise ValueError("partial binding exceeds the open-role projection budget")
-        if len(open_constraints) > self.limits.max_shadow_open_constraints:
+        open_constraint_limit = (
+            self.limits.max_action_shadow_open_constraints
+            if prospective_action
+            else self.limits.max_shadow_open_constraints
+        )
+        if len(open_constraints) > open_constraint_limit:
             raise ValueError("partial binding exceeds the open-constraint projection budget")
         memo_key = (
             schema_id,
@@ -682,12 +692,23 @@ class Runtime:
             self.metrics.parent_binding_memo_hits += 1
             self.metrics.work("MEMO_PARENT_BINDING")
             return self.shadows[memoized_id]
-        if self._shadow_budget_cycle != self.cycle:
-            self._shadow_budget_cycle = self.cycle
-            self._shadow_budget_used = 0
-        if self._shadow_budget_used >= self.limits.max_shadow_projections_per_cycle:
-            self._truncation("shadow-projection-budget")
-            raise RuntimeError("shadow projection budget exhausted")
+        if prospective_action:
+            if self._action_shadow_budget_cycle != self.cycle:
+                self._action_shadow_budget_cycle = self.cycle
+                self._action_shadow_budget_used = 0
+            if (
+                self._action_shadow_budget_used
+                >= self.limits.max_action_shadow_projections_per_cycle
+            ):
+                self._truncation("action-shadow-projection-budget")
+                raise RuntimeError("action shadow projection budget exhausted")
+        else:
+            if self._shadow_budget_cycle != self.cycle:
+                self._shadow_budget_cycle = self.cycle
+                self._shadow_budget_used = 0
+            if self._shadow_budget_used >= self.limits.max_shadow_projections_per_cycle:
+                self._truncation("shadow-projection-budget")
+                raise RuntimeError("shadow projection budget exhausted")
         partial_key = memo_key
         partial_id = self._partial_binding_memo.get(partial_key)
         if partial_id is None:
@@ -735,7 +756,10 @@ class Runtime:
             constraints=constraint_states,
         )
         self._next_shadow += 1
-        self._shadow_budget_used += 1
+        if prospective_action:
+            self._action_shadow_budget_used += 1
+        else:
+            self._shadow_budget_used += 1
         self.shadows[shadow.shadow_id] = shadow
         self._active_shadow_ids.add(shadow.shadow_id)
         self._parent_binding_memo[memo_key] = shadow.shadow_id
@@ -1313,6 +1337,8 @@ class Runtime:
         before: PerceptionBatch,
         after: PerceptionBatch,
         action: str,
+        *,
+        predecessor_schema_ids: Iterable[int] = (),
     ) -> int:
         start = time.perf_counter()
         self.metrics.work("SCORE_MAPPING")
@@ -1333,6 +1359,7 @@ class Runtime:
             self.trace.append(
                 {"event": "mapping-evidence", "cycle": self.cycle, "schema": self.graph.canonical_hash[schema_id], "context": context, "before": before.context, "action": action, "after": after.context, "correspondences": 0, "created": created, "kind": "support"}
             )
+            self._index_transition(schema_id, predecessor_schema_ids)
             self.metrics.transition_learning_time_s += time.perf_counter() - start
             return schema_id
         # The benchmark has one unambiguous region. Ambiguity remains a bounded version space.
@@ -1389,8 +1416,64 @@ class Runtime:
         self.trace.append(
             {"event": "mapping-evidence", "cycle": self.cycle, "schema": self.graph.canonical_hash[schema_id], "context": context, "before": before.context, "action": action, "after": after.context, "correspondences": len(pairs), "created": created, "kind": "support"}
         )
+        self._index_transition(schema_id, predecessor_schema_ids)
         self.metrics.transition_learning_time_s += time.perf_counter() - start
         return schema_id
+
+    def _index_transition(
+        self, schema_id: int, predecessor_schema_ids: Iterable[int]
+    ) -> None:
+        """Connect bounded predecessor bindings to one learned action schema.
+
+        These are ordinary graph links.  They make a learned transition
+        retrievable from a later, structurally similar active frontier without
+        scanning the dormant schema store.  The current workspace receives the
+        same local propagation if the linked predecessor schema is active
+        there, because transition learning happens after successor matching.
+        """
+
+        candidates = sorted(
+            {
+                source
+                for source in predecessor_schema_ids
+                if 0 <= source < self.graph.schema_count and source != schema_id
+            },
+            key=lambda source: self.graph.canonical_hash[source],
+        )[: self.limits.max_transition_correspondences]
+        support_relation = self.graph.terms.intern_symbol("supports")
+        for source in candidates:
+            edge_id = next(
+                (
+                    edge
+                    for edge in self.graph.out_index.get(source, ())
+                    if self.graph.relation[edge] == support_relation
+                    and self.graph.dst[edge] == schema_id
+                ),
+                None,
+            )
+            if edge_id is None:
+                edge_id = self.graph.add_link(
+                    source,
+                    "supports",
+                    schema_id,
+                    0.25,
+                    provenance="experience:transition-index",
+                )
+            else:
+                self.graph.edge_provenance[edge_id].add(
+                    "experience:transition-index"
+                )
+            workspace = self.workspace
+            if workspace is None or source not in workspace.activation:
+                continue
+            workspace.active_edge_ids.add(edge_id)
+            workspace.activation[schema_id] = min(
+                1.0,
+                workspace.activation.get(schema_id, 0.0)
+                + self.graph.weight[edge_id] * workspace.activation[source],
+            )
+        if self.workspace is not None:
+            self._prune(self.workspace)
 
     def _correspond_regions(
         self, before: PerceptionBatch, after: PerceptionBatch
