@@ -50,6 +50,8 @@ by the new runtime.
 ## Run
 
 ```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e .
 python3 -m pytest -q
 PYTHONPATH=src python3 -m reflector2.benchmark --json
 PYTHONPATH=src python3 -m reflector2.benchmark \
@@ -60,7 +62,12 @@ PYTHONPATH=src python3 -m reflector2.evaluate_first_frames \
 PYTHONPATH=src python3 -m reflector2.evaluate_first_frames \
   /path/to/one-recording-per-game --expected-games 25 --transfer-matrix
 PYTHONPATH=src python3 inspect/server.py --port 8765
+.venv/bin/reflector2-arc --expected-games 25 --seed 0 --max-transitions 80
 ```
+
+The final command runs the bundled 25-game public ARC-AGI-3 suite using only
+uniformly random legal actions. See [`ARC_HARNESS.md`](docs/ARC_HARNESS.md) for
+the adapter boundary, lifecycle rules, trace formats, and shorter smoke runs.
 
 The last command starts the local visual inspector. Open
 <http://127.0.0.1:8765/inspect/> to upload an image or select a bundled synthetic/raw

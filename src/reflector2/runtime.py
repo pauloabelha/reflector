@@ -1173,7 +1173,7 @@ class Runtime:
         descriptors: dict[int, list[tuple[int, dict[int, int]]]] = defaultdict(list)
         for schema_id, binding in workspace.bindings:
             entities = sorted(set(binding.values()) & entity_terms)
-            if graph_depth := self.graph.depth[schema_id]:
+            if self.graph.depth[schema_id]:
                 if len(entities) == 1:
                     descriptors[entities[0]].append((schema_id, binding))
                 continue
@@ -1318,13 +1318,29 @@ class Runtime:
         self.metrics.work("SCORE_MAPPING")
         pairs = self._correspond_regions(before, after)
         if not pairs:
-            raise ValueError("no bounded form correspondence found")
+            atoms: list[SourceAtom] = [
+                ("Domain", ("?s0",)),
+                ("Codomain", ("?s1",)),
+                ("Intervention", (action,)),
+            ]
+            schema_id, created = self.graph.add_schema(
+                "TransitionCandidate", atoms, provenance="endogenous:map"
+            )
+            context = f"{before.context}->{after.context}"
+            self.graph.add_evidence(
+                schema_id, "support", 1, context, self.cycle, source="experience:transition"
+            )
+            self.trace.append(
+                {"event": "mapping-evidence", "cycle": self.cycle, "schema": self.graph.canonical_hash[schema_id], "context": context, "before": before.context, "action": action, "after": after.context, "correspondences": 0, "created": created, "kind": "support"}
+            )
+            self.metrics.transition_learning_time_s += time.perf_counter() - start
+            return schema_id
         # The benchmark has one unambiguous region. Ambiguity remains a bounded version space.
         before_region, after_region, form_term = pairs[0]
         before_relations = self._entity_relations(before.facts, before_region)
         after_relations = self._entity_relations(after.facts, after_region)
 
-        atoms: list[SourceAtom] = [
+        atoms = [
             ("Domain", ("?s0",)),
             ("Codomain", ("?s1",)),
             ("Intervention", (action,)),
@@ -1371,7 +1387,7 @@ class Runtime:
             schema_id, "support", 1, context, self.cycle, source="experience:transition"
         )
         self.trace.append(
-            {"event": "mapping-evidence", "cycle": self.cycle, "schema": self.graph.canonical_hash[schema_id], "context": context, "created": created, "kind": "support"}
+            {"event": "mapping-evidence", "cycle": self.cycle, "schema": self.graph.canonical_hash[schema_id], "context": context, "before": before.context, "action": action, "after": after.context, "correspondences": len(pairs), "created": created, "kind": "support"}
         )
         self.metrics.transition_learning_time_s += time.perf_counter() - start
         return schema_id

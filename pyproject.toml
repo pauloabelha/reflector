@@ -7,11 +7,15 @@ name = "reflector2"
 version = "0.1.0"
 description = "Minimal sparse schema-graph research substrate"
 requires-python = ">=3.11"
+dependencies = [
+    "arc-agi==0.9.9",
+]
 
 [project.scripts]
 reflector2-benchmark = "reflector2.benchmark:main"
 reflector2-raw-frame = "reflector2.raw_frame:main"
 reflector2-evaluate-first-frames = "reflector2.evaluate_first_frames:main"
+reflector2-arc = "reflector2.arc_harness:main"
 reflector2-arcade = "arcade.server:main"
 
 [tool.setuptools.packages.find]
