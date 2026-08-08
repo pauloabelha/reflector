@@ -1,0 +1,14 @@
+{
+  "branch": "explanations",
+  "commit": "f2e5d69b795fdd9a685e037579c675b554e0bdac",
+  "files": {
+    "src/reflector2/arc_harness.py": "848d8612cbb9999694ebc1303df39b1b664d6b0b5dca464a66019f5cdf6a5056",
+    "src/reflector2/explanation_experiment.py": "b10069c1af7e32fe1ebd176d652f677cf97bbbc1b0eef986d101a94d27668170",
+    "src/reflector2/explanations.py": "99a199c244632dd9a290d2b0ef424a959cf0421f2597f5728642548023957f50"
+  },
+  "policies": [
+    "random",
+    "local-schema",
+    "explanation"
+  ]
+}

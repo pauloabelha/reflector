@@ -16,6 +16,7 @@ import time
 from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
@@ -34,6 +35,8 @@ ENVIRONMENTS_ROOT = Path(
 )
 SHARED_EXPERIMENT = HERE.parent / "prospective-context-spinoff-control" / "run_experiment.py"
 EXPECTED_GAMES = 25
+PROTOCOL_VERSION = 1
+CHECKPOINT_FORMAT = 1
 
 FROZEN_AR25 = {
     "context_hash": "38bac99b151198744c9ea62355a77c6116ef9493de6e678115dc8d4772385454",
@@ -86,6 +89,54 @@ class Packet:
 def _stable_hash(value: Any) -> str:
     encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _atomic_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    temporary.write_text(
+        json.dumps(value, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(temporary, path)
+
+
+def _checkpoint_key(job: dict[str, Any]) -> str:
+    recording = Path(job["recording"])
+    return _stable_hash(
+        {
+            "protocol_version": PROTOCOL_VERSION,
+            "game": job["game"],
+            "recording_sha256": SHARED._file_hash(recording),
+            "environments_root": str(Path(job["environments_root"]).resolve()),
+            "config": job["config"],
+            "max_packets": job.get("max_packets"),
+        }
+    )
+
+
+def _load_checkpoint(job: dict[str, Any]) -> dict[str, Any] | None:
+    raw_path = job.get("checkpoint")
+    if raw_path is None:
+        return None
+    path = Path(raw_path)
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if (
+        payload.get("checkpoint_format") != CHECKPOINT_FORMAT
+        or payload.get("key") != _checkpoint_key(job)
+    ):
+        return None
+    result = payload.get("result")
+    return result if isinstance(result, dict) else None
 
 
 def _packet_frame(value: Any) -> tuple[tuple[int, ...], ...]:
@@ -777,7 +828,7 @@ def _evaluate_game(job: dict[str, Any]) -> dict[str, Any]:
             }
         ],
     }
-    return {
+    result = {
         "deterministic": deterministic,
         "timing": {
             "game": game,
@@ -785,6 +836,17 @@ def _evaluate_game(job: dict[str, Any]) -> dict[str, Any]:
             "cpu_seconds": time.process_time() - started_cpu,
         },
     }
+    if job.get("checkpoint") is not None:
+        _atomic_json(
+            Path(job["checkpoint"]),
+            {
+                "checkpoint_format": CHECKPOINT_FORMAT,
+                "key": _checkpoint_key(job),
+                "completed_at": _utc_now(),
+                "result": result,
+            },
+        )
+    return result
 
 
 def _identity_worker(value: int) -> dict[str, Any]:
@@ -1116,6 +1178,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     cohort = _cohort_files(args.cohort)
     workers = args.workers or min(len(cohort), os.cpu_count() or 1)
     args.output.mkdir(parents=True, exist_ok=True)
+    checkpoints = args.output / "checkpoints"
     jobs = [
         {
             "game": game,
@@ -1123,22 +1186,82 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "environments_root": str(args.environments),
             "branch_recordings": str(args.output / "branch-recordings" / game),
             "config": asdict(config),
+            "checkpoint": str(checkpoints / f"{game}.json"),
         }
         for game, path in cohort
     ]
+    manifest_path = args.output / "run-manifest.json"
+    now_epoch = time.time()
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    else:
+        manifest = {
+            "protocol_version": PROTOCOL_VERSION,
+            "first_started_at": _utc_now(),
+            "first_started_epoch": now_epoch,
+            "attempts": [],
+        }
+    cached_by_game: dict[str, dict[str, Any]] = {}
+    pending_jobs: list[dict[str, Any]] = []
+    for job in jobs:
+        cached = _load_checkpoint(job) if args.resume else None
+        if cached is None:
+            pending_jobs.append(job)
+        else:
+            cached_by_game[str(job["game"])] = cached
+    attempt = {
+        "started_at": _utc_now(),
+        "started_epoch": now_epoch,
+        "workers": workers,
+        "cached_games": sorted(cached_by_game),
+        "pending_games": [str(job["game"]) for job in pending_jobs],
+    }
+    manifest["attempts"].append(attempt)
+    _atomic_json(manifest_path, manifest)
     wall_start = time.perf_counter()
-    game_results = _ordered_process_map(_evaluate_game, jobs, workers)
+    computed_results = _ordered_process_map(_evaluate_game, pending_jobs, workers)
     wall_seconds = time.perf_counter() - wall_start
+    computed_by_game = {
+        str(item["deterministic"]["game"]): item for item in computed_results
+    }
+    game_results = [
+        cached_by_game.get(str(job["game"]))
+        or computed_by_game[str(job["game"])]
+        for job in jobs
+    ]
     summary = _aggregate(game_results, config)
     timings = [item["timing"] for item in game_results]
     total_cpu = sum(float(item["cpu_seconds"]) for item in timings)
+    finished_epoch = time.time()
+    attempt.update(
+        {
+            "finished_at": _utc_now(),
+            "finished_epoch": finished_epoch,
+            "wall_seconds": wall_seconds,
+            "computed_games": sorted(computed_by_game),
+        }
+    )
+    manifest["completed_at"] = attempt["finished_at"]
+    manifest["completed_epoch"] = finished_epoch
+    _atomic_json(manifest_path, manifest)
+    end_to_end_wall = finished_epoch - float(manifest["first_started_epoch"])
     execution = {
         "workers": workers,
         "seed": config.seed,
-        "wall_seconds": wall_seconds,
+        "resume_enabled": args.resume,
+        "cached_games_this_attempt": sorted(cached_by_game),
+        "computed_games_this_attempt": sorted(computed_by_game),
+        "this_attempt_wall_seconds": wall_seconds,
+        "end_to_end_wall_seconds_including_interrupted_attempts_and_downtime": end_to_end_wall,
         "sum_worker_cpu_seconds": total_cpu,
         "cpu_utilization_fraction_of_capacity": (
-            total_cpu / (wall_seconds * workers) if wall_seconds and workers else None
+            total_cpu / (end_to_end_wall * workers)
+            if end_to_end_wall and workers
+            else None
+        ),
+        "cpu_utilization_note": (
+            "capacity denominator includes interrupted attempts and downtime; "
+            "per-game CPU and wall timings are authoritative"
         ),
         "per_game": timings,
     }
@@ -1153,6 +1276,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, default=HERE)
     parser.add_argument("--workers", type=int, default=0)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument(
+        "--resume",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="reuse valid atomic per-game checkpoints (default: enabled)",
+    )
     return parser
 
 

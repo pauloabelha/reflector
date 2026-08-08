@@ -1,0 +1,33 @@
+{
+  "ordered_evidence_digest": "77853cd346e5311d8e9db6eb78b35ac808cc770add683934e2ab17ba9f1fe601",
+  "positive_progress_records": 7,
+  "records": 530,
+  "traces": [
+    {
+      "format": "arc-toolkit-recording",
+      "outcomes": {
+        "neutral": 125,
+        "positive": 6
+      },
+      "path": "/home/pauloabelha/reflector_old/artifacts/game_mastery/sc25/curriculum-hierarchical-prior-r6-recordings/sc25/sc25.reflectoragent.6864b530-2854-41e2-baad-c8e8a0933314.recording.jsonl",
+      "records": 131,
+      "skipped_no_structural_effect": 0,
+      "skipped_reset": 0,
+      "trace_digest": "7e5495a1cb028b528a231bf13e75469e4e82b2bb4a2cad734e39acb8cb7d942b",
+      "transitions": 131
+    },
+    {
+      "format": "arc-toolkit-recording",
+      "outcomes": {
+        "neutral": 398,
+        "positive": 1
+      },
+      "path": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/lf52.reflectoragent.2f6aff74-d527-4ec2-a9a2-a837b09dd20e.recording.jsonl",
+      "records": 399,
+      "skipped_no_structural_effect": 0,
+      "skipped_reset": 0,
+      "trace_digest": "53bc25ddd4b05924e8aee3509e2ccfb5332eb464071d6c9496c6227ac98801f3",
+      "transitions": 399
+    }
+  ]
+}

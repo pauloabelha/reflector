@@ -1,127 +1,194 @@
 # Reflector-II
 
-Reflector-II is a clean architectural restart for a minimal executable
-epistemology: a sparse, content-addressed relational schema graph; parallel
-descriptions in a bounded active workspace; local evidence; demand-driven
-composition; and before/action/after morphisms represented in the same
-language as ordinary concepts. Its conceptual direction is **active
-equilibration**: construct structure, project beyond experience, act,
-reify/refute, and reorganize.
+Reflector-II is a deterministic research runtime for building and testing
+sparse, content-addressed relational schemas. It turns grid observations into
+ground facts, retrieves matching schemas through postings indices, keeps a
+bounded active workspace, constructs reusable schema compositions, learns
+before/action/after transition schemas, and tests prospective completions as
+explicit shadows.
 
-This repository is a design-first Phase-1 research substrate, not an ARC
-solver. It contains no policy, planner, neural model, embeddings, game-specific
-recognizers, or custom GPU code.
+The repository includes an offline ARC-AGI-3 adapter and a minimal
+explanation-driven action experiment, but it is not a general ARC solver. The
+current system has no planner, learned goal model, neural model, embeddings,
+stable on-disk schema store, or GPU runtime.
 
-## Design contracts
+## What is implemented
 
-- [`ACTIVE_EQUILIBRATION.md`](docs/ACTIVE_EQUILIBRATION.md): conceptual front door:
-  schema DAGs, bindings across space/time/intervention, deductive and
-  conjectural shadows, executable explanations, epistemic action, goals,
-  solutions, and teacher/LLM adjudication. It clearly marks next-phase ideas.
-- [`THEORY.md`](docs/THEORY.md): operational epistemic definitions and Schema-0.
-- [`LANGUAGE.md`](docs/LANGUAGE.md): the minimal term/conjunction DSL.
-- [`ARCHITECTURE.md`](docs/ARCHITECTURE.md): indexed active-frontier runtime and
-  Reflector-1 archaeology ledger.
-- [`GPU_PLAN.md`](docs/GPU_PLAN.md): measured CPU/GPU migration decisions by hot
-  operation.
-- [`INVARIANTS.md`](docs/INVARIANTS.md): executable representation, sparsity,
-  epistemic, teacher, and determinism constraints.
-- [`BENCHMARK.md`](docs/BENCHMARK.md): the synthetic form/enclosure and dormant-store
-  protocols.
-- [`FIRST_FRAME_EVALUATION.md`](docs/FIRST_FRAME_EVALUATION.md): the raw first-frame
-  results for all 25 public games, including structural and richer-schema tiers.
-- [`MULTILEVEL_DISCOVERY.md`](docs/MULTILEVEL_DISCOVERY.md): bounded generic
-  relational closure, the `ar25` depth-2 oracle, and CPU-parallel evaluation.
-- [`SHADOWS.md`](docs/SHADOWS.md): Phase-1 partial-binding audit, bounded
-  projection policy, reification/refutation criteria, and A-H evidence.
-- [`COMPLETION_AUDIT.md`](docs/COMPLETION_AUDIT.md): requirement-by-requirement
-  evidence and explicit Phase-1 boundaries.
+- A hash-consed term store for symbols, variables, and applications.
+- One schema graph for atomic patterns, composites, explicit schema DAGs,
+  transitions, links, evidence, and provenance.
+- Indexed, bounded positive-conjunctive matching with deterministic truncation.
+- Sparse activation and bounded multi-round composition over current bindings.
+- Explicit bindings, partial bindings, and `SHADOW` / `REIFIED` / `REFUTED`
+  projection records.
+- Generic grid perception: connected regions, enclosure, cells, form hashes,
+  color-agnostic figure outlines, and pair relations.
+- Transition learning over opaque actions using `Domain`, `Codomain`,
+  `Intervention`, `Before`, `After`, `Preserve`, and `Change` atoms.
+- A loopback visual inspector, a human ARC controller, synthetic benchmarks,
+  first-frame/transfer evaluation, and an offline ARC-AGI-3 harness.
+- Optional `random`, `local-schema`, and `explanation` ARC policies. The latter
+  two are experimental control layers over learned transition schemas, not
+  claims of task-solving ability.
 
-Start with `docs/ACTIVE_EQUILIBRATION.md` for the unified model, then use
-`docs/THEORY.md`, `docs/LANGUAGE.md`, and `docs/ARCHITECTURE.md` for executable contracts.
-Benchmark and audit documents report only what the current Phase-1 runtime has
-actually demonstrated.
-
-The source material copied from Reflector 1 is under
-[`reflector1-learnings/`](reflector1-learnings/). Files retain provenance by
-replacing their original `/` with `__`. Nothing in that directory is imported
-by the new runtime.
-
-## Experiment convention
-
-Every experiment we run has a name and lives under
-`/experiments/SLUGIFIED_NAME/`. The name may be supplied explicitly; when it is
-not, we assign a short descriptive name. In either case, the directory name is
-the slugified form of that name. Every file and artifact belonging to an
-experiment must be stored somewhere under its
-`/experiments/SLUGIFIED_NAME/` directory.
-
-Each experiment directory contains:
+## Repository map
 
 ```text
-experiments/SLUGIFIED_NAME/
-├── metadata.md
-├── proposal.md
-└── results.md
+src/reflector2/       core store, perception, runtime, DSL, evaluation, ARC adapter
+tests/                executable contracts and regression tests
+docs/                 theory, language, as-built architecture, audits, results
+inspect/              loopback visual inspector and external display annotations
+arcade/               loopback human ARC controller and note journal
+environment_files/    bundled 25 public ARC-AGI-3 environments
+experiments/           isolated, preregistered research runners and artifacts
+reflector1-learnings/ archaeological source material; never imported by the runtime
 ```
 
-`metadata.md` records, at minimum, the experiment's timestamp and the prompt
-that initiated it. `proposal.md` states what we intend to test and how, while
-`results.md` records the outcome, evidence, and conclusions.
+See [the architecture](docs/ARCHITECTURE.md) for the complete data flow,
+component boundaries, state model, concurrency model, and implemented/future
+split.
 
-## Run
+## Requirements and installation
+
+- Python 3.11 or newer
+- `arc-agi==0.9.9` (installed from `pyproject.toml`)
+- `pytest` only when running the test suite
+- Node.js only for the optional inspector JavaScript syntax check
+
+From the repository root:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install -e .
-python3 -m pytest -q
-PYTHONPATH=src python3 -m reflector2.benchmark --json
-PYTHONPATH=src python3 -m reflector2.benchmark \
-  --stress 1000 10000 100000 --repetitions 5
-PYTHONPATH=src python3 -m reflector2.raw_frame /path/to/game.recording.jsonl
-PYTHONPATH=src python3 -m reflector2.evaluate_first_frames \
-  /path/to/one-recording-per-game --expected-games 25 --workers 0
-PYTHONPATH=src python3 -m reflector2.evaluate_first_frames \
-  /path/to/one-recording-per-game --expected-games 25 --transfer-matrix
-PYTHONPATH=src python3 inspect/server.py --port 8765
-.venv/bin/reflector2-arc --expected-games 25 --seed 0 --max-transitions 80
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m pytest -q
 ```
 
-The final command runs the bundled 25-game public ARC-AGI-3 suite using only
-uniformly random legal actions. See [`ARC_HARNESS.md`](docs/ARC_HARNESS.md) for
-the adapter boundary, lifecycle rules, trace formats, and shorter smoke runs.
+The editable install exposes these commands:
 
-The last command starts the local visual inspector. Open
-<http://127.0.0.1:8765/inspect/> to upload an image or select a bundled synthetic/raw
-fixture, then inspect foreground regions, simultaneous active schemas,
-reusable candidates, acyclic decomposition DAGs and variable interfaces,
-bindings, provenance, evidence, and runtime budgets. See
-[`inspect/README.md`](inspect/README.md) for details.
+```text
+reflector2-benchmark
+reflector2-raw-frame
+reflector2-evaluate-first-frames
+reflector2-arc
+reflector2-explanations
+reflector2-arcade
+```
 
-The four-frame benchmark generically constructs an enclosure/inside schema and
-a form-plus-enclosure chunk, then canonicalizes two distinct form transitions
-to one morphism preserving `Form`, changing `Color`, and increasing
-`EnclosureCount`. The stress command proves operation-count and structural
-identity independence from 1k, 10k, and 100k unrelated dormant schemas.
+## Quick starts
 
-`--transfer-matrix` emits a directed source-game × target-game structural
-transfer matrix. Every cell starts from an isolated copy of the source's
-completed graph and compares the target run with a fresh-target baseline. A
-transfer is counted only when a non-kernel source schema receives a verified
-target binding. A stricter grounded tier excludes generic variable-only
-composites and requires a non-type grounded descriptor such as a form
-fingerprint. The output also includes reuse, new-schema, work, and budget
-deltas. This is a structural compatibility experiment, not an ARC-solve or
-prediction result.
+Run the deterministic four-frame vertical slice:
 
-## Parallel execution status
+```bash
+.venv/bin/reflector2-benchmark --json
+```
 
-One observation executes through a deterministic CPU coordinator because it
-mutates one schema graph. Independent observations (including the 25-game
-evaluator) run process-parallel with `--workers 0`, which uses available CPU
-cores while preserving deterministic output order. The hot representation is
-structure-of-arrays and stable storage is specified as CSR so matching,
-frontier propagation, evidence reduction, transition scoring, and top-k
-pruning can later move to shared-memory CPU kernels or a GPU without changing
-the language. Canonicalization, hash-consing, and graph mutation remain
-coordinator responsibilities.
+Verify that unrelated dormant schemas do not change cognition-loop operation
+counts or structural output:
+
+```bash
+.venv/bin/reflector2-benchmark \
+  --stress 1000 10000 100000 \
+  --repetitions 5
+```
+
+Analyze the final layer of the first packet in one recording:
+
+```bash
+.venv/bin/reflector2-raw-frame /path/to/game.recording.jsonl
+```
+
+Evaluate exactly one recording per game. Independent games run in separate
+processes; `--workers 0` uses the available CPU cores:
+
+```bash
+.venv/bin/reflector2-evaluate-first-frames \
+  /path/to/recording-directory \
+  --expected-games 25 \
+  --workers 0
+```
+
+Run the directed source-game by target-game structural transfer matrix:
+
+```bash
+.venv/bin/reflector2-evaluate-first-frames \
+  /path/to/recording-directory \
+  --expected-games 25 \
+  --transfer-matrix
+```
+
+Run the bundled offline ARC-AGI-3 suite. The default policy is seeded random;
+use `--policy local-schema` or `--policy explanation` for the experimental
+controllers:
+
+```bash
+.venv/bin/reflector2-arc \
+  --expected-games 25 \
+  --seed 0 \
+  --max-transitions 80 \
+  --policy random
+```
+
+Outputs go to `arc-traces/` by default: one transport trace and one native R2
+trace per game, plus `summary.json`. See
+[the ARC harness guide](docs/ARC_HARNESS.md) and
+[the explanation guide](docs/EXPLANATIONS.md).
+
+## Local interfaces
+
+Start the read-only visual inspector:
+
+```bash
+.venv/bin/python inspect/server.py --port 8765
+```
+
+Open <http://127.0.0.1:8765/inspect/>. The inspector runs the real perception
+and runtime code in an isolated graph with a larger diagnostic budget. Its
+natural-language labels are external display annotations and never enter
+schema identity or evidence. See [inspect/README.md](inspect/README.md).
+
+Start the human-controlled ARC interface:
+
+```bash
+.venv/bin/reflector2-arcade --environments-dir environment_files
+```
+
+It executes only browser-selected actions and writes notes to
+`arcade/notes.json` unless another journal is supplied. See
+[arcade/README.md](arcade/README.md).
+
+Both servers bind to `127.0.0.1` by default.
+
+## Documentation guide
+
+- [ACTIVE_EQUILIBRATION.md](docs/ACTIVE_EQUILIBRATION.md): conceptual model and
+  longer-term research direction.
+- [THEORY.md](docs/THEORY.md): operational vocabulary and epistemic contracts.
+- [LANGUAGE.md](docs/LANGUAGE.md): S-expression DSL and schema-DAG syntax.
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md): current implementation architecture.
+- [INVARIANTS.md](docs/INVARIANTS.md): executable representation and runtime
+  constraints.
+- [BENCHMARK.md](docs/BENCHMARK.md): four-frame and dormant-store protocols.
+- [SHADOWS.md](docs/SHADOWS.md): partial-binding projection semantics.
+- [EXPLANATIONS.md](docs/EXPLANATIONS.md): bounded explanation-driven control.
+- [GPU_PLAN.md](docs/GPU_PLAN.md): future acceleration plan; no GPU runtime is
+  currently implemented.
+
+The documents under `experiments/` are evidence records for isolated research
+runners. They are not part of the installed `reflector2` package unless a
+mechanism has also been promoted into `src/reflector2`.
+
+## Experiment convention
+
+Each experiment belongs under `experiments/<slug>/` and keeps its proposal,
+result, configuration, code, and artifacts within that directory. At minimum,
+new experiments should preserve the initiating context, preregistered method,
+measured outcome, and an honest verdict. Large generated traces should remain
+outside the core package and should not be treated as runtime capabilities.
+
+## Current boundary
+
+The core runtime is in-memory, single-coordinator, and CPU-only. Parallelism is
+used around isolated games/evaluations, not inside one mutable schema graph.
+The store is represented as Python structure-of-arrays lists plus dictionaries;
+the stable CSR generation, compactor, snapshot format, and GPU kernels described
+in design documents remain future work.

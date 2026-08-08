@@ -1,0 +1,100 @@
+{
+  "checkpoint_format": 1,
+  "completed_at": "2026-08-08T13:36:27.181099+00:00",
+  "key": "6eff1bd102b182d06ae3fcb8aa20a4fc4f7375ff3a6fd105428633d1e0761569",
+  "result": {
+    "deterministic": {
+      "abstentions": {
+        "no-eligible-context": 397,
+        "parent-not-ambiguous": 2
+      },
+      "chronological_transitions": 399,
+      "completed_level_delta_vs_control": 0,
+      "contexts": {},
+      "executed_action_changes": 0,
+      "final_schema_count": 173,
+      "game": "wa30",
+      "improve": 0,
+      "initial_kernel_fingerprint": "8e843e971148c5c659bfff1d64cbe68bfd91d61f80eda8e399fff7c00c7a2efc",
+      "initial_schema_count": 9,
+      "opportunities": 0,
+      "opportunity_records": [],
+      "packets": 400,
+      "parent": {
+        "atoms": [
+          [
+            "After",
+            [
+              "?v0",
+              "ActiveSchema",
+              "?v1"
+            ]
+          ],
+          [
+            "Before",
+            [
+              "?v2",
+              "ActiveSchema",
+              "?v3"
+            ]
+          ],
+          [
+            "Codomain",
+            [
+              "?v0"
+            ]
+          ],
+          [
+            "Domain",
+            [
+              "?v2"
+            ]
+          ],
+          [
+            "Intervention",
+            [
+              "?v4"
+            ]
+          ]
+        ],
+        "hash": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc"
+      },
+      "parent_intact": true,
+      "prediction": {
+        "child_refuted": 0,
+        "child_reified": 0,
+        "parent_refuted": 0,
+        "parent_reified": 0
+      },
+      "recording": "/home/pauloabelha/reflector-v164-pivot-goal/reports/v164-public-r1-recordings/wa30/wa30.reflectoragent.6fdd6576-f583-427d-a09c-a6172c0ef01b.recording.jsonl",
+      "recording_sha256": "233bd07ba8f4755dc011b3c205f7ff2023f19aa0552d4e87726c2464cb745564",
+      "score_delta_vs_control": null,
+      "spinoffs_created": 0,
+      "tie": 0,
+      "top_action_changes": 0,
+      "trace": [
+        {
+          "event": "game-start",
+          "game": "wa30",
+          "initial_schema_count": 9,
+          "kernel_fingerprint": "8e843e971148c5c659bfff1d64cbe68bfd91d61f80eda8e399fff7c00c7a2efc",
+          "parent": "4dd44c2c187a681e2c8079ec0c9c79bcdc599b87829ea73cf326c5df191e23cc",
+          "recording_sha256": "233bd07ba8f4755dc011b3c205f7ff2023f19aa0552d4e87726c2464cb745564"
+        },
+        {
+          "event": "game-end",
+          "executed_action_changes": 0,
+          "game": "wa30",
+          "opportunities": 0,
+          "top_action_changes": 0
+        }
+      ],
+      "worsen": 0
+    },
+    "timing": {
+      "cpu_seconds": 4003.6896258040006,
+      "game": "wa30",
+      "wall_seconds": 4174.824375603001
+    }
+  }
+}
