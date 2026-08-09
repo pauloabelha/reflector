@@ -110,3 +110,4 @@ Machine checkpoints are written atomically under `artifacts/checkpoints/` after 
 - A mismatched wa30 prior uniquely grounded on ar25, drove 31 actions, and failed—an important causal negative rather than a cosmetic comparison.
 - cd82's own prior bound one pair but received zero direct relative-motion confirmations and therefore made zero decisions. Other non-anchor own priors abstained through ambiguity or lack of binding.
 - The honest conclusion is `ANCHOR_ONLY`: the generic external explanation interface can solve ar25.1 faster, but this vocabulary/prompt/controller combination did not transfer a win to another first level.
+- Post-run server check: `/v1/models` still reports the correct Qwen model and aggregate GPU use is 5,015 MiB. The server was deliberately left running and resident.
