@@ -1,0 +1,19 @@
+{
+  "action_sequence": [],
+  "control_actions": [],
+  "direct_motion_calibrations": 2,
+  "exact_replay": true,
+  "factual_actions": 0,
+  "hypothesis_count": 0,
+  "initial_digest": "815725a87f300e94bc071e3a784c67e89fff5ecdaa6ece8b178792fa5ce3dd10",
+  "legal_interventions": 5,
+  "levels_completed": 0,
+  "mechanism_commit": "d47f756aeb49d59b0bf389934c53f684198d812a",
+  "no_post_selection_tuning": true,
+  "probe_actions": [],
+  "protocol": "guarded-obligation-cross-game-v0",
+  "selected_game": "g50t",
+  "selection_receipt": "SELECTION.json",
+  "source_or_oracle_used": false,
+  "stop_reason": "induction-abstention:GuardedVisualInductionError:action-correlated actor is ambiguous"
+}

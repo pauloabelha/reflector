@@ -73,6 +73,20 @@ def enumerate_hypotheses(initial,calibrations:Sequence[MotionCalibration],*,max_
     grid=_grid(initial);direct=[row for row in calibrations if row.before_anchor!=row.after_anchor]
     if not direct: return ()
     starts={row.before_anchor for row in direct};sizes={row.actor_size for row in direct}
+    # Preserve independent controller lineages instead of allowing one moving
+    # distractor to poison every candidate.  Each lineage must still establish
+    # its own coherent cardinal action model; ambiguity survives as multiple
+    # returned hypotheses and is never resolved by arbitrary ranking.
+    lineages={}
+    for row in direct:
+        lineages.setdefault((row.before_anchor,row.actor_size),[]).append(row)
+    if len(lineages)>1:
+        combined=[]
+        for _key,rows in sorted(lineages.items()):
+            try:combined.extend(enumerate_hypotheses(grid,rows,max_hypotheses=max_hypotheses))
+            except GuardedVisualInductionError:continue
+        unique={row.hypothesis_id:row for row in combined}
+        return tuple(sorted(unique.values(),key=lambda row:(-row.attention,row.hypothesis_id))[:max_hypotheses])
     if len(starts)!=1 or len(sizes)!=1:raise GuardedVisualInductionError("action-correlated actor is ambiguous")
     start=next(iter(starts));width,height=next(iter(sizes));deltas={(row.after_anchor[0]-row.before_anchor[0],row.after_anchor[1]-row.before_anchor[1]):row.opaque_action for row in direct}
     if len(deltas)!=len(direct):raise GuardedVisualInductionError("motion mapping conflicts")

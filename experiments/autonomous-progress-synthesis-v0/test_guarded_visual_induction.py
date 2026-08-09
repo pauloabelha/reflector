@@ -50,3 +50,14 @@ def test_register_signature_prefers_structured_glyph_over_larger_uniform_fragmen
     assert signature[1]=="shape:"+__import__('hashlib').sha256(
         repr(((0,0),(1,0),(1,1))).encode()
     ).hexdigest()[:20]
+
+
+def test_unrelated_motion_lineage_does_not_destroy_coherent_controller():
+    initial=frame();revealed=[list(row) for row in initial]
+    for y in range(12,14):
+      for x in range(12,14):revealed[y][x]=1
+    revealed=tuple(tuple(row) for row in revealed)
+    coherent=(calibration(91,(12,12),(10,12),revealed),calibration(7,(12,12),(14,12),revealed),calibration(44,(12,12),(12,10),revealed))
+    distractor=calibration(88,(3,3),(4,3),revealed)
+    rows=M.enumerate_hypotheses(initial,coherent+(distractor,))
+    assert rows and {row.actor_anchor for row in rows}=={(12,12)}

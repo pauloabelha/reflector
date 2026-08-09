@@ -1,0 +1,39 @@
+{
+  "candidate_digest": "4967e0eeb7ecc9ea2b426c20820a35bd7c3b542ba2fd0bdb59c999ed9f55c75e",
+  "candidate_ids": [
+    "ar25",
+    "bp35",
+    "cd82",
+    "cn04",
+    "dc22",
+    "ft09",
+    "g50t",
+    "ka59",
+    "lf52",
+    "lp85",
+    "m0r0",
+    "r11l",
+    "re86",
+    "s5i5",
+    "sb26",
+    "sc25",
+    "sk48",
+    "sp80",
+    "su15",
+    "tn36",
+    "tr87",
+    "tu93",
+    "vc33",
+    "wa30"
+  ],
+  "exclusions": [
+    "ls20"
+  ],
+  "mechanism_commit": "d47f756aeb49d59b0bf389934c53f684198d812a",
+  "protocol": "guarded-obligation-cross-game-v0",
+  "selected_game": "g50t",
+  "selection_index": 6,
+  "selector": "int(sha256(protocol + NUL + full_mechanism_commit), 16) mod 24",
+  "selector_digest": "e00ab88e1e1b6b308af7b40b00e6a662150033a10d80a9533e52b3657240e9ae",
+  "selection_scope": "directory identities only; no frame, source, metadata, outcome, or legal-action inspection"
+}
