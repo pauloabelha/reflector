@@ -42,3 +42,31 @@ def test_incomplete_exact_phase_recompiles_from_current_observation(monkeypatch)
     assert controller.decide(changed,(0,1)).action_id==0
     assert controller.decide(initial,(0,1)).action_id==9
     assert controller.decide(changed,(0,1)).action_id==8
+
+
+def test_gradient_requires_direct_potential_improvement_before_continuing(monkeypatch):
+    gradient=type("Gradient",(),{"opaque_actions":(9,8)})()
+    candidate=type("Candidate",(),{"candidate_id":"goal:g"})()
+    proposal=__import__('deployment_capability_registry').CapabilityProposal("gradient:test",{},10,0,(candidate,"?x",gradient),False)
+    monkeypatch.setattr(online.registry,"propose",lambda *a,**k:(proposal,))
+    controller=online.OnlineCapabilityController();initial=((0,0),(0,1));changed=((0,0),(1,1))
+    values=iter((5,4));monkeypatch.setattr(controller,"_measure",lambda grid:next(values))
+    assert controller.decide(initial,(0,1)).action_id==1
+    assert controller.decide(changed,(0,1)).action_id==0
+    assert controller.decide(initial,(0,1)).action_id==9
+    assert controller.decide(changed,(0,1)).action_id==8
+    assert controller._licensed
+
+
+def test_unconfirmed_gradient_abstains_after_one_prospective_action(monkeypatch):
+    gradient=type("Gradient",(),{"opaque_actions":(9,8)})()
+    candidate=type("Candidate",(),{"candidate_id":"goal:g"})()
+    proposal=__import__('deployment_capability_registry').CapabilityProposal("gradient:test",{},10,0,(candidate,"?x",gradient),False)
+    monkeypatch.setattr(online.registry,"propose",lambda *a,**k:(proposal,))
+    controller=online.OnlineCapabilityController();initial=((0,0),(0,1));changed=((0,0),(1,1))
+    monkeypatch.setattr(controller,"_measure",lambda grid:5)
+    assert controller.decide(initial,(0,1)).action_id==1
+    assert controller.decide(changed,(0,1)).action_id==0
+    assert controller.decide(initial,(0,1)).action_id==9
+    assert controller.decide(changed,(0,1)) is None
+    assert controller.report()["phase"]=="abstained" and controller.used==1

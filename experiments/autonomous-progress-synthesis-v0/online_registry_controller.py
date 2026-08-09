@@ -11,7 +11,7 @@ the fallback.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass,replace
 from typing import Any,Mapping,Sequence
 
 import deployment_capability_registry as registry
@@ -39,6 +39,7 @@ class OnlineCapabilityController:
         self.successors={};self.index=0;self.awaiting_action=None;self.selected=None
         self.queue=[];self.used=0;self.route_mapping={};self.symbolic_state=None
         self._symbolic_pending=None;self._symbolic_before=None;self.abstention=None
+        self._prospective_before=None;self._prospective_kind=None;self._licensed=False
 
     @staticmethod
     def _grid(value:Sequence[Sequence[int]])->tuple[tuple[int,...],...]:
@@ -67,6 +68,31 @@ class OnlineCapabilityController:
             self._symbolic_before,grid,transition_id=f"online:{self.used}",
         )
         self._symbolic_pending=None;self._symbolic_before=None
+
+    def _measure(self,current):
+        kind=self.selected.capability
+        if kind.startswith("gradient:"):
+            candidate=self.selected.execution[0]
+            try:
+                before=registry.synthesis.perceive(self.initial);after=registry.synthesis.perceive(current)
+                by_id={row.region_id:row for row in before.regions};binding={}
+                for variable,region_id in candidate.binding.items():
+                    source=by_id[region_id]
+                    matches=[row for row in after.regions if (row.width,row.height,row.normalized)==(source.width,source.height,source.normalized)]
+                    if not matches:return None
+                    distance=min(abs(row.x-source.x)+abs(row.y-source.y) for row in matches)
+                    nearest=[row for row in matches if abs(row.x-source.x)+abs(row.y-source.y)==distance]
+                    if len(nearest)!=1:return None
+                    binding[variable]=nearest[0].region_id
+                value=registry.dsl.evaluate(replace(candidate,binding=binding),current)
+            except Exception:return None
+            return value
+        if kind=="interactive:conditional-route":
+            try:
+                option=self.selected.execution;anchor=registry.route_option.controlled_anchor(option,current)
+                return len(registry.route_option.ROUTE.shortest_route(option.field,current,start=anchor))
+            except Exception:return None
+        return None
 
     def _continue_exact(self,current)->bool:
         option=self.selected.execution;previous=option.proposal
@@ -121,17 +147,27 @@ class OnlineCapabilityController:
             self._compile()
         if self.phase!="executing" or self.used>=self.max_capability_actions:return None
         kind=self.selected.capability
+        if self._prospective_kind is not None:
+            after=self._measure(current);before=self._prospective_before
+            self._prospective_kind=None;self._prospective_before=None
+            if before is None or after is None or after>=before:
+                self.phase="abstained";self.abstention=((kind,"prospective-progress-not-confirmed"),);return None
+            self._licensed=True
         if kind.startswith("exact:"):
             if not self.queue and not self._continue_exact(current):return None
             command=self.queue.pop(0);self.used+=1
             return OnlineCommand(int(command.opaque_action),tuple(command.data),f"capability:{command.role}")
         if kind.startswith("gradient:"):
             if not self.queue:return None
+            if not self._licensed:
+                self._prospective_before=self._measure(current);self._prospective_kind=kind
             action=int(self.queue.pop(0));self.used+=1;return OnlineCommand(action,(),"capability:gradient")
         if kind=="interactive:conditional-route":
             wanted=route_option.desired_delta(self.selected.execution,current)
             action=self.route_mapping.get(wanted)
             if action is None:return None
+            if not self._licensed:
+                self._prospective_before=self._measure(current);self._prospective_kind=kind
             self.used+=1;return OnlineCommand(int(action),(),"capability:conditional-route")
         if kind=="interactive:symbolic-transformation":
             self._finish_symbolic_observation(current)

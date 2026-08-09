@@ -89,4 +89,4 @@ def select_operational(rows):
     return min(eligible,key=lambda row:(-row.empirical_support,-row.attention,row.capability,str(row.execution))) if eligible else None
 
 
-__all__=["CapabilityProposal","ExactOption","OperationalStatus","exact","gradient","operational_status","propose","route_option","select_operational","synthesis"]
+__all__=["CapabilityProposal","ExactOption","OperationalStatus","dsl","exact","gradient","operational_status","propose","route_option","select_operational","synthesis"]
