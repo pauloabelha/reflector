@@ -94,3 +94,48 @@ def test_invalid_family_pair_is_rejected():
         assert "contract" in str(error)
     else:
         raise AssertionError("invalid semantic pair was accepted")
+
+
+def test_rendered_alias_compiles_multicomponent_control_back_to_pixels():
+    initial = (
+        (0, 0, 0, 0, 0, 0, 0, 0, 0),
+        (0, 1, 1, 0, 0, 2, 2, 2, 0),
+        (0, 1, 1, 0, 0, 2, 2, 2, 0),
+        (0, 3, 3, 0, 0, 0, 0, 0, 0),
+        (0, 3, 3, 0, 0, 0, 0, 0, 0),
+    )
+    scene = PS.perceive(initial, coarsen=False)
+    target = next(item for item in scene.regions if item.x == 5)
+    workspace = {"entities": [
+        {"id": "p000", "origin": [1, 1], "size": [2, 4], "area": 8},
+        {"id": "e000", "origin": [target.x, target.y], "size": [target.width, target.height], "area": target.area},
+    ]}
+    goal = M.compile_rendered_goal({
+        "family": "alignment", "controlled_id": "p000", "members": ["e000"],
+        "container_id": None, "potential": "AlignmentResidual", "terminal": "Aligned",
+        "interaction_candidate": None, "rationale": "compound control",
+    }, workspace, initial)
+    assert len(goal.controlled.components) == 2
+    assert M.evaluate(goal, initial).value is not None
+
+
+def test_false_terminal_proxy_is_refuted_only_by_environment_noncompletion():
+    goal = grounded_goal(grid(1))
+    policy = M.AdaptivePotentialPolicy((goal,))
+    selected = policy.observe_noncompletion((M.PotentialReading(goal.proposal_id, 0, 1, "grounded-agreement"),))
+    record = policy.records()[0]
+    assert selected is None
+    assert record.status == "refuted-terminal-proxy"
+    assert record.empirical_support == -1 and record.environment_refutations == 1
+
+
+def test_plateau_suppresses_attention_without_fabricating_refutation_or_support():
+    goal = grounded_goal(grid(1))
+    policy = M.AdaptivePotentialPolicy((goal,), plateau_patience=2)
+    reading = M.PotentialReading(goal.proposal_id, 8, 1, "grounded-agreement")
+    assert policy.observe_noncompletion((reading,)) is not None
+    assert policy.observe_noncompletion((reading,)) is not None
+    assert policy.observe_noncompletion((reading,)) is None
+    record = policy.records()[0]
+    assert record.status == "attention-suppressed-plateau"
+    assert record.empirical_support == 0 and record.environment_refutations == 0

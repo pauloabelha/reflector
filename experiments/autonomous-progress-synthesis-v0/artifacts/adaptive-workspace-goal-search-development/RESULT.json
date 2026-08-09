@@ -1,0 +1,57 @@
+{
+  "archived_proposal": "experiments/progress-goal-live-qwen-v7/artifacts/fresh-1/RESULT.json",
+  "consumed_game": "ls20",
+  "development_only": true,
+  "frozen_bounds": {
+    "calibration": 4,
+    "history_order": 4,
+    "max_depth": 16,
+    "max_states": 256,
+    "plateau_patience": 12,
+    "total_action_budget": 400
+  },
+  "protocol": "adaptive-workspace-potential-search-development-v1",
+  "repair_after_v0_failure": "environment terminal refutation plus bounded plateau attention suppression",
+  "results": [
+    {
+      "arm": "causal_search_only",
+      "calibration_actions": 4,
+      "goal_support": null,
+      "maximum_depth": 4,
+      "resets": 127,
+      "search_actions": 396,
+      "solution": [],
+      "solved": false,
+      "states": 127,
+      "stop_reason": "action-budget",
+      "total_environment_actions": 400
+    },
+    {
+      "arm": "adaptive_shared_goal_attention",
+      "calibration_actions": 4,
+      "goal_attention_records": [
+        {
+          "attention_suppressions": 1,
+          "best_value": 12,
+          "empirical_support": 0,
+          "environment_refutations": 0,
+          "evaluations": 104,
+          "evaluations_since_improvement": 12,
+          "known_evaluations": 21,
+          "last_reason": "grounded-agreement",
+          "proposal_id": "archived-live-qwen-v7",
+          "status": "attention-suppressed-plateau"
+        }
+      ],
+      "goal_support": 0,
+      "maximum_depth": 7,
+      "resets": 105,
+      "search_actions": 396,
+      "solution": [],
+      "solved": false,
+      "states": 105,
+      "stop_reason": "action-budget",
+      "total_environment_actions": 400
+    }
+  ]
+}

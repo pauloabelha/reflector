@@ -1,0 +1,566 @@
+{
+  "max_tokens": 3072,
+  "messages": [
+    {
+      "content": [
+        {
+          "text": "You are the slow semantic worker in a shared executable epistemic workspace.\nYou see the world directly and also see R2's exact grounded component and intervention deltas.\nConstruct at most one live goal hypothesis. It starts with empirical support zero: you may say what deserves testing, never that it is true.\n\nDo not assume every goal is pairwise. Consider these generic families equally: matching, alignment, collection/containment, connectivity, avoidance, transformation. A useful goal identifies a controlled entity, any set-valued roles, a measurable nonnegative potential, a terminal predicate, and\u2014only if warranted\u2014an opaque interaction candidate. Repeated visual classes may denote a set role. A differently patterned member of the same outline class may have a distinct controlled role. A region whose placement capacity matches a repeated class may deserve attention as a receptacle, but this is only a hypothesis.\n\nAvailable potential/terminal pairs are semantic contracts:\n- MismatchCount / AllMatched\n- AlignmentResidual / Aligned\n- OutsideCount / AllInside\n- ComponentDeficit / Connected\n- CollisionRisk / NoCollision\n- TransformationResidual / TransformationComplete\n\nUse only visible IDs and opaque intervention refs. Never emit action meanings, colors, coordinates, a policy, or an action sequence. Return null if no hypothesis is sufficiently grounded for a cheap empirical test.\n\nPROGRESS-SEEKING RULE: capacity_hypothesis.members is a candidate role population, never a claim that those regions are already inside. current_inside_count and outside_count are direct present-state measurements. When any exact grounded opportunity has outside_count > 0, you MUST write the single cheapest falsifiable goal hypothesis; uncertainty calls for testing, not abstention. Null is legal only when the workspace says progress_opportunity_present=false. Prefer hypotheses whose potential exactly measures the exposed deficit. Do not narrate an action sequence.\n\nA unique action-correlated visual process is itself a grounded progress opportunity even when no capacity hypothesis exists. Use the current frame to identify possible terminal exemplars, destinations, hazards, transformations, or connectivity changes. Choose the cheapest falsifiable family/potential/terminal hypothesis and keep unsupported roles OPEN through null container or minimal visible members. Do not default to collection and do not narrate a route.\n\nEPISTEMIC_WORKSPACE\n{\"calibrated_transitions\":[{\"controlled_candidates\":[\"p000\"],\"controlled_id\":\"p000\",\"entity_effects\":[{\"delta\":[0,0],\"entity_id\":\"e000\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e001\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e002\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e003\",\"status\":\"matched\"}],\"intervention_ref\":\"im00\",\"observation_changed\":true,\"observed_delta\":[0,-5]},{\"controlled_candidates\":[\"p000\"],\"controlled_id\":\"p000\",\"entity_effects\":[{\"delta\":[0,0],\"entity_id\":\"e000\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e001\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e002\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e003\",\"status\":\"matched\"}],\"intervention_ref\":\"im01\",\"observation_changed\":true,\"observed_delta\":[0,5]},{\"controlled_candidates\":[\"p000\"],\"controlled_id\":\"p000\",\"entity_effects\":[{\"delta\":[0,0],\"entity_id\":\"e000\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e001\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e002\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e003\",\"status\":\"matched\"}],\"intervention_ref\":\"im02\",\"observation_changed\":true,\"observed_delta\":[-5,0]},{\"controlled_candidates\":[\"p000\"],\"controlled_id\":\"p000\",\"entity_effects\":[{\"delta\":[0,0],\"entity_id\":\"e000\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e001\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e002\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e003\",\"status\":\"matched\"}],\"intervention_ref\":\"im03\",\"observation_changed\":true,\"observed_delta\":[5,0]}],\"capacity_hypotheses\":[],\"capacity_semantics\":\"integer shape tiling, not area equality alone\",\"cognitive_drive\":\"propose cheapest grounded falsifiable progress hypothesis for controlled process\",\"control_opportunity\":{\"controlled_candidates\":[\"p000\"],\"effects\":[{\"delta\":[0,-5],\"intervention_ref\":\"im00\"},{\"delta\":[0,5],\"intervention_ref\":\"im01\"},{\"delta\":[-5,0],\"intervention_ref\":\"im02\"},{\"delta\":[5,0],\"intervention_ref\":\"im03\"}],\"unique\":true},\"entities\":[{\"area\":208,\"id\":\"e000\",\"interior_class\":\"ic3\",\"kind\":\"region\",\"origin\":[0,0],\"outline_class\":\"oc1\",\"size\":[4,52]},{\"area\":208,\"id\":\"e001\",\"interior_class\":\"ic0\",\"kind\":\"region\",\"origin\":[12,60],\"outline_class\":\"oc1\",\"size\":[52,4]},{\"area\":971,\"id\":\"e002\",\"interior_class\":\"ic2\",\"kind\":\"region\",\"origin\":[14,8],\"outline_class\":\"oc2\",\"size\":[40,42]},{\"area\":100,\"id\":\"e003\",\"interior_class\":\"ic1\",\"kind\":\"region\",\"origin\":[1,53],\"outline_class\":\"oc0\",\"size\":[10,10]},{\"area\":25,\"id\":\"p000\",\"interior_class\":\"colors:9,12\",\"kind\":\"action_correlated_pixel_process\",\"origin\":[34,45],\"outline_class\":\"pixel_motion_composite\",\"size\":[5,5]}],\"epistemic_rules\":{\"all_roles_require_visible_ids\":true,\"attention_is_not_support\":true,\"only_environment_changes_support\":true},\"equivalence_classes\":[{\"kind\":\"same_outline\",\"members\":[\"e000\",\"e001\"]}],\"frame\":{\"height\":64,\"width\":64},\"progress_opportunity_present\":true,\"protocol\":\"live-progress-goal-v1\"}\nENVIRONMENT_FEEDBACK\n{\"best_value\":12,\"environment_refutations\":0,\"known_evaluations\":21,\"last_reason\":\"grounded-agreement\",\"prior_semantics\":{\"container_id\":\"e002\",\"controlled_id\":\"p000\",\"family\":\"alignment\",\"members\":[\"e000\",\"e001\"],\"potential\":\"AlignmentResidual\",\"terminal\":\"Aligned\"},\"status\":\"attention-suppressed-plateau\"}\nThe prior goal improved as a visual proxy but did not establish environmental completion. Its attention is no longer active. Emit one semantically different, presently grounded support-zero goal from the same closed families and visible IDs, or return null. Changing only rationale, member order, or an opaque intervention is a repeat. Evidence against the prior proxy is not support for its replacement.\n",
+          "type": "text"
+        },
+        {
+          "text": "current visual frame",
+          "type": "text"
+        },
+        {
+          "image_url": {
+            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADbklEQVR42u3dO0orURzA4RPJAixFOwNaKIpBrHUHaSLWNoIrELTU1jJgYy1xEaYW8QUW4qO2dAfaGQWjSWaSmTnzfdW9ktzIyf3xn5PHTKXdbodBNOubAWIxYQkQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAGA8qpYgW8vv62N7rLvJjgU3AUAAIACwB8iRg9fd1P/Nw9mWhTUBQAAgABAACAAEgACgvLwPUAAv2/v/3qZ2emShTAAQAAgA7AEi0ev4vp+9ASYACAAEAPYAxfP9WN/r/SYACAAEAPYA8et13G8/YAKAAEAAIAAQAAgABAD/8D5AjjiPpwkAAgABgD1A/HpdtyvJtcNcC8wEAAGAAEAAIAAQAAgABAACQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAKA3CnM9QGSnC+/bIq4Vlld08AEwCEQCAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAKoGoJRifJ91x9B9oEAAGAAMAeIH33q91j9KUrx9wmAAgABAD2AFEe95+dfPvbvP2ACQACAAGAPUDklrZ2usf94fHXn2MCgABAAGAPEP9+ABMABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIADIgcKcFyira+4meVxMABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACABSULUEf0vyfeIk1t4uhr7v5dSGJ84EAAGAAEAAIAAQAAgAQvA+QG7VtuaGvu9lZ8YCmgAgABAACAAEAAIAAYAAEIAlQAAgACifUnwWqJDX+r0d/q574cn/bBMABAACAAGAAEAAIAAIIYTKx7NFwAQAAYAAoER+fBbo/LqdyS/RrG96JjABQAAgABAACAAEAAKA9PX1neCX7f1UHqx2emTFMQFAACAAEAAIAAQAAoDxSXRuUK/rYwKAAEAAIAAQAAgABAC5NpJrhPX6/oD3DTABQAAgAIhzD5BEVucnxQQAAYAAwB6ga9DX79N6vf9wtjXQ7RePpz2jEWg0Gl9/flhp/nqbhZvzVG5jAuAQCAQAAgABgABAABC5ysdzvn4hnwXCBAABgABgpD4BWulesGtA7uwAAAAASUVORK5CYII="
+          },
+          "type": "image_url"
+        }
+      ],
+      "role": "user"
+    }
+  ],
+  "model": "qwen3-vl-4b-thinking-q4_k_m",
+  "response_format": {
+    "json_schema": {
+      "name": "live_progress_goal_v1",
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "goal": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "container_id": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "e000",
+                          "e001",
+                          "e002",
+                          "e003",
+                          "p000"
+                        ]
+                      }
+                    ]
+                  },
+                  "controlled_id": {
+                    "enum": [
+                      "e000",
+                      "e001",
+                      "e002",
+                      "e003",
+                      "p000"
+                    ]
+                  },
+                  "family": {
+                    "const": "matching"
+                  },
+                  "interaction_candidate": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "im00",
+                          "im01",
+                          "im02",
+                          "im03"
+                        ]
+                      }
+                    ]
+                  },
+                  "members": {
+                    "items": {
+                      "enum": [
+                        "e000",
+                        "e001",
+                        "e002",
+                        "e003",
+                        "p000"
+                      ]
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "potential": {
+                    "const": "MismatchCount"
+                  },
+                  "rationale": {
+                    "maxLength": 320,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "terminal": {
+                    "const": "AllMatched"
+                  }
+                },
+                "required": [
+                  "family",
+                  "controlled_id",
+                  "members",
+                  "container_id",
+                  "potential",
+                  "terminal",
+                  "interaction_candidate",
+                  "rationale"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "container_id": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "e000",
+                          "e001",
+                          "e002",
+                          "e003",
+                          "p000"
+                        ]
+                      }
+                    ]
+                  },
+                  "controlled_id": {
+                    "enum": [
+                      "e000",
+                      "e001",
+                      "e002",
+                      "e003",
+                      "p000"
+                    ]
+                  },
+                  "family": {
+                    "const": "alignment"
+                  },
+                  "interaction_candidate": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "im00",
+                          "im01",
+                          "im02",
+                          "im03"
+                        ]
+                      }
+                    ]
+                  },
+                  "members": {
+                    "items": {
+                      "enum": [
+                        "e000",
+                        "e001",
+                        "e002",
+                        "e003",
+                        "p000"
+                      ]
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "potential": {
+                    "const": "AlignmentResidual"
+                  },
+                  "rationale": {
+                    "maxLength": 320,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "terminal": {
+                    "const": "Aligned"
+                  }
+                },
+                "required": [
+                  "family",
+                  "controlled_id",
+                  "members",
+                  "container_id",
+                  "potential",
+                  "terminal",
+                  "interaction_candidate",
+                  "rationale"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "container_id": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "e000",
+                          "e001",
+                          "e002",
+                          "e003",
+                          "p000"
+                        ]
+                      }
+                    ]
+                  },
+                  "controlled_id": {
+                    "enum": [
+                      "e000",
+                      "e001",
+                      "e002",
+                      "e003",
+                      "p000"
+                    ]
+                  },
+                  "family": {
+                    "const": "collection_containment"
+                  },
+                  "interaction_candidate": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "im00",
+                          "im01",
+                          "im02",
+                          "im03"
+                        ]
+                      }
+                    ]
+                  },
+                  "members": {
+                    "items": {
+                      "enum": [
+                        "e000",
+                        "e001",
+                        "e002",
+                        "e003",
+                        "p000"
+                      ]
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "potential": {
+                    "const": "OutsideCount"
+                  },
+                  "rationale": {
+                    "maxLength": 320,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "terminal": {
+                    "const": "AllInside"
+                  }
+                },
+                "required": [
+                  "family",
+                  "controlled_id",
+                  "members",
+                  "container_id",
+                  "potential",
+                  "terminal",
+                  "interaction_candidate",
+                  "rationale"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "container_id": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "e000",
+                          "e001",
+                          "e002",
+                          "e003",
+                          "p000"
+                        ]
+                      }
+                    ]
+                  },
+                  "controlled_id": {
+                    "enum": [
+                      "e000",
+                      "e001",
+                      "e002",
+                      "e003",
+                      "p000"
+                    ]
+                  },
+                  "family": {
+                    "const": "connectivity"
+                  },
+                  "interaction_candidate": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "im00",
+                          "im01",
+                          "im02",
+                          "im03"
+                        ]
+                      }
+                    ]
+                  },
+                  "members": {
+                    "items": {
+                      "enum": [
+                        "e000",
+                        "e001",
+                        "e002",
+                        "e003",
+                        "p000"
+                      ]
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "potential": {
+                    "const": "ComponentDeficit"
+                  },
+                  "rationale": {
+                    "maxLength": 320,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "terminal": {
+                    "const": "Connected"
+                  }
+                },
+                "required": [
+                  "family",
+                  "controlled_id",
+                  "members",
+                  "container_id",
+                  "potential",
+                  "terminal",
+                  "interaction_candidate",
+                  "rationale"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "container_id": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "e000",
+                          "e001",
+                          "e002",
+                          "e003",
+                          "p000"
+                        ]
+                      }
+                    ]
+                  },
+                  "controlled_id": {
+                    "enum": [
+                      "e000",
+                      "e001",
+                      "e002",
+                      "e003",
+                      "p000"
+                    ]
+                  },
+                  "family": {
+                    "const": "avoidance"
+                  },
+                  "interaction_candidate": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "im00",
+                          "im01",
+                          "im02",
+                          "im03"
+                        ]
+                      }
+                    ]
+                  },
+                  "members": {
+                    "items": {
+                      "enum": [
+                        "e000",
+                        "e001",
+                        "e002",
+                        "e003",
+                        "p000"
+                      ]
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "potential": {
+                    "const": "CollisionRisk"
+                  },
+                  "rationale": {
+                    "maxLength": 320,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "terminal": {
+                    "const": "NoCollision"
+                  }
+                },
+                "required": [
+                  "family",
+                  "controlled_id",
+                  "members",
+                  "container_id",
+                  "potential",
+                  "terminal",
+                  "interaction_candidate",
+                  "rationale"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "container_id": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "e000",
+                          "e001",
+                          "e002",
+                          "e003",
+                          "p000"
+                        ]
+                      }
+                    ]
+                  },
+                  "controlled_id": {
+                    "enum": [
+                      "e000",
+                      "e001",
+                      "e002",
+                      "e003",
+                      "p000"
+                    ]
+                  },
+                  "family": {
+                    "const": "transformation"
+                  },
+                  "interaction_candidate": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "im00",
+                          "im01",
+                          "im02",
+                          "im03"
+                        ]
+                      }
+                    ]
+                  },
+                  "members": {
+                    "items": {
+                      "enum": [
+                        "e000",
+                        "e001",
+                        "e002",
+                        "e003",
+                        "p000"
+                      ]
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "potential": {
+                    "const": "TransformationResidual"
+                  },
+                  "rationale": {
+                    "maxLength": 320,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "terminal": {
+                    "const": "TransformationComplete"
+                  }
+                },
+                "required": [
+                  "family",
+                  "controlled_id",
+                  "members",
+                  "container_id",
+                  "potential",
+                  "terminal",
+                  "interaction_candidate",
+                  "rationale"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "protocol": {
+            "const": "live-progress-goal-v1"
+          }
+        },
+        "required": [
+          "protocol",
+          "goal"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    "type": "json_schema"
+  },
+  "seed": 271828,
+  "stream": false,
+  "temperature": 0,
+  "thinking_budget_tokens": 2048
+}

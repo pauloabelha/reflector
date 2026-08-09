@@ -1,0 +1,42 @@
+{
+  "compilation": {
+    "accepted": false,
+    "goal": null,
+    "reason": "collection-grounding"
+  },
+  "consumed_game": "ls20",
+  "development_only": true,
+  "feedback": {
+    "attention_suppressions": 1,
+    "best_value": 12,
+    "empirical_support": 0,
+    "environment_refutations": 0,
+    "evaluations": 104,
+    "evaluations_since_improvement": 12,
+    "known_evaluations": 21,
+    "last_reason": "grounded-agreement",
+    "proposal_id": "archived-live-qwen-v7",
+    "status": "attention-suppressed-plateau"
+  },
+  "latency_seconds": 33.11434598598862,
+  "prior_semantics": {
+    "container_id": "e002",
+    "controlled_id": "p000",
+    "family": "alignment",
+    "members": [
+      "e000",
+      "e001"
+    ],
+    "potential": "AlignmentResidual",
+    "terminal": "Aligned"
+  },
+  "protocol": "workspace-goal-evidence-revision-development-v0",
+  "usage": {
+    "completion_tokens": 2164,
+    "prompt_tokens": 1588,
+    "prompt_tokens_details": {
+      "cached_tokens": 1587
+    },
+    "total_tokens": 3752
+  }
+}

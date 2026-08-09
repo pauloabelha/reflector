@@ -1,0 +1,41 @@
+{
+  "archived_proposal": "experiments/progress-goal-live-qwen-v7/artifacts/fresh-1/RESULT.json",
+  "consumed_game": "ls20",
+  "development_only": true,
+  "frozen_bounds": {
+    "calibration": 4,
+    "history_order": 4,
+    "max_depth": 16,
+    "max_states": 256,
+    "total_action_budget": 400
+  },
+  "protocol": "workspace-potential-search-development-v0",
+  "results": [
+    {
+      "arm": "causal_search_only",
+      "calibration_actions": 4,
+      "goal_support": null,
+      "maximum_depth": 4,
+      "resets": 127,
+      "search_actions": 396,
+      "solution": [],
+      "solved": false,
+      "states": 127,
+      "stop_reason": "action-budget",
+      "total_environment_actions": 400
+    },
+    {
+      "arm": "shared_goal_attention",
+      "calibration_actions": 4,
+      "goal_support": 0,
+      "maximum_depth": 14,
+      "resets": 56,
+      "search_actions": 396,
+      "solution": [],
+      "solved": false,
+      "states": 56,
+      "stop_reason": "action-budget",
+      "total_environment_actions": 400
+    }
+  ]
+}
