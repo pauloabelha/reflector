@@ -14,15 +14,21 @@ class Baseline:
         return {"format":"reflector-cognitive-event-v1","operative_state":{"consecutive_without_progress":self.stagnation}}
 
 
+class Observation:
+    def to_dict(self):return {"frame":[[0,1],[1,0]],"transition_id":"transition:0"}
+
+
 def proposal(mode="probe"):
     return OptionProposal.create(schema_id="schema:generic",action_id=4,mode=mode,potential_before=3,predicted_after=2,basis_ids=("frame:0",),proposer="qwen",attention=90)
 
 
 def test_no_option_is_exact_fallback_and_cognition_is_shared():
     policy=SharedBroadPolicy(Baseline())
-    decision=policy.choose_action(object())
+    decision=policy.choose_action(Observation())
     assert (decision.action_id,dict(decision.data),decision.mode)==(1,{"x":2},"fallback")
-    assert policy.workspace_document()["events"][0]["kind"]=="broad_cognitive_event"
+    events=policy.workspace_document()["events"]
+    assert events[0]=={"kind":"world_observation","creator":"environment","payload":{"frame":[[0,1],[1,0]],"transition_id":"transition:0"}}
+    assert events[1]["kind"]=="broad_cognitive_event"
 
 
 def test_attention_or_unconfirmed_control_cannot_override():

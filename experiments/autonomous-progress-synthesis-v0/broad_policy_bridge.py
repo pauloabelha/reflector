@@ -159,6 +159,16 @@ class SharedBroadPolicy:
         return int(state.get("consecutive_without_progress", 0)) if isinstance(state, Mapping) else 0
 
     def choose_action(self, observation: Any, proposal: OptionProposal | None = None) -> HybridDecision:
+        serialize = getattr(observation, "to_dict", None)
+        if callable(serialize):
+            raw_observation = serialize()
+            if not isinstance(raw_observation, Mapping):
+                raise BridgeError("serialized observation must be a mapping")
+            self.events.append({
+                "kind": "world_observation",
+                "creator": "environment",
+                "payload": dict(raw_observation),
+            })
         fallback = self.baseline.choose_action(observation)
         fallback_data = self._decision_data(fallback)
         cognitive = dict(self.baseline.cognitive_event(observation, fallback))
