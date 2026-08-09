@@ -24,6 +24,7 @@ def load(name: str, path: Path) -> Any:
 
 GRAPH = load("shared_attention_cognition_test_graph", HERE / "epistemic_graph.py")
 COGNITION = load("shared_attention_cognition_tests", HERE / "qwen_cognition.py")
+AMBIGUITY = load("shared_attention_ambiguity_tests", HERE / "ambiguity.py")
 
 
 def add_object(
@@ -469,6 +470,142 @@ def test_relational_projection_keeps_triad_and_relation_facts_without_large_payl
         value for value in state.objects if value.object_id == items["summary"].object_id
     )
     assert len(canonical_summary.payload["schema_ids"]) == 80
+
+
+def test_ambiguity_witness_preserves_bounded_substitutions_pairs_and_contrasts() -> None:
+    _state, _events, items = relational_triad_fixture()
+    relation_state = {
+        "relations": items["relation_set"].payload["relations"],
+    }
+    template = {
+        "canonical_hash": "generic-template-digest",
+        "conditions": [
+            {"predicate": "SameOutline", "arguments": ["?a", "?b"]},
+            {"predicate": "SameArea", "arguments": ["?a", "?b"]},
+        ],
+        "effect_variables": ["?a", "?b"],
+    }
+    witness = AMBIGUITY.compile_ambiguity_witness(
+        template,
+        relation_state,
+        max_candidates=3,
+        max_effect_pairs=3,
+        max_relations_per_candidate=4,
+    )
+
+    assert witness["protocol"] == AMBIGUITY.PROTOCOL
+    assert witness["status"] == "ambiguous-grounding"
+    assert witness["grounding_count_observed"] == 6
+    assert witness["effect_pair_count_observed"] == 3
+    assert len(witness["candidate_substitutions"]) == 3
+    assert {tuple(item["effect_pair"]) for item in witness["candidate_substitutions"]} == {
+        ("f00", "f01"),
+        ("f00", "f02"),
+        ("f01", "f02"),
+    }
+    assert all(item["substitution"] for item in witness["candidate_substitutions"])
+    matching = next(
+        item
+        for item in witness["candidate_substitutions"]
+        if item["effect_pair"] == ["f01", "f02"]
+    )
+    assert {item["predicate"] for item in matching["distinguishing_relations"]} >= {
+        "SameInteriorLayout",
+        "Disjoint",
+    }
+    assert all(
+        item["predicate"] not in {"SameOutline", "SameArea"}
+        for candidate in witness["candidate_substitutions"]
+        for item in candidate["distinguishing_relations"]
+    )
+
+    bounded = AMBIGUITY.compile_ambiguity_witness(
+        template,
+        relation_state,
+        max_candidates=2,
+        max_effect_pairs=2,
+        max_relations_per_candidate=1,
+    )
+    assert len(bounded["candidate_substitutions"]) == 2
+    assert len(bounded["effect_pairs"]) == 2
+    assert bounded["candidate_substitutions_truncated"] is True
+    assert bounded["effect_pairs_truncated"] is True
+    assert bounded == AMBIGUITY.compile_ambiguity_witness(
+        template,
+        relation_state,
+        max_candidates=2,
+        max_effect_pairs=2,
+        max_relations_per_candidate=1,
+    )
+
+
+def test_ambiguous_criticism_cut_keeps_witness_target_and_current_relations() -> None:
+    state, events, items = relational_triad_fixture()
+    target_payload = {
+        "conditions": [
+            {"predicate": "SameOutline", "arguments": ["?a", "?b"]},
+            {"predicate": "SameArea", "arguments": ["?a", "?b"]},
+        ],
+        "preferred_consequence": {
+            "operator": "Decrease",
+            "measure": "TranslationAlignmentResidual",
+            "arguments": ["?a", "?b"],
+        },
+    }
+    state, target = add_object(
+        state,
+        events,
+        kind="schema",
+        creator="qwen",
+        name="ambiguous-template",
+        payload=target_payload,
+    )
+    witness = AMBIGUITY.compile_ambiguity_witness(
+        {**target_payload, "canonical_hash": target.object_id},
+        {"relations": items["relation_set"].payload["relations"]},
+        max_candidates=3,
+        max_effect_pairs=3,
+    )
+    criticism_result = GRAPH.ingest_structured_criticism(
+        state,
+        worker="r2",
+        target_id=target.object_id,
+        status="ambiguous-grounding",
+        criticism_key="ambiguous-template-grounding",
+        payload=witness,
+    )
+    state = criticism_result.state
+    events.extend(criticism_result.events)
+    criticism_id = criticism_result.object_ids[0]
+
+    turn = COGNITION.build_turn(
+        state,
+        events,
+        COGNITION.Orientation("private-ambiguity"),
+        request_id="req-ambiguity",
+        token_budget=4_000,
+        compact_ids=True,
+    )
+    aliases = {real: alias for alias, real in turn.id_aliases}
+    by_id = {item["id"]: item for item in turn.document["sparse_cut"]["objects"]}
+    expected = {
+        criticism_id,
+        target.object_id,
+        items["relation_set"].object_id,
+        items["odd"].object_id,
+        items["matching_a"].object_id,
+        items["matching_b"].object_id,
+    }
+    assert {aliases[item] for item in expected}.issubset(by_id)
+    criticism = by_id[aliases[criticism_id]]
+    assert criticism["payload"]["status"] == "ambiguous-grounding"
+    assert len(criticism["payload"]["candidate_substitutions"]) == 3
+    assert criticism["payload"]["effect_pair_count_observed"] == 3
+    assert target.object_id in next(
+        item for item in state.objects if item.object_id == criticism_id
+    ).dependency_ids
+    assert "refine the schema conditions to retain exactly one effect pair" in COGNITION.PROMPT
+    assert "ar25" not in COGNITION.PROMPT.lower()
 
 
 def test_large_initial_materialization_is_columnar_and_request_stays_below_eight_k() -> None:

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, replace
+from functools import cached_property
 from typing import Any, Iterable, Mapping, Sequence
 
 from hashlib import sha256
@@ -128,7 +129,7 @@ class GraphEvent:
         return _payload(self.payload_json)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class GraphState:
     revision: int = -1
     head_hash: str | None = None
@@ -137,6 +138,76 @@ class GraphState:
     edges: tuple[EpistemicEdge, ...] = ()
     attention: tuple[AttentionContribution, ...] = ()
     pickups: tuple[PickupEvent, ...] = ()
+
+    @cached_property
+    def _object_index(self) -> dict[str, EpistemicObject]:
+        return {item.object_id: item for item in self.objects}
+
+    @cached_property
+    def _edge_semantics(self) -> frozenset[tuple[str, str, str]]:
+        return frozenset((item.kind, item.source_id, item.target_id) for item in self.edges)
+
+    @cached_property
+    def _attention_ids(self) -> frozenset[str]:
+        return frozenset(item.attention_id for item in self.attention)
+
+    @cached_property
+    def _index(self) -> "_StateIndex":
+        """Derived lookup tables; excluded from equality, hashing and replay."""
+
+        return _StateIndex.build(self)
+
+
+@dataclass(frozen=True, slots=True)
+class _StateIndex:
+    objects: dict[str, EpistemicObject]
+    by_kind_creator: dict[tuple[str, str | None], tuple[EpistemicObject, ...]]
+    evidence: dict[str, tuple[int, int]]
+    invalidated: frozenset[str]
+    attention_by_object: dict[str, tuple[AttentionContribution, ...]]
+    dependencies: dict[str, tuple[str, ...]]
+    edge_semantics: frozenset[tuple[str, str, str]]
+    attention_ids: frozenset[str]
+
+    @classmethod
+    def build(cls, state: "GraphState") -> "_StateIndex":
+        objects = state._object_index
+        grouped: dict[tuple[str, str | None], list[EpistemicObject]] = {}
+        for item in state.objects:
+            grouped.setdefault((item.kind, None), []).append(item)
+            grouped.setdefault((item.kind, item.created_by), []).append(item)
+        evidence: dict[str, list[int]] = {}
+        invalidated: set[str] = set()
+        dependencies: dict[str, set[str]] = {
+            item.object_id: set(item.dependency_ids) for item in state.objects
+        }
+        for edge in state.edges:
+            if edge.kind == "supports":
+                evidence.setdefault(edge.target_id, [0, 0])[0] += 1
+                dependencies.setdefault(edge.target_id, set()).add(edge.source_id)
+            elif edge.kind == "refutes":
+                evidence.setdefault(edge.target_id, [0, 0])[1] += 1
+                dependencies.setdefault(edge.target_id, set()).add(edge.source_id)
+            elif edge.kind == "invalidates":
+                invalidated.add(edge.target_id)
+                dependencies.setdefault(edge.target_id, set()).add(edge.source_id)
+            elif edge.kind == "depends_on":
+                dependencies.setdefault(edge.source_id, set()).add(edge.target_id)
+        attention: dict[str, list[AttentionContribution]] = {}
+        for item in state.attention:
+            attention.setdefault(item.object_id, []).append(item)
+        return cls(
+            objects=objects,
+            by_kind_creator={key: tuple(value) for key, value in grouped.items()},
+            evidence={key: (value[0], value[1]) for key, value in evidence.items()},
+            invalidated=frozenset(invalidated),
+            attention_by_object={key: tuple(value) for key, value in attention.items()},
+            dependencies={key: tuple(sorted(value)) for key, value in dependencies.items()},
+            edge_semantics=frozenset(
+                (item.kind, item.source_id, item.target_id) for item in state.edges
+            ),
+            attention_ids=frozenset(item.attention_id for item in state.attention),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -472,7 +543,37 @@ def _attention_from_document(value: Mapping[str, Any]) -> AttentionContribution:
 
 
 def _objects(state: GraphState) -> dict[str, EpistemicObject]:
-    return {item.object_id: item for item in state.objects}
+    return state._object_index
+
+
+def get_object(state: GraphState, object_id: str) -> EpistemicObject | None:
+    """O(1) immutable-state lookup without exposing the derived index."""
+
+    return state._object_index.get(str(object_id))
+
+
+def find_objects(
+    state: GraphState,
+    *,
+    kind: str,
+    created_by: str | None = None,
+) -> tuple[EpistemicObject, ...]:
+    """Return a deterministically ordered indexed kind/provenance slice."""
+
+    return state._index.by_kind_creator.get((str(kind), created_by), ())
+
+
+def has_attention(state: GraphState, attention_id: str) -> bool:
+    """O(1) membership test for idempotent attention integration."""
+
+    return str(attention_id) in state._attention_ids
+
+
+def attention_for(
+    state: GraphState,
+    object_id: str,
+) -> tuple[AttentionContribution, ...]:
+    return state._index.attention_by_object.get(str(object_id), ())
 
 
 def _pickup(
@@ -483,8 +584,9 @@ def _pickup(
     trigger_id: str,
     trigger_kind: str,
     revision: int,
+    objects: Mapping[str, EpistemicObject] | None = None,
 ) -> PickupEvent | None:
-    source = _objects(state).get(object_id)
+    source = (objects if objects is not None else _objects(state)).get(object_id)
     if (
         to_worker not in WORKERS
         or source is None
@@ -508,7 +610,12 @@ def _pickup(
     )
 
 
-def apply_event(state: GraphState, event: GraphEvent) -> GraphState:
+def apply_event(
+    state: GraphState,
+    event: GraphEvent,
+    *,
+    object_index: Mapping[str, EpistemicObject] | None = None,
+) -> GraphState:
     """Apply one graph event without mutating the predecessor state."""
 
     if event.seq != state.revision + 1 or event.prev_hash != state.head_hash:
@@ -528,7 +635,7 @@ def apply_event(state: GraphState, event: GraphEvent) -> GraphState:
     payload = event.payload
     if set(payload) != {"item"} or not isinstance(payload["item"], dict):
         raise EpistemicGraphError("graph event payload contract mismatch")
-    objects = _objects(state)
+    objects = object_index if object_index is not None else _objects(state)
     pickups = list(state.pickups)
     next_state = state
 
@@ -555,6 +662,7 @@ def apply_event(state: GraphState, event: GraphEvent) -> GraphState:
                 trigger_id=item.object_id,
                 trigger_kind="dependency",
                 revision=event.seq,
+                objects=objects,
             )
             if detected is not None:
                 pickups.append(detected)
@@ -582,8 +690,7 @@ def apply_event(state: GraphState, event: GraphEvent) -> GraphState:
                 or objects[item.target_id].created_by != pickup.to_worker
             ):
                 raise EpistemicGraphError("grounded pickup edge does not match its exposure")
-        semantic = {(edge.kind, edge.source_id, edge.target_id) for edge in state.edges}
-        if (item.kind, item.source_id, item.target_id) in semantic:
+        if (item.kind, item.source_id, item.target_id) in state._edge_semantics:
             raise EpistemicGraphError("duplicate semantic edge")
         next_state = replace(
             state,
@@ -595,7 +702,7 @@ def apply_event(state: GraphState, event: GraphEvent) -> GraphState:
             raise EpistemicGraphError("attention worker/revision does not match event")
         if item.object_id not in objects or any(basis not in objects for basis in item.basis_ids):
             raise EpistemicGraphError("attention references a missing object")
-        if any(existing.attention_id == item.attention_id for existing in state.attention):
+        if item.attention_id in state._attention_ids:
             raise EpistemicGraphError("duplicate attention contribution")
         detected = _pickup(
             state,
@@ -604,6 +711,7 @@ def apply_event(state: GraphState, event: GraphEvent) -> GraphState:
             trigger_id=item.attention_id,
             trigger_kind="attention",
             revision=event.seq,
+            objects=objects,
         )
         if detected is not None:
             pickups.append(detected)
@@ -631,9 +739,7 @@ def replay(events: Iterable[GraphEvent]) -> GraphState:
 
 
 def evidence_counts(state: GraphState, object_id: str) -> tuple[int, int]:
-    supports = sum(edge.kind == "supports" and edge.target_id == object_id for edge in state.edges)
-    refutes = sum(edge.kind == "refutes" and edge.target_id == object_id for edge in state.edges)
-    return supports, refutes
+    return state._index.evidence.get(str(object_id), (0, 0))
 
 
 def support(state: GraphState, object_id: str) -> int:
@@ -642,7 +748,7 @@ def support(state: GraphState, object_id: str) -> int:
 
 
 def invalidated_ids(state: GraphState) -> frozenset[str]:
-    return frozenset(edge.target_id for edge in state.edges if edge.kind == "invalidates")
+    return state._index.invalidated
 
 
 def live_binding_ids(state: GraphState) -> tuple[str, ...]:
@@ -673,9 +779,7 @@ def salience(
     score += supports * selected_policy.support_weight
     score -= refutes * selected_policy.refute_weight
     score += max(0, ATTENTION_HORIZON - age) * selected_policy.recency_weight
-    for contribution in state.attention:
-        if contribution.object_id != object_id:
-            continue
+    for contribution in state._index.attention_by_object.get(object_id, ()):
         attention_age = max(0, state.revision - contribution.created_revision)
         remaining = max(0, ATTENTION_HORIZON - attention_age)
         multiplier = (
@@ -691,18 +795,7 @@ def dependency_ids(state: GraphState, object_id: str) -> tuple[str, ...]:
     item = _objects(state).get(object_id)
     if item is None:
         raise EpistemicGraphError(f"unknown object dependency root: {object_id}")
-    dependencies = set(item.dependency_ids)
-    dependencies.update(
-        edge.source_id
-        for edge in state.edges
-        if edge.target_id == object_id and edge.kind in EVIDENCE_EDGE_KINDS
-    )
-    dependencies.update(
-        edge.target_id
-        for edge in state.edges
-        if edge.source_id == object_id and edge.kind == "depends_on"
-    )
-    return tuple(sorted(dependencies))
+    return state._index.dependencies.get(object_id, ())
 
 
 def dependency_closure(state: GraphState, roots: Iterable[str]) -> tuple[str, ...]:

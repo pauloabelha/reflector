@@ -549,3 +549,23 @@ def test_structured_criticism_is_visible_dependency_linked_and_not_support() -> 
         pickup.direction == "qwen->r2" and pickup.object_id == schema.object_id
         for pickup in criticism.state.pickups
     )
+
+
+def test_derived_indexes_are_cached_without_entering_replay_state() -> None:
+    state = GRAPH.GraphState()
+    events: list = []
+    state, schema = add_object(
+        state, events, kind="schema", creator="qwen", name="indexed-schema"
+    )
+    state = add_attention(
+        state, events, worker="r2", object_id=schema.object_id, key="indexed-attention"
+    )
+
+    first_index = state._index
+    assert state._index is first_index
+    assert GRAPH.get_object(state, schema.object_id) == schema
+    assert GRAPH.find_objects(state, kind="schema", created_by="qwen") == (schema,)
+    assert GRAPH.has_attention(state, state.attention[0].attention_id)
+    assert GRAPH.attention_for(state, schema.object_id) == state.attention
+    assert GRAPH.replay(events) == state
+    assert "_index" not in GRAPH.state_document(state)

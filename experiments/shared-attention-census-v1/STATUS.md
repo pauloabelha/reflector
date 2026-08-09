@@ -78,3 +78,22 @@ Machine state is checkpointed after every epistemic event and real environment t
 - Jobs: 2; games: 1; profiles: 1; environment workers: 2.
 - FAILED `balanced/ar25/shared_attention_qwen`: LedgerError: unsupported event type: QwenTaskIntegrated.
 - FAIL-FAST requested: pending jobs cancelled; only already-running workers may finish checkpoint boundaries.
+
+## 2026-08-09 — v1.1 action-17 mechanistic checkpoint
+
+- The fresh shared `ar25` development arm was stopped after 17 committed actions and preserved. It did not solve the level and did not influence control.
+- The graph contained 6,816 first-class objects. Qwen's first schema remained resident from action 8 through action 16 and accumulated nine exact R2 ambiguity criticisms.
+- Exposure was genuinely bidirectional (Qwen→R2 2, R2→Qwen 7), but grounded pickups, live external bindings, empirical support, and prior-driven decisions were all zero.
+- Durable turn 1 proposed `SameArea(a,b) AND DifferentArea(a,c) -> Decrease TranslationAlignmentResidual(a,b)`. After criticism, durable turn 2 revised this to `DifferentOutline(a,b) -> Decrease TranslationAlignmentResidual(a,b)`. Both left six substitutions / three distinct effect pairs.
+- A separately replayed, non-mutating diagnostic of the already-durable action-16 request repeated the second schema and rejected its situated explanation as condition-false. It is diagnostic only: the reply was never appended or integrated.
+- Context transport passed: the initial prompt used 13,021 tokens; rolling prompts stabilized at about 6,738 tokens, all below the resident server's 16,384-token window. The remaining failure was semantic disambiguation and control coupling, not context overflow.
+- Root cause: R2 returned the word `ambiguous` without preserving the competing substitutions and their distinguishing facts in Qwen's active cut. That was unacceptable lossy compaction of live alternatives.
+
+## 2026-08-09 — v1.2 ambiguity/performance checkpoint
+
+- Ambiguous grounding criticism now carries a deterministic bounded witness: candidate substitutions, distinct effect pairs, distinguishing relation facts, truncation metadata, and an exact-one-pair refinement goal. No action token or game-specific rule is introduced.
+- Qwen's sparse cut treats the latest ambiguity criticism, criticized schema, and current relation/entity packet as one atomic dependency-closed unit. It fails explicitly if that live structure cannot fit instead of silently reducing it to a count.
+- Repeated identical criticism is semantically deduplicated. Graph membership, slices, evidence, dependencies, and attention use lazy replay-equivalent indexes.
+- Preserved action-17 benchmark: replay 3.951s→2.310s; 1,000 object lookups 0.1154s→0.000355s; R2 frontier 1.871s→0.0255s cold and 0.0105s warm.
+- Verification: all 40 v1 tests and all 77 repository tests pass; Python compilation and diff check pass.
+- The next run is frozen in `V1_2_AR25_GATE.md`: one fresh paired `ar25` gate, balanced profile, 25 actions, calls at 0/8/16, no in-run tuning, and held-out games paused unless a unique grounded Qwen→R2→control→environment chain succeeds.

@@ -226,6 +226,41 @@ def test_r2_frontier_pickup_is_recorded_only_when_selected_then_grounded() -> No
     assert repeated.events == ()
 
 
+def test_matching_criticism_deduplicates_same_witness_across_actions() -> None:
+    state = GRAPH.GraphState()
+    proposal = GRAPH.object_event(
+        state,
+        kind="schema",
+        created_by="qwen",
+        identity={"name": "ambiguous"},
+        payload={"conditions": []},
+        event_key="qwen:ambiguous",
+    )
+    state = GRAPH.apply_event(state, proposal)
+    proposal_id = state.objects[0].object_id
+    witness = {"status": "ambiguous", "grounding_count": 5, "effect_pair_count": 3}
+    criticism = GRAPH.ingest_structured_criticism(
+        state,
+        worker="r2",
+        target_id=proposal_id,
+        status="ambiguous-grounding",
+        criticism_key="action-8",
+        payload={"observation_digest": "first", "structured_witness": witness},
+    )
+
+    found = RUNNER.matching_structured_criticism(
+        criticism.state,
+        worker="r2",
+        target_id=proposal_id,
+        status="ambiguous-grounding",
+        witness=witness,
+    )
+
+    assert found is not None
+    assert found.object_id == criticism.object_ids[0]
+    assert len(GRAPH.find_objects(criticism.state, kind="structured_criticism")) == 1
+
+
 def test_initial_r2_workspace_is_first_class_groundable_and_compact(tmp_path: Path) -> None:
     root = tmp_path / "workspace"
     workspace_id = "compact-initial"
@@ -317,3 +352,43 @@ def test_unsupported_qwen_schema_returns_structured_non_support_criticism(tmp_pa
     assert proposal_id in criticism.dependency_ids
     assert GRAPH.support(state, criticism.object_id) == 0
     assert not any(edge.kind in {"supports", "refutes", "invalidates"} for edge in state.edges)
+
+
+def test_ambiguous_grounding_witnesses_preserve_competing_pairs() -> None:
+    state = {
+        "entities": [
+            {"id": "f00", "area": 45, "outline_class": "o1", "interior_layout_class": "i1"},
+            {"id": "f01", "area": 45, "outline_class": "o1", "interior_layout_class": "i2"},
+            {"id": "f02", "area": 45, "outline_class": "o1", "interior_layout_class": "i2"},
+            {"id": "f03", "area": 316, "outline_class": "hud", "interior_layout_class": "hud"},
+        ],
+        "relations": [
+            {"predicate": "SameArea", "arguments": [left, right]}
+            for left, right in (("f00", "f01"), ("f00", "f02"), ("f01", "f02"))
+        ]
+        + [
+            {"predicate": "DifferentArea", "arguments": [left, "f03"]}
+            for left in ("f00", "f01", "f02")
+        ],
+    }
+    conditions = (
+        ("SameArea", ("?a", "?b")),
+        ("DifferentArea", ("?a", "?c")),
+    )
+    template = RUNNER.V0.V0.Template(
+        conditions=conditions,
+        operator="Decrease",
+        effect_variables=("?a", "?b"),
+        canonical_hash="ambiguous",
+        provenance="externally-proposed",
+    )
+
+    witness = RUNNER.AMBIGUITY.compile_ambiguity_witness(template, state)
+
+    pairs = {
+        tuple(item["effect_pair"])
+        for item in witness["effect_pairs"]
+    }
+    assert pairs == {("f00", "f01"), ("f00", "f02"), ("f01", "f02")}
+    assert witness["candidate_substitutions"]
+    assert "exactly one" in witness["refinement_goal"]

@@ -46,6 +46,7 @@ def _load(name: str, path: Path) -> Any:
 EG = _load("shared_attention_live_graph", HERE / "epistemic_graph.py")
 LEDGER = _load("shared_attention_live_ledger", HERE / "ledger.py")
 QC = _load("shared_attention_live_qwen", HERE / "qwen_cognition.py")
+AMBIGUITY = _load("shared_attention_live_ambiguity", HERE / "ambiguity.py")
 CENSUS = _load("shared_attention_live_census", HERE / "census.py")
 V0 = _load("shared_attention_live_v0", HERE.parent / "parallel-cognitive-workspace-v0" / "experiment.py")
 BASE = V0.V0.BASE
@@ -254,6 +255,31 @@ def record_grounded_pickup(state: Any, pickup_id: str, downstream_id: str, *, wo
     return EG.IngestResult(EG.apply_event(state, event), (event,), edge_ids=(event.payload["item"]["edge_id"],))
 
 
+def matching_structured_criticism(
+    state: Any,
+    *,
+    worker: str,
+    target_id: str,
+    status: str,
+    witness: Mapping[str, Any],
+) -> Any | None:
+    """Indexed semantic deduplication for unchanged grounding criticism."""
+
+    witness_key = EG.stable_json(witness)
+    return next(
+        (
+            item
+            for item in EG.find_objects(
+                state, kind="structured_criticism", created_by=worker
+            )
+            if target_id in item.dependency_ids
+            and item.payload.get("status") == status
+            and EG.stable_json(item.payload.get("structured_witness", {})) == witness_key
+        ),
+        None,
+    )
+
+
 def repair_grounded_pickup_edges(root: Path, workspace_id: str, state: Any) -> Any:
     """Complete a binding→pickup edge interrupted between durable events."""
 
@@ -290,8 +316,15 @@ def repair_grounded_pickup_edges(root: Path, workspace_id: str, state: Any) -> A
     return state
 
 
-def apply_graph_event(root: Path, workspace_id: str, state: Any, event: Any) -> Any:
-    next_state = EG.apply_event(state, event)
+def apply_graph_event(
+    root: Path,
+    workspace_id: str,
+    state: Any,
+    event: Any,
+    *,
+    object_lookup: Mapping[str, Any] | None = None,
+) -> Any:
+    next_state = EG.apply_event(state, event, object_index=object_lookup)
     commit_graph_events(root, workspace_id, (event,))
     return next_state
 
@@ -474,6 +507,7 @@ def ensure_graph_object(
     payload: Mapping[str, Any],
     dependency_ids: Sequence[str] = (),
     event_key: str,
+    object_lookup: dict[str, Any] | None = None,
 ) -> tuple[Any, str]:
     """Add one semantic object once, while retaining every later provenance event elsewhere."""
 
@@ -485,7 +519,11 @@ def ensure_graph_object(
         payload=payload,
         dependency_ids=dependency_ids,
     )
-    existing = next((item for item in state.objects if item.object_id == candidate.object_id), None)
+    existing = (
+        object_lookup.get(candidate.object_id)
+        if object_lookup is not None
+        else EG.get_object(state, candidate.object_id)
+    )
     if existing is not None:
         if (
             existing.kind != candidate.kind
@@ -505,8 +543,13 @@ def ensure_graph_object(
         dependency_ids=dependency_ids,
         event_key=event_key,
     )
-    state = apply_graph_event(root, workspace_id, state, event)
-    return state, str(event.payload["item"]["object_id"])
+    state = apply_graph_event(
+        root, workspace_id, state, event, object_lookup=object_lookup
+    )
+    object_id = str(event.payload["item"]["object_id"])
+    if object_lookup is not None:
+        object_lookup[object_id] = candidate
+    return state, object_id
 
 
 def ingest_r2_workspace_objects(
@@ -527,6 +570,7 @@ def ingest_r2_workspace_objects(
 
     document = sanitize_r2_value(r2_workspace_document(cognition, legal))
     blob = LEDGER.put_blob(root, document)
+    object_lookup = {item.object_id: item for item in state.objects}
     schema_ids: dict[str, str] = {}
     current_ids: list[str] = []
     schema_activation: dict[str, int] = {}
@@ -543,6 +587,7 @@ def ingest_r2_workspace_objects(
             identity={"r2_schema_hash": item["id"]},
             payload=semantic_payload,
             event_key=f"r2-schema:{item['id']}",
+            object_lookup=object_lookup,
         )
         schema_ids[str(item["id"])] = object_id
         schema_activation[object_id] = int(item["activation_milli"])
@@ -565,6 +610,7 @@ def ingest_r2_workspace_objects(
                 payload=semantic_payload,
                 dependency_ids=dependencies,
                 event_key=f"r2-{kind}:{semantic}",
+                object_lookup=object_lookup,
             )
             current_ids.append(object_id)
 
@@ -612,16 +658,16 @@ def ingest_frame_objects(
     existing_frame = next(
         (
             item
-            for item in state.objects
-            if item.kind == "frame" and item.identity.get("frame_digest") == frame_digest
+            for item in EG.find_objects(state, kind="frame")
+            if item.identity.get("frame_digest") == frame_digest
         ),
         None,
     )
     if existing_frame is not None:
         entity_ids = {
             str(item.payload.get("grounding", {}).get("local_component_ref")): item.object_id
-            for item in state.objects
-            if item.kind == "entity" and existing_frame.object_id in item.dependency_ids
+            for item in EG.find_objects(state, kind="entity")
+            if existing_frame.object_id in item.dependency_ids
         }
         return state, entity_ids, existing_frame.object_id
     png_digest, png_path = persist_visual(root, grid)
@@ -1066,7 +1112,7 @@ def apply_qwen_compilation(
             created_revision=state.revision + 1,
             contribution_key=contribution_key,
         )
-        if any(item.attention_id == candidate.attention_id for item in state.attention):
+        if EG.has_attention(state, candidate.attention_id):
             return
         event = EG.attention_event(
             state,
@@ -1176,6 +1222,10 @@ def activate_visible_qwen(
         state = noticed.state
     relation_state, figures = V0.relational_state(grid, len(legal), history)
     records: list[dict[str, Any]] = []
+    derivations_by_target: dict[str, list[Any]] = {}
+    for derivation in EG.find_objects(state, kind="qwen_derivation", created_by="qwen"):
+        for dependency in derivation.dependency_ids:
+            derivations_by_target.setdefault(dependency, []).append(derivation)
 
     def criticize(schema_object_id: str, status: str, detail: Mapping[str, Any]) -> str:
         nonlocal state
@@ -1183,6 +1233,15 @@ def activate_visible_qwen(
             "ambiguous": "ambiguous-grounding",
             "active-zero-evidence": "rejected",
         }.get(status, status)
+        existing_criticism = matching_structured_criticism(
+            state,
+            worker="r2",
+            target_id=schema_object_id,
+            status=normalized_status,
+            witness=detail,
+        )
+        if existing_criticism is not None:
+            return existing_criticism.object_id
         result = EG.ingest_structured_criticism(
             state,
             worker="r2",
@@ -1209,15 +1268,13 @@ def activate_visible_qwen(
         state = apply_graph_event(root, workspace_id, state, attention)
         return criticism_id
 
-    for item in state.objects:
-        if item.created_by != "qwen" or item.kind != "schema" or item.object_id not in visible or item.object_id in activated:
+    for item in EG.find_objects(state, kind="schema", created_by="qwen"):
+        if item.object_id not in visible or item.object_id in activated:
             continue
         eligible_steps = [
             int(value.payload.get("call_local_payload", {}).get("eligible_step"))
-            for value in state.objects
-            if value.kind == "qwen_derivation"
-            and item.object_id in value.dependency_ids
-            and value.payload.get("call_local_payload", {}).get("eligible_step") is not None
+            for value in derivations_by_target.get(item.object_id, ())
+            if value.payload.get("call_local_payload", {}).get("eligible_step") is not None
         ]
         eligible_action = min(eligible_steps, default=action_count)
         if action_count - eligible_action > int(profile["attention_half_life_actions"]):
@@ -1243,6 +1300,11 @@ def activate_visible_qwen(
             action_count=action_count,
             source_task=item.object_id,
         )
+        if grounding["status"] in {"ambiguous", "unbound"}:
+            grounding = {
+                **grounding,
+                **AMBIGUITY.compile_ambiguity_witness(template, relation_state),
+            }
         record = {"schema_object_id": item.object_id, "template_hash": template.canonical_hash, **grounding}
         records.append(record)
         if grounding["status"] in {"bound", "duplicate-active"}:

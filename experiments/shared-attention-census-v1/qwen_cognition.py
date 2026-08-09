@@ -125,6 +125,7 @@ Rules:
 13. Treat a uniquely huge border-spanning component as scene/background unless transition evidence makes it causal; prefer compact repeated foreground structure for object-role hypotheses.
 14. Seek discriminative relational contrasts, not tautologies: compare same-outline groups, interior-layout classes, motion roles, and competing pairings. A condition should help select the effect pair rather than merely restate that pair's current scalar value.
 15. Use a third variable only when its relations disambiguate the two effect variables. If several groundings remain plausible, expose OPEN ports or request expansion instead of choosing arbitrarily.
+16. When a visible structured criticism has status ambiguous-grounding, treat its bounded candidate_substitutions and effect_pairs as competing grounding witnesses. Inspect their distinguishing_relations together with the target schema and current relation set, then refine the schema conditions to retain exactly one effect pair. Do not repeat the criticized conditions unchanged. If the closed predicate vocabulary cannot distinguish one pair, request expansion or abstain.
 
 In a compact initial materialization, object_columns arrays align by ordinal with object_index.ids. This columnar topology preserves every alias, kind, dependency, digest, creator, revision, and nonzero support entry. Initial attention_rows are explicitly small-lossy aggregates; exact contributions remain in the ledger.
 
@@ -673,11 +674,42 @@ def sparse_cut(
     structural_roots = sorted(
         item.object_id for item in relation_sets if item.created_revision == latest_relation_revision
     )
+    ambiguity_criticisms = [
+        item
+        for item in state.objects
+        if item.kind == "structured_criticism"
+        and item.object_id not in invalid
+        and item.payload.get("status") == "ambiguous-grounding"
+    ]
+    latest_criticism_revision = max(
+        (item.created_revision for item in ambiguity_criticisms), default=-1
+    )
+    ambiguity_roots = sorted(
+        item.object_id
+        for item in ambiguity_criticisms
+        if item.created_revision == latest_criticism_revision
+    )
+    # An ambiguity request is intelligible only as one unit: the criticism
+    # carries concrete competing witnesses, its dependency closure carries the
+    # criticized schema, and the latest relation packet carries the current
+    # entities/facts needed to assess a discriminating refinement.  If this
+    # essential unit cannot fit, fail explicitly instead of asking Qwen to
+    # reason from a counts-only fragment.
+    essential_roots = tuple(dict.fromkeys((*structural_roots, *ambiguity_roots)))
+    if ambiguity_roots:
+        proposed = selected.union(GRAPH.dependency_closure(state, essential_roots))
+        candidate = finalized(_cut_document(state, proposed, mandatory), 0)
+        if candidate["used_tokens"] > token_budget:
+            raise GRAPH.FrontierBudgetError(
+                budget=token_budget, required=candidate["used_tokens"]
+            )
+        selected = proposed
+        document = candidate
     # Give the latest relational packet first opportunity to fit.  A mistaken
     # model focus must not permanently hide the current entities it should be
     # comparing; explicit expansions and prior focus follow immediately.
     priority_roots = list(
-        dict.fromkeys((*structural_roots, *expansion_ids, *focus_ids))
+        dict.fromkeys((*essential_roots, *expansion_ids, *focus_ids))
     )
     remaining = sorted(
         object_ids - set(priority_roots) - selected - set(invalid),
