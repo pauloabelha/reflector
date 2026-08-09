@@ -1,0 +1,837 @@
+{
+  "development_only": true,
+  "protocol": "solver-free-autonomous-progress-field-dev-v0",
+  "results": [
+    {
+      "actions": 25,
+      "exact_replay": true,
+      "game": "sp80",
+      "initial_digest": "e14ac2b5ce2f06db560711a9f8f85231145bcd865b898117793508b4b3fdc660",
+      "levels_completed": 0,
+      "mode_counts": {
+        "control": 0,
+        "fallback": 0,
+        "probe": 25
+      },
+      "supporting_transitions": 0,
+      "trace": [
+        {
+          "after": 2,
+          "before": 2,
+          "candidate_id": "goal:3f584114327a405c200ab230",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 2,
+          "before": null,
+          "candidate_id": "goal:3f584114327a405c200ab230",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "candidate_id": "goal:3f584114327a405c200ab230",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 2,
+          "before": null,
+          "candidate_id": "goal:3f584114327a405c200ab230",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "candidate_id": "goal:3f584114327a405c200ab230",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 5,
+          "before": 5,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 5,
+          "before": 5,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 5,
+          "before": 5,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 5,
+          "before": 5,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 5,
+          "before": 5,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:5f4c48359d2aa89b0944c5a8",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:5f4c48359d2aa89b0944c5a8",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:5f4c48359d2aa89b0944c5a8",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:5f4c48359d2aa89b0944c5a8",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:5f4c48359d2aa89b0944c5a8",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 2,
+          "before": 0,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": -3
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 0,
+          "before": 0,
+          "candidate_id": "goal:c8dfa5983f5bd399c4362521",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        }
+      ]
+    },
+    {
+      "actions": 64,
+      "exact_replay": true,
+      "game": "re86",
+      "initial_digest": "fde90146d9ceb770949140b29c8436e7554051068e59598d4e68d76b478fb6a1",
+      "levels_completed": 0,
+      "mode_counts": {
+        "control": 0,
+        "fallback": 0,
+        "probe": 64
+      },
+      "supporting_transitions": 0,
+      "trace": [
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 9,
+          "before": 9,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 9,
+          "before": 9,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 9,
+          "before": 9,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 9,
+          "before": 9,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": 9,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        },
+        {
+          "after": null,
+          "before": null,
+          "candidate_id": "goal:61487ef1ed84bca0cf539cbd",
+          "direct": false,
+          "mode": "probe",
+          "opaque_action": 5,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 1,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 2,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 3,
+          "support_delta": 0
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+          "direct": true,
+          "mode": "probe",
+          "opaque_action": 4,
+          "support_delta": 0
+        }
+      ]
+    }
+  ]
+}

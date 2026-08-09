@@ -9,6 +9,7 @@ def load(name,path):
 BASE=load("synthesis_matrix_base",ROOT/"experiments/prior-accelerated-relational-transfer-v0/experiment.py")
 SYN=load("synthesis_matrix_core",HERE/"progress_synthesis.py")
 EXEC=load("synthesis_matrix_exec",HERE/"executor_registry.py")
+FIELD=load("synthesis_matrix_field",HERE/"progress_field.py")
 
 def complex_actions(env,obs):
     available={int(getattr(item,"value",item)) for item in getattr(obs,"available_actions",())};out=[]
@@ -39,11 +40,22 @@ def run_game(game,*,artifact_root=ART,action_budget=64):
                 focus=candidate;break
             except Exception:continue
         if focus is None or proposal is None:raise RuntimeError("no synthesized goal has an executable grounding")
-        obs=env.reset();rounds=[]
+        obs=env.reset();rounds=[];field=FIELD.make_state([focus]);field_events=[]
         for _ in range(3):
             for command in proposal.commands:
                 if len(history)>=action_budget:break
-                before=BASE.observation_record(obs);obs=BASE.execute_action(env,game,command.opaque_action,dict(command.data),"synthesized-progress-control");after=BASE.observation_record(obs)
+                before=BASE.observation_record(obs);before_grid=BASE.observation_grid(obs)
+                try:before_candidates=[row for row in SYN.synthesize(before_grid) if row.candidate_id==focus.candidate_id]
+                except SYN.SynthesisError:before_candidates=[]
+                before_candidate=min(before_candidates,key=lambda row:(-row.attention,row.binding_id),default=focus);before_value=SYN.evaluate(before_candidate,before_grid)
+                obs=BASE.execute_action(env,game,command.opaque_action,dict(command.data),"synthesized-progress-control");after=BASE.observation_record(obs);after_grid=BASE.observation_grid(obs)
+                try:after_candidates=[row for row in SYN.synthesize(after_grid) if row.candidate_id==focus.candidate_id]
+                except SYN.SynthesisError:after_candidates=[]
+                after_candidate=min(after_candidates,key=lambda row:(-row.attention,row.binding_id),default=None);after_value=None if after_candidate is None else SYN.evaluate(after_candidate,after_grid)
+                if isinstance(before_value,int) and isinstance(after_value,int):
+                    transition_id=f"transition:{len(history)}:"+after["digest"][:20]
+                    field=FIELD.observe(field,candidate_id=focus.candidate_id,binding_id=focus.binding_id,opaque_action=command.opaque_action,before=before_value,after=after_value,direct=True,transition_id=transition_id)
+                    field_events.append({"transition_id":transition_id,"before":before_value,"after":after_value,"support":field.candidates[0].support})
                 history.append({"action":command.opaque_action,"data":dict(command.data),"before":before,"after":after,"role":command.role})
                 if terminal(after):break
             rounds.append({"potential":proposal.potential_type,"expected_before":proposal.expected_before,"expected_after":proposal.expected_after,"complete":proposal.complete})
@@ -60,7 +72,7 @@ def run_game(game,*,artifact_root=ART,action_budget=64):
             exact=exact and BASE.observation_record(replay)["digest"]==row["after"]["digest"]
         exact=exact and BASE.observation_record(replay)["levels_completed"]==final["levels_completed"]
     finally:replay_arcade.close_scorecard()
-    return {"game":game,"initial_digest":initial_record["digest"],"candidate_count":len(candidates),"selected_ast":focus.ast,"selected_support":focus.support,"calibration":calibration,"planning_rounds":rounds,"actions":[{"opaque_action":row["action"],"data":row["data"],"role":row["role"]} for row in history],"factual_actions":len(history),"total_interactions":len(calibration)+len(history),"action_budget":action_budget,"levels_completed":final["levels_completed"],"exact_replay":exact,"final_digest":final["digest"]}
+    return {"game":game,"initial_digest":initial_record["digest"],"candidate_count":len(candidates),"selected_ast":focus.ast,"selected_support":focus.support,"final_evidence_support":field.candidates[0].support,"field_events":field_events,"workspace":FIELD.workspace_document(field),"calibration":calibration,"planning_rounds":rounds,"actions":[{"opaque_action":row["action"],"data":row["data"],"role":row["role"]} for row in history],"factual_actions":len(history),"total_interactions":len(calibration)+len(history),"action_budget":action_budget,"levels_completed":final["levels_completed"],"exact_replay":exact,"final_digest":final["digest"]}
 
 def main():
     results=[]

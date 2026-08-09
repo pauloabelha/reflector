@@ -2,6 +2,7 @@
   "protocol": "autonomous-progress-synthesis-development-matrix-v0",
   "results": [
     {
+      "action_budget": 64,
       "actions": [
         {
           "data": {
@@ -115,7 +116,70 @@
       "candidate_count": 8,
       "exact_replay": true,
       "factual_actions": 13,
+      "field_events": [
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:0:b7a960e5d521d47cc1f4"
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:1:376957d328f06a70c6b2"
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:4:a9fcefe4fe5165491f39"
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:5:f064ae0c556e93d4546c"
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:6:1426f1a3610c9962019c"
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:7:f43af43e06574d4dd0b6"
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:8:f34ab361fa66d5e18e06"
+        },
+        {
+          "after": 1,
+          "before": 2,
+          "support": 10,
+          "transition_id": "transition:9:be58a536c1879cc374b8"
+        },
+        {
+          "after": 1,
+          "before": 1,
+          "support": 10,
+          "transition_id": "transition:10:b4c5f0ff5d8a9ead262b"
+        },
+        {
+          "after": 1,
+          "before": 1,
+          "support": 10,
+          "transition_id": "transition:11:2f010f9a24bac23c2748"
+        }
+      ],
       "final_digest": "8f4f2cdfce28087e46d8b1b6ed85dc216615fd47ef4afd736199bd99f74a42a6",
+      "final_evidence_support": 10,
       "game": "ka59",
       "initial_digest": "7c6c5fcf2a5e7d78250c13ee3d346f1f91d53ccccf6bf9eac739d5aacd106595",
       "levels_completed": 1,
@@ -154,9 +218,86 @@
         "type": "GoalPotential"
       },
       "selected_support": 0,
-      "total_interactions": 17
+      "total_interactions": 17,
+      "workspace": {
+        "authority": "only-direct-environment-evidence-changes-support",
+        "evidence_count": 10,
+        "potentials": [
+          {
+            "ast": {
+              "potential": {
+                "direction": "minimize",
+                "lower_bound": 0,
+                "type": "UnassignedMemberCount"
+              },
+              "protocol": "autonomous-progress-synthesis-v0",
+              "roles": {
+                "containers": {
+                  "type": "CapacityCompatibleSet"
+                },
+                "members": {
+                  "type": "EquivalenceClass"
+                }
+              },
+              "terminal": {
+                "type": "EqualsLowerBound"
+              },
+              "type": "GoalPotential"
+            },
+            "attention": 97,
+            "binding_id": "grounding:7aa77abe72d2ff5da4240e03",
+            "candidate_id": "goal:348a108c4b47761ded171c2f",
+            "current_value": null,
+            "effects": [
+              {
+                "evidence_ids": [
+                  "transition:11:2f010f9a24bac23c2748"
+                ],
+                "intervention_ref": "iv:6b75dd5e9ebf",
+                "predicted_improvement": null
+              },
+              {
+                "evidence_ids": [
+                  "transition:9:be58a536c1879cc374b8"
+                ],
+                "intervention_ref": "iv:c12bec3ed956",
+                "predicted_improvement": null
+              },
+              {
+                "evidence_ids": [
+                  "transition:5:f064ae0c556e93d4546c",
+                  "transition:6:1426f1a3610c9962019c",
+                  "transition:7:f43af43e06574d4dd0b6",
+                  "transition:8:f34ab361fa66d5e18e06"
+                ],
+                "intervention_ref": "iv:cd9a573b8bff",
+                "predicted_improvement": 0
+              },
+              {
+                "evidence_ids": [
+                  "transition:1:376957d328f06a70c6b2"
+                ],
+                "intervention_ref": "iv:0a7c5aa2256c",
+                "predicted_improvement": null
+              },
+              {
+                "evidence_ids": [
+                  "transition:0:b7a960e5d521d47cc1f4",
+                  "transition:4:a9fcefe4fe5165491f39",
+                  "transition:10:b4c5f0ff5d8a9ead262b"
+                ],
+                "intervention_ref": "iv:899ed34076f4",
+                "predicted_improvement": 0
+              }
+            ],
+            "empirical_support": 10
+          }
+        ],
+        "protocol": "shared-progress-field-v0"
+      }
     },
     {
+      "action_budget": 64,
       "actions": [
         {
           "data": {},
@@ -221,7 +362,28 @@
       "candidate_count": 2,
       "exact_replay": true,
       "factual_actions": 4,
+      "field_events": [
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:0:d467cf58ec4d2e37a95e"
+        },
+        {
+          "after": 2,
+          "before": 2,
+          "support": 0,
+          "transition_id": "transition:1:169135163bb0558c29e9"
+        },
+        {
+          "after": 0,
+          "before": 2,
+          "support": 10,
+          "transition_id": "transition:2:8120eb7df91bbe3aed68"
+        }
+      ],
       "final_digest": "a3217e1838e96c3cb333cc570d683583974f2a82a21127c2a611046317204121",
+      "final_evidence_support": 10,
       "game": "sp80",
       "initial_digest": "e14ac2b5ce2f06db560711a9f8f85231145bcd865b898117793508b4b3fdc660",
       "levels_completed": 1,
@@ -257,9 +419,58 @@
         "type": "GoalPotential"
       },
       "selected_support": 0,
-      "total_interactions": 9
+      "total_interactions": 9,
+      "workspace": {
+        "authority": "only-direct-environment-evidence-changes-support",
+        "evidence_count": 3,
+        "potentials": [
+          {
+            "ast": {
+              "potential": {
+                "direction": "minimize",
+                "lower_bound": 0,
+                "type": "UnservedTerminalCount"
+              },
+              "protocol": "autonomous-progress-synthesis-v0",
+              "roles": {
+                "source": {
+                  "type": "BoundaryEmitter"
+                },
+                "terminals": {
+                  "type": "RepeatedOpenRegions"
+                },
+                "transducer": {
+                  "type": "Transformable"
+                }
+              },
+              "terminal": {
+                "type": "EqualsLowerBound"
+              },
+              "type": "GoalPotential"
+            },
+            "attention": 95,
+            "binding_id": "grounding:f8f56c27ca147439f904cea7",
+            "candidate_id": "goal:3f584114327a405c200ab230",
+            "current_value": null,
+            "effects": [
+              {
+                "evidence_ids": [
+                  "transition:0:d467cf58ec4d2e37a95e",
+                  "transition:1:169135163bb0558c29e9",
+                  "transition:2:8120eb7df91bbe3aed68"
+                ],
+                "intervention_ref": "iv:0a7c5aa2256c",
+                "predicted_improvement": null
+              }
+            ],
+            "empirical_support": 10
+          }
+        ],
+        "protocol": "shared-progress-field-v0"
+      }
     },
     {
+      "action_budget": 64,
       "actions": [
         {
           "data": {},
@@ -404,7 +615,70 @@
       "candidate_count": 64,
       "exact_replay": true,
       "factual_actions": 20,
+      "field_events": [
+        {
+          "after": 8,
+          "before": 8,
+          "support": 0,
+          "transition_id": "transition:0:ed73fdf2226573869cc8"
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "support": 0,
+          "transition_id": "transition:1:563cdf0189884e872a84"
+        },
+        {
+          "after": 8,
+          "before": 8,
+          "support": 0,
+          "transition_id": "transition:2:3afb09d96bb6b660d68e"
+        },
+        {
+          "after": 7,
+          "before": 8,
+          "support": 10,
+          "transition_id": "transition:3:74b254e7eb3f465b194a"
+        },
+        {
+          "after": 7,
+          "before": 7,
+          "support": 10,
+          "transition_id": "transition:4:c8dd793418a3d2fd08cb"
+        },
+        {
+          "after": 7,
+          "before": 7,
+          "support": 10,
+          "transition_id": "transition:5:a9f79caace975e4b8a1d"
+        },
+        {
+          "after": 7,
+          "before": 7,
+          "support": 10,
+          "transition_id": "transition:6:df60c2e58a81979790c8"
+        },
+        {
+          "after": 7,
+          "before": 7,
+          "support": 10,
+          "transition_id": "transition:7:b3306927362a932008d2"
+        },
+        {
+          "after": 6,
+          "before": 7,
+          "support": 20,
+          "transition_id": "transition:8:5682f730742737f2f7d8"
+        },
+        {
+          "after": 6,
+          "before": 6,
+          "support": 20,
+          "transition_id": "transition:9:1998d5ddf18633edb188"
+        }
+      ],
       "final_digest": "adf9609da7cf0dbe91be3c7a18ff59809568438ed3c7fb23fad29bee49e3c03b",
+      "final_evidence_support": 20,
       "game": "re86",
       "initial_digest": "fde90146d9ceb770949140b29c8436e7554051068e59598d4e68d76b478fb6a1",
       "levels_completed": 1,
@@ -437,7 +711,65 @@
         "type": "GoalPotential"
       },
       "selected_support": 0,
-      "total_interactions": 25
+      "total_interactions": 25,
+      "workspace": {
+        "authority": "only-direct-environment-evidence-changes-support",
+        "evidence_count": 10,
+        "potentials": [
+          {
+            "ast": {
+              "potential": {
+                "direction": "minimize",
+                "lower_bound": 0,
+                "type": "UncoveredRequirementCount"
+              },
+              "protocol": "autonomous-progress-synthesis-v0",
+              "roles": {
+                "controllers": {
+                  "type": "TransformableSet"
+                },
+                "requirements": {
+                  "type": "SparseSpecificationLayer"
+                }
+              },
+              "terminal": {
+                "type": "EqualsLowerBound"
+              },
+              "type": "GoalPotential"
+            },
+            "attention": 100,
+            "binding_id": "grounding:3a5e4287291cf087ebc7ad29",
+            "candidate_id": "goal:f076ab6c965afeb1d116ace3",
+            "current_value": null,
+            "effects": [
+              {
+                "evidence_ids": [
+                  "transition:4:c8dd793418a3d2fd08cb",
+                  "transition:5:a9f79caace975e4b8a1d",
+                  "transition:6:df60c2e58a81979790c8",
+                  "transition:7:b3306927362a932008d2",
+                  "transition:8:5682f730742737f2f7d8",
+                  "transition:9:1998d5ddf18633edb188"
+                ],
+                "intervention_ref": "iv:6b75dd5e9ebf",
+                "predicted_improvement": null
+              },
+              {
+                "evidence_ids": [
+                  "transition:0:ed73fdf2226573869cc8",
+                  "transition:1:563cdf0189884e872a84",
+                  "transition:2:3afb09d96bb6b660d68e",
+                  "transition:3:74b254e7eb3f465b194a"
+                ],
+                "intervention_ref": "iv:0a7c5aa2256c",
+                "predicted_improvement": null
+              }
+            ],
+            "empirical_support": 20
+          }
+        ],
+        "protocol": "shared-progress-field-v0"
+      }
     }
   ],
   "source_blind_runtime": true
