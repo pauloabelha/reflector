@@ -1,0 +1,96 @@
+{
+  "actions": [
+    {
+      "action": 4,
+      "data": {},
+      "phase": "prospective-push"
+    },
+    {
+      "action": 4,
+      "data": {},
+      "phase": "prospective-push"
+    },
+    {
+      "action": 4,
+      "data": {},
+      "phase": "prospective-push"
+    },
+    {
+      "action": 3,
+      "data": {},
+      "phase": "move"
+    },
+    {
+      "action": 3,
+      "data": {},
+      "phase": "move"
+    },
+    {
+      "action": 3,
+      "data": {},
+      "phase": "move"
+    },
+    {
+      "action": 3,
+      "data": {},
+      "phase": "move"
+    },
+    {
+      "action": 2,
+      "data": {},
+      "phase": "move"
+    },
+    {
+      "action": 6,
+      "data": {
+        "x": 43,
+        "y": 31
+      },
+      "phase": "select"
+    },
+    {
+      "action": 1,
+      "data": {},
+      "phase": "move"
+    },
+    {
+      "action": 4,
+      "data": {},
+      "phase": "move"
+    }
+  ],
+  "calibration": [
+    {
+      "action": 1,
+      "delta": [
+        0,
+        -3
+      ]
+    },
+    {
+      "action": 2,
+      "delta": [
+        0,
+        3
+      ]
+    },
+    {
+      "action": 3,
+      "delta": [
+        -3,
+        0
+      ]
+    },
+    {
+      "action": 4,
+      "delta": [
+        3,
+        0
+      ]
+    }
+  ],
+  "factual_actions": 11,
+  "final_digest": "8f4f2cdfce28087e46d8b1b6ed85dc216615fd47ef4afd736199bd99f74a42a6",
+  "levels_completed": 1,
+  "planning_interactions": 4
+}
