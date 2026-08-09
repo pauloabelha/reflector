@@ -35,3 +35,39 @@ This file is the human-readable checkpoint log. Machine state is written atomica
 - Self-built schema admitted with 16 chronological source transitions.
 - Source action identities are present only in the audit and absent from transferred schema identity/control.
 - No target action had been executed when `FROZEN_MANIFEST.json` was written.
+
+## 2026-08-08 — Live run started
+
+- Eight real-game arms launched with up to 4 isolated workers.
+- Per-action machine progress: `artifacts/progress/`; recoverable ledgers: `artifacts/checkpoints/`.
+- Partial arm: `positive/wa30/combined` completed with actions=32, levels=0, prior_decisions=0, replay_verified=True.
+- Partial arm: `positive/wa30/external` completed with actions=32, levels=0, prior_decisions=0, replay_verified=True.
+- Partial arm: `positive/wa30/self_transfer` completed with actions=32, levels=0, prior_decisions=0, replay_verified=True.
+- Partial arm: `positive/wa30/scratch` completed with actions=32, levels=0, prior_decisions=0, replay_verified=True.
+- Partial arm: `negative/cn04/external` completed with actions=32, levels=0, prior_decisions=0, replay_verified=True.
+- Partial arm: `negative/cn04/combined` completed with actions=32, levels=0, prior_decisions=0, replay_verified=True.
+- Partial arm: `negative/cn04/scratch` completed with actions=32, levels=0, prior_decisions=0, replay_verified=True.
+- Partial arm: `negative/cn04/self_transfer` completed with actions=32, levels=0, prior_decisions=0, replay_verified=True.
+
+## 2026-08-08 — Live run complete
+
+- Verdict: `INCONCLUSIVE`.
+- All final ledgers replay-verified: `True`.
+
+## 2026-08-08 — Primary diagnostic interpretation
+
+- `wa30`: scratch, self-transfer, external, and combined all ended at 0 levels after 32 actions.
+- The relational antecedent was visible, but no observed target action instantiated the source's coupled-mover role: 0 local confirmations and 0 prior overrides.
+- All four `cn04` negative-control arms were behaviorally identical, as required; no regression.
+- Smallest gap: select and bind the causal carrier, not merely the nearest static repeated-form group.
+
+## 2026-08-08 — Secondary fresh-ar25 sanity result
+
+- This sanity pair was run after the primary result and does not change its `INCONCLUSIVE` verdict.
+- Scratch: 0 levels in 32 actions.
+- Self-transfer: completed level 1 in 17 actions.
+- External prior: completed level 1 in 17 actions.
+- Combined: completed level 1 in 17 actions.
+- Each successful arm made 14 prior-driven decisions after local opaque-action calibration and reached residual 0.
+- Every secondary ledger replay-verified exactly.
+- Interpretation: the action-agnostic relational schema is a viable input interface for solving ar25 level 1; cross-game causal-role binding remains unsolved.

@@ -1,0 +1,32 @@
+{
+  "actions": 32,
+  "arm": "scratch",
+  "controller": {
+    "abstentions": 32,
+    "action_uses": {
+      "1": 7,
+      "2": 7,
+      "3": 6,
+      "4": 6,
+      "5": 6
+    },
+    "action_vectors": {},
+    "bindings": 0,
+    "local_confirmations": 0,
+    "overrides": 0,
+    "prior_decisions": 0,
+    "prior_provenances": [],
+    "provenance_states": [],
+    "residual": null
+  },
+  "elapsed_this_process_s": 2.1774893260007957,
+  "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+  "final_state": "NOT_FINISHED",
+  "first_level_completed": false,
+  "game": "wa30",
+  "job_key": "23edfd4679d0448b9320ff9bc1bb7c401a888040c59823af43fc376a99a5fd47",
+  "levels_completed": 0,
+  "replay_verified": true,
+  "resumed": false,
+  "target_role": "positive"
+}

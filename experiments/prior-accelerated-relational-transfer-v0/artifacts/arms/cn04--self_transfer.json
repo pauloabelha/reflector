@@ -1,0 +1,36 @@
+{
+  "actions": 32,
+  "arm": "self_transfer",
+  "controller": {
+    "abstentions": 32,
+    "action_uses": {
+      "1": 7,
+      "2": 7,
+      "3": 6,
+      "4": 6,
+      "5": 6
+    },
+    "action_vectors": {},
+    "bindings": 0,
+    "local_confirmations": 0,
+    "overrides": 0,
+    "prior_decisions": 0,
+    "prior_provenances": [
+      "transferred-self-built"
+    ],
+    "provenance_states": [
+      "transferred-self-built"
+    ],
+    "residual": null
+  },
+  "elapsed_this_process_s": 2.240574576004292,
+  "final_digest": "fd002273484a0266b6bd0d8e089401b6b8a9bd70d0c65cb977cdb300312f2e2d",
+  "final_state": "NOT_FINISHED",
+  "first_level_completed": false,
+  "game": "cn04",
+  "job_key": "d028e388f3213dab7421d195124873941101004ca968274d55e82187244b755f",
+  "levels_completed": 0,
+  "replay_verified": true,
+  "resumed": false,
+  "target_role": "negative"
+}

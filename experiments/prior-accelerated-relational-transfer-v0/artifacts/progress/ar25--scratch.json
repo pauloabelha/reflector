@@ -1,0 +1,153 @@
+{
+  "actions": 32,
+  "arm": "scratch",
+  "controller": {
+    "abstentions": 32,
+    "action_uses": {
+      "1": 6,
+      "2": 6,
+      "3": 5,
+      "4": 5,
+      "5": 5,
+      "7": 5
+    },
+    "action_vectors": {
+      "1": [
+        [
+          0,
+          -3
+        ],
+        [
+          0,
+          -3
+        ],
+        [
+          0,
+          -3
+        ],
+        [
+          0,
+          -3
+        ],
+        [
+          0,
+          -3
+        ],
+        [
+          0,
+          -3
+        ]
+      ],
+      "2": [
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "3": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "4": [
+        [
+          -3,
+          0
+        ],
+        [
+          -3,
+          0
+        ],
+        [
+          -3,
+          0
+        ],
+        [
+          -3,
+          0
+        ],
+        [
+          -3,
+          0
+        ]
+      ],
+      "7": [
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ]
+    },
+    "bindings": 1,
+    "local_confirmations": 0,
+    "overrides": 0,
+    "prior_decisions": 0,
+    "prior_provenances": [],
+    "provenance_states": [],
+    "residual": 60
+  },
+  "elapsed_this_process_s": 2.2000231409983826,
+  "final_digest": "4ad4b6de038e67c5d80092f092b63c359fcfbd517671a659e5e838fe1b41bba9",
+  "final_state": "NOT_FINISHED",
+  "first_level_completed": false,
+  "game": "ar25",
+  "job_key": "718dd484e6550d35e2da621b72c4da659e9149a4487789c3e272351a35a46294",
+  "levels_completed": 0,
+  "replay_verified": true,
+  "resumed": false,
+  "status": "completed",
+  "target_role": "secondary_ar25"
+}

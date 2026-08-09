@@ -1,0 +1,93 @@
+{
+  "actions": 17,
+  "arm": "self_transfer",
+  "controller": {
+    "abstentions": 3,
+    "action_uses": {
+      "1": 1,
+      "2": 11,
+      "3": 5
+    },
+    "action_vectors": {
+      "1": [
+        [
+          0,
+          -3
+        ]
+      ],
+      "2": [
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "3": [
+        [
+          3,
+          0
+        ]
+      ]
+    },
+    "bindings": 1,
+    "local_confirmations": 13,
+    "overrides": 14,
+    "prior_decisions": 14,
+    "prior_provenances": [
+      "transferred-self-built"
+    ],
+    "provenance_states": [
+      "transferred-self-built"
+    ],
+    "residual": 0
+  },
+  "elapsed_this_process_s": 0.8172435039959964,
+  "final_digest": "5fcedd77e98b48bdd9d1d78ccf1d6f65898a2e21c466f71a9822fec9b405f8b0",
+  "final_state": "NOT_FINISHED",
+  "first_level_completed": true,
+  "game": "ar25",
+  "job_key": "10e1b3b1401b2b81daa51249e253f572a34fb70bfcc05a72e4cd6d88720ac8cc",
+  "levels_completed": 1,
+  "replay_verified": true,
+  "resumed": false,
+  "target_role": "secondary_ar25"
+}

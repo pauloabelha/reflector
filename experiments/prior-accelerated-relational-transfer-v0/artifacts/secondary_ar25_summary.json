@@ -1,0 +1,40 @@
+{
+  "executed_after_primary_verdict": true,
+  "game": "ar25",
+  "level": 1,
+  "results": {
+    "combined": {
+      "actions": 17,
+      "first_level_completed": true,
+      "levels_completed": 1,
+      "overrides": 14,
+      "prior_decisions": 14,
+      "replay_verified": true
+    },
+    "external": {
+      "actions": 17,
+      "first_level_completed": true,
+      "levels_completed": 1,
+      "overrides": 14,
+      "prior_decisions": 14,
+      "replay_verified": true
+    },
+    "scratch": {
+      "actions": 32,
+      "first_level_completed": false,
+      "levels_completed": 0,
+      "overrides": 0,
+      "prior_decisions": 0,
+      "replay_verified": true
+    },
+    "self_transfer": {
+      "actions": 17,
+      "first_level_completed": true,
+      "levels_completed": 1,
+      "overrides": 14,
+      "prior_decisions": 14,
+      "replay_verified": true
+    }
+  },
+  "verdict_effect": "secondary-only; primary cross-game verdict remains INCONCLUSIVE"
+}

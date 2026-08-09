@@ -1,0 +1,311 @@
+{
+  "all_replay_verified": true,
+  "arms": [
+    {
+      "actions": 32,
+      "arm": "combined",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "action_vectors": {},
+        "bindings": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "prior_provenances": [
+          "externally-proposed",
+          "transferred-self-built"
+        ],
+        "provenance_states": [
+          "externally-proposed",
+          "transferred-self-built"
+        ],
+        "residual": null
+      },
+      "elapsed_this_process_s": 2.2261528610033565,
+      "final_digest": "fd002273484a0266b6bd0d8e089401b6b8a9bd70d0c65cb977cdb300312f2e2d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cn04",
+      "job_key": "a51810ff09e5f7523c11bc3305b7892f2b3f3ce421fccafdd1be6a6534a9a33c",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "target_role": "negative"
+    },
+    {
+      "actions": 32,
+      "arm": "external",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "action_vectors": {},
+        "bindings": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "prior_provenances": [
+          "externally-proposed"
+        ],
+        "provenance_states": [
+          "externally-proposed"
+        ],
+        "residual": null
+      },
+      "elapsed_this_process_s": 2.2336533190027694,
+      "final_digest": "fd002273484a0266b6bd0d8e089401b6b8a9bd70d0c65cb977cdb300312f2e2d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cn04",
+      "job_key": "e135ba6d09976713424e1f1b7fbdf903247da34e43c35a44b33253a7fd838ee9",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "target_role": "negative"
+    },
+    {
+      "actions": 32,
+      "arm": "scratch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "action_vectors": {},
+        "bindings": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "prior_provenances": [],
+        "provenance_states": [],
+        "residual": null
+      },
+      "elapsed_this_process_s": 2.234466629997769,
+      "final_digest": "fd002273484a0266b6bd0d8e089401b6b8a9bd70d0c65cb977cdb300312f2e2d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cn04",
+      "job_key": "f6553ff4d80d4947c5148aa0418b4324acb7541f0791cb26ba2ec0b5de66decf",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "target_role": "negative"
+    },
+    {
+      "actions": 32,
+      "arm": "self_transfer",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "action_vectors": {},
+        "bindings": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "prior_provenances": [
+          "transferred-self-built"
+        ],
+        "provenance_states": [
+          "transferred-self-built"
+        ],
+        "residual": null
+      },
+      "elapsed_this_process_s": 2.240574576004292,
+      "final_digest": "fd002273484a0266b6bd0d8e089401b6b8a9bd70d0c65cb977cdb300312f2e2d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cn04",
+      "job_key": "d028e388f3213dab7421d195124873941101004ca968274d55e82187244b755f",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "target_role": "negative"
+    },
+    {
+      "actions": 32,
+      "arm": "combined",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "action_vectors": {},
+        "bindings": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "prior_provenances": [
+          "externally-proposed",
+          "transferred-self-built"
+        ],
+        "provenance_states": [
+          "externally-proposed",
+          "transferred-self-built"
+        ],
+        "residual": null
+      },
+      "elapsed_this_process_s": 2.169491382999695,
+      "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "wa30",
+      "job_key": "c99b978ac1e945743aa5289664ffbd5e358e85763e787535958c92fac04982bd",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "target_role": "positive"
+    },
+    {
+      "actions": 32,
+      "arm": "external",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "action_vectors": {},
+        "bindings": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "prior_provenances": [
+          "externally-proposed"
+        ],
+        "provenance_states": [
+          "externally-proposed"
+        ],
+        "residual": null
+      },
+      "elapsed_this_process_s": 2.1739796010006103,
+      "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "wa30",
+      "job_key": "3e866158958bac20513931899ea16797d773c4f3a95e5ee09229e36c461f0b86",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "target_role": "positive"
+    },
+    {
+      "actions": 32,
+      "arm": "scratch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "action_vectors": {},
+        "bindings": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "prior_provenances": [],
+        "provenance_states": [],
+        "residual": null
+      },
+      "elapsed_this_process_s": 2.1774893260007957,
+      "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "wa30",
+      "job_key": "23edfd4679d0448b9320ff9bc1bb7c401a888040c59823af43fc376a99a5fd47",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "target_role": "positive"
+    },
+    {
+      "actions": 32,
+      "arm": "self_transfer",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "action_vectors": {},
+        "bindings": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "prior_provenances": [
+          "transferred-self-built"
+        ],
+        "provenance_states": [
+          "transferred-self-built"
+        ],
+        "residual": null
+      },
+      "elapsed_this_process_s": 2.1665000510038226,
+      "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "wa30",
+      "job_key": "ea519f115584a4cee579f51ac52f3ea1c9a2a72334ab955185e3f9a1ef2efb62",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "target_role": "positive"
+    }
+  ],
+  "improvements": [
+    {
+      "action_savings": null,
+      "action_savings_fraction": null,
+      "arm": "self_transfer",
+      "completion_gain": false
+    },
+    {
+      "action_savings": null,
+      "action_savings_fraction": null,
+      "arm": "external",
+      "completion_gain": false
+    },
+    {
+      "action_savings": null,
+      "action_savings_fraction": null,
+      "arm": "combined",
+      "completion_gain": false
+    }
+  ],
+  "negative_regression": false,
+  "verdict": "INCONCLUSIVE"
+}
