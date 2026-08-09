@@ -1,0 +1,190 @@
+{
+  "frozen_batch": true,
+  "manifest_digest": "9a29b49395386e88a5e3b253f0950cc0140bdee76b2a40c7965da4a3e1fa51e3",
+  "protocol": "autonomous-progress-sealed-batch-v1",
+  "results": [
+    {
+      "error": "SynthesisError: region population exceeds bounded grammar",
+      "game": "bp35",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "cd82",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "attention": 45,
+      "binding_id": "grounding:82a30ec2020ac5f252157ce4",
+      "candidate_id": "goal:2a12b9e99bced29ffcc01aec",
+      "exact_replay": true,
+      "factual_actions": 16,
+      "final_digest": "54fb9cd3ab12393c19f4a481780c3f6b6f1612b57e77df60ddbfa61c5c1e9323",
+      "game": "cn04",
+      "initial_digest": "fa0b748e893beb1105ec57b4b6b925745beb318deec127aba9174ebe7c93723f",
+      "initial_support": 0,
+      "levels_completed": 0,
+      "movable_variable": "?a",
+      "opaque_actions": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "predicted_after": 0,
+      "predicted_before": 96,
+      "predicted_translation": [
+        27,
+        21
+      ],
+      "selected_ast": {
+        "direction": "minimize",
+        "lower_bound": 0,
+        "potential": {
+          "arguments": [
+            "?a",
+            "?b"
+          ],
+          "op": "TranslationAlignmentResidual"
+        },
+        "protocol": "compositional-progress-dsl-v0",
+        "roles": {
+          "?a": {
+            "type": "ObservedRegion"
+          },
+          "?b": {
+            "type": "ObservedRegion"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      }
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "ft09",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "g50t",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "lf52",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "lp85",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "attention": 60,
+      "binding_id": "grounding:99d1b294f93bff9094397d90",
+      "candidate_id": "goal:2a12b9e99bced29ffcc01aec",
+      "exact_replay": true,
+      "factual_actions": 4,
+      "final_digest": "dd99dccd99d42e233b6b66004a5343883112ca30f87b7026e136d266d5eb5a5f",
+      "game": "m0r0",
+      "initial_digest": "b575fab398afc407a0b18e142458824314ad496ec71c61d0716c32f0bf699827",
+      "initial_support": 0,
+      "levels_completed": 0,
+      "movable_variable": "?a",
+      "opaque_actions": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "predicted_after": 0,
+      "predicted_before": 40,
+      "predicted_translation": [
+        20,
+        0
+      ],
+      "selected_ast": {
+        "direction": "minimize",
+        "lower_bound": 0,
+        "potential": {
+          "arguments": [
+            "?a",
+            "?b"
+          ],
+          "op": "TranslationAlignmentResidual"
+        },
+        "protocol": "compositional-progress-dsl-v0",
+        "roles": {
+          "?a": {
+            "type": "ObservedRegion"
+          },
+          "?b": {
+            "type": "ObservedRegion"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      }
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "r11l",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "s5i5",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "sb26",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "sc25",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "sk48",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "su15",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "tn36",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no compositional potential has a grounded improving macro",
+      "game": "vc33",
+      "status": "ABSTAIN_OR_ERROR"
+    }
+  ],
+  "solved_count": 0,
+  "solved_games": [],
+  "source_blind_runtime": true
+}
