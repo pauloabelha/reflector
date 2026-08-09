@@ -176,9 +176,11 @@ class OnlineCompositionalOptionInducer:
             raise OnlineOptionError("initial perception has no stable square lattice")
         self.lattice_factor=factor_x
         self.current_grid = _fixed_lattice(raw_initial,self.lattice_factor)
+        self._initial_grid = self.current_grid
         self.current_scene = synthesis.perceive(self.current_grid,coarsen=False)
         rows = tuple(dsl.propose(self.current_grid) if candidates is None else candidates)
         self.candidates: dict[str, Any] = {}
+        self.initial_bindings: dict[tuple[str, str], dict[str, str]] = {}
         self.lineages: dict[tuple[str, str], tuple[dict[str, str], ...]] = {}
         for candidate in rows:
             if candidate.ast.get("protocol") != "compositional-progress-dsl-v0":
@@ -187,6 +189,7 @@ class OnlineCompositionalOptionInducer:
             self.candidates[candidate.candidate_id] = candidate
             lineage=_lineage_id(candidate.candidate_id,candidate.binding)
             key=(candidate.candidate_id,lineage)
+            self.initial_bindings.setdefault(key,dict(candidate.binding))
             self.lineages.setdefault(key, tuple())
             existing = list(self.lineages[key])
             if dict(candidate.binding) not in existing:
@@ -382,6 +385,75 @@ class OnlineCompositionalOptionInducer:
     def evaluator_state(self, option_id: str) -> EvaluatorState | None:
         return self.evaluators.get(option_id)
 
+    def calibrated_motion_actions(self) -> dict[tuple[int, int], int]:
+        """Return only globally consistent observed cardinal translations.
+
+        Candidate/lineage replication can produce many copies of the same
+        direct effect.  Agreement is collapsed; disagreement or an action
+        associated with two distinct nonzero translations is withheld.
+        Stationary roles do not erase the moving role's effect.
+        """
+        by_action: dict[int, set[tuple[int, int]]] = defaultdict(set)
+        for row in self.effects:
+            if row.delta != (0, 0):
+                by_action[row.opaque_action].add(row.delta)
+        action_to_delta = {
+            action: next(iter(deltas))
+            for action, deltas in by_action.items()
+            if len(deltas) == 1
+            and (next(iter(deltas))[0] == 0) != (next(iter(deltas))[1] == 0)
+        }
+        by_delta: dict[tuple[int, int], list[int]] = defaultdict(list)
+        for action, delta in action_to_delta.items():
+            by_delta[delta].append(action)
+        return {
+            delta: min(actions)
+            for delta, actions in by_delta.items()
+            if len(actions) == 1
+        }
+
+    def restoration_actions(self, *, max_steps: int = 16) -> tuple[int, ...] | None:
+        """Plan a verified-model return of a uniquely controlled role.
+
+        This repairs calibration displacement without resetting or cloning the
+        environment.  Multiple candidate descriptions of the same controlled
+        region must agree on the opaque action sequence; otherwise restoration
+        remains unresolved.
+        """
+        motion=self.calibrated_motion_actions()
+        if not motion:return None
+        # Initial region IDs encode their original situated anchors; recover
+        # those anchors from the candidates' retained initial scene snapshot.
+        original_scene=synthesis.perceive(self._initial_grid,coarsen=False)
+        original_by_id={row.region_id:row for row in original_scene.regions}
+        current_by_id={row.region_id:row for row in self.current_scene.regions}
+        plans=set()
+        for key,alternatives in self.lineages.items():
+            if len(alternatives)!=1:continue
+            initial=self.initial_bindings.get(key,{});current=alternatives[0]
+            for variable,initial_id in initial.items():
+                observed={
+                    row.opaque_action:row.delta for row in self.effects
+                    if (row.schema_id,row.lineage_id,row.variable)==(key[0],key[1],variable)
+                    and row.delta!=(0,0)
+                }
+                if any(observed.get(action)!=delta for delta,action in motion.items()):continue
+                source=original_by_id.get(initial_id);target=current_by_id.get(current.get(variable,""))
+                if source is None or target is None:continue
+                wanted=(source.x-target.x,source.y-target.y)
+                queue=[((0,0),())];seen={(0,0)};found=None
+                while queue:
+                    point,actions=queue.pop(0)
+                    if point==wanted:found=actions;break
+                    if len(actions)>=max_steps:continue
+                    for delta,action in sorted(motion.items()):
+                        nxt=(point[0]+delta[0],point[1]+delta[1])
+                        if nxt not in seen:seen.add(nxt);queue.append((nxt,actions+(action,)))
+                if found is not None:plans.add(found)
+        if not plans:return None
+        best=min(plans,key=lambda row:(len(row),row))
+        return best if all(row==best for row in plans) else None
+
     def workspace_document(self) -> dict[str, Any]:
         models = self._usable_effects()
         return {
@@ -409,6 +481,13 @@ class OnlineCompositionalOptionInducer:
                 for key, value in sorted(models.items())
             ],
             "recent_transition_ids": self.recent_transition_ids[-16:],
+            "calibrated_motion_interventions": [
+                {
+                    "delta": list(delta),
+                    "intervention_ref": "iv:" + synthesis.stable_hash({"opaque": action})[:16],
+                }
+                for delta, action in sorted(self.calibrated_motion_actions().items())
+            ],
         }
 
 

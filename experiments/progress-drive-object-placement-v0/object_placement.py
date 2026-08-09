@@ -81,7 +81,19 @@ def track_item_scene(initial_raw:Sequence[Sequence[int]],current_raw:Sequence[Se
   for y in range(0,len(current)-ih+1):
    for x in range(0,len(current[0])-iw+1):
     candidate=tuple(current[yy][xx] for yy in range(y,y+ih) for xx in range(x,x+iw) if xx in {x,x+iw-1} or yy in {y,y+ih-1})
-    if candidate==signature:found.append(Box(x,y,iw,ih))
+    if candidate==signature:
+     box=Box(x,y,iw,ih)
+     # A preserved object that now occupies a compatible hollow slot is no
+     # longer a member of the live unassigned population.  Its pixels remain
+     # visible, so correspondence must apply the role predicate rather than
+     # counting every matching appearance as an ambiguity.
+     assigned=any(
+      slot.x < box.x and slot.y < box.y
+      and box.x+box.width < slot.x+slot.width
+      and box.y+box.height < slot.y+slot.height
+      for slot in scene.slots
+     )
+     if not assigned:found.append(box)
  unique=tuple(sorted(set(found),key=lambda b:(b.y,b.x)))
  if len(unique)!=len(scene.items):raise PlacementError(f"correspondence preserved {len(unique)} of {len(scene.items)} items")
  return PlacementScene(unique,scene.slots,scene.blocked,scene.bounds)

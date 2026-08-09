@@ -1,6 +1,6 @@
 """One registry, five consumed mechanics, no game-conditioned capability path."""
 from __future__ import annotations
-import importlib.util,json,pathlib,sys
+import argparse,importlib.util,json,pathlib,sys
 HERE=pathlib.Path(__file__).resolve().parent;ROOT=HERE.parents[1];ART=HERE/"artifacts"/"registry-development";sys.path.insert(0,str(HERE))
 import capability_registry as REGISTRY
 import route_option as ROUTE
@@ -64,10 +64,11 @@ def run_game(game,limit=64):
   replay=replay_env.observation_space or replay_env.reset();exact=True
   for row in history:replay=BASE.execute_action(replay_env,game,row["action"],row["data"],"exact-replay");exact=exact and BASE.observation_record(replay)["digest"]==row["after"]["digest"]
  finally:replay_arcade.close_scorecard()
- return {"game":game,"selected_capability":selected.capability,"goal_ast":selected.goal_ast,"initial_support":selected.empirical_support,"actions":len(history),"levels_completed":final["levels_completed"],"exact_replay":exact,"action_sequence":[row["action"] for row in history]}
+ return {"game":game,"selected_capability":selected.capability,"goal_ast":selected.goal_ast,"initial_support":selected.empirical_support,"calibration_actions":len(legal),"calibration_resets":len(legal)+1,"actions":len(history),"levels_completed":final["levels_completed"],"exact_replay":exact,"action_sequence":[row["action"] for row in history]}
 def main():
+ parser=argparse.ArgumentParser();parser.add_argument("--game",action="append",dest="games");args=parser.parse_args()
  results=[]
- for game in ("ar25","ka59","sp80","re86","tu93"):
+ for game in (tuple(args.games) if args.games else ("ar25","ka59","sp80","re86","tu93")):
   try:results.append(run_game(game))
   except Exception as error:results.append({"game":game,"error":f"{type(error).__name__}: {error}"})
  doc={"protocol":"unified-capability-registry-development-v0","development_only":True,"game_ids_used_only_by_harness":True,"results":results};ART.mkdir(parents=True,exist_ok=True);(ART/"RESULT.json").write_text(json.dumps(doc,indent=2,sort_keys=True)+"\n");print(json.dumps(doc,indent=2));return 0 if all(row.get("levels_completed",0)>=1 and row.get("exact_replay") for row in results) else 1

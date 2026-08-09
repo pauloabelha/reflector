@@ -110,4 +110,59 @@ def propose(
     unique={(__import__('json').dumps(row.goal_ast,sort_keys=True),row.capability,str(row.execution)):row for row in rows}
     return tuple(sorted(unique.values(),key=lambda row:(-row.attention,row.interactive,row.capability,str(row.execution))))
 
-__all__=["CapabilityProposal","ExactOption","propose"]
+
+def propose_calibrated(
+    current:Sequence[Sequence[int]],
+    *,
+    motion_actions:Mapping[tuple[int,int],int],
+    parameterized_actions:Sequence[int]=(),
+    release_actions:Sequence[int]=(),
+)->tuple[CapabilityProposal,...]:
+    """Compile exact situated capabilities from already observed action laws.
+
+    Unlike :func:`propose`, this boundary needs no one-step reset successors.
+    The caller supplies only action effects learned from ordinary live
+    transitions.  Opaque action identities remain in the situated execution
+    object and never enter the transferable goal AST.
+    """
+    normalized={
+        (int(delta[0]),int(delta[1])):int(action)
+        for delta,action in motion_actions.items()
+        if (int(delta[0])==0)!=(int(delta[1])==0)
+    }
+    if len(set(normalized.values())) != len(normalized):
+        raise synthesis.SynthesisError("one opaque action cannot denote multiple translations")
+    try:candidates=list(synthesis.synthesize(current))
+    except synthesis.SynthesisError:return ()
+    executable={"UnassignedMemberCount","UnservedTerminalCount","UncoveredRequirementCount"}
+    rows=[]
+    for candidate in candidates:
+        if candidate.ast["potential"]["type"] not in executable:continue
+        try:
+            execution=exact.compile_execution(
+                candidate,
+                current,
+                motion_actions=normalized,
+                parameterized_actions=tuple(map(int,parameterized_actions)),
+                release_actions=tuple(map(int,release_actions)),
+            )
+        except Exception:continue
+        option=ExactOption(
+            candidate,
+            execution,
+            tuple(sorted(normalized.items())),
+            tuple(map(int,parameterized_actions)),
+            tuple(map(int,release_actions)),
+        )
+        rows.append(CapabilityProposal(
+            "exact:"+candidate.ast["potential"]["type"],
+            candidate.ast,
+            candidate.attention,
+            0,
+            option,
+            False,
+        ))
+    unique={(row.capability,row.execution.candidate.candidate_id,row.execution.proposal.binding_id):row for row in rows}
+    return tuple(sorted(unique.values(),key=lambda row:(-row.attention,row.capability,str(row.execution))))
+
+__all__=["CapabilityProposal","ExactOption","propose","propose_calibrated"]

@@ -61,7 +61,15 @@ def compile_execution(
     release_actions:Sequence[int]=(),
     grounding_memory:object|None=None,
 )->ExecutionProposal:
-    current=_situated(candidate,raw);kind=current.ast["potential"]["type"]
+    kind=candidate.ast["potential"]["type"]
+    # A depleted set may cease to be perceptually enumerable after successful
+    # assignments.  Its already-grounded role identity remains live through
+    # the explicit tracking memory; do not demand rediscovery from the current
+    # frame.  Other goal families still require fresh situated synthesis.
+    if kind=="UnassignedMemberCount" and isinstance(grounding_memory,PlacementMemory):
+        current=candidate
+    else:
+        current=_situated(candidate,raw)
     if kind=="UnassignedMemberCount":
         if len(parameterized_actions)!=1:raise SynthesisError("assignment requires exactly one opaque selection channel")
         if grounding_memory is None:

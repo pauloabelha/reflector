@@ -4,26 +4,41 @@
   "protocol": "unified-capability-registry-development-v0",
   "results": [
     {
+      "error": "SynthesisError: region population exceeds bounded grammar",
+      "game": "bp35"
+    },
+    {
       "action_sequence": [
-        3,
-        3,
-        3,
-        3,
-        3,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2,
-        2
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
       ],
-      "actions": 15,
+      "actions": 24,
+      "calibration_actions": 4,
+      "calibration_resets": 5,
       "exact_replay": true,
-      "game": "ar25",
+      "game": "dc22",
       "goal_ast": {
         "direction": "minimize",
         "lower_bound": 0,
@@ -49,187 +64,51 @@
         "type": "GoalPotential"
       },
       "initial_support": 0,
-      "levels_completed": 1,
+      "levels_completed": 0,
       "selected_capability": "gradient:TranslationAlignmentResidual"
     },
     {
-      "action_sequence": [
-        6,
-        4,
-        4,
-        4,
-        6,
-        3,
-        3,
-        3,
-        3,
-        2,
-        6,
-        1,
-        4
-      ],
-      "actions": 13,
-      "exact_replay": true,
-      "game": "ka59",
-      "goal_ast": {
-        "potential": {
-          "direction": "minimize",
-          "lower_bound": 0,
-          "type": "UnassignedMemberCount"
-        },
-        "protocol": "autonomous-progress-synthesis-v0",
-        "roles": {
-          "containers": {
-            "type": "CapacityCompatibleSet"
-          },
-          "members": {
-            "type": "EquivalenceClass"
-          }
-        },
-        "terminal": {
-          "type": "EqualsLowerBound"
-        },
-        "type": "GoalPotential"
-      },
-      "initial_support": 0,
-      "levels_completed": 1,
-      "selected_capability": "exact:UnassignedMemberCount"
+      "error": "RuntimeError: capability registry abstained",
+      "game": "sc25"
     },
     {
-      "action_sequence": [
-        4,
-        4,
-        4,
-        5
-      ],
-      "actions": 4,
+      "action_sequence": [],
+      "actions": 0,
+      "calibration_actions": 5,
+      "calibration_resets": 6,
       "exact_replay": true,
-      "game": "sp80",
+      "game": "sk48",
       "goal_ast": {
         "potential": {
+          "container": "?container",
           "direction": "minimize",
           "lower_bound": 0,
-          "type": "UnservedTerminalCount"
+          "members": "?members",
+          "type": "OutsideCount"
         },
-        "protocol": "autonomous-progress-synthesis-v0",
-        "roles": {
-          "source": {
-            "type": "BoundaryEmitter"
-          },
-          "terminals": {
-            "type": "RepeatedOpenRegions"
-          },
-          "transducer": {
-            "type": "Transformable"
-          }
-        },
+        "protocol": "goal-potential-ast-v0",
+        "roles": [
+          "?members",
+          "?container"
+        ],
         "terminal": {
-          "type": "EqualsLowerBound"
+          "container": "?container",
+          "members": "?members",
+          "type": "AllInside"
         },
         "type": "GoalPotential"
       },
       "initial_support": 0,
-      "levels_completed": 1,
-      "selected_capability": "exact:UnservedTerminalCount"
+      "levels_completed": 0,
+      "selected_capability": "interactive:collection-transport"
     },
     {
-      "action_sequence": [
-        4,
-        4,
-        4,
-        4,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1,
-        5,
-        3,
-        3,
-        1,
-        1,
-        1,
-        1,
-        1,
-        1
-      ],
-      "actions": 20,
-      "exact_replay": true,
-      "game": "re86",
-      "goal_ast": {
-        "potential": {
-          "direction": "minimize",
-          "lower_bound": 0,
-          "type": "UncoveredRequirementCount"
-        },
-        "protocol": "autonomous-progress-synthesis-v0",
-        "roles": {
-          "controllers": {
-            "type": "TransformableSet"
-          },
-          "requirements": {
-            "type": "SparseSpecificationLayer"
-          }
-        },
-        "terminal": {
-          "type": "EqualsLowerBound"
-        },
-        "type": "GoalPotential"
-      },
-      "initial_support": 0,
-      "levels_completed": 1,
-      "selected_capability": "exact:UncoveredRequirementCount"
+      "error": "RuntimeError: capability registry abstained",
+      "game": "su15"
     },
     {
-      "action_sequence": [
-        4,
-        1,
-        2,
-        2,
-        4,
-        1,
-        4,
-        2,
-        2,
-        3,
-        3,
-        2,
-        4,
-        4,
-        2,
-        4,
-        1,
-        4,
-        2
-      ],
-      "actions": 19,
-      "exact_replay": true,
-      "game": "tu93",
-      "goal_ast": {
-        "potential": {
-          "direction": "minimize",
-          "lower_bound": 0,
-          "type": "RemainingRouteSteps"
-        },
-        "protocol": "autonomous-progress-synthesis-v0",
-        "roles": {
-          "controlled": {
-            "type": "ActionCorrelatedRegion"
-          },
-          "terminal": {
-            "type": "ReachableMarker"
-          }
-        },
-        "terminal": {
-          "type": "ReachTerminal"
-        },
-        "type": "GoalPotential"
-      },
-      "initial_support": 0,
-      "levels_completed": 1,
-      "selected_capability": "interactive:conditional-route"
+      "error": "RuntimeError: capability registry abstained",
+      "game": "wa30"
     }
   ]
 }

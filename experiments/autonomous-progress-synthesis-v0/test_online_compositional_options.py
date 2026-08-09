@@ -205,6 +205,24 @@ def test_indirect_transition_updates_correspondence_but_not_effect_model():
     assert inducer.workspace_document()["effect_models"] == []
 
 
+def test_live_effects_expose_only_consistent_opaque_motion_calibration():
+    initial=frame();inducer=online.OnlineCompositionalOptionInducer(initial,legal_actions=(61,62),candidates=(candidate(initial),))
+    inducer.observe_option_transition(opaque_action=61,after=frame((2,2)),transition_id="transition:right")
+    assert inducer.calibrated_motion_actions()=={(1,0):61}
+    document=inducer.workspace_document()
+    assert document["calibrated_motion_interventions"][0]["delta"]==[1,0]
+    assert "61" not in str(document["calibrated_motion_interventions"])
+
+
+def test_calibration_can_restore_controlled_role_without_reset_or_action_semantics():
+    initial=frame();inducer=online.OnlineCompositionalOptionInducer(initial,legal_actions=(61,62),candidates=(candidate(initial),))
+    inducer.observe_option_transition(opaque_action=61,after=frame((2,2)),transition_id="transition:r1")
+    inducer.observe_option_transition(opaque_action=62,after=frame((1,2)),transition_id="transition:l1")
+    inducer.observe_option_transition(opaque_action=61,after=frame((2,2)),transition_id="transition:r2")
+    assert inducer.calibrated_motion_actions()=={(-1,0):62,(1,0):61}
+    assert inducer.restoration_actions()==(62,)
+
+
 def test_effect_evidence_is_scoped_to_stable_grounding_lineage_and_variable():
     initial=frame();scene=synthesis.perceive(initial);left,right=sorted(scene.regions,key=lambda row:row.x)
     first=dsl.compile_candidate({"op":"TranslationAlignmentResidual","arguments":["?moving","?target"]},{"?moving":left.region_id,"?target":right.region_id},scene,attention=80)
