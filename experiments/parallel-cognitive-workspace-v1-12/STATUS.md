@@ -37,3 +37,27 @@
   `git diff --check`.
 - No v1.12 ARC environment has been opened. The next step is server recheck,
   git checkpoint, then one fresh paired run.
+
+## 2026-08-09 — fresh paired result
+
+- Frozen checkpoint: git commit `ac471b5`.
+- Binary verdict: **INVALID (revision-phase dispatch bug)**; no scientific
+  PASS/FAIL inference is made.
+- Shared stopped safely at action 8 after the first live Qwen reply, before a
+  subsequent unvalidated action. Error: `KeyError: 'causal_revision_packet'`.
+- Root cause: the strict response adapter classified every non-null
+  `revision_task` as a prospective evidence-return turn. The immediate
+  ambiguity-repair task correctly has a revision task but cannot yet have a
+  causal evidence packet, because no proposal has been probed. The adapter then
+  attempted to read a field that is defined only for the later evidence phase.
+- The packet codec itself was not reached and this run does not test its model
+  behavior. Any fix/rerun requires a new version. The replacement must use the
+  small revision-only grammar for both phases, but require a prospective
+  evidence address only when `causal_revision_packet` is present; ambiguity
+  repair requires the visible relation-set citation only.
+
+## 2026-08-09 12:27:02 — live census launched
+
+- Jobs: 2; games: 1; profiles: 1; environment workers: 2.
+- FAILED `generic_prospective/ar25/shared_live_qwen`: KeyError: 'causal_revision_packet'.
+- COMPLETE `generic_prospective/ar25/r2_only`: levels=0, actions=64, Q→R grounded=0, replay=True.
