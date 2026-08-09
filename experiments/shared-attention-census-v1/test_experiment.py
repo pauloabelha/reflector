@@ -108,6 +108,54 @@ def test_graph_events_and_control_events_rebuild_from_one_ledger(tmp_path: Path)
     ]
 
 
+def test_terminal_control_gate_never_parses_frame_or_sends_action(monkeypatch: Any) -> None:
+    class State:
+        value = "GAME_OVER"
+
+    class TerminalObservation:
+        state = State()
+        levels_completed = 0
+        win_levels = 0
+        full_reset = False
+        available_actions = (1, 2)
+
+        @property
+        def frame(self) -> Any:
+            raise AssertionError("terminal frame must remain unread")
+
+    monkeypatch.setattr(
+        RUNNER,
+        "observation_value",
+        lambda _observation: (_ for _ in ()).throw(
+            AssertionError("terminal observation must not be parsed")
+        ),
+    )
+    actions: list[int] = []
+    terminal, record, grid = RUNNER.control_observation(TerminalObservation())
+    if terminal is None:
+        actions.append(1)
+
+    assert terminal == "GAME_OVER"
+    assert record is None
+    assert grid is None
+    assert actions == []
+    final = RUNNER.terminal_result_record(
+        TerminalObservation(),
+        {
+            "frame_sha256": "last-durable-frame",
+            "state": "GAME_OVER",
+            "levels_completed": 0,
+            "win_levels": 0,
+            "full_reset": False,
+            "available_actions": [1, 2],
+            "digest": "committed-terminal-digest",
+        },
+    )
+    assert final["state"] == "GAME_OVER"
+    assert final["frame_sha256"] == "last-durable-frame"
+    assert final["digest"] == "committed-terminal-digest"
+
+
 def test_graph_event_batch_is_one_atomic_outer_commit_and_replays_exactly(tmp_path: Path) -> None:
     root = tmp_path / "workspace"
     workspace_id = "batch-workspace"
@@ -591,14 +639,21 @@ def test_failure_classifier_cancels_only_explicit_global_invariants() -> None:
     replay = RUNNER.classify_census_failure(RuntimeError("replay successor mismatch"))
     ledger = RUNNER.classify_census_failure(RUNNER.LEDGER.LedgerError("event chain is not contiguous"))
     support = RUNNER.classify_census_failure(result={"support_authority_violations": 1})
+    stable_identity = RUNNER.classify_census_failure(
+        RUNNER.EG.EpistemicGraphError(
+            "stable object identity was reused with different content"
+        )
+    )
 
     assert ordinary["request_cancellation"] is False
     assert replay["category"] == "replay_or_workspace_invariant"
     assert ledger["category"] == "ledger_integrity_violation"
     assert support["category"] == "support_authority_violation"
+    assert stable_identity["category"] == "graph_integrity_violation"
     assert replay["request_cancellation"] is True
     assert ledger["request_cancellation"] is True
     assert support["request_cancellation"] is True
+    assert stable_identity["request_cancellation"] is True
 
 
 def test_reported_support_authority_violation_requests_global_cancellation(

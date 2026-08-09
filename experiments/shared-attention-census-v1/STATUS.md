@@ -165,3 +165,76 @@ Machine state is checkpointed after every epistemic event and real environment t
 - Jobs: 2; games: 1; profiles: 1; environment workers: 2.
 - COMPLETE `balanced/ar25/r2_only`: levels=0, actions=9, Q→R grounded=0, replay=True.
 - COMPLETE `balanced/ar25/shared_attention_qwen`: levels=0, actions=9, Q→R grounded=1, replay=True.
+
+## 2026-08-09 04:05:09 — live census launched
+
+- Jobs: 50; games: 25; profiles: 1; environment workers: 4.
+- FAILED `balanced/bp35/shared_attention_qwen`: FrontierBudgetError: frontier budget 4800 is below mandatory closure cost 6312.
+- COMPLETE `balanced/ar25/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/ar25/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=1, replay=True.
+- COMPLETE `balanced/cd82/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/bp35/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/cn04/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/cd82/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=1, replay=True.
+- COMPLETE `balanced/ft09/r2_only`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/ft09/shared_attention_qwen`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- FAILED `balanced/dc22/shared_attention_qwen`: FrontierBudgetError: frontier budget 4800 is below mandatory closure cost 6524.
+- COMPLETE `balanced/cn04/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/g50t/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/ka59/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/dc22/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/g50t/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/ka59/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=1, replay=True.
+- COMPLETE `balanced/lp85/r2_only`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/lp85/shared_attention_qwen`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/lf52/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- FAILED `balanced/ls20/shared_attention_qwen`: EpistemicGraphError: stable object identity was reused with different content.
+- COMPLETE `balanced/lf52/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=1, replay=True.
+- COMPLETE `balanced/r11l/r2_only`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/r11l/shared_attention_qwen`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/ls20/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/m0r0/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/s5i5/r2_only`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/s5i5/shared_attention_qwen`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- FAILED `balanced/re86/shared_attention_qwen`: FrontierBudgetError: frontier budget 4800 is below mandatory closure cost 6537.
+- FAILED `balanced/sb26/shared_attention_qwen`: FrontierBudgetError: frontier budget 4800 is below mandatory closure cost 5551.
+- COMPLETE `balanced/m0r0/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=1, replay=True.
+- COMPLETE `balanced/re86/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/sb26/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/sc25/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/sk48/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/sc25/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/sk48/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=1, replay=True.
+- FAILED `balanced/sp80/r2_only`: ValueError: ARC observation has no rectangular frame.
+- COMPLETE `balanced/tn36/r2_only`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/tn36/shared_attention_qwen`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- FAILED `balanced/sp80/shared_attention_qwen`: ValueError: ARC observation has no rectangular frame.
+- FAILED `balanced/su15/shared_attention_qwen`: FrontierBudgetError: frontier budget 4800 is below mandatory closure cost 5183.
+- COMPLETE `balanced/su15/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- FAILED `balanced/tr87/shared_attention_qwen`: FrontierBudgetError: frontier budget 4800 is below mandatory closure cost 5580.
+- COMPLETE `balanced/vc33/r2_only`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/vc33/shared_attention_qwen`: levels=0, actions=0, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/tu93/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/tu93/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=1, replay=True.
+- COMPLETE `balanced/tr87/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/wa30/r2_only`: levels=0, actions=32, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/wa30/shared_attention_qwen`: levels=0, actions=32, Q→R grounded=1, replay=True.
+
+## 2026-08-09 07:19 — balanced census terminal
+
+- Terminal jobs: 50/50; completed results: 41; typed failures: 9; cancelled: 0.
+- No arm completed level 1. No paired task gain or action saving occurred.
+- Completed paired games: 17; every completed arm replayed exactly and every pair
+  had the same initial digest.
+- Strict-valid actionful pairs with full context and transport: `ar25`, `cn04`,
+  `ka59`, `m0r0`.
+- Context-valid grounded Qwen→R2 pickups: 6 across actionful completed pairs;
+  grounded R2→Qwen pickups: 0.
+- Only `ar25` reached supported action influence: four support edges, four prior
+  decisions, and four changed actions, with no level gain.
+- Six shared arms failed mandatory frontier feasibility; `ls20` exposed a stable
+  identity collision; both `sp80` arms exposed a frame-normalization gap.
+- The `ls20` integrity failure should have cancelled pending jobs. Because its
+  exact message was misclassified job-local, results from `m0r0` onward are
+  post-deviation exploratory. The classifier was corrected only after the run.
+- Full analysis: `NIGHTLY_RESULTS.md`.

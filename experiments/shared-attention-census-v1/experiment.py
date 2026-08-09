@@ -369,6 +369,40 @@ def observation_value(observation: Any) -> tuple[dict[str, Any], Grid]:
     return BASE.observation_record(observation), BASE.observation_grid(observation)
 
 
+def normalized_terminal_state(observation: Any) -> str | None:
+    """Return an ARC terminal state without touching potentially empty frame data."""
+
+    raw = getattr(observation, "state", "")
+    raw = getattr(raw, "value", raw)
+    normalized = str(raw).strip().upper().rsplit(".", 1)[-1]
+    return normalized if normalized in {"WIN", "GAME_OVER"} else None
+
+
+def control_observation(
+    observation: Any,
+) -> tuple[str | None, dict[str, Any] | None, Grid | None]:
+    """Gate terminal driver observations before any visual/control parsing."""
+
+    terminal = normalized_terminal_state(observation)
+    if terminal is not None:
+        return terminal, None, None
+    record, grid = observation_value(observation)
+    return None, record, grid
+
+
+def terminal_result_record(
+    observation: Any, fallback: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Reuse the exact committed terminal record without reparsing its frame."""
+
+    terminal = normalized_terminal_state(observation)
+    if terminal is None:
+        raise ValueError("terminal result requested for a nonterminal observation")
+    if str(fallback.get("state", "")).strip().upper().rsplit(".", 1)[-1] != terminal:
+        raise RuntimeError("terminal observation does not match last committed record")
+    return dict(fallback)
+
+
 def store_observation(root: Path, observation: Any) -> tuple[str, dict[str, Any], Grid]:
     record, grid = observation_value(observation)
     blob = LEDGER.put_blob(root, {"record": record, "grid": [list(row) for row in grid]})
@@ -1621,6 +1655,8 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
         state, _entities = ingest_initial_graph(root, workspace_id, state, cognition, initial_grid, legal)
         state, graph_events = graph_state(root)
 
+    terminal_state = normalized_terminal_state(observation)
+
     # A reply is durable before its graph writes.  Finish any interrupted
     # integration from stored turn/compilation blobs; never call Qwen again.
     outer_events = LEDGER.list_events(root)
@@ -1637,7 +1673,8 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
     for completed in (
         item
         for item in outer_events
-        if item["event_type"] == "QwenTaskCompleted"
+        if terminal_state is None
+        and item["event_type"] == "QwenTaskCompleted"
         and str(item["payload"]["task_id"]) not in integrated_tasks
     ):
         task_id = str(completed["payload"]["task_id"])
@@ -1683,7 +1720,11 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
     grounding_records: list[dict[str, Any]] = []
     try:
         while len(history) < int(config["action_budget"]):
-            before_record, grid = observation_value(observation)
+            terminal_state, before_record, grid = control_observation(observation)
+            if terminal_state is not None:
+                stop_reason = f"terminal-{terminal_state.lower().replace('_', '-')}"
+                break
+            assert before_record is not None and grid is not None
             if int(before_record["levels_completed"]) >= 1:
                 stop_reason = "first-level-completed"
                 break
@@ -1782,7 +1823,7 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 stop_reason = "first-level-completed"
                 break
 
-        if pending_qwen is not None:
+        if pending_qwen is not None and terminal_state is None:
             state, compilation = integrate_qwen(root, workspace_id, state, *pending_qwen, profile, action_count=len(history))
             qwen_compilations.append(compilation)
             pending_qwen = None
@@ -1792,7 +1833,11 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
     finally:
         arcade.close_scorecard()
 
-    final_record = BASE.observation_record(observation)
+    if terminal_state is None:
+        final_record = BASE.observation_record(observation)
+    else:
+        fallback_record = history[-1]["after"] if history else initial_blob["record"]
+        final_record = terminal_result_record(observation, fallback_record)
     replay_verified = verify_replay(root, game, environments, ARTIFACTS / "recordings" / workspace_id / "verification")
     events = LEDGER.list_events(root)
     decision_docs = [LEDGER.read_blob(root, item["payload"]["decision_blob"]) for item in events if item["event_type"] == "ActionDecision"]
@@ -1972,6 +2017,7 @@ def classify_census_failure(
             "hash mismatch",
             "hash-chain",
             "stable object id collision",
+            "stable object identity was reused with different content",
         )
     ):
         category = "support_authority_violation" if any(
