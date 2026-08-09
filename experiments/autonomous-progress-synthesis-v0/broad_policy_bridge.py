@@ -146,6 +146,7 @@ class SharedBroadPolicy:
         self.probes_used = 0
         self.leases: dict[str, Lease] = {}
         self.proposals: dict[str, OptionProposal] = {}
+        self.probe_counts: dict[str, int] = {}
         self.events: list[dict[str, Any]] = []
 
     @staticmethod
@@ -210,6 +211,50 @@ class SharedBroadPolicy:
         })
         return chosen
 
+    def choose_from_frontier(
+        self,
+        observation: Any,
+        proposals: tuple[OptionProposal, ...],
+    ) -> HybridDecision:
+        """Select one option without letting salience impersonate support.
+
+        Confirmed controls are ranked first.  Before confirmation, examination
+        rotates toward the least-tested viable option and uses attention only as
+        a tie-breaker.  This prevents one salient but unresolved family from
+        monopolizing the bounded probe budget.
+        """
+        unique = {row.candidate_id: row for row in proposals}
+        for row in unique.values():
+            self.proposals[row.candidate_id] = row
+            self.leases.setdefault(row.candidate_id, Lease())
+        controls = [
+            row for row in unique.values()
+            if row.mode == "control"
+            and row.predicted_after < row.potential_before
+            and self.leases[row.candidate_id].control_eligible
+        ]
+        if controls:
+            selected = min(controls, key=lambda row: (-row.attention, row.candidate_id))
+        else:
+            probes = [
+                row for row in unique.values()
+                if row.mode == "probe"
+                and row.predicted_after < row.potential_before
+                and self.leases[row.candidate_id].refutations == 0
+            ]
+            selected = min(
+                probes,
+                key=lambda row: (
+                    self.probe_counts.get(row.candidate_id, 0),
+                    -row.attention,
+                    row.candidate_id,
+                ),
+            ) if probes else None
+        decision = self.choose_action(observation, selected)
+        if selected is not None and decision.mode == "probe":
+            self.probe_counts[selected.candidate_id] = self.probe_counts.get(selected.candidate_id, 0) + 1
+        return decision
+
     def adjudicate(self, outcome: EnvironmentOutcome) -> str:
         proposal = self.proposals.get(outcome.candidate_id)
         if proposal is None:
@@ -244,6 +289,7 @@ class SharedBroadPolicy:
             "protocol": "shared-broad-policy-v0",
             "authority": "environment-evidence-only",
             "probe_budget": {"used": self.probes_used, "limit": self.max_option_probes},
+            "probe_counts": dict(sorted(self.probe_counts.items())),
             "leases": {
                 key: {
                     "confirmations": value.confirmations,

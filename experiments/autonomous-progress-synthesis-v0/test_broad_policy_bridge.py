@@ -22,6 +22,10 @@ def proposal(mode="probe"):
     return OptionProposal.create(schema_id="schema:generic",action_id=4,mode=mode,potential_before=3,predicted_after=2,basis_ids=("frame:0",),proposer="qwen",attention=90)
 
 
+def alternate():
+    return OptionProposal.create(schema_id="schema:alternate",action_id=3,mode="probe",potential_before=5,predicted_after=4,basis_ids=("frame:0",),proposer="r2",attention=70)
+
+
 def test_no_option_is_exact_fallback_and_cognition_is_shared():
     policy=SharedBroadPolicy(Baseline())
     decision=policy.choose_action(Observation())
@@ -68,3 +72,14 @@ def test_unresolved_is_not_support_and_non_environment_authority_fails():
     assert policy.leases[option.candidate_id].confirmations==0
     with pytest.raises(BridgeError,match="only the environment"):
         EnvironmentOutcome(option.candidate_id,"transition:y",3,2,True,actor="qwen")
+
+
+def test_frontier_rotates_across_unresolved_goal_families():
+    policy=SharedBroadPolicy(Baseline(stagnation=99),max_option_probes=4)
+    first,second=proposal(),alternate()
+    d0=policy.choose_from_frontier(object(),(first,second))
+    assert d0.candidate_id==first.candidate_id
+    policy.adjudicate(EnvironmentOutcome(first.candidate_id,"transition:0",None,None,False))
+    d1=policy.choose_from_frontier(object(),(first,second))
+    assert d1.candidate_id==second.candidate_id
+    assert policy.workspace_document()["probe_counts"]=={first.candidate_id:1,second.candidate_id:1}
