@@ -1,0 +1,48 @@
+{
+  "action_budget": 32,
+  "experiment": "shared-attention-census-v1",
+  "games": [
+    "ar25", "bp35", "cd82", "cn04", "dc22",
+    "ft09", "g50t", "ka59", "lf52", "lp85",
+    "ls20", "m0r0", "r11l", "re86", "s5i5",
+    "sb26", "sc25", "sk48", "sp80", "su15",
+    "tn36", "tr87", "tu93", "vc33", "wa30"
+  ],
+  "arms": ["r2_only", "shared_attention_qwen"],
+  "profiles": {
+    "balanced": {
+      "frontier_root_limit": 12,
+      "frontier_token_budget": 5600,
+      "proposal_attention_boost": 1.0,
+      "attention_half_life_actions": 12
+    },
+    "wide_frontier": {
+      "frontier_root_limit": 24,
+      "frontier_token_budget": 7200,
+      "proposal_attention_boost": 1.0,
+      "attention_half_life_actions": 12
+    },
+    "persistent_proposal": {
+      "frontier_root_limit": 12,
+      "frontier_token_budget": 5600,
+      "proposal_attention_boost": 2.0,
+      "attention_half_life_actions": 24
+    }
+  },
+  "primary_profile": "balanced",
+  "max_parallel_arc_workers": 4,
+  "qwen": {
+    "endpoint": "http://127.0.0.1:8081/v1/chat/completions",
+    "max_calls_per_episode": 3,
+    "max_tokens": 900,
+    "model": "qwen3-vl-4b-thinking-q4_k_m",
+    "seed": 271828,
+    "temperature": 0,
+    "thinking_budget_tokens": 256,
+    "top_p": 1,
+    "trigger_action_counts": [0, 8, 16]
+  },
+  "support_policy": "environment-evidence-only",
+  "workspace_protocol": "shared-attention-census-v1.0"
+}
+

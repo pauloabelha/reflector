@@ -1,0 +1,5 @@
+artifacts/recordings/
+artifacts/workspaces/*/blobs/
+artifacts/run.lock
+artifacts/server-queue.lock
+
