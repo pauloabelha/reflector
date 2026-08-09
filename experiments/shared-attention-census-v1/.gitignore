@@ -1,8 +1,10 @@
 artifacts/recordings/
 artifacts/workspaces/
 artifacts/progress/
+artifacts/results/
 artifacts/PARTIAL_RESULTS.json
 artifacts/SUMMARY.json
 artifacts/run.lock
 artifacts/server-queue.lock
 artifacts-aborted-*/
+artifacts-pilot-*/

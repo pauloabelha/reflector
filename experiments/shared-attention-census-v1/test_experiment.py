@@ -224,3 +224,96 @@ def test_r2_frontier_pickup_is_recorded_only_when_selected_then_grounded() -> No
         exposure_key="r2-frontier-1",
     )
     assert repeated.events == ()
+
+
+def test_initial_r2_workspace_is_first_class_groundable_and_compact(tmp_path: Path) -> None:
+    root = tmp_path / "workspace"
+    workspace_id = "compact-initial"
+    LEDGER.append_event(
+        root,
+        workspace_id=workspace_id,
+        event_type="WorkspaceStarted",
+        actor="coordinator",
+        payload={"job_key": "test"},
+    )
+    grid = ((0, 0, 0), (0, 1, 0), (0, 0, 0))
+    cognition = RUNNER.V0.R2Cognition(grid)
+    state, _entities = RUNNER.ingest_initial_graph(
+        root, workspace_id, GRAPH.GraphState(), cognition, grid, (1, 2)
+    )
+
+    kinds = {item.kind for item in state.objects}
+    assert {"frame", "entity", "schema", "r2_binding", "runtime_summary"} <= kinds
+    binding = next(item for item in state.objects if item.kind == "r2_binding")
+    assert binding.payload["resolved_assignments"][0]["visual_grounding"] == "OPEN"
+    rebuilt, events = RUNNER.rebuild_graph(root)
+    assert rebuilt == state
+    turn = RUNNER.QC.build_turn(
+        state,
+        events,
+        RUNNER.QC.Orientation(workspace_id=workspace_id),
+        request_id="qr:compact-test",
+        token_budget=2400,
+        max_deltas=10_000,
+        compact_ids=True,
+    )
+    assert GRAPH.estimate_tokens(turn.document) < 8192
+
+
+def test_unsupported_qwen_schema_returns_structured_non_support_criticism(tmp_path: Path) -> None:
+    root = tmp_path / "workspace"
+    workspace_id = "criticism"
+    LEDGER.append_event(
+        root,
+        workspace_id=workspace_id,
+        event_type="WorkspaceStarted",
+        actor="coordinator",
+        payload={"job_key": "test"},
+    )
+    state = GRAPH.GraphState()
+    proposal = GRAPH.object_event(
+        state,
+        kind="schema",
+        created_by="qwen",
+        identity={"name": "unsupported"},
+        payload={
+            "conditions": [{"predicate": "SameArea", "arguments": ["?a", "?b"]}],
+            "preferred_consequence": {
+                "operator": "Decrease",
+                "measure": "AreaDifference",
+                "arguments": ["?a", "?b"],
+            },
+        },
+        event_key="proposal",
+    )
+    state = RUNNER.apply_graph_event(root, workspace_id, state, proposal)
+    proposal_id = state.objects[0].object_id
+    attention = GRAPH.attention_event(
+        state,
+        worker="qwen",
+        object_id=proposal_id,
+        weight=100,
+        channel="inspect",
+        basis_ids=(),
+        contribution_key="proposal-attention",
+    )
+    state = RUNNER.apply_graph_event(root, workspace_id, state, attention)
+
+    state, records = RUNNER.activate_visible_qwen(
+        root,
+        workspace_id,
+        state,
+        RUNNER.V0.WorkspaceController(),
+        ((0, 0, 0), (0, 1, 0), (0, 0, 0)),
+        (1, 2),
+        (),
+        {"frontier_token_budget": 2400, "frontier_root_limit": 12, "attention_half_life_actions": 12},
+        set(),
+        0,
+    )
+
+    assert records[0]["status"] == "unsupported-potential"
+    criticism = next(item for item in state.objects if item.kind == "structured_criticism")
+    assert proposal_id in criticism.dependency_ids
+    assert GRAPH.support(state, criticism.object_id) == 0
+    assert not any(edge.kind in {"supports", "refutes", "invalidates"} for edge in state.edges)

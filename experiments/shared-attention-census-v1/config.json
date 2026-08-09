@@ -33,12 +33,13 @@
   "max_parallel_arc_workers": 4,
   "qwen": {
     "endpoint": "http://127.0.0.1:8081/v1/chat/completions",
+    "context_window_tokens": 16384,
     "max_calls_per_episode": 3,
-    "max_tokens": 900,
+    "max_tokens": 3000,
     "model": "qwen3-vl-4b-thinking-q4_k_m",
     "seed": 271828,
     "temperature": 0,
-    "thinking_budget_tokens": 256,
+    "thinking_budget_tokens": 1024,
     "top_p": 1,
     "trigger_action_counts": [0, 8, 16]
   },

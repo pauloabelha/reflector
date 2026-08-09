@@ -185,7 +185,8 @@ def test_analysis_assigns_buckets_a_through_d_and_aggregates_cost() -> None:
             levels=0,
             actions=32,
             telemetry={
-                "pickup_directions": {"qwen->r2": 1, "r2->qwen": 1},
+                "pickup_directions": {"qwen->r2": 4, "r2->qwen": 5},
+                "grounded_pickup_directions": {"qwen->r2": 1, "r2->qwen": 1},
                 "complete_causal_chains": 0,
                 "novelty_counts": {"refinement": 1},
             },
@@ -228,7 +229,8 @@ def test_graph_native_telemetry_precedes_v0_fallback_and_fallback_remains_safe()
     native = CENSUS.normalized_episode_telemetry(
         {
             "graph_metrics": {
-                "pickup_directions": {"qwen->r2": 2, "r2->qwen": 3},
+                "pickup_directions": {"qwen->r2": 20, "r2->qwen": 30},
+                "grounded_pickup_directions": {"qwen->r2": 2, "r2->qwen": 3},
                 "complete_causal_chains": [{"chain_id": "one"}],
                 "qwen_novelty_counts": {"ahead_of_r2": 2, "paraphrase": 4},
             },
@@ -237,6 +239,8 @@ def test_graph_native_telemetry_precedes_v0_fallback_and_fallback_remains_safe()
     )
     assert native["telemetry_source"] == "graph_native"
     assert (native["N_QR"], native["N_RQ"]) == (2, 3)
+    assert native["qwen_to_r2_exposures"] == 20
+    assert native["r2_to_qwen_exposures"] == 30
     assert native["complete_causal_chains"] == 1
     assert native["meaningful_novelty"] == 2
 
@@ -245,6 +249,55 @@ def test_graph_native_telemetry_precedes_v0_fallback_and_fallback_remains_safe()
     )
     assert fallback["telemetry_source"] == "v0_fallback"
     assert (fallback["N_QR"], fallback["N_RQ"]) == (2, 1)
+    assert fallback["qwen_to_r2_exposures"] == 0
+    assert fallback["r2_to_qwen_exposures"] == 0
+
+
+def test_completed_ar25_shape_is_valid_but_exposure_is_not_mechanistic_pickup() -> None:
+    common = {
+        "profile_id": "balanced",
+        "game": "ar25",
+        "levels_completed": 0,
+        "first_level_completed": False,
+        "actions": 32,
+        "replay_verified": True,
+        "initial_digest": "8c9c38b5c049817e37ea6525b513983e3",
+        "support_authority_violations": 0,
+    }
+    control = {
+        **common,
+        "arm_id": "r2_only",
+        "elapsed_s": 622.46,
+        "graph_metrics": {
+            "pickup_directions": {},
+            "grounded_pickup_directions": {},
+        },
+    }
+    shared = {
+        **common,
+        "arm_id": "shared_attention_qwen",
+        "elapsed_s": 906.80,
+        "qwen_calls": 3,
+        "qwen_context_valid": True,
+        "qwen_transport_successful": True,
+        "graph_metrics": {
+            "pickup_count": 8,
+            "pickup_directions": {"qwen->r2": 3, "r2->qwen": 5},
+            "grounded_pickup_count": 0,
+            "grounded_pickup_directions": {},
+        },
+    }
+
+    comparison = CENSUS.classify_pair(control, shared)
+
+    assert comparison["same_initial_observation"] is True
+    assert comparison["replay_valid"] is True
+    assert comparison["bucket"] == "D"
+    assert comparison["bucket"] not in {"A", "B"}
+    assert (comparison["N_QR"], comparison["N_RQ"]) == (0, 0)
+    assert comparison["qwen_to_r2_exposures"] == 3
+    assert comparison["r2_to_qwen_exposures"] == 5
+    assert comparison["complete_causal_chains"] == 0
 
 
 def test_analysis_rejects_duplicates_and_incomplete_pairs() -> None:

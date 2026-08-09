@@ -396,6 +396,7 @@ def test_runner_ingestion_serialization_deltas_and_metrics_round_trip() -> None:
     assert report["object_kinds"] == {
         "binding": 1,
         "environment_evidence": 1,
+        "qwen_derivation": 1,
         "runtime_summary": 1,
         "schema": 1,
     }
@@ -412,3 +413,139 @@ def test_runner_ingestion_serialization_deltas_and_metrics_round_trip() -> None:
     )
     assert repeated.state == rebuilt
     assert repeated.events == ()
+
+
+def test_repeated_qwen_semantics_deduplicate_but_keep_distinct_derivations() -> None:
+    state = GRAPH.GraphState()
+    events: list = []
+    state, basis_one = add_object(
+        state, events, kind="entity", creator="r2", name="basis-one"
+    )
+    state, basis_two = add_object(
+        state, events, kind="entity", creator="r2", name="basis-two"
+    )
+    semantic_write = {
+        "kind": "schema",
+        "identity": {
+            "origin": "qwen",
+            "conditions": [{"predicate": "SameArea", "arguments": ["?a", "?b"]}],
+            "preferred_consequence": {
+                "operator": "Decrease",
+                "measure": "AreaDifference",
+                "arguments": ["?a", "?b"],
+            },
+        },
+        "payload": {
+            "conditions": [{"predicate": "SameArea", "arguments": ["?a", "?b"]}],
+            "preferred_consequence": {
+                "operator": "Decrease",
+                "measure": "AreaDifference",
+                "arguments": ["?a", "?b"],
+            },
+            "provenance": "externally-proposed",
+            "eligible_step": 8,
+        },
+        "dependency_ids": [basis_one.object_id],
+    }
+    first = GRAPH.ingest_qwen_writes(state, (semantic_write,), response_id="response-a")
+    second_write = {
+        **semantic_write,
+        "payload": {**semantic_write["payload"], "eligible_step": 16},
+        "dependency_ids": [basis_two.object_id],
+    }
+    second = GRAPH.ingest_qwen_writes(
+        first.state, (second_write,), response_id="response-b"
+    )
+
+    assert first.object_ids == second.object_ids
+    schema_id = first.object_ids[0]
+    explanation_write = {
+        "kind": "explanation",
+        "identity": {
+            "origin": "qwen",
+            "schema_ref": schema_id,
+            "bindings": {"?a": basis_one.object_id, "?b": basis_two.object_id},
+        },
+        "payload": {
+            "bindings": {"?a": basis_one.object_id, "?b": basis_two.object_id},
+            "claim": {
+                "operator": "Decrease",
+                "measure": "AreaDifference",
+                "arguments": ["?a", "?b"],
+            },
+            "provenance": "externally-proposed",
+        },
+        "dependency_ids": [schema_id, basis_one.object_id, basis_two.object_id],
+    }
+    first_explanation = GRAPH.ingest_qwen_writes(
+        second.state, (explanation_write,), response_id="response-c"
+    )
+    second_explanation = GRAPH.ingest_qwen_writes(
+        first_explanation.state,
+        ({**explanation_write, "dependency_ids": [schema_id]},),
+        response_id="response-d",
+    )
+
+    assert first_explanation.object_ids == second_explanation.object_ids
+    schemas = [item for item in second_explanation.state.objects if item.kind == "schema"]
+    explanations = [
+        item for item in second_explanation.state.objects if item.kind == "explanation"
+    ]
+    derivations = [
+        item for item in second_explanation.state.objects if item.kind == "qwen_derivation"
+    ]
+    assert len(schemas) == 1
+    assert len(explanations) == 1
+    assert len(derivations) == 4
+    assert {item.payload["response_id"] for item in derivations} == {
+        "response-a",
+        "response-b",
+        "response-c",
+        "response-d",
+    }
+    assert all(
+        schemas[0].object_id in item.dependency_ids
+        for item in derivations
+        if item.payload["write_kind"] == "schema"
+    )
+    assert schema_id in explanations[0].dependency_ids
+    assert basis_one.object_id in explanations[0].dependency_ids
+    assert basis_two.object_id in explanations[0].dependency_ids
+    assert any(basis_one.object_id in item.dependency_ids for item in derivations)
+    assert any(basis_two.object_id in item.dependency_ids for item in derivations)
+    assert GRAPH.support(second_explanation.state, schemas[0].object_id) == 0
+    assert GRAPH.support(second_explanation.state, explanations[0].object_id) == 0
+
+
+def test_structured_criticism_is_visible_dependency_linked_and_not_support() -> None:
+    state = GRAPH.GraphState()
+    events: list = []
+    state, schema = add_object(
+        state, events, kind="schema", creator="qwen", name="unsupported-schema"
+    )
+    criticism = GRAPH.ingest_structured_criticism(
+        state,
+        worker="r2",
+        target_id=schema.object_id,
+        status="unsupported-potential",
+        criticism_key="grounding-at-step-8",
+        payload={"reason": "measure-not-executable", "measure": "AreaDifference"},
+    )
+    criticism_id = criticism.object_ids[0]
+    item = next(value for value in criticism.state.objects if value.object_id == criticism_id)
+
+    assert item.kind == "structured_criticism"
+    assert item.created_by == "r2"
+    assert schema.object_id in item.dependency_ids
+    assert GRAPH.support(criticism.state, schema.object_id) == 0
+    assert GRAPH.support(criticism.state, criticism_id) == 0
+    assert criticism.state.edges == ()
+    qwen_frontier = GRAPH.build_frontier(
+        criticism.state, worker="qwen", token_budget=10_000
+    )
+    assert criticism_id in qwen_frontier.object_ids
+    assert schema.object_id in qwen_frontier.object_ids
+    assert any(
+        pickup.direction == "qwen->r2" and pickup.object_id == schema.object_id
+        for pickup in criticism.state.pickups
+    )

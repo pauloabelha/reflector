@@ -181,6 +181,7 @@ class IngestResult:
 R2_POLICY = SaliencePolicy(
     worker="r2",
     kind_weights=(
+        ("structured_criticism", 76),
         ("binding", 70),
         ("counterfactual", 58),
         ("environment_evidence", 52),
@@ -198,6 +199,7 @@ R2_POLICY = SaliencePolicy(
 QWEN_POLICY = SaliencePolicy(
     worker="qwen",
     kind_weights=(
+        ("structured_criticism", 82),
         ("explanation", 70),
         ("experiment", 62),
         ("schema", 58),
@@ -1131,32 +1133,147 @@ def ingest_qwen_writes(
     response_id: str,
     basis_ids: Sequence[str] = (),
 ) -> IngestResult:
+    """Ingest semantic Qwen objects plus response-specific provenance.
+
+    A schema or explanation is an epistemic claim, not a model-call artifact.
+    Its stable identity therefore excludes ``response_id`` and write position.
+    The latter remain durable in a separate ``qwen_derivation`` object linked
+    to the semantic object and every supplied basis dependency.  Repeating the
+    same claim can consequently focus attention on one object without
+    fabricating novelty, while its distinct derivations remain inspectable.
+    """
+
     next_state = state
     events: list[GraphEvent] = []
     object_ids: list[str] = []
     for index, raw in enumerate(writes):
         if not isinstance(raw, Mapping) or not {"kind", "identity", "payload"}.issubset(raw):
             raise EpistemicGraphError("Qwen write ingestion contract mismatch")
-        dependencies = tuple(
+        kind = str(raw["kind"])
+        raw_identity = dict(raw["identity"])
+        raw_payload = dict(raw["payload"])
+        semantic_identity = {
+            key: value for key, value in raw_identity.items() if key != "origin"
+        }
+        # Claims remain immutable semantic objects.  Call-local scheduling and
+        # provenance belong to their derivation record, not their identity or
+        # content.  Keeping those fields here was what made repeated identical
+        # proposals appear novel.
+        semantic_payload = {
+            key: value
+            for key, value in raw_payload.items()
+            if key not in {"eligible_step", "provenance"}
+        }
+        supplied_dependencies = tuple(
             sorted(
                 set(str(item) for item in basis_ids).union(
                     str(item) for item in raw.get("dependency_ids", ())
                 )
             )
         )
+        semantic_dependencies: tuple[str, ...]
+        if kind == "schema":
+            semantic_dependencies = ()
+        elif kind == "explanation":
+            bindings = raw_identity.get("bindings", raw_payload.get("bindings", {}))
+            referenced = set(
+                str(value) for value in bindings.values()
+            ) if isinstance(bindings, Mapping) else set()
+            schema_ref = raw_identity.get("schema_ref", raw.get("schema_ref"))
+            if isinstance(schema_ref, str) and schema_ref.startswith("eo:"):
+                referenced.add(schema_ref)
+            semantic_dependencies = tuple(sorted(referenced))
+        else:
+            semantic_dependencies = supplied_dependencies
         next_state, event, object_id = _ingest_object(
             next_state,
-            kind=str(raw["kind"]),
+            kind=kind,
             created_by="qwen",
-            identity={"response_id": response_id, "write_index": index, "semantic": raw["identity"]},
-            payload=dict(raw["payload"]),
-            dependency_ids=dependencies,
-            event_key=f"qwen-write:{response_id}:{index}",
+            identity=semantic_identity,
+            payload=semantic_payload,
+            dependency_ids=semantic_dependencies,
+            event_key=f"qwen-semantic:{stable_hash({'kind': kind, 'identity': semantic_identity})}",
         )
         if event is not None:
             events.append(event)
         object_ids.append(object_id)
+        derivation_dependencies = tuple(sorted(set((*supplied_dependencies, object_id))))
+        next_state, derivation_event, _derivation_id = _ingest_object(
+            next_state,
+            kind="qwen_derivation",
+            created_by="qwen",
+            identity={
+                "response_id": str(response_id),
+                "write_index": index,
+                "semantic_object_id": object_id,
+            },
+            payload={
+                "response_id": str(response_id),
+                "write_index": index,
+                "write_kind": kind,
+                "call_local_payload": {
+                    key: raw_payload[key]
+                    for key in ("eligible_step", "provenance")
+                    if key in raw_payload
+                },
+            },
+            dependency_ids=derivation_dependencies,
+            event_key=f"qwen-derivation:{response_id}:{index}:{object_id}",
+        )
+        if derivation_event is not None:
+            events.append(derivation_event)
     return IngestResult(next_state, tuple(events), tuple(object_ids))
+
+
+def ingest_structured_criticism(
+    state: GraphState,
+    *,
+    worker: str,
+    target_id: str,
+    status: str,
+    criticism_key: str,
+    payload: Mapping[str, Any] | None = None,
+    basis_ids: Sequence[str] = (),
+) -> IngestResult:
+    """Write non-empirical grounding/control criticism into the graph.
+
+    Criticism says why a worker could not currently use or ground an object;
+    it is not environmental refutation and therefore creates no support edge.
+    The target is mandatory in the dependency closure so the criticism is
+    intelligible whenever surfaced to the other worker.
+    """
+
+    if worker not in WORKERS:
+        raise EpistemicGraphError("criticism source must be r2 or qwen")
+    if target_id not in _objects(state):
+        raise EpistemicGraphError("criticism target does not exist")
+    allowed = frozenset(
+        {
+            "unsupported-potential",
+            "unbound",
+            "ambiguous-grounding",
+            "refuted-grounding",
+            "rejected",
+        }
+    )
+    if status not in allowed:
+        raise EpistemicGraphError("unknown structured criticism status")
+    dependencies = tuple(sorted(set((str(target_id), *(str(item) for item in basis_ids)))))
+    next_state, event, object_id = _ingest_object(
+        state,
+        kind="structured_criticism",
+        created_by=worker,
+        identity={
+            "worker": worker,
+            "target_id": str(target_id),
+            "status": str(status),
+            "criticism_key": str(criticism_key),
+        },
+        payload={**dict(payload or {}), "status": str(status)},
+        dependency_ids=dependencies,
+        event_key=f"structured-criticism:{worker}:{criticism_key}",
+    )
+    return IngestResult(next_state, () if event is None else (event,), (object_id,))
 
 
 def ingest_environment_evidence(

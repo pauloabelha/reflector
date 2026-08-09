@@ -54,8 +54,28 @@ def add_object(
 def graph_fixture() -> tuple[Any, list[Any], dict[str, Any]]:
     state = GRAPH.GraphState()
     events: list[Any] = []
-    state, left = add_object(state, events, kind="entity", creator="environment", name="left")
-    state, right = add_object(state, events, kind="entity", creator="environment", name="right")
+    descriptor = {
+        "area": 4,
+        "centroid2": [4, 4],
+        "outline_class": "outline_class_00",
+        "interior_layout_class": "interior_class_00",
+    }
+    state, left = add_object(
+        state,
+        events,
+        kind="entity",
+        creator="environment",
+        name="left",
+        payload={**descriptor, "centroid2": [4, 4]},
+    )
+    state, right = add_object(
+        state,
+        events,
+        kind="entity",
+        creator="environment",
+        name="right",
+        payload={**descriptor, "centroid2": [8, 4]},
+    )
     state, r2_schema = add_object(
         state,
         events,
@@ -89,6 +109,157 @@ def graph_fixture() -> tuple[Any, list[Any], dict[str, Any]]:
         "schema": r2_schema,
         "binding": binding,
         "distractors": distractors,
+    }
+
+
+def relational_triad_fixture() -> tuple[Any, list[Any], dict[str, Any]]:
+    state = GRAPH.GraphState()
+    events: list[Any] = []
+    state, frame = add_object(
+        state,
+        events,
+        kind="frame",
+        creator="environment",
+        name="initial-frame",
+        payload={"width": 64, "height": 64, "pixel_digest": "frame-digest"},
+    )
+
+    def entity_payload(
+        local_ref: str,
+        *,
+        area: int,
+        interior: str,
+        outline: str,
+        centroid2: list[int],
+        full_frame: bool = False,
+    ) -> dict[str, Any]:
+        return {
+            "kind": "Figure",
+            "area": area,
+            "centroid2": centroid2,
+            "outline_class": outline,
+            "interior_layout_class": interior,
+            "grounding": {
+                "frame_id": frame.object_id,
+                "frame_index": 0,
+                "local_component_ref": local_ref,
+                "bbox_height": 64 if full_frame else 9,
+                "bbox_width": 64 if full_frame else 9,
+                "mask_digest": f"mask-{local_ref}",
+                "mask_rle_rc": [[row, 0, 63 if full_frame else 8] for row in range(64)],
+            },
+        }
+
+    state, background = add_object(
+        state,
+        events,
+        kind="entity",
+        creator="r2",
+        name="f03",
+        dependencies=(frame.object_id,),
+        payload=entity_payload(
+            "f03",
+            area=316,
+            interior="interior_class_00",
+            outline="outline_class_00",
+            centroid2=[75, 75],
+            full_frame=True,
+        ),
+    )
+    state, odd = add_object(
+        state,
+        events,
+        kind="entity",
+        creator="r2",
+        name="f00",
+        dependencies=(frame.object_id,),
+        payload=entity_payload(
+            "f00",
+            area=45,
+            interior="interior_class_01",
+            outline="outline_class_01",
+            centroid2=[46, 36],
+        ),
+    )
+    state, matching_a = add_object(
+        state,
+        events,
+        kind="entity",
+        creator="r2",
+        name="f01",
+        dependencies=(frame.object_id,),
+        payload=entity_payload(
+            "f01",
+            area=45,
+            interior="interior_class_02",
+            outline="outline_class_01",
+            centroid2=[78, 36],
+        ),
+    )
+    state, matching_b = add_object(
+        state,
+        events,
+        kind="entity",
+        creator="r2",
+        name="f02",
+        dependencies=(frame.object_id,),
+        payload=entity_payload(
+            "f02",
+            area=45,
+            interior="interior_class_02",
+            outline="outline_class_01",
+            centroid2=[108, 96],
+        ),
+    )
+    relations = [
+        {"predicate": "SameOutline", "arguments": ["f00", "f01"]},
+        {"predicate": "SameOutline", "arguments": ["f00", "f02"]},
+        {"predicate": "SameOutline", "arguments": ["f01", "f02"]},
+        {"predicate": "SameArea", "arguments": ["f00", "f01"]},
+        {"predicate": "SameArea", "arguments": ["f00", "f02"]},
+        {"predicate": "SameArea", "arguments": ["f01", "f02"]},
+        {"predicate": "SameInteriorLayout", "arguments": ["f01", "f02"]},
+        {"predicate": "Disjoint", "arguments": ["f01", "f02"]},
+        {"predicate": "DifferentInteriorLayout", "arguments": ["f00", "f01"]},
+        {"predicate": "DifferentInteriorLayout", "arguments": ["f00", "f02"]},
+    ]
+    state, relation_set = add_object(
+        state,
+        events,
+        kind="relation_set",
+        creator="r2",
+        name="initial-relations",
+        dependencies=(
+            frame.object_id,
+            background.object_id,
+            odd.object_id,
+            matching_a.object_id,
+            matching_b.object_id,
+        ),
+        payload={"frame_id": frame.object_id, "relations": relations},
+    )
+    state, summary = add_object(
+        state,
+        events,
+        kind="runtime_summary",
+        creator="r2",
+        name="summary",
+        dependencies=(relation_set.object_id,),
+        payload={
+            "binding_count": 234,
+            "schema_ids": [f"opaque-schema-{index:03d}" for index in range(80)],
+            "shadow_statuses": {f"opaque-{index:03d}": "idle" for index in range(40)},
+            "workspace_blob": "workspace-digest",
+        },
+    )
+    return state, events, {
+        "frame": frame,
+        "background": background,
+        "odd": odd,
+        "matching_a": matching_a,
+        "matching_b": matching_b,
+        "relation_set": relation_set,
+        "summary": summary,
     }
 
 
@@ -203,8 +374,317 @@ def test_compact_alias_projection_builds_a_second_turn_schema() -> None:
     assert second.mode == "ordered-deltas"
     assert second.document["ordered_lossless_deltas"][0][0] == "O"
     assert second.document["ordered_lossless_deltas"][0][1].startswith("o")
+    assert second.document["delta_codec"]["fidelity"].startswith("mixed compact")
+    assert "small-lossy" in second.document["delta_codec"]["G"]
+    assert "small-lossy" in COGNITION.PROMPT
     schema = COGNITION.response_schema(second)
     assert schema["properties"]["request_id"]["const"] == "req-compact-1"
+
+
+def test_relational_projection_keeps_triad_and_relation_facts_without_large_payloads() -> None:
+    state, events, items = relational_triad_fixture()
+    turn = COGNITION.build_turn(
+        state,
+        events,
+        COGNITION.Orientation("private-triad"),
+        request_id="req-triad",
+        token_budget=1400,
+        compact_ids=True,
+    )
+    alias_for = {real: alias for alias, real in turn.id_aliases}
+    cut = turn.document["sparse_cut"]
+    cut_ids = {item["id"] for item in cut["objects"]}
+    assert {
+        alias_for[items["odd"].object_id],
+        alias_for[items["matching_a"].object_id],
+        alias_for[items["matching_b"].object_id],
+        alias_for[items["relation_set"].object_id],
+    }.issubset(cut_ids)
+
+    by_id = {item["id"]: item for item in cut["objects"]}
+    matching = by_id[alias_for[items["matching_a"].object_id]]
+    assert matching["payload"]["grounding"]["mask_digest"] == "mask-f01"
+    assert matching["payload"]["grounding"]["frame_id"] == alias_for[items["frame"].object_id]
+    assert "mask_rle_rc" not in matching["payload"]["grounding"]
+    assert matching["projection"]["exact_payload_location"] == "authoritative_graph_ledger"
+    relation_payload = by_id[alias_for[items["relation_set"].object_id]]["payload"]
+    assert any(
+        fact["predicate"] == "SameInteriorLayout"
+        and fact["arguments"] == ["f01", "f02"]
+        for fact in relation_payload["relations"]
+    )
+
+    compact_schema = {
+        "local_ref": "s0",
+        "conditions": [
+            {"predicate": "SameInteriorLayout", "arguments": ["?a", "?b"]},
+            {"predicate": "Disjoint", "arguments": ["?a", "?b"]},
+        ],
+        "preferred_consequence": {
+            "operator": "Decrease",
+            "measure": "TranslationAlignmentResidual",
+            "arguments": ["?a", "?b"],
+        },
+        "basis_ids": [alias_for[items["relation_set"].object_id]],
+    }
+    compact_explanation = {
+        "local_ref": "e0",
+        "schema_ref": "s0",
+        "bindings": [
+            {"variable": "?a", "object_id": alias_for[items["matching_a"].object_id]},
+            {"variable": "?b", "object_id": alias_for[items["matching_b"].object_id]},
+        ],
+        "claim": {
+            "operator": "Decrease",
+            "measure": "TranslationAlignmentResidual",
+            "arguments": ["?a", "?b"],
+        },
+        "basis_ids": [alias_for[items["relation_set"].object_id]],
+    }
+    compact_compilation = COGNITION.compile_response(
+        empty_response(
+            turn,
+            schema_writes=[compact_schema],
+            explanation_writes=[compact_explanation],
+        ),
+        turn,
+    )
+    assert compact_compilation["rejected"] == []
+    assert [item["kind"] for item in compact_compilation["accepted"]] == [
+        "schema",
+        "explanation",
+    ]
+
+    # Projection never rewrites the canonical graph payload.
+    canonical_matching = next(
+        value for value in state.objects if value.object_id == items["matching_a"].object_id
+    )
+    assert "mask_rle_rc" in canonical_matching.payload["grounding"]
+    canonical_summary = next(
+        value for value in state.objects if value.object_id == items["summary"].object_id
+    )
+    assert len(canonical_summary.payload["schema_ids"]) == 80
+
+
+def test_large_initial_materialization_is_columnar_and_request_stays_below_eight_k() -> None:
+    state, events, items = relational_triad_fixture()
+    schemas = []
+    for index in range(31):
+        state, schema = add_object(
+            state,
+            events,
+            kind="schema",
+            creator="r2",
+            name=f"bulk-schema-{index}",
+            dependencies=(items["relation_set"].object_id,),
+            payload={
+                "conditions": [
+                    {"predicate": "SameOutline", "arguments": ["?a", "?b"]}
+                ],
+                "preferred_consequence": {
+                    "operator": "Decrease",
+                    "measure": "TranslationAlignmentResidual",
+                    "arguments": ["?a", "?b"],
+                },
+            },
+        )
+        schemas.append(schema)
+    for index in range(234):
+        state, _binding = add_object(
+            state,
+            events,
+            kind="r2_binding",
+            creator="r2",
+            name=f"bulk-binding-{index}",
+            dependencies=(
+                schemas[index % len(schemas)].object_id,
+                items["odd"].object_id,
+                items["matching_a"].object_id,
+            ),
+            payload={
+                "binding_key": f"binding-{index}",
+                "assignments": {"?a": "f00", "?b": "f01"},
+            },
+        )
+    # Match the measured live shape: hundreds of initial frontier exposures
+    # must aggregate rather than reappear as verbose contribution dictionaries.
+    for index in range(265):
+        event = GRAPH.attention_event(
+            state,
+            worker="r2",
+            object_id=items["relation_set"].object_id,
+            weight=1,
+            channel="compare",
+            basis_ids=(),
+            contribution_key=f"bulk-attention-{index}",
+        )
+        state = GRAPH.apply_event(state, event)
+        events.append(event)
+
+    assert len(state.objects) == 272
+    assert len(events) == 537
+    turn = COGNITION.build_turn(
+        state,
+        events,
+        COGNITION.Orientation("private-bulk"),
+        request_id="req-bulk",
+        token_budget=2400,
+        compact_ids=True,
+    )
+    materialization = turn.document["full_materialization"]
+    index = COGNITION._object_index_documents(turn.document["object_index"])
+    assert len(index) == 272
+    assert len(materialization["object_columns"]["dependency_ordinals"]) == 272
+    assert len(materialization["object_columns"]["identity_payload_digest8_pairs"]) == 272
+    assert materialization["attention_fidelity"].startswith("small-lossy aggregation")
+    assert len(materialization["attention_rows"]) == 1
+    assert materialization["attention_rows"][0][3:6] == [265, 265, 1]
+
+    aliases = {real: alias for alias, real in turn.id_aliases}
+    cut_ids = {item["id"] for item in turn.document["sparse_cut"]["objects"]}
+    assert {
+        aliases[items["odd"].object_id],
+        aliases[items["matching_a"].object_id],
+        aliases[items["matching_b"].object_id],
+        aliases[items["relation_set"].object_id],
+    }.issubset(cut_ids)
+    request = COGNITION.request_payload(turn, {"model": "test-model"})
+    assert GRAPH.estimate_tokens(request) < 8_000
+
+
+def test_control_schema_is_executable_and_situated_conditions_are_fact_checked() -> None:
+    state, events, items = relational_triad_fixture()
+    turn = COGNITION.build_turn(
+        state,
+        events,
+        COGNITION.Orientation("private-grounding"),
+        request_id="req-grounding",
+        token_budget=10_000,
+    )
+    response_contract = COGNITION.response_schema(turn)["properties"]
+    control = response_contract["schema_writes"]["items"]["properties"]["preferred_consequence"]
+    semantic = response_contract["explanation_writes"]["items"]["properties"]["claim"]
+    assert control["properties"]["operator"]["enum"] == ["Decrease", "Increase"]
+    assert control["properties"]["measure"]["enum"] == ["TranslationAlignmentResidual"]
+    assert "AreaDifference" in semantic["properties"]["measure"]["enum"]
+    assert "Preserve" in semantic["properties"]["operator"]["enum"]
+
+    executable_schema = {
+        "local_ref": "s0",
+        "conditions": [
+            {"predicate": "SameOutline", "arguments": ["?a", "?b"]},
+            {"predicate": "SameInteriorLayout", "arguments": ["?a", "?b"]},
+            {"predicate": "Disjoint", "arguments": ["?a", "?b"]},
+        ],
+        "preferred_consequence": {
+            "operator": "Decrease",
+            "measure": "TranslationAlignmentResidual",
+            "arguments": ["?a", "?b"],
+        },
+        "basis_ids": [items["relation_set"].object_id],
+    }
+    correct_explanation = {
+        "local_ref": "e0",
+        "schema_ref": "s0",
+        "bindings": [
+            {"variable": "?a", "object_id": items["matching_a"].object_id},
+            {"variable": "?b", "object_id": items["matching_b"].object_id},
+        ],
+        "claim": {
+            "operator": "Decrease",
+            "measure": "TranslationAlignmentResidual",
+            "arguments": ["?a", "?b"],
+        },
+        "basis_ids": [items["relation_set"].object_id],
+    }
+    accepted = COGNITION.compile_response(
+        empty_response(
+            turn,
+            schema_writes=[executable_schema],
+            explanation_writes=[correct_explanation],
+        ),
+        turn,
+    )
+    assert accepted["rejected"] == []
+    assert [item["kind"] for item in accepted["accepted"]] == ["schema", "explanation"]
+
+    non_executable = {
+        **executable_schema,
+        "preferred_consequence": {
+            "operator": "Decrease",
+            "measure": "AreaDifference",
+            "arguments": ["?a", "?b"],
+        },
+    }
+    rejected_control = COGNITION.compile_response(
+        empty_response(turn, schema_writes=[non_executable]), turn
+    )
+    assert rejected_control["accepted"] == []
+    assert rejected_control["rejected"][0]["reason"] == "unsupported-consequence"
+
+    same_area_schema = {
+        **executable_schema,
+        "conditions": [{"predicate": "SameArea", "arguments": ["?a", "?b"]}],
+    }
+    false_grounding = {
+        **correct_explanation,
+        "bindings": [
+            {"variable": "?a", "object_id": items["background"].object_id},
+            {"variable": "?b", "object_id": items["odd"].object_id},
+        ],
+    }
+    rejected_false = COGNITION.compile_response(
+        empty_response(
+            turn,
+            schema_writes=[same_area_schema],
+            explanation_writes=[false_grounding],
+        ),
+        turn,
+    )
+    assert [item["kind"] for item in rejected_false["accepted"]] == ["schema"]
+    assert rejected_false["rejected"][0]["reason"] == "condition-false"
+
+    missing_binding = {
+        **correct_explanation,
+        "bindings": [{"variable": "?a", "object_id": items["matching_a"].object_id}],
+        "claim": {
+            "operator": "Preserve",
+            "measure": "InteriorLayoutDisagreement",
+            "arguments": ["?a"],
+        },
+    }
+    rejected_missing = COGNITION.compile_response(
+        empty_response(
+            turn,
+            schema_writes=[executable_schema],
+            explanation_writes=[missing_binding],
+        ),
+        turn,
+    )
+    assert rejected_missing["rejected"][0]["reason"] == "missing-condition-binding"
+
+    open_explanation = {
+        **correct_explanation,
+        "bindings": [
+            {"variable": "?a", "object_id": items["matching_a"].object_id},
+            {"variable": "?b", "object_id": "OPEN"},
+        ],
+        "claim": {
+            "operator": "Preserve",
+            "measure": "InteriorLayoutDisagreement",
+            "arguments": ["?a", "?b"],
+        },
+    }
+    accepted_open = COGNITION.compile_response(
+        empty_response(
+            turn,
+            schema_writes=[executable_schema],
+            explanation_writes=[open_explanation],
+        ),
+        turn,
+    )
+    assert accepted_open["rejected"] == []
+
 
 def test_expansion_prioritizes_stable_id_and_orientation_is_reconstructable_not_model_authority() -> None:
     state, events, items = graph_fixture()

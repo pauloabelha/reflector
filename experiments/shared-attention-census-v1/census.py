@@ -493,25 +493,41 @@ def _novelty_counts(sources: Sequence[Mapping[str, Any]]) -> dict[str, int]:
 
 
 def normalized_episode_telemetry(result: Mapping[str, Any]) -> dict[str, Any]:
-    """Prefer graph-native causal telemetry, retaining v0-ledger compatibility."""
+    """Prefer grounded graph telemetry and retain exposure/v0 compatibility.
+
+    ``pickup_directions`` records frontier exposure only.  It must never feed
+    the mechanistic N_QR/N_RQ counts, which require a downstream grounded-work
+    edge and therefore come from ``grounded_pickup_directions`` (or explicit
+    N_QR/N_RQ fields produced by an analysis layer).
+    """
 
     sources = _metric_sources(result)
     graph_keys = {
         "N_QR", "N_RQ", "n_qr", "n_rq", "pickup_directions",
+        "grounded_pickup_directions",
         "complete_causal_chains", "novelty_counts", "qwen_novelty_counts",
     }
     graph_native = any(any(key in source for key in graph_keys) for source in sources)
-    directions = _first_metric(sources, ("pickup_directions",))
-    if not isinstance(directions, Mapping):
-        directions = {}
+    grounded_directions = _first_metric(sources, ("grounded_pickup_directions",))
+    if not isinstance(grounded_directions, Mapping):
+        grounded_directions = {}
+    exposure_directions = _first_metric(sources, ("pickup_directions",))
+    if not isinstance(exposure_directions, Mapping):
+        exposure_directions = {}
     n_qr_raw = _first_metric(
         sources, ("N_QR", "n_qr", "qwen_to_r2_pickups", "qwen_to_r2_pickup_count")
     )
     n_rq_raw = _first_metric(
         sources, ("N_RQ", "n_rq", "r2_to_qwen_pickups", "r2_to_qwen_pickup_count")
     )
-    n_qr = _count(n_qr_raw if n_qr_raw is not None else directions.get("qwen->r2"))
-    n_rq = _count(n_rq_raw if n_rq_raw is not None else directions.get("r2->qwen"))
+    n_qr = _count(
+        n_qr_raw if n_qr_raw is not None else grounded_directions.get("qwen->r2")
+    )
+    n_rq = _count(
+        n_rq_raw if n_rq_raw is not None else grounded_directions.get("r2->qwen")
+    )
+    exposure_qr = _count(exposure_directions.get("qwen->r2"))
+    exposure_rq = _count(exposure_directions.get("r2->qwen"))
     pickup = result.get("pickup", {})
     if not isinstance(pickup, Mapping):
         pickup = {}
@@ -547,6 +563,8 @@ def normalized_episode_telemetry(result: Mapping[str, Any]) -> dict[str, Any]:
         "telemetry_source": "graph_native" if graph_native else "v0_fallback",
         "N_QR": n_qr,
         "N_RQ": n_rq,
+        "qwen_to_r2_exposures": exposure_qr,
+        "r2_to_qwen_exposures": exposure_rq,
         "complete_causal_chains": complete_chains,
         "novelty_counts": novelty,
         "meaningful_novelty": novelty["ahead_of_r2"] + novelty["refinement"],
@@ -599,10 +617,16 @@ def _manifest_profiles(manifest: Mapping[str, Any]) -> Sequence[Mapping[str, Any
     return profiles
 
 
+def _initial_digest(value: Mapping[str, Any]) -> Any:
+    return value.get("initial_observation_digest", value.get("initial_digest"))
+
+
 def classify_pair(control: Mapping[str, Any], shared: Mapping[str, Any]) -> dict[str, Any]:
+    control_initial_digest = _initial_digest(control)
+    shared_initial_digest = _initial_digest(shared)
     same_start = (
-        control.get("initial_observation_digest") is not None
-        and control.get("initial_observation_digest") == shared.get("initial_observation_digest")
+        control_initial_digest is not None
+        and control_initial_digest == shared_initial_digest
     )
     replay_valid = bool(control.get("replay_verified")) and bool(shared.get("replay_verified"))
     control_levels = int(control.get("levels_completed", 0))
@@ -717,6 +741,8 @@ def analyze_results(
                 "completion_delta_total": sum(item["completion_delta"] for item in rows),
                 "N_QR": sum(item["N_QR"] for item in rows),
                 "N_RQ": sum(item["N_RQ"] for item in rows),
+                "qwen_to_r2_exposures": sum(item["qwen_to_r2_exposures"] for item in rows),
+                "r2_to_qwen_exposures": sum(item["r2_to_qwen_exposures"] for item in rows),
                 "complete_causal_chains": sum(item["complete_causal_chains"] for item in rows),
                 "meaningful_novelty": sum(item["meaningful_novelty"] for item in rows),
                 "support_authority_violations": sum(

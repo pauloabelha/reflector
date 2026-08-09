@@ -49,6 +49,7 @@ MAX_SCHEMA_WRITES = 1
 MAX_EXPLANATION_WRITES = 1
 MAX_ATTENTION_WRITES = 2
 MAX_EXPANSIONS = 2
+MAX_SALIENCE_FILL_ROOTS = 4
 VARIABLES = ("?a", "?b", "?c", "?d")
 PREDICATES = (
     "SameOutline",
@@ -66,6 +67,7 @@ PREDICATES = (
     "ChangedTogether",
 )
 OPERATORS = ("Decrease", "Increase", "Preserve")
+CONTROL_OPERATORS = ("Decrease", "Increase")
 MEASURES = (
     "TranslationAlignmentResidual",
     "ContactResidual",
@@ -75,7 +77,9 @@ MEASURES = (
     "AreaDifference",
     "EnclosureCountDifference",
 )
+CONTROL_MEASURES = ("TranslationAlignmentResidual",)
 ATTENTION_CHANNELS = ("compare", "control-relevance", "causal", "inspect")
+CODE_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 FORBIDDEN_KEY = re.compile(
     r"(?:^|_)(?:actions?|action_id|action_token|button|games?|game_id|policy|command|support|support_count|evidence_count|confidence)(?:$|_)",
@@ -97,13 +101,13 @@ FORBIDDEN_INPUT_TEXT = re.compile(
 
 PROMPT = """You are the Qwen cognition process sharing an immutable epistemic graph with R2.
 
-The graph, not your conversational context, is authoritative. The first request contains a complete graph materialization. Later requests contain every graph event after your durable cursor in exact order. The sparse attention cut is a bounded view, not a replacement for those events.
+The graph, not your conversational context, is authoritative. A non-compact request carries exact canonical events. A compact request carries an ordered projection: O/E/A rows exactly preserve the fields documented by delta_codec, while each G row is explicitly a small-lossy summary of a contiguous dormant run. Exact event bodies remain only in the authoritative ledger. The sparse attention cut is a bounded semantic projection, not a replacement for that ledger.
 
 Return one strict JSON object matching the supplied schema. You may write only:
 - variable-based schemas;
 - situated explanations that bind a schema to stable graph object IDs;
 - attention contributions over existing graph objects;
-- expansion requests for stable IDs whose complete content should enter a later sparse cut.
+- expansion requests for stable IDs whose semantic payload projection should enter a later sparse cut.
 
 Rules:
 1. Never choose, name, order, repeat, or describe an environment action, button, policy, or game.
@@ -112,10 +116,19 @@ Rules:
 4. A schema is generic and contains no concrete object IDs except basis dependencies.
 5. An explanation must reference a visible schema and bind every used variable to a visible stable entity ID.
 6. Attention changes a worker frontier only; it is not evidence.
-7. An expansion request is not a cognitive assertion. Request only an ID present in object_index.
+7. An expansion request is not a cognitive assertion. Request only an ID present in object_index. Large exact raster/index bodies remain addressable by their digest and authoritative object ID rather than being copied into the prompt.
 8. Do not invent missing deltas. If the visible cut is insufficient, request expansion or abstain.
 9. Emit no prose, Markdown, comments, extra keys, action tokens, or game tokens.
 10. Every situated explanation binding must point to a visible grounded entity or use OPEN for a port R2 must attempt to bind. Generic schemas may remain variable-only.
+11. A schema can enter the control gate only with Decrease or Increase of TranslationAlignmentResidual. Explanation claims may use the broader semantic vocabulary but do not directly control.
+12. Bind every variable used by the referenced schema conditions. Concrete bindings must make every condition true in visible entity descriptors or relation facts; use OPEN rather than guessing.
+13. Treat a uniquely huge border-spanning component as scene/background unless transition evidence makes it causal; prefer compact repeated foreground structure for object-role hypotheses.
+14. Seek discriminative relational contrasts, not tautologies: compare same-outline groups, interior-layout classes, motion roles, and competing pairings. A condition should help select the effect pair rather than merely restate that pair's current scalar value.
+15. Use a third variable only when its relations disambiguate the two effect variables. If several groundings remain plausible, expose OPEN ports or request expansion instead of choosing arbitrarily.
+
+In a compact initial materialization, object_columns arrays align by ordinal with object_index.ids. This columnar topology preserves every alias, kind, dependency, digest, creator, revision, and nonzero support entry. Initial attention_rows are explicitly small-lossy aggregates; exact contributions remain in the ledger.
+
+Predicate semantics: Same/DifferentOutline compare outline_class; Same/DifferentInteriorLayout compare interior_layout_class; Same/DifferentArea compare area; AlignedHorizontal/AlignedVertical, Touches, Disjoint, MovedTogether, MovedWhileStationary, and ChangedTogether require the corresponding visible relation fact (alignment may also be derived from centroids). TranslationAlignmentResidual is Manhattan centroid distance. ContactResidual is separation from contact. OverlapResidual is non-overlap. InteriorLayoutDisagreement, OutlineDisagreement, AreaDifference, and EnclosureCountDifference are semantic comparison measures for explanations only.
 
 EPISTEMIC_INPUT:
 """
@@ -323,57 +336,148 @@ def _replace_ids(value: Any, aliases: Mapping[str, str]) -> Any:
 
 
 def _compact_materialization(state: Any, aliases: Mapping[str, str]) -> dict[str, Any]:
-    """Complete topology/index; payload bodies live in the sparse cut."""
+    """Columnar complete topology; semantic bodies live in the sparse cut."""
+
+    objects = sorted(state.objects, key=lambda item: (item.created_revision, item.object_id))
+    ordinal = {item.object_id: index for index, item in enumerate(objects)}
+    creator_legend = sorted({item.created_by for item in objects})
+    creator_code = {value: index for index, value in enumerate(creator_legend)}
+    digest_pairs = [
+        f"{stable_hash(item.identity)[:8]}.{stable_hash(item.payload)[:8]}"
+        for item in objects
+    ]
+    support_nonzero = [
+        [index, value]
+        for index, item in enumerate(objects)
+        if (value := GRAPH.support(state, item.object_id)) != 0
+    ]
+
+    edge_kinds = sorted({item.kind for item in state.edges})
+    edge_kind_code = {value: index for index, value in enumerate(edge_kinds)}
+    edge_rows = [
+        [
+            edge_kind_code[item.kind],
+            ordinal[item.source_id],
+            ordinal[item.target_id],
+            stable_hash(item.payload)[:8],
+        ]
+        for item in state.edges
+    ]
+
+    attention_groups: dict[tuple[str, int, str], dict[str, Any]] = {}
+    for item in state.attention:
+        key = (item.worker, ordinal[item.object_id], item.channel)
+        group = attention_groups.setdefault(
+            key,
+            {
+                "total": 0,
+                "count": 0,
+                "maximum": 0,
+                "latest_revision": -1,
+                "basis": set(),
+            },
+        )
+        group["total"] += item.weight
+        group["count"] += 1
+        group["maximum"] = max(group["maximum"], item.weight)
+        group["latest_revision"] = max(group["latest_revision"], item.created_revision)
+        group["basis"].update(ordinal[value] for value in item.basis_ids)
+    attention_rows = [
+        [
+            worker,
+            object_ordinal,
+            channel,
+            group["total"],
+            group["count"],
+            group["maximum"],
+            group["latest_revision"],
+            sorted(group["basis"]),
+        ]
+        for (worker, object_ordinal, channel), group in sorted(attention_groups.items())
+    ]
 
     return {
         "revision": state.revision,
         "head_hash": state.head_hash,
-        "objects": [
-            {
-                "id": aliases[item.object_id],
-                "kind": item.kind,
-                "created_by": item.created_by,
-                "created_revision": item.created_revision,
-                "dependencies": [aliases[value] for value in item.dependency_ids],
-                "identity_digest": stable_hash(item.identity)[:16],
-                "payload_digest": stable_hash(item.payload)[:16],
-                "support": GRAPH.support(state, item.object_id),
-            }
-            for item in state.objects
+        "object_columns": {
+            "aligned_with": "object_index.ids",
+            "creator_legend": creator_legend,
+            "creator_codes": "".join(CODE_ALPHABET[creator_code[item.created_by]] for item in objects),
+            "created_revision_deltas": [
+                item.created_revision - (objects[index - 1].created_revision if index else 0)
+                for index, item in enumerate(objects)
+            ],
+            "dependency_ordinals": [
+                [ordinal[value] for value in item.dependency_ids] for item in objects
+            ],
+            "identity_payload_digest8_pairs": digest_pairs,
+            "support_default": 0,
+            "support_nonzero": support_nonzero,
+        },
+        "edge_columns": ["kind_code", "source_ordinal", "target_ordinal", "payload_digest8"],
+        "edge_kind_legend": edge_kinds,
+        "edge_rows": edge_rows,
+        "attention_fidelity": "small-lossy aggregation by worker, object, and channel; exact contributions remain in authoritative ledger",
+        "attention_columns": [
+            "worker",
+            "object_ordinal",
+            "channel",
+            "total_weight",
+            "count",
+            "maximum_weight",
+            "latest_revision",
+            "basis_ordinals_union",
         ],
-        "edges": [
-            {
-                "kind": item.kind,
-                "source": aliases[item.source_id],
-                "target": aliases[item.target_id],
-                "created_by": item.created_by,
-                "created_revision": item.created_revision,
-                "payload_digest": stable_hash(item.payload)[:16],
-            }
-            for item in state.edges
-        ],
-        "attention": [
-            {
-                "worker": item.worker,
-                "object": aliases[item.object_id],
-                "weight": item.weight,
-                "channel": item.channel,
-                "basis": [aliases[value] for value in item.basis_ids],
-                "revision": item.created_revision,
-            }
-            for item in state.attention
-        ],
-        "pickups": [
-            {
-                "direction": item.direction,
-                "object": aliases[item.object_id],
-                "trigger_kind": item.trigger_kind,
-                "revision": item.created_revision,
-            }
+        "attention_rows": attention_rows,
+        "pickup_columns": ["direction", "object_ordinal", "trigger_kind", "revision"],
+        "pickup_rows": [
+            [item.direction, ordinal[item.object_id], item.trigger_kind, item.created_revision]
             for item in state.pickups
         ],
-        "payload_rule": "complete topology; full payloads are rendered in sparse_cut and may be requested by alias",
+        "payload_rule": "all aliases, kinds, dependencies, digests, creators, revisions, and support are preserved columnarly; semantic payload projections are in sparse_cut",
     }
+
+
+def _compact_object_index(state: Any, aliases: Mapping[str, str]) -> dict[str, Any]:
+    objects = sorted(state.objects, key=lambda item: (item.created_revision, item.object_id))
+    kinds = sorted({item.kind for item in objects})
+    if len(kinds) > len(CODE_ALPHABET):
+        raise CognitionError("too many object kinds for compact index")
+    kind_code = {value: index for index, value in enumerate(kinds)}
+    return {
+        "encoding": "columnar-v1",
+        "kind_legend": kinds,
+        "ids": [aliases[item.object_id] for item in objects],
+        "kind_codes": "".join(CODE_ALPHABET[kind_code[item.kind]] for item in objects),
+    }
+
+
+def _object_index_documents(value: Any) -> list[dict[str, str]]:
+    if isinstance(value, list):
+        return [{"id": str(item["id"]), "kind": str(item["kind"])} for item in value]
+    if not isinstance(value, Mapping) or value.get("encoding") != "columnar-v1":
+        raise CognitionError("object-index-contract")
+    ids, codes, legend = value.get("ids"), value.get("kind_codes"), value.get("kind_legend")
+    if not isinstance(ids, list) or not isinstance(codes, (list, str)) or not isinstance(legend, list):
+        raise CognitionError("object-index-contract")
+    if len(ids) != len(codes):
+        raise CognitionError("object-index-contract")
+    try:
+        return [
+            {
+                "id": str(object_id),
+                "kind": str(
+                    legend[
+                        CODE_ALPHABET.index(code)
+                        if isinstance(codes, str)
+                        else int(code)
+                    ]
+                ),
+            }
+            for object_id, code in zip(ids, codes)
+        ]
+    except (IndexError, TypeError, ValueError) as error:
+        raise CognitionError("object-index-contract") from error
 
 
 def _compact_event(event: Any, aliases: Mapping[str, str]) -> list[Any]:
@@ -395,7 +499,7 @@ def _stable_aliases(state: Any) -> dict[str, str]:
     used: set[str] = set()
     for item in sorted(state.objects, key=lambda value: value.object_id):
         digest = item.object_id.split(":", 1)[-1]
-        width = 8
+        width = 6
         alias = f"o{digest[:width]}"
         while alias in used:
             width += 2
@@ -406,7 +510,7 @@ def _stable_aliases(state: Any) -> dict[str, str]:
 
 
 def _compact_deltas(events: Sequence[Any], aliases: Mapping[str, str], selected_ids: set[str]) -> list[list[Any]]:
-    """Keep epistemically live rows exact; summarize contiguous dormant runs."""
+    """Project live rows field-exactly; summarize contiguous dormant runs lossily."""
 
     rows: list[list[Any]] = []
     pending: list[Any] = []
@@ -444,24 +548,62 @@ def _compact_deltas(events: Sequence[Any], aliases: Mapping[str, str], selected_
     return rows
 
 
+def _payload_projection(kind: str, payload: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Return a semantic view without mutating or weakening graph authority.
+
+    Large raster runs and opaque runtime indexes are still addressable through
+    their stable digests/blob references.  The canonical payload remains in
+    the graph ledger and is never rewritten by this projection.
+    """
+
+    projected = dict(payload)
+    omitted: list[str] = []
+    if kind == "entity" and isinstance(projected.get("grounding"), Mapping):
+        grounding = dict(projected["grounding"])
+        if "mask_rle_rc" in grounding:
+            grounding.pop("mask_rle_rc")
+            omitted.append("grounding.mask_rle_rc")
+        projected["grounding"] = grounding
+    if kind == "runtime_summary":
+        for key in ("schema_ids", "shadow_statuses"):
+            value = projected.pop(key, None)
+            if value is None:
+                continue
+            projected[f"{key}_index"] = {
+                "count": len(value),
+                "digest": stable_hash(value)[:16],
+            }
+            omitted.append(key)
+    return projected, omitted
+
+
+def _projected_object(state: Any, item: Any) -> dict[str, Any]:
+    payload, omitted = _payload_projection(item.kind, item.payload)
+    value = {
+        "id": item.object_id,
+        "kind": item.kind,
+        "created_by": item.created_by,
+        "identity": item.identity,
+        "payload": payload,
+        "dependencies": list(GRAPH.dependency_ids(state, item.object_id)),
+        "support": GRAPH.support(state, item.object_id),
+        "salience": GRAPH.salience(state, "qwen", item.object_id),
+    }
+    if omitted:
+        value["projection"] = {
+            "omitted_large_fields": omitted,
+            "canonical_object_id": item.object_id,
+            "exact_payload_location": "authoritative_graph_ledger",
+        }
+    return value
+
+
 def _cut_document(state: Any, selected_ids: set[str], mandatory: Sequence[str]) -> dict[str, Any]:
     objects = {item.object_id: item for item in state.objects}
     return {
         "protocol": "shared-attention-qwen-cut-v1.0",
         "graph_revision": state.revision,
-        "objects": [
-            {
-                "id": object_id,
-                "kind": objects[object_id].kind,
-                "created_by": objects[object_id].created_by,
-                "identity": objects[object_id].identity,
-                "payload": objects[object_id].payload,
-                "dependencies": list(GRAPH.dependency_ids(state, object_id)),
-                "support": GRAPH.support(state, object_id),
-                "salience": GRAPH.salience(state, "qwen", object_id),
-            }
-            for object_id in sorted(selected_ids)
-        ],
+        "objects": [_projected_object(state, objects[object_id]) for object_id in sorted(selected_ids)],
         "edges": [
             {
                 "id": edge.edge_id,
@@ -515,11 +657,21 @@ def sparse_cut(
         raise GRAPH.FrontierBudgetError(budget=token_budget, required=required)
 
     invalid = GRAPH.invalidated_ids(state)
-    priority_roots = list(dict.fromkeys((*expansion_ids, *focus_ids)))
+    relation_sets = [item for item in state.objects if item.kind == "relation_set" and item.object_id not in invalid]
+    latest_relation_revision = max((item.created_revision for item in relation_sets), default=-1)
+    structural_roots = sorted(
+        item.object_id for item in relation_sets if item.created_revision == latest_relation_revision
+    )
+    # Give the latest relational packet first opportunity to fit.  A mistaken
+    # model focus must not permanently hide the current entities it should be
+    # comparing; explicit expansions and prior focus follow immediately.
+    priority_roots = list(
+        dict.fromkeys((*structural_roots, *expansion_ids, *focus_ids))
+    )
     remaining = sorted(
         object_ids - set(priority_roots) - selected - set(invalid),
         key=lambda object_id: (-GRAPH.salience(state, "qwen", object_id), object_id),
-    )
+    )[:MAX_SALIENCE_FILL_ROOTS]
     deferred: list[str] = []
     for root in (*priority_roots, *remaining):
         if root in invalid or root in selected:
@@ -573,14 +725,18 @@ def build_turn(
     )
     rendered_cut = _replace_ids(cut, real_to_alias) if compact_ids else cut
     selected_real_ids = {item["id"] for item in cut["objects"]}
-    object_index = [
-        {
-            "id": real_to_alias[item.object_id],
-            "kind": item.kind,
-            **({} if compact_ids else {"dependencies": [real_to_alias[value] for value in item.dependency_ids]}),
-        }
-        for item in state.objects
-    ]
+    object_index: Any = (
+        _compact_object_index(state, real_to_alias)
+        if compact_ids
+        else [
+            {
+                "id": real_to_alias[item.object_id],
+                "kind": item.kind,
+                "dependencies": [real_to_alias[value] for value in item.dependency_ids],
+            }
+            for item in state.objects
+        ]
+    )
     document = {
         "protocol": REQUEST_PROTOCOL,
         "request_id": str(request_id),
@@ -605,11 +761,16 @@ def build_turn(
                 "from_seq_exclusive": orientation.cursor_revision,
                 "rows_are_contiguous_and_ordered": True,
                 "rows": "[O,id,kind,deps] | [E,kind,source,target] | [A,worker,object,weight] | [G,event_count,kind_counts,ordered_run_hash10]",
-                "payloads": "expand object alias through object_index; exact prefix is authenticated by through_cursor.head_hash",
-                "G": "small-lossy dormant run: order/count/hash retained; exact events remain in authoritative ledger",
+                "fidelity": "mixed compact projection, not a lossless event stream",
+                "O_E_A": "field-exact for the fields named by rows; payloads, sequence numbers, and event hashes are omitted",
+                "G": "small-lossy contiguous dormant run; event count, kind counts, and ordered-run digest retained",
+                "authority": "exact canonical events remain in the graph ledger; request stable object expansion for semantic payload projection",
             }
             if compact_ids
-            else None
+            else {
+                "fidelity": "exact canonical event documents",
+                "rows_are_contiguous_and_ordered": True,
+            }
         ),
         "sparse_cut": rendered_cut,
         "object_index": object_index,
@@ -619,6 +780,10 @@ def build_turn(
             "operators": list(OPERATORS),
             "measures": list(MEASURES),
             "attention_channels": list(ATTENTION_CHANNELS),
+            "control_gate": {
+                "operators": list(CONTROL_OPERATORS),
+                "measures": list(CONTROL_MEASURES),
+            },
         },
     }
     if _forbidden_input(document):
@@ -651,14 +816,18 @@ def _atom_schema() -> dict[str, Any]:
     }
 
 
-def _consequence_schema() -> dict[str, Any]:
+def _consequence_schema(
+    *,
+    operators: Sequence[str] = OPERATORS,
+    measures: Sequence[str] = MEASURES,
+) -> dict[str, Any]:
     return {
         "type": "object",
         "additionalProperties": False,
         "required": ["operator", "measure", "arguments"],
         "properties": {
-            "operator": {"enum": list(OPERATORS)},
-            "measure": {"enum": list(MEASURES)},
+            "operator": {"enum": list(operators)},
+            "measure": {"enum": list(measures)},
             "arguments": {
                 "type": "array",
                 "minItems": 1,
@@ -670,12 +839,12 @@ def _consequence_schema() -> dict[str, Any]:
 
 
 def response_schema(turn: CognitionTurn) -> dict[str, Any]:
-    objects = turn.document["object_index"]
+    objects = _object_index_documents(turn.document["object_index"])
     all_ids = sorted(item["id"] for item in objects)
     visible_ids = {
         item["id"] for item in turn.document["sparse_cut"]["objects"]
     }
-    if turn.mode == "initial-full":
+    if turn.mode == "initial-full" and not turn.id_aliases:
         visible_ids.update(all_ids)
     for delta in turn.document["ordered_lossless_deltas"]:
         if "payload_json" in delta:
@@ -697,15 +866,27 @@ def response_schema(turn: CognitionTurn) -> dict[str, Any]:
             elif delta[0] == "A" and len(delta) >= 3:
                 visible_ids.add(str(delta[2]))
     visible_ids.intersection_update(all_ids)
+    semantic_documents = _visible_object_documents(turn)
     entity_ids = sorted(
         item["id"]
         for item in objects
-        if item["kind"] == "entity" and item["id"] in visible_ids
+        if (
+            item["kind"] == "entity"
+            and item["id"] in visible_ids
+            and item["id"] in semantic_documents
+        )
     )
     schema_ids = sorted(
         item["id"]
         for item in objects
-        if item["kind"] == "schema" and item["id"] in visible_ids
+        if (
+            item["kind"] == "schema"
+            and item["id"] in visible_ids
+            and isinstance(
+                semantic_documents.get(item["id"], {}).get("payload", {}).get("conditions"),
+                list,
+            )
+        )
     )
     visible_id_schema = (
         {"enum": sorted(visible_ids)}
@@ -713,7 +894,9 @@ def response_schema(turn: CognitionTurn) -> dict[str, Any]:
         else {"type": "string", "maxLength": 0}
     )
     expansion_id_schema = (
-        {"enum": all_ids} if all_ids else {"type": "string", "maxLength": 0}
+        {"type": "string", "pattern": r"^o[0-9a-f]{6,64}$"}
+        if turn.id_aliases
+        else ({"enum": all_ids} if all_ids else {"type": "string", "maxLength": 0})
     )
     entity_schema = {"enum": [*entity_ids, "OPEN"]}
     schema_ref_schema = (
@@ -729,7 +912,10 @@ def response_schema(turn: CognitionTurn) -> dict[str, Any]:
         "properties": {
             "local_ref": {"enum": ["s0", "s1"]},
             "conditions": {"type": "array", "minItems": 1, "maxItems": 4, "items": _atom_schema()},
-            "preferred_consequence": _consequence_schema(),
+            "preferred_consequence": _consequence_schema(
+                operators=CONTROL_OPERATORS,
+                measures=CONTROL_MEASURES,
+            ),
             "basis_ids": basis,
         },
     }
@@ -867,16 +1053,214 @@ def _variables_in_conditions(conditions: Sequence[Mapping[str, Any]]) -> set[str
     return {str(item) for condition in conditions for item in condition["arguments"]}
 
 
-def _validate_consequence(value: Any, variables: set[str]) -> dict[str, Any]:
+def _validate_consequence(
+    value: Any,
+    variables: set[str],
+    *,
+    operators: Sequence[str] = OPERATORS,
+    measures: Sequence[str] = MEASURES,
+) -> dict[str, Any]:
     item = _exact(value, {"operator", "measure", "arguments"}, "consequence")
     arguments = item["arguments"]
-    if item["operator"] not in OPERATORS or item["measure"] not in MEASURES:
+    if item["operator"] not in operators or item["measure"] not in measures:
         raise CognitionError("unsupported-consequence")
     if not isinstance(arguments, list) or not 1 <= len(arguments) <= 2:
         raise CognitionError("consequence-arguments")
     if any(argument not in variables for argument in arguments):
         raise CognitionError("unbound-consequence-variable")
     return dict(item)
+
+
+def _visible_object_documents(turn: CognitionTurn) -> dict[str, Mapping[str, Any]]:
+    """Objects whose semantic descriptors, not merely IDs, are visible."""
+
+    documents: dict[str, Mapping[str, Any]] = {}
+    materialization = turn.document.get("full_materialization")
+    if isinstance(materialization, Mapping):
+        for raw in materialization.get("objects", ()):
+            if isinstance(raw, Mapping) and isinstance(raw.get("payload"), Mapping):
+                documents[str(raw["id"])] = raw
+    for raw in turn.document["sparse_cut"]["objects"]:
+        if isinstance(raw, Mapping) and isinstance(raw.get("payload"), Mapping):
+            documents[str(raw["id"])] = raw
+    for delta in turn.document.get("ordered_lossless_deltas", ()):
+        if not isinstance(delta, Mapping) or "payload_json" not in delta:
+            continue
+        envelope = json.loads(str(delta["payload_json"]))
+        raw = envelope.get("item", {})
+        if raw.get("object_id") is None or raw.get("kind") is None:
+            continue
+        payload = raw.get("payload")
+        if payload is None and isinstance(raw.get("payload_json"), str):
+            payload = json.loads(raw["payload_json"])
+        identity = raw.get("identity")
+        if identity is None and isinstance(raw.get("identity_json"), str):
+            identity = json.loads(raw["identity_json"])
+        if isinstance(payload, Mapping):
+            documents[str(raw["object_id"])] = {
+                "id": str(raw["object_id"]),
+                "kind": str(raw["kind"]),
+                "identity": identity or {},
+                "payload": payload,
+                "dependencies": list(raw.get("dependency_ids", ())),
+            }
+    return documents
+
+
+def _entity_local_refs(document: Mapping[str, Any]) -> set[str]:
+    output: set[str] = set()
+    identity = document.get("identity", {})
+    payload = document.get("payload", {})
+    grounding = payload.get("grounding", {}) if isinstance(payload, Mapping) else {}
+    for source, key in (
+        (identity, "local_ref"),
+        (payload, "local_ref"),
+        (payload, "id"),
+        (grounding, "local_component_ref"),
+    ):
+        if isinstance(source, Mapping) and source.get(key) is not None:
+            output.add(str(source[key]))
+    return output
+
+
+def _grounding_view(
+    turn: CognitionTurn,
+) -> tuple[dict[str, Mapping[str, Any]], set[tuple[str, str, str]]]:
+    documents = _visible_object_documents(turn)
+    entities = {
+        object_id: value
+        for object_id, value in documents.items()
+        if value.get("kind") == "entity"
+    }
+    local_to_ids: dict[str, set[str]] = {}
+    for object_id, value in entities.items():
+        for local_ref in _entity_local_refs(value):
+            local_to_ids.setdefault(local_ref, set()).add(object_id)
+
+    symmetric = {
+        "SameOutline",
+        "DifferentOutline",
+        "SameInteriorLayout",
+        "DifferentInteriorLayout",
+        "SameArea",
+        "DifferentArea",
+        "AlignedHorizontal",
+        "AlignedVertical",
+        "Touches",
+        "Disjoint",
+        "MovedTogether",
+        "ChangedTogether",
+    }
+    facts: set[tuple[str, str, str]] = set()
+    for value in documents.values():
+        payload = value.get("payload", {})
+        relations = payload.get("relations", ()) if isinstance(payload, Mapping) else ()
+        if not isinstance(relations, list):
+            continue
+        scoped_ids = {
+            str(item)
+            for item in value.get("dependencies", ())
+            if str(item) in entities
+        }
+
+        def resolve(raw: Any) -> str | None:
+            candidate = str(raw)
+            if candidate in entities:
+                return candidate
+            matches = local_to_ids.get(candidate, set())
+            if scoped_ids:
+                matches = matches.intersection(scoped_ids)
+            return next(iter(matches)) if len(matches) == 1 else None
+
+        for relation in relations:
+            if not isinstance(relation, Mapping):
+                continue
+            arguments = relation.get("arguments")
+            predicate = str(relation.get("predicate", ""))
+            if predicate not in PREDICATES or not isinstance(arguments, list) or len(arguments) != 2:
+                continue
+            left, right = resolve(arguments[0]), resolve(arguments[1])
+            if left is None or right is None:
+                continue
+            facts.add((predicate, left, right))
+            if predicate in symmetric:
+                facts.add((predicate, right, left))
+    return entities, facts
+
+
+def _condition_holds(
+    predicate: str,
+    left_id: str,
+    right_id: str,
+    entities: Mapping[str, Mapping[str, Any]],
+    facts: set[tuple[str, str, str]],
+) -> bool | None:
+    if (predicate, left_id, right_id) in facts:
+        return True
+    opposite = {
+        "SameOutline": "DifferentOutline",
+        "DifferentOutline": "SameOutline",
+        "SameInteriorLayout": "DifferentInteriorLayout",
+        "DifferentInteriorLayout": "SameInteriorLayout",
+        "SameArea": "DifferentArea",
+        "DifferentArea": "SameArea",
+        "Touches": "Disjoint",
+        "Disjoint": "Touches",
+    }.get(predicate)
+    if opposite is not None and (opposite, left_id, right_id) in facts:
+        return False
+    left = entities.get(left_id, {}).get("payload", {})
+    right = entities.get(right_id, {}).get("payload", {})
+    if not isinstance(left, Mapping) or not isinstance(right, Mapping):
+        return None
+    comparisons = {
+        "SameOutline": ("outline_class", True),
+        "DifferentOutline": ("outline_class", False),
+        "SameInteriorLayout": ("interior_layout_class", True),
+        "DifferentInteriorLayout": ("interior_layout_class", False),
+        "SameArea": ("area", True),
+        "DifferentArea": ("area", False),
+    }
+    if predicate in comparisons:
+        field, equal = comparisons[predicate]
+        if field not in left or field not in right:
+            return None
+        return (left[field] == right[field]) is equal
+    if predicate in {"AlignedHorizontal", "AlignedVertical"}:
+        left_centroid, right_centroid = left.get("centroid2"), right.get("centroid2")
+        if not (
+            isinstance(left_centroid, list)
+            and isinstance(right_centroid, list)
+            and len(left_centroid) == 2
+            and len(right_centroid) == 2
+        ):
+            return None
+        axis = 1 if predicate == "AlignedHorizontal" else 0
+        return left_centroid[axis] == right_centroid[axis]
+    # Contact and temporal predicates require an explicit visible relation.
+    return None
+
+
+def _validate_situated_conditions(
+    conditions: Sequence[Mapping[str, Any]],
+    assignments: Mapping[str, str],
+    turn: CognitionTurn,
+) -> None:
+    used_variables = _variables_in_conditions(conditions)
+    if not used_variables.issubset(assignments):
+        raise CognitionError("missing-condition-binding")
+    entities, facts = _grounding_view(turn)
+    for condition in conditions:
+        left_id, right_id = (assignments[str(value)] for value in condition["arguments"])
+        if "OPEN" in {left_id, right_id}:
+            continue
+        result = _condition_holds(
+            str(condition["predicate"]), left_id, right_id, entities, facts
+        )
+        if result is False:
+            raise CognitionError("condition-false")
+        if result is None:
+            raise CognitionError("condition-unverifiable")
 
 
 def compile_response(response: Mapping[str, Any], turn: CognitionTurn) -> dict[str, Any]:
@@ -901,9 +1285,12 @@ def compile_response(response: Mapping[str, Any], turn: CognitionTurn) -> dict[s
     if _forbidden(parsed):
         return {"valid_json_contract": False, "accepted": [], "rejected": [{"reason": "forbidden-action-game-or-authority-token"}]}
 
-    object_index = {item["id"]: item for item in turn.document["object_index"]}
+    object_index = {
+        item["id"]: item
+        for item in _object_index_documents(turn.document["object_index"])
+    }
     visible = {item["id"] for item in turn.document["sparse_cut"]["objects"]}
-    if turn.mode == "initial-full":
+    if turn.mode == "initial-full" and not turn.id_aliases:
         visible.update(object_index)
     for delta in turn.document["ordered_lossless_deltas"]:
         if "payload_json" in delta:
@@ -959,7 +1346,12 @@ def compile_response(response: Mapping[str, Any], turn: CognitionTurn) -> dict[s
                 if any(value not in VARIABLES for value in atom["arguments"]):
                     raise CognitionError("condition-variable")
             variables = _variables_in_conditions(conditions)
-            consequence = _validate_consequence(item["preferred_consequence"], variables)
+            consequence = _validate_consequence(
+                item["preferred_consequence"],
+                variables,
+                operators=CONTROL_OPERATORS,
+                measures=CONTROL_MEASURES,
+            )
             basis_ids = item["basis_ids"]
             if not isinstance(basis_ids, list) or any(value not in visible for value in basis_ids):
                 raise CognitionError("schema-basis-not-visible")
@@ -977,10 +1369,18 @@ def compile_response(response: Mapping[str, Any], turn: CognitionTurn) -> dict[s
         except (CognitionError, KeyError, TypeError) as error:
             rejected.append({"kind": "schema", "index": index, "reason": str(error), "raw": raw})
 
+    visible_documents = _visible_object_documents(turn)
     existing_schemas = {
         object_id
         for object_id, value in object_index.items()
-        if value["kind"] == "schema" and object_id in visible
+        if (
+            value["kind"] == "schema"
+            and object_id in visible
+            and isinstance(
+                visible_documents.get(object_id, {}).get("payload", {}).get("conditions"),
+                list,
+            )
+        )
     }
     local_explanations: set[str] = set()
     for index, raw in enumerate(explanation_writes):
@@ -1001,12 +1401,27 @@ def compile_response(response: Mapping[str, Any], turn: CognitionTurn) -> dict[s
                 if variable not in VARIABLES or variable in assignments:
                     raise CognitionError("binding-variable")
                 if object_id != "OPEN" and (
-                    object_id not in visible or object_index.get(object_id, {}).get("kind") != "entity"
+                    object_id not in visible
+                    or object_id not in visible_documents
+                    or object_index.get(object_id, {}).get("kind") != "entity"
                 ):
                     raise CognitionError("binding-entity-not-visible")
                 if object_id != "OPEN" and object_id in assignments.values():
                     raise CognitionError("binding-not-injective")
                 assignments[variable] = object_id
+            if item["schema_ref"] in local_schemas:
+                conditions = local_schemas[item["schema_ref"]]["payload"]["conditions"]
+            else:
+                schema_document = visible_documents.get(str(item["schema_ref"]), {})
+                schema_payload = schema_document.get("payload", {})
+                conditions = (
+                    schema_payload.get("conditions")
+                    if isinstance(schema_payload, Mapping)
+                    else None
+                )
+                if not isinstance(conditions, list):
+                    raise CognitionError("schema-conditions-not-visible")
+            _validate_situated_conditions(conditions, assignments, turn)
             claim = _validate_consequence(item["claim"], set(assignments))
             basis_ids = item["basis_ids"]
             if not isinstance(basis_ids, list) or any(value not in visible for value in basis_ids):

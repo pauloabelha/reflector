@@ -254,6 +254,42 @@ def record_grounded_pickup(state: Any, pickup_id: str, downstream_id: str, *, wo
     return EG.IngestResult(EG.apply_event(state, event), (event,), edge_ids=(event.payload["item"]["edge_id"],))
 
 
+def repair_grounded_pickup_edges(root: Path, workspace_id: str, state: Any) -> Any:
+    """Complete a binding→pickup edge interrupted between durable events."""
+
+    qwen_ids = {item.object_id for item in state.objects if item.created_by == "qwen"}
+    existing_targets = {
+        item.target_id for item in state.edges if item.kind == "grounds_pickup"
+    }
+    for binding in (
+        item
+        for item in state.objects
+        if item.kind == "binding" and item.created_by == "r2" and item.object_id not in existing_targets
+    ):
+        schema_id = next((item for item in binding.dependency_ids if item in qwen_ids), None)
+        if schema_id is None:
+            continue
+        pickup = next(
+            (
+                item
+                for item in state.pickups
+                if item.direction == "qwen->r2" and item.object_id == schema_id
+            ),
+            None,
+        )
+        if pickup is None:
+            continue
+        event = EG.grounded_pickup_event(
+            state,
+            pickup_id=pickup.pickup_id,
+            downstream_object_id=binding.object_id,
+            worker="r2",
+            payload={"grounding_status": binding.payload.get("status", "bound"), "recovered": True},
+        )
+        state = apply_graph_event(root, workspace_id, state, event)
+    return state
+
+
 def apply_graph_event(root: Path, workspace_id: str, state: Any, event: Any) -> Any:
     next_state = EG.apply_event(state, event)
     commit_graph_events(root, workspace_id, (event,))
@@ -331,6 +367,15 @@ def r2_workspace_document(cognition: Any, legal: Sequence[int]) -> dict[str, Any
         {
             "schema": graph.canonical_hash[item.schema_id],
             "assignments": [[int(left), int(right)] for left, right in item.assignments],
+            "resolved_assignments": [
+                {
+                    "role_index": int(left),
+                    "term_id": int(right),
+                    "term_value": graph.terms.value(right),
+                    "visual_grounding": "OPEN",
+                }
+                for left, right in item.assignments
+            ],
             "carrier": item.carrier,
             "activation_milli": int(round(item.activation * 1000)),
             "provenance": item.provenance,
@@ -345,6 +390,15 @@ def r2_workspace_document(cognition: Any, legal: Sequence[int]) -> dict[str, Any
                 "id": item.partial_binding_id,
                 "schema": graph.canonical_hash[item.schema_id],
                 "assignments": [list(pair) for pair in item.assignments],
+                "resolved_assignments": [
+                    {
+                        "role_index": int(left),
+                        "term_id": int(right),
+                        "term_value": graph.terms.value(right),
+                        "visual_grounding": "OPEN",
+                    }
+                    for left, right in item.assignments
+                ],
                 "bound_roles": list(item.bound_roles),
                 "unresolved_roles": list(item.unresolved_roles),
                 "satisfied_constraints": list(item.satisfied_constraints),
@@ -362,6 +416,15 @@ def r2_workspace_document(cognition: Any, legal: Sequence[int]) -> dict[str, Any
                 "schema": graph.canonical_hash[item.schema_id],
                 "partial_binding": item.partial_binding_id,
                 "assignments": [list(pair) for pair in item.assignments],
+                "resolved_assignments": [
+                    {
+                        "role_index": int(left),
+                        "term_id": int(right),
+                        "term_value": graph.terms.value(right),
+                        "visual_grounding": "OPEN",
+                    }
+                    for left, right in item.assignments
+                ],
                 "open_roles": list(item.open_roles),
                 "open_constraints": list(item.open_constraints),
                 "status": item.status,
@@ -386,6 +449,152 @@ def r2_workspace_document(cognition: Any, legal: Sequence[int]) -> dict[str, Any
         ],
         "metrics": runtime.metrics.deterministic(),
     }
+
+
+def sanitize_r2_value(value: Any) -> Any:
+    """Remove opaque ARC intervention identities from every Qwen-visible R2 field."""
+
+    if isinstance(value, Mapping):
+        return {str(key): sanitize_r2_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [sanitize_r2_value(item) for item in value]
+    if isinstance(value, str) and value.startswith("arc-action:"):
+        return f"OpaqueIntervention:{LEDGER.stable_hash(value)[:12]}"
+    return value
+
+
+def ensure_graph_object(
+    root: Path,
+    workspace_id: str,
+    state: Any,
+    *,
+    kind: str,
+    created_by: str,
+    identity: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    dependency_ids: Sequence[str] = (),
+    event_key: str,
+) -> tuple[Any, str]:
+    """Add one semantic object once, while retaining every later provenance event elsewhere."""
+
+    candidate = EG.make_object(
+        kind=kind,
+        created_by=created_by,
+        created_revision=state.revision + 1,
+        identity=identity,
+        payload=payload,
+        dependency_ids=dependency_ids,
+    )
+    existing = next((item for item in state.objects if item.object_id == candidate.object_id), None)
+    if existing is not None:
+        if (
+            existing.kind != candidate.kind
+            or existing.created_by != candidate.created_by
+            or existing.identity_json != candidate.identity_json
+            or existing.payload_json != candidate.payload_json
+            or existing.dependency_ids != candidate.dependency_ids
+        ):
+            raise RuntimeError(f"semantic graph object changed under stable identity: {candidate.object_id}")
+        return state, existing.object_id
+    event = EG.object_event(
+        state,
+        kind=kind,
+        created_by=created_by,
+        identity=identity,
+        payload=payload,
+        dependency_ids=dependency_ids,
+        event_key=event_key,
+    )
+    state = apply_graph_event(root, workspace_id, state, event)
+    return state, str(event.payload["item"]["object_id"])
+
+
+def ingest_r2_workspace_objects(
+    root: Path,
+    workspace_id: str,
+    state: Any,
+    cognition: Any,
+    legal: Sequence[int],
+    *,
+    observation_key: str,
+    basis_ids: Sequence[str],
+) -> Any:
+    """Materialize R2 cognition as addressable first-class graph objects.
+
+    The content-addressed blob remains a recovery/expansion aid, but it is no
+    longer the only representation Qwen can inspect.
+    """
+
+    document = sanitize_r2_value(r2_workspace_document(cognition, legal))
+    blob = LEDGER.put_blob(root, document)
+    schema_ids: dict[str, str] = {}
+    current_ids: list[str] = []
+    schema_activation: dict[str, int] = {}
+    for item in document["schemas"]:
+        semantic_payload = {
+            "atoms": item["atoms"],
+        }
+        state, object_id = ensure_graph_object(
+            root,
+            workspace_id,
+            state,
+            kind="schema",
+            created_by="r2",
+            identity={"r2_schema_hash": item["id"]},
+            payload=semantic_payload,
+            event_key=f"r2-schema:{item['id']}",
+        )
+        schema_ids[str(item["id"])] = object_id
+        schema_activation[object_id] = int(item["activation_milli"])
+        current_ids.append(object_id)
+
+    def materialize_many(kind: str, values: Sequence[Mapping[str, Any]]) -> None:
+        nonlocal state
+        for index, item in enumerate(values):
+            schema_hashes = [str(item["schema"])] if item.get("schema") else [str(value) for value in item.get("schemas", ())]
+            dependencies = [schema_ids[value] for value in schema_hashes if value in schema_ids]
+            semantic_payload = {key: value for key, value in item.items() if key != "activation_milli"}
+            semantic = LEDGER.stable_hash({"kind": kind, "value": semantic_payload})
+            state, object_id = ensure_graph_object(
+                root,
+                workspace_id,
+                state,
+                kind=kind,
+                created_by="r2",
+                identity={"semantic_hash": semantic},
+                payload=semantic_payload,
+                dependency_ids=dependencies,
+                event_key=f"r2-{kind}:{semantic}",
+            )
+            current_ids.append(object_id)
+
+    materialize_many("r2_binding", document["bindings"])
+    materialize_many("partial_binding", document["partial_bindings"])
+    materialize_many("shadow", document["shadows"])
+    materialize_many("explanation", document["explanations"])
+    snapshot_payload = {
+        "workspace_blob": blob,
+        "cycle": document["cycle"],
+        "schema_object_ids": [schema_ids[key] for key in sorted(schema_ids)],
+        "active_object_ids": sorted(current_ids),
+        "schema_activation_milli": dict(sorted(schema_activation.items())),
+        "counts": {
+            "schemas": len(document["schemas"]),
+            "bindings": len(document["bindings"]),
+            "partial_bindings": len(document["partial_bindings"]),
+            "shadows": len(document["shadows"]),
+            "explanations": len(document["explanations"]),
+        },
+        "expansion": "all listed objects are directly addressable; workspace_blob is exact recovery data",
+    }
+    result = EG.ingest_r2_runtime_summary(
+        state,
+        snapshot_payload,
+        observation_key=observation_key,
+        basis_ids=tuple(sorted(set((*basis_ids, *current_ids)))),
+    )
+    state = apply_ingest(root, workspace_id, result)
+    return state
 
 
 def ingest_frame_objects(
@@ -505,20 +714,16 @@ def ingest_initial_graph(
         frame_index=0,
         legal_count=len(legal),
     )
-    summary = r2_workspace_document(cognition, legal)
-    summary_blob = LEDGER.put_blob(root, summary)
-    summary_index = {
-        "workspace_blob": summary_blob,
-        "cycle": summary["cycle"],
-        "schema_ids": [item["id"] for item in summary["schemas"]],
-        "binding_count": len(summary["bindings"]),
-        "partial_binding_count": len(summary["partial_bindings"]),
-        "shadow_statuses": dict(sorted(Counter(item["status"] for item in summary["shadows"]).items())),
-        "explanation_count": len(summary["explanations"]),
-        "expansion": "request this object ID to inspect the complete R2 workspace payload",
-    }
-    result = EG.ingest_r2_runtime_summary(state, summary_index, observation_key="0", basis_ids=tuple(entity_ids.values()))
-    return apply_ingest(root, workspace_id, result), entity_ids
+    state = ingest_r2_workspace_objects(
+        root,
+        workspace_id,
+        state,
+        cognition,
+        legal,
+        observation_key="0",
+        basis_ids=tuple(entity_ids.values()),
+    )
+    return state, entity_ids
 
 
 def ingest_transition_graph(
@@ -570,6 +775,41 @@ def ingest_transition_graph(
         event_key=f"transition:{transition_id}",
     )
     state = apply_graph_event(root, workspace_id, state, transition_event)
+    before_entities = {
+        str(item.payload.get("grounding", {}).get("local_component_ref")): item.object_id
+        for item in state.objects
+        if item.kind == "entity" and before_frame in item.dependency_ids
+    }
+    before_figures = V0.V0.select_figures(before_grid)
+    after_figures = V0.V0.select_figures(after_grid)
+    correspondence = V0.V0.BASE.correspond(before_figures, after_figures)
+    before_local = {figure: f"f{index:02d}" for index, figure in enumerate(before_figures)}
+    after_local = {figure: f"f{index:02d}" for index, figure in enumerate(after_figures)}
+    pairs = [
+        {
+            "before": before_entities[before_local[source]],
+            "after": entity_ids[after_local[target]],
+        }
+        for source, target in correspondence.items()
+        if before_local.get(source) in before_entities and after_local.get(target) in entity_ids
+    ]
+    if pairs:
+        correspondence_dependencies = sorted(
+            {
+                str(transition_event.payload["item"]["object_id"]),
+                *(value for pair in pairs for value in (pair["before"], pair["after"])),
+            }
+        )
+        correspondence_event = EG.object_event(
+            state,
+            kind="correspondence_set",
+            created_by="r2",
+            identity={"transition_id": transition_id, "pairs_hash": LEDGER.stable_hash(pairs)},
+            payload={"transition_id": transition_id, "pairs": pairs},
+            dependency_ids=correspondence_dependencies,
+            event_key=f"correspondence:{transition_id}",
+        )
+        state = apply_graph_event(root, workspace_id, state, correspondence_event)
     evidence = EG.ingest_environment_evidence(
         state,
         transition_id=transition_id,
@@ -581,25 +821,15 @@ def ingest_transition_graph(
         judgments=judgments,
     )
     state = apply_ingest(root, workspace_id, evidence)
-    summary = r2_workspace_document(cognition, legal)
-    summary_blob = LEDGER.put_blob(root, summary)
-    summary_index = {
-        "workspace_blob": summary_blob,
-        "cycle": summary["cycle"],
-        "schema_ids": [item["id"] for item in summary["schemas"]],
-        "binding_count": len(summary["bindings"]),
-        "partial_binding_count": len(summary["partial_bindings"]),
-        "shadow_statuses": dict(sorted(Counter(item["status"] for item in summary["shadows"]).items())),
-        "explanation_count": len(summary["explanations"]),
-        "expansion": "request this object ID to inspect the complete R2 workspace payload",
-    }
-    result = EG.ingest_r2_runtime_summary(
+    return ingest_r2_workspace_objects(
+        root,
+        workspace_id,
         state,
-        summary_index,
+        cognition,
+        legal,
         observation_key=str(after_record["digest"]),
         basis_ids=tuple((*evidence.object_ids, *entity_ids.values(), str(transition_event.payload["item"]["object_id"]))),
     )
-    return apply_ingest(root, workspace_id, result)
 
 
 def template_from_schema_object(item: Any) -> Any | None:
@@ -735,7 +965,7 @@ def queue_qwen(
         orientation,
         request_id=request_id,
         token_budget=turn_budget,
-        max_deltas=1024,
+        max_deltas=10_000,
         compact_ids=True,
     )
     request = QC.request_payload(
@@ -796,6 +1026,35 @@ def integrate_qwen(
         },
         event_id=f"qwen-completed:{task_id}:{response_blob}",
     )
+    state = apply_qwen_compilation(
+        root,
+        workspace_id,
+        state,
+        task_id,
+        turn,
+        compilation,
+        profile,
+        action_count=action_count,
+    )
+    return state, compilation
+
+
+def apply_qwen_compilation(
+    root: Path,
+    workspace_id: str,
+    state: Any,
+    task_id: str,
+    turn: Any,
+    compilation: Mapping[str, Any],
+    profile: Mapping[str, Any],
+    *,
+    action_count: int,
+) -> Any:
+    """Idempotently finish graph/orientation integration after a durable reply."""
+
+    integrated_id = f"qwen-integrated:{task_id}"
+    if any(item["event_id"] == integrated_id for item in LEDGER.list_events(root)):
+        return state
     accepted = list(compilation.get("accepted", ()))
     schemas = [item for item in accepted if item.get("kind") == "schema"]
     others = [item for item in accepted if item.get("kind") not in {"schema", "explanation", "attention"}]
@@ -852,7 +1111,15 @@ def integrate_qwen(
     )
     state = apply_graph_event(root, workspace_id, state, orientation_event)
     write_orientation(root, orientation)
-    return state, compilation
+    LEDGER.append_event(
+        root,
+        workspace_id=workspace_id,
+        event_type="QwenTaskIntegrated",
+        actor="coordinator",
+        payload={"task_id": task_id, "graph_revision": state.revision, "action_count": action_count},
+        event_id=integrated_id,
+    )
+    return state
 
 
 def activate_visible_qwen(
@@ -891,16 +1158,65 @@ def activate_visible_qwen(
         state = noticed.state
     relation_state, figures = V0.relational_state(grid, len(legal), history)
     records: list[dict[str, Any]] = []
+
+    def criticize(schema_object_id: str, status: str, detail: Mapping[str, Any]) -> str:
+        nonlocal state
+        normalized_status = {
+            "ambiguous": "ambiguous-grounding",
+            "active-zero-evidence": "rejected",
+        }.get(status, status)
+        result = EG.ingest_structured_criticism(
+            state,
+            worker="r2",
+            target_id=schema_object_id,
+            status=normalized_status,
+            criticism_key=f"{schema_object_id}:{action_count}:{normalized_status}",
+            payload={
+                "observation_digest": LEDGER.stable_hash(grid),
+                "structured_witness": dict(detail),
+                "empirical_support_delta": 0,
+            },
+        )
+        state = apply_ingest(root, workspace_id, result)
+        criticism_id = result.object_ids[0]
+        attention = EG.attention_event(
+            state,
+            worker="r2",
+            object_id=criticism_id,
+            weight=12,
+            channel="inspect",
+            basis_ids=(schema_object_id,),
+            contribution_key=f"criticism-attention:{schema_object_id}:{action_count}:{status}",
+        )
+        state = apply_graph_event(root, workspace_id, state, attention)
+        return criticism_id
+
     for item in state.objects:
         if item.created_by != "qwen" or item.kind != "schema" or item.object_id not in visible or item.object_id in activated:
             continue
-        eligible_action = int(item.payload.get("eligible_step", action_count))
+        eligible_steps = [
+            int(value.payload.get("call_local_payload", {}).get("eligible_step"))
+            for value in state.objects
+            if value.kind == "qwen_derivation"
+            and item.object_id in value.dependency_ids
+            and value.payload.get("call_local_payload", {}).get("eligible_step") is not None
+        ]
+        eligible_action = min(eligible_steps, default=action_count)
         if action_count - eligible_action > int(profile["attention_half_life_actions"]):
             continue
         template = template_from_schema_object(item)
         if template is None:
             activated.add(item.object_id)
-            records.append({"schema_object_id": item.object_id, "status": "unsupported-potential"})
+            criticism_id = criticize(
+                item.object_id,
+                "unsupported-potential",
+                {
+                    "accepted_measure": "TranslationAlignmentResidual",
+                    "accepted_operators": ["Decrease", "Increase"],
+                    "received_consequence": item.payload.get("preferred_consequence", {}),
+                },
+            )
+            records.append({"schema_object_id": item.object_id, "status": "unsupported-potential", "criticism_id": criticism_id})
             continue
         grounding = controller.activate(
             template,
@@ -913,29 +1229,32 @@ def activate_visible_qwen(
         records.append(record)
         if grounding["status"] in {"bound", "duplicate-active"}:
             activated.add(item.object_id)
-        binding_result = EG.ingest_groundings(
-            state,
-            ({
-                "binding_key": f"{item.object_id}:{action_count}:{grounding['status']}",
-                "payload": {**record, "legal_count": len(legal)},
-                "dependency_ids": [item.object_id],
-            },),
-            source="r2",
-        )
-        state = apply_ingest(root, workspace_id, binding_result)
-        pickup = next(
-            (value for value in reversed(state.pickups) if value.direction == "qwen->r2" and value.object_id == item.object_id),
-            None,
-        )
-        if pickup is not None:
-            event = EG.grounded_pickup_event(
+        if grounding["status"] in {"bound", "duplicate-active"}:
+            binding_result = EG.ingest_groundings(
                 state,
-                pickup_id=pickup.pickup_id,
-                downstream_object_id=binding_result.object_ids[0],
-                worker="r2",
-                payload={"grounding_status": grounding["status"]},
+                ({
+                    "binding_key": f"{item.object_id}:{action_count}:{grounding['status']}",
+                    "payload": {**record, "legal_count": len(legal)},
+                    "dependency_ids": [item.object_id],
+                },),
+                source="r2",
             )
-            state = apply_graph_event(root, workspace_id, state, event)
+            state = apply_ingest(root, workspace_id, binding_result)
+            pickup = next(
+                (value for value in reversed(state.pickups) if value.direction == "qwen->r2" and value.object_id == item.object_id),
+                None,
+            )
+            if pickup is not None:
+                event = EG.grounded_pickup_event(
+                    state,
+                    pickup_id=pickup.pickup_id,
+                    downstream_object_id=binding_result.object_ids[0],
+                    worker="r2",
+                    payload={"grounding_status": grounding["status"]},
+                )
+                state = apply_graph_event(root, workspace_id, state, event)
+        else:
+            record["criticism_id"] = criticize(item.object_id, str(grounding["status"]), grounding)
     return state, records
 
 
@@ -989,6 +1308,11 @@ def rebuild_controller(root: Path, initial_grid: Grid, legal: Sequence[int]) -> 
                 if dependency is not None and dependency not in activated:
                     relation_state, figures = V0.relational_state(current_grid, len(current_legal), history)
                     controller.activate(schemas[dependency], relation_state, figures, action_count=len(history), source_task=dependency)
+                    activated.add(dependency)
+            if raw and raw["created_by"] == "r2" and raw["kind"] == "structured_criticism":
+                obj = EG._object_from_document(raw)
+                dependency = next((item for item in obj.dependency_ids if item in schemas), None)
+                if dependency is not None and obj.payload.get("status") == "unsupported-potential":
                     activated.add(dependency)
         elif event["event_type"] == "TransitionCommitted":
             payload = event["payload"]
@@ -1112,9 +1436,48 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
     legal = BASE.simple_legal_actions(environment, observation)
     cognition, controller, history, activated = rebuild_controller(root, initial_grid, legal)
     state, graph_events = graph_state(root)
-    if state.revision == -1:
+    initial_graph_complete = any(
+        item.kind == "runtime_summary" and item.identity.get("observation_key") == "0"
+        for item in state.objects
+    )
+    if not initial_graph_complete:
         state, _entities = ingest_initial_graph(root, workspace_id, state, cognition, initial_grid, legal)
         state, graph_events = graph_state(root)
+
+    # A reply is durable before its graph writes.  Finish any interrupted
+    # integration from stored turn/compilation blobs; never call Qwen again.
+    outer_events = LEDGER.list_events(root)
+    queued_by_task = {
+        str(item["payload"]["task_id"]): item
+        for item in outer_events
+        if item["event_type"] == "QwenTaskQueued"
+    }
+    integrated_tasks = {
+        str(item["payload"]["task_id"])
+        for item in outer_events
+        if item["event_type"] == "QwenTaskIntegrated"
+    }
+    for completed in (
+        item
+        for item in outer_events
+        if item["event_type"] == "QwenTaskCompleted"
+        and str(item["payload"]["task_id"]) not in integrated_tasks
+    ):
+        task_id = str(completed["payload"]["task_id"])
+        turn_value = LEDGER.read_blob(root, queued_by_task[task_id]["payload"]["turn_blob"])
+        turn = QC.CognitionTurn(**turn_value)
+        compilation = LEDGER.read_blob(root, completed["payload"]["compilation_blob"])
+        state = apply_qwen_compilation(
+            root,
+            workspace_id,
+            state,
+            task_id,
+            turn,
+            compilation,
+            profile,
+            action_count=len(history),
+        )
+    state = repair_grounded_pickup_edges(root, workspace_id, state)
 
     pending = LEDGER.pending_action(LEDGER.list_events(root))
     if pending is not None:
@@ -1157,15 +1520,17 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 qwen_compilations.append(compilation)
                 pending_qwen = None
 
+            if live_qwen:
+                state, records = activate_visible_qwen(root, workspace_id, state, controller, grid, legal, history, profile, activated, len(history))
+                grounding_records.extend(records)
+
+            # Queue only after R2 has grounded or criticized the preceding
+            # reply, so the next Qwen turn observes the shared cognitive loop.
             triggers = {int(item) for item in config["qwen"]["trigger_action_counts"]}
             if live_qwen and pending_qwen is None and len(history) in triggers and task_count < int(config["qwen"]["max_calls_per_episode"]):
                 state, graph_events = graph_state(root)
                 pending_qwen = queue_qwen(root, workspace_id, state, graph_events, config, profile, fifo, task_count)
                 task_count += 1
-
-            if live_qwen:
-                state, records = activate_visible_qwen(root, workspace_id, state, controller, grid, legal, history, profile, activated, len(history))
-                grounding_records.extend(records)
 
             decision = controller.choose(legal)
             decision_document = {
@@ -1185,8 +1550,29 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
             transition = LEDGER.append_event(root, workspace_id=workspace_id, event_type="TransitionCommitted", actor="environment", payload={"pending_event_id": pending_event["event_id"], "before_blob": before_blob, "after_blob": after_blob, "before_digest": before_record["digest"], "after_digest": after_record["digest"], "action_id": decision.action_id, "levels_completed": after_record["levels_completed"]})
             judgments: list[dict[str, str]] = []
             if decision.prior_used and decision.template_hash is not None:
-                improved = decision.predicted_residual_after is not None and decision.residual_before is not None and decision.predicted_residual_after < decision.residual_before
-                if improved and any(item.get("direct") and item.get("template_hash") == decision.template_hash for item in learning.get("bindings", ())):
+                observed = next(
+                    (
+                        item
+                        for item in learning.get("bindings", ())
+                        if item.get("direct") and item.get("template_hash") == decision.template_hash
+                    ),
+                    None,
+                )
+                active_binding = next(
+                    (item for item in controller.inner.bindings if item.template_hash == decision.template_hash),
+                    None,
+                )
+                observed_improvement = (
+                    observed is not None
+                    and active_binding is not None
+                    and decision.residual_before is not None
+                    and (
+                        int(observed["residual"]) < int(decision.residual_before)
+                        if active_binding.operator == "Decrease"
+                        else int(observed["residual"]) > int(decision.residual_before)
+                    )
+                )
+                if observed_improvement:
                     for item in state.objects:
                         if item.kind == "binding" and item.payload.get("template_hash") == decision.template_hash:
                             judgments.append({"kind": "supports", "target_id": item.object_id})
@@ -1240,7 +1626,14 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
         "prompt_tokens": sum(int(item.get("prompt_tokens", 0)) for item in usages),
         "completion_tokens": sum(int(item.get("completion_tokens", 0)) for item in usages),
         "max_prompt_tokens": max((int(item.get("prompt_tokens", 0)) for item in usages), default=0),
-        "max_context_occupancy_fraction": max((float(item.get("prompt_tokens", 0)) / 8192 for item in usages), default=0.0),
+        "max_context_occupancy_fraction": max(
+            (
+                float(item.get("prompt_tokens", 0))
+                / int(config["qwen"].get("context_window_tokens", 8192))
+                for item in usages
+            ),
+            default=0.0,
+        ),
         "latency_s": sum(float(item.get("latency_s") or 0.0) for item in response_documents),
         "transport_errors": sum(bool(item.get("transport_error")) for item in response_documents),
         "initial_full_object_count": next((len(item["document"]["full_materialization"]["objects"]) for item in turn_documents if item["document"].get("full_materialization")), 0),
@@ -1285,7 +1678,10 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
         "qwen_calls": context_metrics["calls"],
         "qwen_total_tokens": context_metrics["prompt_tokens"] + context_metrics["completion_tokens"],
         "qwen_reply_latency_s": context_metrics["latency_s"],
-        "qwen_context_valid": context_metrics["max_prompt_tokens"] <= 8192,
+        "qwen_context_valid": (
+            context_metrics["max_prompt_tokens"] + int(config["qwen"].get("max_tokens", 0))
+            <= int(config["qwen"].get("context_window_tokens", 8192))
+        ),
         "qwen_transport_successful": context_metrics["transport_errors"] == 0,
         "visual_grounding": {
             "frame_objects": sum(item.kind == "frame" for item in state.objects),
