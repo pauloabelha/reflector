@@ -1,0 +1,18 @@
+{
+  "experiment": "parallel-cognitive-workspace-v1-20",
+  "protocol": "two-tier-exact-frontier-v1.20",
+  "workspace_protocol": "two-tier-exact-frontier-v1.20",
+  "qwen": {
+    "exact_context_admission_probe": true,
+    "context_safety_margin_tokens": 512
+  },
+  "profiles": {
+    "generic_prospective": {
+      "attention_half_life_actions": 12,
+      "frontier_root_limit": 24,
+      "frontier_token_budget": 6400,
+      "mandatory_frontier_ceiling": 14000,
+      "proposal_attention_boost": 1.0
+    }
+  }
+}
