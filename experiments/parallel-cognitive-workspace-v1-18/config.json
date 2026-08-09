@@ -1,0 +1,26 @@
+{
+  "experiment": "parallel-cognitive-workspace-v1-18",
+  "protocol": "unique-binding-calibration-v1.18",
+  "workspace_protocol": "unique-binding-calibration-v1.18",
+  "qwen": {
+    "max_calls_per_episode": 5,
+    "trigger_action_counts": [0, 8, 16, 24, 32]
+  },
+  "prospective_control": {
+    "max_unique_binding_calibration_decisions": 8,
+    "calibration_support_delta": 0,
+    "calibration_requires_direct_correspondence": true,
+    "store_direct_zero_delta_models": true,
+    "require_fresh_modeled_confirmation_after_calibration": true
+  },
+  "binary_gate": {
+    "require_unique_live_qwen_binding": true,
+    "require_direct_support_free_calibration_sample": true,
+    "require_calibration_evidence_return": true,
+    "require_evidence_citing_non_alpha_revision": true,
+    "require_unique_confirmed_revision_binding": true,
+    "require_qwen_changed_control_decision": true,
+    "require_favorable_same_state_counterfactual": true,
+    "level_completion_is_separate_score_pass": true
+  }
+}
