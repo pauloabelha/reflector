@@ -126,6 +126,7 @@ Rules:
 14. Seek discriminative relational contrasts, not tautologies: compare same-outline groups, interior-layout classes, motion roles, and competing pairings. A condition should help select the effect pair rather than merely restate that pair's current scalar value.
 15. Use a third variable only when its relations disambiguate the two effect variables. If several groundings remain plausible, expose OPEN ports or request expansion instead of choosing arbitrarily.
 16. When a visible structured criticism has status ambiguous-grounding, treat its bounded candidate_substitutions and effect_pairs as competing grounding witnesses. Inspect their distinguishing_relations together with the target schema and current relation set, then refine the schema conditions to retain exactly one effect pair. Do not repeat the criticized conditions unchanged. If the closed predicate vocabulary cannot distinguish one pair, request expansion or abstain.
+17. A pinned_causal_unit is an exact Qwen-derivation -> semantic-target -> later R2-criticism chain. Read all three exact-canonical objects together. Revise the semantic target in response to that criticism; do not mistake a derivation basis object or an unrelated later write for the criticized target.
 
 In a compact initial materialization, object_columns arrays align by ordinal with object_index.ids. This columnar topology preserves every alias, kind, dependency, digest, creator, revision, and nonzero support entry. Initial attention_rows are explicitly small-lossy aggregates; exact contributions remain in the ledger.
 
@@ -589,8 +590,14 @@ def _payload_projection(kind: str, payload: Mapping[str, Any]) -> tuple[dict[str
     return projected, omitted
 
 
-def _projected_object(state: Any, item: Any) -> dict[str, Any]:
+def _projected_object(state: Any, item: Any, *, exact: bool = False) -> dict[str, Any]:
     payload, omitted = _payload_projection(item.kind, item.payload)
+    if exact and omitted:
+        # Pinned causal objects may never be represented by a lossy semantic
+        # projection.  Current derivations target schemas, so this is also a
+        # guard against silently broadening the protocol later.
+        payload = item.payload
+        omitted = []
     value = {
         "id": item.object_id,
         "kind": item.kind,
@@ -601,6 +608,9 @@ def _projected_object(state: Any, item: Any) -> dict[str, Any]:
         "support": GRAPH.support(state, item.object_id),
         "salience": GRAPH.salience(state, "qwen", item.object_id),
     }
+    if exact:
+        value["created_revision"] = item.created_revision
+        value["fidelity"] = "exact-canonical-object"
     if omitted:
         value["projection"] = {
             "omitted_large_fields": omitted,
@@ -610,12 +620,103 @@ def _projected_object(state: Any, item: Any) -> dict[str, Any]:
     return value
 
 
-def _cut_document(state: Any, selected_ids: set[str], mandatory: Sequence[str]) -> dict[str, Any]:
+def _causal_object_ids(unit: Mapping[str, Any]) -> frozenset[str]:
+    return frozenset(
+        str(unit[key])
+        for key in ("derivation_id", "semantic_target_id", "criticism_id")
+    )
+
+
+def _latest_causal_units(state: Any, invalid: set[str]) -> tuple[dict[str, Any], ...]:
+    """Return the newest exact derivation whose target was later criticized.
+
+    Semantic objects deduplicate across calls.  Chronology therefore matters:
+    a criticism can result only from a derivation at or before that criticism,
+    never from a later alpha-identical write.
+    """
+
     objects = {item.object_id: item for item in state.objects}
+    derivations: dict[str, list[Any]] = {}
+    for item in state.objects:
+        if (
+            item.kind != "qwen_derivation"
+            or item.created_by != "qwen"
+            or item.object_id in invalid
+            or item.payload.get("write_kind") != "schema"
+        ):
+            continue
+        target_id = item.identity.get("semantic_object_id")
+        if (
+            not isinstance(target_id, str)
+            or target_id in invalid
+            or target_id not in objects
+            or target_id not in item.dependency_ids
+        ):
+            continue
+        derivations.setdefault(target_id, []).append(item)
+
+    criticisms = sorted(
+        (
+            item
+            for item in state.objects
+            if item.kind == "structured_criticism"
+            and item.created_by == "r2"
+            and item.object_id not in invalid
+        ),
+        key=lambda item: (item.created_revision, item.object_id),
+        reverse=True,
+    )
+    for criticism in criticisms:
+        target_id = criticism.identity.get("target_id")
+        if (
+            not isinstance(target_id, str)
+            or target_id in invalid
+            or target_id not in objects
+            or target_id not in criticism.dependency_ids
+        ):
+            continue
+        candidates = [
+            item
+            for item in derivations.get(target_id, ())
+            if item.created_revision <= criticism.created_revision
+        ]
+        if not candidates:
+            continue
+        derivation = max(candidates, key=lambda item: (item.created_revision, item.object_id))
+        return (
+            {
+                "protocol": "qwen-r2-causal-unit-v1.0",
+                "fidelity": "exact-canonical-objects",
+                "derivation_id": derivation.object_id,
+                "semantic_target_id": target_id,
+                "criticism_id": criticism.object_id,
+                "derivation_revision": derivation.created_revision,
+                "criticism_revision": criticism.created_revision,
+            },
+        )
+    return ()
+
+
+def _cut_document(
+    state: Any,
+    selected_ids: set[str],
+    mandatory: Sequence[str],
+    causal_units: Sequence[Mapping[str, Any]] = (),
+) -> dict[str, Any]:
+    objects = {item.object_id: item for item in state.objects}
+    visible_units = [
+        dict(unit) for unit in causal_units if _causal_object_ids(unit).issubset(selected_ids)
+    ]
+    exact_ids = set().union(*(_causal_object_ids(unit) for unit in visible_units)) if visible_units else set()
     return {
         "protocol": "shared-attention-qwen-cut-v1.0",
         "graph_revision": state.revision,
-        "objects": [_projected_object(state, objects[object_id]) for object_id in sorted(selected_ids)],
+        "objects": [
+            _projected_object(
+                state, objects[object_id], exact=object_id in exact_ids
+            )
+            for object_id in sorted(selected_ids)
+        ],
         "edges": [
             {
                 "id": edge.edge_id,
@@ -628,6 +729,7 @@ def _cut_document(state: Any, selected_ids: set[str], mandatory: Sequence[str]) 
             if edge.source_id in selected_ids and edge.target_id in selected_ids
         ],
         "mandatory_live_bindings": sorted(mandatory),
+        "pinned_causal_units": visible_units,
     }
 
 
@@ -661,14 +763,15 @@ def sparse_cut(
     unknown = sorted((set(focus_ids) | set(expansion_ids)) - object_ids)
     if unknown:
         raise CognitionError(f"orientation references missing stable IDs: {unknown}")
+    invalid = set(GRAPH.invalidated_ids(state))
+    causal_units = _latest_causal_units(state, invalid)
     mandatory = GRAPH.live_binding_ids(state)
     selected = set(GRAPH.dependency_closure(state, mandatory))
-    document = finalized(_cut_document(state, selected, mandatory), 0)
+    document = finalized(_cut_document(state, selected, mandatory, causal_units), 0)
     required = document["used_tokens"]
     if required > token_budget:
         raise GRAPH.FrontierBudgetError(budget=token_budget, required=required)
 
-    invalid = GRAPH.invalidated_ids(state)
     relation_sets = [item for item in state.objects if item.kind == "relation_set" and item.object_id not in invalid]
     latest_relation_revision = max((item.created_revision for item in relation_sets), default=-1)
     structural_roots = sorted(
@@ -695,10 +798,15 @@ def sparse_cut(
     # entities/facts needed to assess a discriminating refinement.  If this
     # essential unit cannot fit, fail explicitly instead of asking Qwen to
     # reason from a counts-only fragment.
-    essential_roots = tuple(dict.fromkeys((*structural_roots, *ambiguity_roots)))
-    if ambiguity_roots:
+    causal_roots = tuple(
+        object_id for unit in causal_units for object_id in _causal_object_ids(unit)
+    )
+    essential_roots = tuple(
+        dict.fromkeys((*structural_roots, *ambiguity_roots, *causal_roots))
+    )
+    if ambiguity_roots or causal_units:
         proposed = selected.union(GRAPH.dependency_closure(state, essential_roots))
-        candidate = finalized(_cut_document(state, proposed, mandatory), 0)
+        candidate = finalized(_cut_document(state, proposed, mandatory, causal_units), 0)
         if candidate["used_tokens"] > token_budget:
             raise GRAPH.FrontierBudgetError(
                 budget=token_budget, required=candidate["used_tokens"]
@@ -720,13 +828,17 @@ def sparse_cut(
         if root in invalid or root in selected:
             continue
         proposed = selected.union(GRAPH.dependency_closure(state, (root,)))
-        candidate = finalized(_cut_document(state, proposed, mandatory), len(deferred))
+        candidate = finalized(
+            _cut_document(state, proposed, mandatory, causal_units), len(deferred)
+        )
         if candidate["used_tokens"] <= token_budget:
             selected = proposed
             document = candidate
         elif root in priority_roots:
             deferred.append(root)
-    document = finalized(_cut_document(state, selected, mandatory), len(deferred))
+    document = finalized(
+        _cut_document(state, selected, mandatory, causal_units), len(deferred)
+    )
     document["dependency_closed"] = all(
         set(GRAPH.dependency_ids(state, object_id)).issubset(selected)
         for object_id in selected

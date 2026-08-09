@@ -113,3 +113,21 @@ Machine state is checkpointed after every epistemic event and real environment t
 - A stale pre-v1.2 census process was discovered and terminated. Its unrelated per-job workspaces were isolated by path and archived separately; the v1.2 balanced ledgers were not mixed with them. The resident Qwen server remained loaded.
 - Read-only budget measurements on the preserved action-8 state: 3,200 fits the eight-object essential unit but defers two requested roots; 3,600 defers one; 4,000 fits all 11 objects at a 3,630-unit cut. The estimated actual prompt at 4,000 is 8,236 tokens, leaving about 5,148 tokens after the maximum completion reserve.
 - `V1_3_AR25_GATE.md` freezes the replacement: balanced budget 4,000, exact production-budget regression, atomic failed-progress reporting, and otherwise unchanged v1.2 cognition/control semantics.
+
+## 2026-08-09 — v1.3 ar25 verdict
+
+- Both fresh arms committed 25 actions and ended unsolved at the same final digest with the same action sequence. The control result replayed exactly.
+- Context feasibility passed. Turn 2 received the full six-substitution/three-pair ambiguity witness at an 8,539-token prompt, but repeated `SameOutline -> Decrease TranslationAlignmentResidual` unchanged. Its false explanation was rejected.
+- Turn 3 proposed `AlignedHorizontal AND DifferentInteriorLayout -> Decrease TranslationAlignmentResidual`. R2 uniquely grounded `f00/f01`, committed one live binding, and wrote one Qwen→R2 `grounds_pickup` edge.
+- This is real grounded cognitive pickup, but likely the wrong conceptual pair: `f00/f01` have different interiors, while the likely target pair `f01/f02` shares its interior. Qwen selected uniqueness without task relevance.
+- Action 25 remained fallback action 1 with `prior_used=false`, zero confirmations, and no action delta. No control influence or level progress occurred.
+- The shared arm's exact replay completed, then final metrics raised `KeyError: 'objects'` because one reporter expected the legacy non-columnar initial materialization. The new failed-progress writer preserved action 25, graph revision 9903, one binding, and one grounded pickup.
+- A read-only audit found turn 3 was queued before R2 evaluated turn 2, and compact deltas hid the exact repeated Qwen derivation. The next protocol must durably complete proposal→grounding→criticism before queuing revision, and pin that causal unit losslessly.
+- Full result and next prerequisites are recorded in `V1_3_RESULT.md`. Held-out games remain paused.
+
+## 2026-08-09 02:43:53 — live census launched
+
+- Jobs: 2; games: 1; profiles: 1; environment workers: 2.
+- COMPLETE `balanced/ar25/r2_only`: levels=0, actions=25, Q→R grounded=0, replay=True.
+- FAILED `balanced/ar25/shared_attention_qwen`: KeyError: 'objects'.
+- FAIL-FAST requested: pending jobs cancelled; only already-running workers may finish checkpoint boundaries.

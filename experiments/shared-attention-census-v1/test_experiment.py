@@ -462,3 +462,69 @@ def test_run_census_catch_marks_failed_job_progress(tmp_path: Path, monkeypatch:
     assert progress["status"] == "failed"
     assert progress["error"] == "ValueError: observable"
     assert progress["actions"] == 7
+
+
+def test_initial_full_object_count_supports_compact_and_legacy_encodings() -> None:
+    compact = {
+        "document": {
+            "full_materialization": {"object_columns": {"created_revision_deltas": [0, 1, 1]}},
+            "object_index": {"encoding": "columnar-v1", "ids": ["o0", "o1", "o2"]},
+        }
+    }
+    legacy = {
+        "document": {
+            "full_materialization": {"objects": [{"id": "a"}, {"id": "b"}]},
+            "object_index": [{"id": "a"}, {"id": "b"}],
+        }
+    }
+
+    assert RUNNER.initial_full_object_count((compact,)) == 3
+    assert RUNNER.initial_full_object_count((legacy,)) == 2
+    assert RUNNER.initial_full_object_count(({"document": {"full_materialization": None}},)) == 0
+
+
+def test_qwen_successor_is_queued_only_after_durable_activation(monkeypatch: Any, tmp_path: Path) -> None:
+    order: list[str] = []
+    state = GRAPH.GraphState()
+
+    def activate(*_args: Any, **_kwargs: Any) -> tuple[Any, list[dict[str, Any]]]:
+        order.append("activate-durable")
+        return state, [{"status": "bound"}]
+
+    def reread(_root: Any) -> tuple[Any, tuple[Any, ...]]:
+        assert order == ["activate-durable"]
+        order.append("reread-ledger")
+        return state, ()
+
+    def queue(*_args: Any, **_kwargs: Any) -> tuple[str, str, str]:
+        assert order == ["activate-durable", "reread-ledger"]
+        order.append("queue-successor")
+        return ("task", "turn", "future")
+
+    monkeypatch.setattr(RUNNER, "activate_visible_qwen", activate)
+    monkeypatch.setattr(RUNNER, "graph_state", reread)
+    monkeypatch.setattr(RUNNER, "queue_qwen", queue)
+    history = tuple({"index": index} for index in range(8))
+
+    _state, _events, pending, task_count, records = RUNNER.activate_then_maybe_queue_qwen(
+        tmp_path,
+        "workspace",
+        state,
+        (),
+        None,
+        live_qwen=True,
+        controller=object(),
+        grid=((0,),),
+        legal=(1,),
+        history=history,
+        profile={},
+        activated=set(),
+        config={"qwen": {"trigger_action_counts": [8], "max_calls_per_episode": 3}},
+        fifo=object(),
+        task_count=1,
+    )
+
+    assert order == ["activate-durable", "reread-ledger", "queue-successor"]
+    assert pending == ("task", "turn", "future")
+    assert task_count == 2
+    assert records == [{"status": "bound"}]

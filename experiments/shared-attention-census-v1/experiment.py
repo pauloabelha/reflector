@@ -1338,6 +1338,64 @@ def activate_visible_qwen(
     return state, records
 
 
+def activate_then_maybe_queue_qwen(
+    root: Path,
+    workspace_id: str,
+    state: Any,
+    graph_events: Sequence[Any],
+    pending_qwen: tuple[str, Any, Future[Any]] | None,
+    *,
+    live_qwen: bool,
+    controller: Any,
+    grid: Grid,
+    legal: Sequence[int],
+    history: Sequence[dict[str, Any]],
+    profile: Mapping[str, Any],
+    activated: set[str],
+    config: Mapping[str, Any],
+    fifo: Any,
+    task_count: int,
+) -> tuple[Any, Sequence[Any], tuple[str, Any, Future[Any]] | None, int, list[dict[str, Any]]]:
+    """Durably adjudicate the current proposal before constructing its successor turn."""
+
+    records: list[dict[str, Any]] = []
+    if live_qwen:
+        state, records = activate_visible_qwen(
+            root,
+            workspace_id,
+            state,
+            controller,
+            grid,
+            legal,
+            history,
+            profile,
+            activated,
+            len(history),
+        )
+    triggers = {int(item) for item in config["qwen"]["trigger_action_counts"]}
+    if (
+        live_qwen
+        and pending_qwen is None
+        and len(history) in triggers
+        and task_count < int(config["qwen"]["max_calls_per_episode"])
+    ):
+        # Re-read only after activation returns: binding, structured criticism,
+        # and grounded-pickup events are fsync-durable before this turn's basis.
+        state, graph_events = graph_state(root)
+        pending_qwen = queue_qwen(
+            root,
+            workspace_id,
+            state,
+            graph_events,
+            config,
+            profile,
+            fifo,
+            task_count,
+        )
+        task_count += 1
+    return state, graph_events, pending_qwen, task_count, records
+
+
 def _history(events: Sequence[Mapping[str, Any]], root: Path) -> list[dict[str, Any]]:
     by_id = {str(item["event_id"]): item for item in events}
     output = []
@@ -1600,17 +1658,26 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 qwen_compilations.append(compilation)
                 pending_qwen = None
 
-            if live_qwen:
-                state, records = activate_visible_qwen(root, workspace_id, state, controller, grid, legal, history, profile, activated, len(history))
-                grounding_records.extend(records)
-
-            # Queue only after R2 has grounded or criticized the preceding
-            # reply, so the next Qwen turn observes the shared cognitive loop.
-            triggers = {int(item) for item in config["qwen"]["trigger_action_counts"]}
-            if live_qwen and pending_qwen is None and len(history) in triggers and task_count < int(config["qwen"]["max_calls_per_episode"]):
-                state, graph_events = graph_state(root)
-                pending_qwen = queue_qwen(root, workspace_id, state, graph_events, config, profile, fifo, task_count)
-                task_count += 1
+            state, graph_events, pending_qwen, task_count, records = (
+                activate_then_maybe_queue_qwen(
+                    root,
+                    workspace_id,
+                    state,
+                    graph_events,
+                    pending_qwen,
+                    live_qwen=live_qwen,
+                    controller=controller,
+                    grid=grid,
+                    legal=legal,
+                    history=history,
+                    profile=profile,
+                    activated=activated,
+                    config=config,
+                    fifo=fifo,
+                    task_count=task_count,
+                )
+            )
+            grounding_records.extend(records)
 
             decision = controller.choose(legal)
             decision_document = {
@@ -1716,7 +1783,7 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
         ),
         "latency_s": sum(float(item.get("latency_s") or 0.0) for item in response_documents),
         "transport_errors": sum(bool(item.get("transport_error")) for item in response_documents),
-        "initial_full_object_count": next((len(item["document"]["full_materialization"]["objects"]) for item in turn_documents if item["document"].get("full_materialization")), 0),
+        "initial_full_object_count": initial_full_object_count(turn_documents),
         "sparse_cut_object_counts": [len(item["document"]["sparse_cut"]["objects"]) for item in turn_documents],
         "sparse_cut_estimated_tokens": [int(item["document"]["sparse_cut"]["used_tokens"]) for item in turn_documents],
         "delta_counts": [len(item["document"]["ordered_lossless_deltas"]) for item in turn_documents],
@@ -1802,6 +1869,23 @@ def write_failed_progress(job: Mapping[str, Any], error: str) -> dict[str, Any]:
     }
     LEDGER.atomic_json(path, failed)
     return failed
+
+
+def initial_full_object_count(turn_documents: Sequence[Mapping[str, Any]]) -> int:
+    """Count initial residency under compact and legacy turn encodings."""
+
+    for turn in turn_documents:
+        document = turn.get("document", {})
+        materialization = document.get("full_materialization")
+        if not isinstance(materialization, Mapping):
+            continue
+        object_index = document.get("object_index")
+        if isinstance(object_index, Mapping) and isinstance(object_index.get("ids"), list):
+            return len(object_index["ids"])
+        objects = materialization.get("objects")
+        if isinstance(objects, list):
+            return len(objects)
+    return 0
 
 
 def run_census(config: Mapping[str, Any], manifest: Mapping[str, Any], *, games: Sequence[str] | None = None, profiles: Sequence[str] | None = None) -> dict[str, Any]:

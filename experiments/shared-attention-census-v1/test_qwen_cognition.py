@@ -37,12 +37,13 @@ def add_object(
     name: str,
     dependencies: tuple[str, ...] = (),
     payload: dict[str, Any] | None = None,
+    identity: dict[str, Any] | None = None,
 ) -> tuple[Any, Any]:
     event = GRAPH.object_event(
         state,
         kind=kind,
         created_by=creator,
-        identity={"name": name},
+        identity=identity or {"name": name},
         payload=payload or {"label": name},
         dependency_ids=dependencies,
         event_key=f"{creator}:{kind}:{name}",
@@ -657,6 +658,133 @@ def test_balanced_production_budget_fits_complete_ambiguity_unit() -> None:
     assert aliases[target.object_id] in rendered
     assert aliases[criticism.object_ids[0]] in rendered
     assert aliases[items["relation_set"].object_id] in rendered
+
+
+def test_latest_criticized_qwen_derivation_is_an_exact_mandatory_causal_unit() -> None:
+    state, events, items = relational_triad_fixture()
+    schema_payload = {
+        "conditions": [{"predicate": "SameOutline", "arguments": ["?a", "?b"]}],
+        "preferred_consequence": {
+            "operator": "Decrease",
+            "measure": "TranslationAlignmentResidual",
+            "arguments": ["?a", "?b"],
+        },
+    }
+    state, target = add_object(
+        state,
+        events,
+        kind="schema",
+        creator="qwen",
+        name="causal-target",
+        payload=schema_payload,
+    )
+    state, criticized_derivation = add_object(
+        state,
+        events,
+        kind="qwen_derivation",
+        creator="qwen",
+        name="criticized-write",
+        identity={
+            "response_id": "response-before-criticism:s0",
+            "semantic_object_id": target.object_id,
+            "write_index": 0,
+        },
+        payload={
+            "response_id": "response-before-criticism:s0",
+            "write_index": 0,
+            "write_kind": "schema",
+            "call_local_payload": {"provenance": "externally-proposed"},
+        },
+        dependencies=(target.object_id, items["matching_a"].object_id),
+    )
+    witness = AMBIGUITY.compile_ambiguity_witness(
+        {**schema_payload, "canonical_hash": target.object_id},
+        {"relations": items["relation_set"].payload["relations"]},
+    )
+    criticism_result = GRAPH.ingest_structured_criticism(
+        state,
+        worker="r2",
+        target_id=target.object_id,
+        status="ambiguous-grounding",
+        criticism_key="causal-result",
+        payload={"structured_witness": witness},
+    )
+    state = criticism_result.state
+    events.extend(criticism_result.events)
+    criticism_id = criticism_result.object_ids[0]
+    # This later alpha-identical call has not itself produced a criticism and
+    # therefore must not be retroactively paired with the older R2 result.
+    state, uncriticized_derivation = add_object(
+        state,
+        events,
+        kind="qwen_derivation",
+        creator="qwen",
+        name="later-uncriticized-write",
+        identity={
+            "response_id": "response-after-criticism:s0",
+            "semantic_object_id": target.object_id,
+            "write_index": 0,
+        },
+        payload={
+            "response_id": "response-after-criticism:s0",
+            "write_index": 0,
+            "write_kind": "schema",
+            "call_local_payload": {"provenance": "externally-proposed"},
+        },
+        dependencies=(target.object_id, items["matching_b"].object_id),
+    )
+
+    turn = COGNITION.build_turn(
+        state,
+        events,
+        COGNITION.Orientation("private-causal-unit"),
+        request_id="req-causal-unit",
+        token_budget=10_000,
+        compact_ids=False,
+    )
+    cut = turn.document["sparse_cut"]
+    assert cut["pinned_causal_units"] == [
+        {
+            "protocol": "qwen-r2-causal-unit-v1.0",
+            "fidelity": "exact-canonical-objects",
+            "derivation_id": criticized_derivation.object_id,
+            "semantic_target_id": target.object_id,
+            "criticism_id": criticism_id,
+            "derivation_revision": criticized_derivation.created_revision,
+            "criticism_revision": next(
+                item.created_revision for item in state.objects if item.object_id == criticism_id
+            ),
+        }
+    ]
+    by_id = {item["id"]: item for item in cut["objects"]}
+    canonical = {item.object_id: item for item in state.objects}
+    for object_id in (criticized_derivation.object_id, target.object_id, criticism_id):
+        rendered, source = by_id[object_id], canonical[object_id]
+        assert rendered["fidelity"] == "exact-canonical-object"
+        assert rendered["created_revision"] == source.created_revision
+        assert rendered["identity"] == source.identity
+        assert rendered["payload"] == source.payload
+        assert rendered["dependencies"] == list(GRAPH.dependency_ids(state, object_id))
+    assert cut["dependency_closed"] is True
+    assert uncriticized_derivation.object_id != criticized_derivation.object_id
+
+    # Find the exact minimum feasible frontier and prove that one unit below it
+    # fails rather than emitting a partial causal chain.
+    lower, upper = 1, cut["used_tokens"]
+    while lower < upper:
+        middle = (lower + upper) // 2
+        try:
+            COGNITION.sparse_cut(state, token_budget=middle)
+        except COGNITION.GRAPH.FrontierBudgetError:
+            lower = middle + 1
+        else:
+            upper = middle
+    minimum = lower
+    minimum_cut = COGNITION.sparse_cut(state, token_budget=minimum)
+    assert minimum_cut["pinned_causal_units"]
+    with pytest.raises(COGNITION.GRAPH.FrontierBudgetError):
+        COGNITION.sparse_cut(state, token_budget=minimum - 1)
+    assert "exact Qwen-derivation -> semantic-target" in COGNITION.PROMPT
 
 
 
