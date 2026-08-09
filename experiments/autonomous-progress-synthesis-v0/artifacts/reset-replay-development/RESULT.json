@@ -1,0 +1,89 @@
+{
+  "development_only": true,
+  "frozen_bounds": {
+    "action_budget": 400,
+    "max_depth": 12,
+    "max_states": 256
+  },
+  "protocol": "opaque-reset-replay-development-v0",
+  "results": [
+    {
+      "discovered_states": 44,
+      "edge_count": 94,
+      "environment_actions": 399,
+      "exact_solution_replay": false,
+      "final_digest": null,
+      "game": "bp35",
+      "maximum_depth": 6,
+      "resets": 95,
+      "solution": [],
+      "solved": false,
+      "stop_reason": "frontier-exhausted"
+    },
+    {
+      "discovered_states": 33,
+      "edge_count": 100,
+      "environment_actions": 396,
+      "exact_solution_replay": false,
+      "final_digest": null,
+      "game": "dc22",
+      "maximum_depth": 7,
+      "resets": 101,
+      "solution": [],
+      "solved": false,
+      "stop_reason": "frontier-exhausted"
+    },
+    {
+      "discovered_states": 41,
+      "edge_count": 92,
+      "environment_actions": 396,
+      "exact_solution_replay": false,
+      "final_digest": null,
+      "game": "sc25",
+      "maximum_depth": 6,
+      "resets": 93,
+      "solution": [],
+      "solved": false,
+      "stop_reason": "frontier-exhausted"
+    },
+    {
+      "discovered_states": 36,
+      "edge_count": 109,
+      "environment_actions": 400,
+      "exact_solution_replay": false,
+      "final_digest": null,
+      "game": "sk48",
+      "maximum_depth": 5,
+      "resets": 110,
+      "solution": [],
+      "solved": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "discovered_states": 2,
+      "edge_count": 2,
+      "environment_actions": 3,
+      "exact_solution_replay": false,
+      "final_digest": null,
+      "game": "su15",
+      "maximum_depth": 2,
+      "resets": 3,
+      "solution": [],
+      "solved": false,
+      "stop_reason": "frontier-exhausted"
+    },
+    {
+      "discovered_states": 63,
+      "edge_count": 141,
+      "environment_actions": 399,
+      "exact_solution_replay": false,
+      "final_digest": null,
+      "game": "wa30",
+      "maximum_depth": 4,
+      "resets": 142,
+      "solution": [],
+      "solved": false,
+      "stop_reason": "frontier-exhausted"
+    }
+  ]
+}
