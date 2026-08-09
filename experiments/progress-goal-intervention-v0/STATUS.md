@@ -18,3 +18,14 @@
   carry offset, and searches item order/target placement without receiving an
   action sequence.
 - Pre-run verification: 22 tests pass and `git diff --check` is clean.
+
+## 2026-08-09 — first launch invalid, before treatment
+
+- The first `null_writer` launch stopped during the common calibration prefix:
+  rotating the directional actor changes its interior signature, while the
+  harness incorrectly required that signature to remain fixed.
+- No treatment object was active and no arm result was produced. The artifacts
+  are retained as an invalid harness attempt.
+- The correspondence rule was repaired generically: within the relevant
+  outline/area class, identify the controlled singleton as the member outside
+  the repeated item-interior subclass. All four arms will be restarted fresh.

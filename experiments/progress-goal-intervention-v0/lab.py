@@ -126,11 +126,13 @@ def target_slots(roles: Mapping[str, Any]) -> tuple[tuple[int, int], ...]:
     )
 
 
-def _actor_anchor(grid: Any, actor_interior: str, actor_outline: str) -> tuple[int, int]:
+def _actor_anchor(grid: Any, item_interior: str, actor_outline: str, actor_area: int) -> tuple[int, int]:
     figures = BASE.V0.V0.select_figures(grid)
     matches = [
         figure for figure in figures
-        if figure.outline == actor_outline and repr(figure.interior_pattern) == actor_interior
+        if figure.outline == actor_outline
+        and figure.area == actor_area
+        and repr(figure.interior_pattern) != item_interior
     ]
     if len(matches) != 1:
         raise RuntimeError("actor correspondence is not unique")
@@ -174,17 +176,18 @@ def run_arm(arm: str, config: Mapping[str, Any]) -> dict[str, Any]:
         }
 
         actor_outline = roles["actor"]["outline"]
-        actor_interior = roles["actor"]["interior"]
+        item_interior = roles["items"][0]["interior"]
+        actor_area = roles["actor"]["area"]
         movement: dict[tuple[int, int], int] = {}
         zero_actions: list[int] = []
         for action in legal:
             before_grid = BASE.BASE.observation_grid(observation)
-            before_anchor = _actor_anchor(before_grid, actor_interior, actor_outline)
+            before_anchor = _actor_anchor(before_grid, item_interior, actor_outline, actor_area)
             before = BASE.BASE.observation_record(observation)
             observation = _act(environment, game, action, "fixed-common-calibration")
             after = BASE.BASE.observation_record(observation)
             after_grid = BASE.BASE.observation_grid(observation)
-            after_anchor = _actor_anchor(after_grid, actor_interior, actor_outline)
+            after_anchor = _actor_anchor(after_grid, item_interior, actor_outline, actor_area)
             delta = (after_anchor[0] - before_anchor[0], after_anchor[1] - before_anchor[1])
             if delta == (0, 0):
                 zero_actions.append(action)
@@ -199,7 +202,7 @@ def run_arm(arm: str, config: Mapping[str, Any]) -> dict[str, Any]:
             container = roles["container"]
             x0, y0 = container["anchor"]
             plan = TRANSPORT.plan_transport(TRANSPORT.CollectionTransportGoal(
-                actor_anchor=_actor_anchor(BASE.BASE.observation_grid(observation), actor_interior, actor_outline),
+                actor_anchor=_actor_anchor(BASE.BASE.observation_grid(observation), item_interior, actor_outline, actor_area),
                 portable_item_anchors=tuple(item["anchor"] for item in roles["items"]),
                 target_bbox=TRANSPORT.BoundingBox(x0, y0, x0 + container["width"] - 1, y0 + container["height"] - 1),
                 target_slots=target_slots(roles),
