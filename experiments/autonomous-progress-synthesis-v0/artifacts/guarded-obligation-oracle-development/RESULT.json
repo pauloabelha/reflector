@@ -1,0 +1,36 @@
+{
+  "protocol": "guarded-obligation-oracle-development-v0",
+  "development_only": true,
+  "transferable_evidence": false,
+  "oracle_boundary": {
+    "game": "ls20",
+    "source_inspected": true,
+    "binding_is_quarantined": true,
+    "forbidden_for_future_workspace_seed": [
+      "game identity",
+      "coordinates",
+      "visual state values",
+      "opaque action mapping",
+      "action sequence"
+    ]
+  },
+  "transferable_candidate": {
+    "potential": "UnsatisfiedGuardedObligationCount",
+    "terminal": "AllGuardedObligationsSatisfied",
+    "roles": [
+      "ActionCorrelatedPose",
+      "PersistentVisibleState",
+      "StateQualifiedSites",
+      "SituatedStateTransformers"
+    ],
+    "initial_empirical_support": 0
+  },
+  "oracle_bound_result": {
+    "actions": 13,
+    "levels_completed": 1,
+    "predicted_transform_observed_at_action": 6,
+    "completion_observed_at_action": 13,
+    "environment_confirmed": true
+  },
+  "scientific_conclusion": "The generic guarded-obligation state space is control-sufficient when correctly grounded; perception and live induction remain unproven."
+}

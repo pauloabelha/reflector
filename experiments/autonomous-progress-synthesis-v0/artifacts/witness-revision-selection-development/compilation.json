@@ -1,0 +1,18 @@
+{
+  "accepted": true,
+  "empirical_support": 0,
+  "goal": {
+    "container_id": null,
+    "controlled_id": "p000",
+    "family": "alignment",
+    "interaction_candidate": null,
+    "members": [
+      "e001"
+    ],
+    "potential": "AlignmentResidual",
+    "rationale": "AlignmentResidual for e001 has current_value=32 above terminal lower bound (0), and its potential discriminates environmental progress via alignment metric. Other witnesses either describe motion (e.g., delta[0,-5]) or lack discriminative\u6f5c\u529b",
+    "terminal": "Aligned"
+  },
+  "reason": "support-zero-witness-selection",
+  "witness_id": "gw:ed44fc119fb40d96df3d812d"
+}

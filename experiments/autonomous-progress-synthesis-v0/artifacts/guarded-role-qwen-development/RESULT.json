@@ -1,0 +1,242 @@
+{
+  "compilation": {
+    "accepted": true,
+    "empirical_support": 0,
+    "proposal": {
+      "controlled_bbox": [
+        34,
+        40,
+        39,
+        45
+      ],
+      "obligations": [
+        [
+          [
+            34,
+            40,
+            39,
+            45
+          ],
+          [
+            34,
+            40,
+            39,
+            45
+          ]
+        ]
+      ],
+      "rationale": "The motion hypotheses indicate a controlled object (5x5 square) moving vertically and horizontally. The green shape's blue square at [34,40] and red square at [34,45] suggest a stateful navigation task. The register panel (entire frame) requires the controlled object to satisfy location constraints. The obligation site",
+      "register_bbox": [
+        0,
+        0,
+        64,
+        64
+      ],
+      "transformer_bboxes": [
+        [
+          34,
+          40,
+          39,
+          45
+        ]
+      ]
+    },
+    "reason": "support-zero-role-nomination",
+    "required_r2_tests": [
+      "action-correlated-pose",
+      "persistent-register",
+      "arrival-state-change",
+      "state-qualified-discharge"
+    ]
+  },
+  "consumed_game": "ls20",
+  "development_only": true,
+  "protocol": "guarded-role-qwen-development-v0",
+  "request_contract_frozen_before_response": true,
+  "response": {
+    "content": "{\n  \"protocol\": \"guarded-obligation-role-nomination-v0\",\n  \"proposal\": {\n    \"controlled_bbox\": {\n      \"x1\": 34,\n      \"y1\": 40,\n      \"x2\": 39,\n      \"y2\": 45\n    },\n    \"register_bbox\": {\n      \"x1\": 0,\n      \"y1\": 0,\n      \"x2\": 64,\n      \"y2\": 64\n    },\n    \"obligations\": [\n      {\n        \"site_bbox\": {\n          \"x1\": 34,\n          \"y1\": 40,\n          \"x2\": 39,\n          \"y2\": 45\n        },\n        \"required_state_bbox\": {\n          \"x1\": 34,\n          \"y1\": 40,\n          \"x2\": 39,\n          \"y2\": 45\n        }\n      }\n    ],\n    \"transformer_bboxes\": [\n      {\n        \"x1\": 34,\n        \"y1\": 40,\n        \"x2\": 39,\n        \"y2\": 45\n      }\n    ]\n  ,\n  \"rationale\": \"The motion hypotheses indicate a controlled object (5x5 square) moving vertically and horizontally. The green shape's blue square at [34,40] and red square at [34,45] suggest a stateful navigation task. The register panel (entire frame) requires the controlled object to satisfy location constraints. The obligation site\" }\n}\n",
+    "finish_reason": "stop",
+    "latency_seconds": 20.650644035005826,
+    "parsed": {
+      "proposal": {
+        "controlled_bbox": {
+          "x1": 34,
+          "x2": 39,
+          "y1": 40,
+          "y2": 45
+        },
+        "obligations": [
+          {
+            "required_state_bbox": {
+              "x1": 34,
+              "x2": 39,
+              "y1": 40,
+              "y2": 45
+            },
+            "site_bbox": {
+              "x1": 34,
+              "x2": 39,
+              "y1": 40,
+              "y2": 45
+            }
+          }
+        ],
+        "rationale": "The motion hypotheses indicate a controlled object (5x5 square) moving vertically and horizontally. The green shape's blue square at [34,40] and red square at [34,45] suggest a stateful navigation task. The register panel (entire frame) requires the controlled object to satisfy location constraints. The obligation site",
+        "register_bbox": {
+          "x1": 0,
+          "x2": 64,
+          "y1": 0,
+          "y2": 64
+        },
+        "transformer_bboxes": [
+          {
+            "x1": 34,
+            "x2": 39,
+            "y1": 40,
+            "y2": 45
+          }
+        ]
+      },
+      "protocol": "guarded-obligation-role-nomination-v0"
+    },
+    "raw": {
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "message": {
+            "content": "{\n  \"protocol\": \"guarded-obligation-role-nomination-v0\",\n  \"proposal\": {\n    \"controlled_bbox\": {\n      \"x1\": 34,\n      \"y1\": 40,\n      \"x2\": 39,\n      \"y2\": 45\n    },\n    \"register_bbox\": {\n      \"x1\": 0,\n      \"y1\": 0,\n      \"x2\": 64,\n      \"y2\": 64\n    },\n    \"obligations\": [\n      {\n        \"site_bbox\": {\n          \"x1\": 34,\n          \"y1\": 40,\n          \"x2\": 39,\n          \"y2\": 45\n        },\n        \"required_state_bbox\": {\n          \"x1\": 34,\n          \"y1\": 40,\n          \"x2\": 39,\n          \"y2\": 45\n        }\n      }\n    ],\n    \"transformer_bboxes\": [\n      {\n        \"x1\": 34,\n        \"y1\": 40,\n        \"x2\": 39,\n        \"y2\": 45\n      }\n    ]\n  ,\n  \"rationale\": \"The motion hypotheses indicate a controlled object (5x5 square) moving vertically and horizontally. The green shape's blue square at [34,40] and red square at [34,45] suggest a stateful navigation task. The register panel (entire frame) requires the controlled object to satisfy location constraints. The obligation site\" }\n}\n",
+            "reasoning_content": "Okay, let's tackle this problem step by step. So, the user is asking me to act as a semantic attention worker in a grounded visual reasoner workspace. The main task is to analyze the current frame and the recent opaque transition effects to determine if there are any tasks that require satisfying locations while a separate visible state or mode has a required appearance. \n\nFirst, I need to understand the setup. The workspace has an epistemic_rules section that says attention is not support, only environment changes support, and R2 must validate roles. The frame is 64x64 pixels, and there are opaque transition effects from im00 to im03. Each transition has motion hypotheses that describe how objects moved.\n\nLooking at the current visual frame: it's a yellow background with a green shape that looks like a pixelated figure. There's a small blue square on the green shape, a red square at the bottom, and a gray panel on the left with a red and gray symbol. Also, there are some blue squares at the bottom right.\n\nNow, the opaque transition effects. Let's break them down:\n\n- im00: changed, intervention_ref \"im00\", motion_hypotheses: after_anchor [34,40], before_anchor [34,45], delta [0,-5], mass 25, size [5,5]. So an object moved down 5 pixels from [34,45] to [34,40]. The size is 5x5, so it's a small square.\n\n- im01: changed, intervention_ref \"im01\", motion_hypotheses: empty. So no movement here.\n\n- im02: changed, intervention_ref \"im02\", motion_hypotheses: after_anchor [29,45], before_anchor [34,45], delta [-5,0], mass 25, size [5,5]. An object moved left 5 pixels from [34,45] to [29,45].\n\n- im03: changed, intervention_ref \"im03\", motion_hypotheses: after_anchor [39,45], before_anchor [34,45], delta [5,0], mass 25, size [5,5]. An object moved right 5 pixels from [34,45] to [39,45].\n\nSo, the transitions are about moving small squares (5x5) in the frame. The current frame has a green shape with a blue square on it, a red square at the bottom, and the gray panel with a symbol.\n\nThe task is to find if there's a task that requires satisfying locations while a visible state or mode has a required appearance. Examples given are locks and keys, configure-then-visit, deliveries with types, switches, stateful navigation.\n\nFirst, I need to check if there's a control object that's being manipulated. The motion hypotheses are about moving small squares. Let's see where these squares are.\n\nIn the current frame, the blue square is on the green shape. The red square is at the bottom. The gray panel on the left has a symbol. The transitions are moving squares around.\n\nWait, the motion hypotheses are for the transitions. So, for example, im00: a square moved from [34,45] to [34,40], which is down 5. So maybe a square that was at [34,45] moved down to [34,40]. Similarly, im02: a square moved left from [34,45] to [29,45], and im03: right from [34,45] to [39,45].\n\nBut the current frame shows the green shape with a blue square. Maybe the blue square is a key or a lock. Let's see the positions.\n\nThe blue square is at [34,40] in the current frame? Wait, the current frame's coordinates might be different. Wait, the frame is 64x64, but the coordinates in the motion hypotheses are [x,y]. Let's assume the frame is a grid where (0,0) is top-left.\n\nIn the current frame, the green shape is the main object. The blue square is on the green shape. The red square is at the bottom. The gray panel on the left has a symbol. The blue squares at the bottom right are maybe part of the interface.\n\nWait, the motion hypotheses for im00: after_anchor [34,40], before_anchor [34,45]. So the object was at [34,45] before, moved to [34,40] after. So it's a square that was at (34,45) and moved down to (34,40). Similarly, im02: before",
+            "role": "assistant"
+          }
+        }
+      ],
+      "created": 1786310954,
+      "id": "chatcmpl-E5wuiAJddCqju6cpw0KS47zOnIJ8jqo0",
+      "model": "qwen3-vl-4b-thinking-q4_k_m",
+      "object": "chat.completion",
+      "system_fingerprint": "b8660-d00685831",
+      "timings": {
+        "cache_n": 5,
+        "predicted_ms": 20286.455,
+        "predicted_n": 1386,
+        "predicted_per_second": 68.3214489668106,
+        "predicted_per_token_ms": 14.63669191919192,
+        "prompt_ms": 338.433,
+        "prompt_n": 515,
+        "prompt_per_second": 1521.7192176885824,
+        "prompt_per_token_ms": 0.6571514563106796
+      },
+      "usage": {
+        "completion_tokens": 1386,
+        "prompt_tokens": 520,
+        "prompt_tokens_details": {
+          "cached_tokens": 5
+        },
+        "total_tokens": 1906
+      }
+    },
+    "reasoning_content": "Okay, let's tackle this problem step by step. So, the user is asking me to act as a semantic attention worker in a grounded visual reasoner workspace. The main task is to analyze the current frame and the recent opaque transition effects to determine if there are any tasks that require satisfying locations while a separate visible state or mode has a required appearance. \n\nFirst, I need to understand the setup. The workspace has an epistemic_rules section that says attention is not support, only environment changes support, and R2 must validate roles. The frame is 64x64 pixels, and there are opaque transition effects from im00 to im03. Each transition has motion hypotheses that describe how objects moved.\n\nLooking at the current visual frame: it's a yellow background with a green shape that looks like a pixelated figure. There's a small blue square on the green shape, a red square at the bottom, and a gray panel on the left with a red and gray symbol. Also, there are some blue squares at the bottom right.\n\nNow, the opaque transition effects. Let's break them down:\n\n- im00: changed, intervention_ref \"im00\", motion_hypotheses: after_anchor [34,40], before_anchor [34,45], delta [0,-5], mass 25, size [5,5]. So an object moved down 5 pixels from [34,45] to [34,40]. The size is 5x5, so it's a small square.\n\n- im01: changed, intervention_ref \"im01\", motion_hypotheses: empty. So no movement here.\n\n- im02: changed, intervention_ref \"im02\", motion_hypotheses: after_anchor [29,45], before_anchor [34,45], delta [-5,0], mass 25, size [5,5]. An object moved left 5 pixels from [34,45] to [29,45].\n\n- im03: changed, intervention_ref \"im03\", motion_hypotheses: after_anchor [39,45], before_anchor [34,45], delta [5,0], mass 25, size [5,5]. An object moved right 5 pixels from [34,45] to [39,45].\n\nSo, the transitions are about moving small squares (5x5) in the frame. The current frame has a green shape with a blue square on it, a red square at the bottom, and the gray panel with a symbol.\n\nThe task is to find if there's a task that requires satisfying locations while a visible state or mode has a required appearance. Examples given are locks and keys, configure-then-visit, deliveries with types, switches, stateful navigation.\n\nFirst, I need to check if there's a control object that's being manipulated. The motion hypotheses are about moving small squares. Let's see where these squares are.\n\nIn the current frame, the blue square is on the green shape. The red square is at the bottom. The gray panel on the left has a symbol. The transitions are moving squares around.\n\nWait, the motion hypotheses are for the transitions. So, for example, im00: a square moved from [34,45] to [34,40], which is down 5. So maybe a square that was at [34,45] moved down to [34,40]. Similarly, im02: a square moved left from [34,45] to [29,45], and im03: right from [34,45] to [39,45].\n\nBut the current frame shows the green shape with a blue square. Maybe the blue square is a key or a lock. Let's see the positions.\n\nThe blue square is at [34,40] in the current frame? Wait, the current frame's coordinates might be different. Wait, the frame is 64x64, but the coordinates in the motion hypotheses are [x,y]. Let's assume the frame is a grid where (0,0) is top-left.\n\nIn the current frame, the green shape is the main object. The blue square is on the green shape. The red square is at the bottom. The gray panel on the left has a symbol. The blue squares at the bottom right are maybe part of the interface.\n\nWait, the motion hypotheses for im00: after_anchor [34,40], before_anchor [34,45]. So the object was at [34,45] before, moved to [34,40] after. So it's a square that was at (34,45) and moved down to (34,40). Similarly, im02: before",
+    "usage": {
+      "completion_tokens": 1386,
+      "prompt_tokens": 520,
+      "prompt_tokens_details": {
+        "cached_tokens": 5
+      },
+      "total_tokens": 1906
+    }
+  },
+  "workspace": {
+    "epistemic_rules": {
+      "attention_is_not_support": true,
+      "only_environment_changes_support": true,
+      "r2_must_validate_roles": true
+    },
+    "frame": {
+      "height": 64,
+      "width": 64
+    },
+    "opaque_transition_effects": [
+      {
+        "changed": true,
+        "intervention_ref": "im00",
+        "motion_hypotheses": [
+          {
+            "after_anchor": [
+              34,
+              40
+            ],
+            "before_anchor": [
+              34,
+              45
+            ],
+            "delta": [
+              0,
+              -5
+            ],
+            "mass": 25,
+            "size": [
+              5,
+              5
+            ]
+          }
+        ]
+      },
+      {
+        "changed": true,
+        "intervention_ref": "im01",
+        "motion_hypotheses": []
+      },
+      {
+        "changed": true,
+        "intervention_ref": "im02",
+        "motion_hypotheses": [
+          {
+            "after_anchor": [
+              29,
+              45
+            ],
+            "before_anchor": [
+              34,
+              45
+            ],
+            "delta": [
+              -5,
+              0
+            ],
+            "mass": 25,
+            "size": [
+              5,
+              5
+            ]
+          }
+        ]
+      },
+      {
+        "changed": true,
+        "intervention_ref": "im03",
+        "motion_hypotheses": [
+          {
+            "after_anchor": [
+              39,
+              45
+            ],
+            "before_anchor": [
+              34,
+              45
+            ],
+            "delta": [
+              5,
+              0
+            ],
+            "mass": 25,
+            "size": [
+              5,
+              5
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

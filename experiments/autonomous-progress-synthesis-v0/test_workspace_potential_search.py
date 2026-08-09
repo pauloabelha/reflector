@@ -139,3 +139,23 @@ def test_plateau_suppresses_attention_without_fabricating_refutation_or_support(
     record = policy.records()[0]
     assert record.status == "attention-suppressed-plateau"
     assert record.empirical_support == 0 and record.environment_refutations == 0
+
+
+def test_portfolio_compares_fractional_progress_and_qwen_only_breaks_ties():
+    first=grounded_goal(grid(1));second=M.WorkspacePotential("second",first.family,first.potential,first.terminal,first.controlled,first.members,first.container,0)
+    policy=M.AdaptivePotentialPolicy((first,second),reference_values={first.proposal_id:100,second.proposal_id:10},attention_boosts={second.proposal_id:50})
+    selected=policy.observe_noncompletion((M.PotentialReading(first.proposal_id,50,1,"grounded-agreement"),M.PotentialReading(second.proposal_id,5,1,"grounded-agreement")))
+    assert selected is not None and selected[-1]==second.proposal_id
+    records={row.proposal_id:row for row in policy.records()}
+    assert records[second.proposal_id].attention==50 and records[first.proposal_id].empirical_support==0
+
+
+def test_unattended_witness_does_not_spend_plateau_patience():
+    first=grounded_goal(grid(1));second=M.WorkspacePotential("second",first.family,first.potential,first.terminal,first.controlled,first.members,first.container,0)
+    policy=M.AdaptivePotentialPolicy((first,second),plateau_patience=2,reference_values={first.proposal_id:10,second.proposal_id:10},attention_boosts={first.proposal_id:50})
+    readings=(M.PotentialReading(first.proposal_id,5,1,"grounded-agreement"),M.PotentialReading(second.proposal_id,9,1,"grounded-agreement"))
+    policy.observe_noncompletion(readings);policy.observe_noncompletion(readings);policy.observe_noncompletion(readings)
+    records={row.proposal_id:row for row in policy.records()}
+    assert records[first.proposal_id].status=="attention-suppressed-plateau"
+    assert records[second.proposal_id].status=="active"
+    assert records[second.proposal_id].evaluations_since_improvement==0

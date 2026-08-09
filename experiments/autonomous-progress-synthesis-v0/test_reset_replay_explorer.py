@@ -49,3 +49,15 @@ def test_causal_suffix_preserves_latent_state_hidden_by_identical_pixels():
     assert not M.search(HiddenMode(),action_budget=10,max_depth=3,history_order=0).solved
     result=M.search(HiddenMode(),action_budget=10,max_depth=3,history_order=2)
     assert result.solved and result.solution==(1,1)
+
+
+class LongHiddenRun(HiddenMode):
+    def completed(self,o):return o>=6
+    def terminal(self,o):return o>=6
+    def key(self,o):return "same-pixels" if o<6 else "win"
+
+
+def test_run_length_signature_preserves_long_visually_silent_progress():
+    assert not M.search(LongHiddenRun(),action_budget=30,max_depth=8,history_order=2,history_mode="action_suffix").solved
+    result=M.search(LongHiddenRun(),action_budget=30,max_depth=8,history_order=2,history_mode="run_length_suffix")
+    assert result.solved and result.solution==(1,)*6

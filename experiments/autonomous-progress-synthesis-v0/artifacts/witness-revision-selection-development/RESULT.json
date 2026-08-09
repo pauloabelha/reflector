@@ -1,0 +1,41 @@
+{
+  "compilation": {
+    "accepted": true,
+    "empirical_support": 0,
+    "goal": {
+      "container_id": null,
+      "controlled_id": "p000",
+      "family": "alignment",
+      "interaction_candidate": null,
+      "members": [
+        "e001"
+      ],
+      "potential": "AlignmentResidual",
+      "rationale": "AlignmentResidual for e001 has current_value=32 above terminal lower bound (0), and its potential discriminates environmental progress via alignment metric. Other witnesses either describe motion (e.g., delta[0,-5]) or lack discriminative\u6f5c\u529b",
+      "terminal": "Aligned"
+    },
+    "reason": "support-zero-witness-selection",
+    "witness_id": "gw:ed44fc119fb40d96df3d812d"
+  },
+  "consumed_game": "ls20",
+  "development_only": true,
+  "feedback": {
+    "best_value": 32,
+    "empirical_support": 0,
+    "known_evaluations": 14,
+    "retired_witness_id": "gw:409cb5467762298046cfb7b4",
+    "rule": "retirement changes attention; it is not support for another witness",
+    "status": "attention-suppressed-plateau"
+  },
+  "live_witness_count": 19,
+  "protocol": "retired-witness-reselection-development-v0",
+  "retired_witness_id": "gw:409cb5467762298046cfb7b4",
+  "usage": {
+    "completion_tokens": 2155,
+    "prompt_tokens": 2938,
+    "prompt_tokens_details": {
+      "cached_tokens": 1541
+    },
+    "total_tokens": 5093
+  }
+}

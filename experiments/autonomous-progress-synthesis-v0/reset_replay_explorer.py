@@ -40,7 +40,7 @@ class SearchResult:
     stop_reason:str
 
 
-def search(world:World,*,action_budget:int=400,max_depth:int=12,max_states:int=256,history_order:int=0,priority:Callable[[Any,tuple[int,...],str,str],tuple]|None=None)->SearchResult:
+def search(world:World,*,action_budget:int=400,max_depth:int=12,max_states:int=256,history_order:int=0,history_mode:str="action_suffix",priority:Callable[[Any,tuple[int,...],str,str],tuple]|None=None)->SearchResult:
     """Breadth-first search with every replay action honestly charged.
 
     Only opaque action identities and observation equality are used.  A path is
@@ -48,10 +48,18 @@ def search(world:World,*,action_budget:int=400,max_depth:int=12,max_states:int=2
     explicit epistemic operation and is counted separately.
     """
     if action_budget<1 or max_depth<1 or max_states<2 or history_order<0:raise ExplorationError("invalid search bound")
+    if history_mode not in {"action_suffix","run_length_suffix"}:raise ExplorationError("unknown causal history mode")
     root=world.reset();resets=1;root_key=world.key(root)
     if world.completed(root):return SearchResult(True,(),0,resets,1,0,(),"root-complete")
     def epistemic_key(observation,path):
-        suffix=path[-history_order:] if history_order else ()
+        if not history_order:suffix=()
+        elif history_mode=="action_suffix":suffix=path[-history_order:]
+        else:
+            runs=[]
+            for action in path:
+                if runs and runs[-1][0]==action:runs[-1]=(action,runs[-1][1]+1)
+                else:runs.append((action,1))
+            suffix=tuple(runs[-history_order:])
         return world.key(observation),suffix
     serial=0;queue=[((0,),serial,())];keys={epistemic_key(root,()):()};edges=[];spent=0;deepest=0
     while queue and spent<action_budget and len(keys)<max_states:

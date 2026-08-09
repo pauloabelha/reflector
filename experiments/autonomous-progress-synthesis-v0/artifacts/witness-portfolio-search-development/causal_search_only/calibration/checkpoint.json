@@ -1,0 +1,136 @@
+{
+  "history": [
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "c54b0cc208dddcaa76e5b3d8566849f30b46a343f98b258e3b3cf1d1c813a1f0",
+        "frame_sha256": "ee3b50887e7ada91ee579dce8fc08168a454cba38c7a87094e91080baaf6a064",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 7
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "37ccd01f9b7b730eef4c744bbc585a4a9915d575a05570a6c2714b8c1ce1a00a",
+        "frame_sha256": "65ebc0a75978ff9975374b35afe08e3282d86610c20e1200881dd8589363c510",
+        "full_reset": true,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 7
+      },
+      "intervention_ref": "im00",
+      "phase": "calibration"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "37662de7b35418ae34c3a1f61e824dcb63d4e2da01aeb217d130933f15820a21",
+        "frame_sha256": "20e216396b0245c9700d3de756fd8b09ded7b7672363f24a745dadf0e9e6163e",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 7
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "c54b0cc208dddcaa76e5b3d8566849f30b46a343f98b258e3b3cf1d1c813a1f0",
+        "frame_sha256": "ee3b50887e7ada91ee579dce8fc08168a454cba38c7a87094e91080baaf6a064",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 7
+      },
+      "intervention_ref": "im01",
+      "phase": "calibration"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "22db077abbdc5093e4f361c91d8ef3192c72d2c8994754e7a5e3172e8cd1c3c1",
+        "frame_sha256": "3e614dac691391d7d9174719c83dbabd33a701a53849737c6d25d1c93b325dd2",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 7
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "37662de7b35418ae34c3a1f61e824dcb63d4e2da01aeb217d130933f15820a21",
+        "frame_sha256": "20e216396b0245c9700d3de756fd8b09ded7b7672363f24a745dadf0e9e6163e",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 7
+      },
+      "intervention_ref": "im02",
+      "phase": "calibration"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "a72735604d5c8aa76ae519f69866e3d89bdcc431f55b9abc29a573780005ee72",
+        "frame_sha256": "4aa3181cc694554a49526ac33400accc2cca2892849517c2ac81c30a2065d9f0",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 7
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "22db077abbdc5093e4f361c91d8ef3192c72d2c8994754e7a5e3172e8cd1c3c1",
+        "frame_sha256": "3e614dac691391d7d9174719c83dbabd33a701a53849737c6d25d1c93b325dd2",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 7
+      },
+      "intervention_ref": "im03",
+      "phase": "calibration"
+    }
+  ]
+}

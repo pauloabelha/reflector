@@ -7,6 +7,7 @@ import compositional_dsl as dsl
 import collection_transport as collection
 import executor_registry as exact
 import gradient_executor as gradient
+import guarded_obligation_capability as guarded
 import progress_synthesis as synthesis
 import route_option
 import symbolic_transform_adapter as symbolic
@@ -165,4 +166,17 @@ def propose_calibrated(
     unique={(row.capability,row.execution.candidate.candidate_id,row.execution.proposal.binding_id):row for row in rows}
     return tuple(sorted(unique.values(),key=lambda row:(-row.attention,row.capability,str(row.execution))))
 
-__all__=["CapabilityProposal","ExactOption","propose","propose_calibrated"]
+
+def propose_guarded(world:guarded.GuardedWorld)->CapabilityProposal:
+    """Register one already-grounded, evidence-linked guarded task model."""
+    capability=guarded.compile_capability(world)
+    return CapabilityProposal(
+        "interactive:guarded-obligations",
+        dict(capability.goal_ast),
+        capability.attention,
+        capability.empirical_support,
+        capability,
+        True,
+    )
+
+__all__=["CapabilityProposal","ExactOption","propose","propose_calibrated","propose_guarded"]

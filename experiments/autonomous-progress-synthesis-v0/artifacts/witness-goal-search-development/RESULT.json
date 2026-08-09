@@ -1,0 +1,88 @@
+{
+  "consumed_game": "ls20",
+  "development_only": true,
+  "frozen_bounds": {
+    "calibration": 4,
+    "history_order": 4,
+    "max_depth": 16,
+    "max_states": 256,
+    "plateau_patience": 12,
+    "total_action_budget": 400
+  },
+  "protocol": "live-witness-goal-search-development-v0",
+  "results": [
+    {
+      "arm": "causal_search_only",
+      "calibration_actions": 4,
+      "exact_solution_replay": false,
+      "goal_attention_records": [],
+      "maximum_depth": 4,
+      "qwen_usage": null,
+      "resets": 127,
+      "search_actions": 396,
+      "selected_goal": null,
+      "selection": null,
+      "solution": [],
+      "solved": false,
+      "states": 127,
+      "stop_reason": "action-budget",
+      "total_environment_actions": 400,
+      "witness_count": 20
+    },
+    {
+      "arm": "shared_witness_attention",
+      "calibration_actions": 4,
+      "exact_solution_replay": false,
+      "goal_attention_records": [
+        {
+          "attention_suppressions": 1,
+          "best_value": 32,
+          "empirical_support": 0,
+          "environment_refutations": 0,
+          "evaluations": 125,
+          "evaluations_since_improvement": 12,
+          "known_evaluations": 14,
+          "last_reason": "grounded-agreement",
+          "proposal_id": "gw:409cb5467762298046cfb7b4",
+          "status": "attention-suppressed-plateau"
+        }
+      ],
+      "maximum_depth": 5,
+      "qwen_usage": {
+        "completion_tokens": 2172,
+        "prompt_tokens": 2954,
+        "prompt_tokens_details": {
+          "cached_tokens": 6
+        },
+        "total_tokens": 5126
+      },
+      "resets": 126,
+      "search_actions": 396,
+      "selected_goal": {
+        "container_id": null,
+        "controlled_id": "p000",
+        "family": "alignment",
+        "interaction_candidate": null,
+        "members": [
+          "e000",
+          "e001"
+        ],
+        "potential": "AlignmentResidual",
+        "rationale": "This witness's potential (AlignmentResidual) directly correlates with the mechanical evaluation of spatial congruence between e000 and e001, which are critical for the environment's structural integrity. The observed delta movements (im00-0",
+        "terminal": "Aligned"
+      },
+      "selection": {
+        "accepted": true,
+        "empirical_support": 0,
+        "reason": "support-zero-witness-selection",
+        "witness_id": "gw:409cb5467762298046cfb7b4"
+      },
+      "solution": [],
+      "solved": false,
+      "states": 126,
+      "stop_reason": "action-budget",
+      "total_environment_actions": 400,
+      "witness_count": 20
+    }
+  ]
+}

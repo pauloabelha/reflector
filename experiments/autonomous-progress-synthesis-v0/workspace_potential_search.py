@@ -9,6 +9,7 @@ unknown rather than silently selecting a convenient grounding.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from fractions import Fraction
 from itertools import product
 from typing import Any, Mapping, Sequence
 
@@ -68,10 +69,12 @@ class PotentialReading:
 class GoalAttentionRecord:
     proposal_id: str
     empirical_support: int = 0
+    attention: int = 0
     status: str = "active"
     evaluations: int = 0
     known_evaluations: int = 0
     best_value: int | None = None
+    reference_value: int | None = None
     evaluations_since_improvement: int = 0
     environment_refutations: int = 0
     attention_suppressions: int = 0
@@ -308,14 +311,16 @@ class AdaptivePotentialPolicy:
     environment evidence against the goal's terminal equivalence.  Plateaus
     merely suppress attention; they do not change empirical support.
     """
-    def __init__(self, goals: Sequence[WorkspacePotential], *, projection=lambda observation: observation, plateau_patience: int = 12):
+    def __init__(self, goals: Sequence[WorkspacePotential], *, projection=lambda observation: observation, plateau_patience: int = 12, reference_values: Mapping[str, int] | None = None, attention_boosts: Mapping[str, int] | None = None):
         if plateau_patience < 1:
             raise WorkspacePotentialError("plateau patience must be positive")
         self.goals = tuple(goals); self.projection = projection; self.plateau_patience = int(plateau_patience)
-        self._records = {goal.proposal_id: GoalAttentionRecord(goal.proposal_id) for goal in self.goals}
+        references = {} if reference_values is None else {str(key): int(value) for key, value in reference_values.items()}
+        boosts = {} if attention_boosts is None else {str(key): int(value) for key, value in attention_boosts.items()}
+        self._records = {goal.proposal_id: GoalAttentionRecord(goal.proposal_id, attention=boosts.get(goal.proposal_id, 0), reference_value=references.get(goal.proposal_id)) for goal in self.goals}
 
-    def observe_noncompletion(self, readings: Sequence[PotentialReading]) -> tuple[int, int, str] | None:
-        ranked = []
+    def observe_noncompletion(self, readings: Sequence[PotentialReading]) -> tuple[Any, ...] | None:
+        ranked = []; improved = {}
         for reading in readings:
             record = self._records[reading.proposal_id]; record.evaluations += 1; record.last_reason = reading.reason
             if record.status != "active" or reading.value is None:
@@ -327,15 +332,29 @@ class AdaptivePotentialPolicy:
                 record.status = "refuted-terminal-proxy"; record.empirical_support -= 1
                 record.environment_refutations += 1; record.last_reason = "lower-bound-without-environment-completion"
                 continue
+            if record.reference_value is None:
+                record.reference_value = reading.value
             if record.best_value is None or reading.value < record.best_value:
                 record.best_value = reading.value; record.evaluations_since_improvement = 0
+                improved[reading.proposal_id] = True
             else:
-                record.evaluations_since_improvement += 1
-                if record.evaluations_since_improvement >= self.plateau_patience:
-                    record.status = "attention-suppressed-plateau"; record.attention_suppressions += 1
-                    record.last_reason = "no-new-minimum-within-patience"; continue
-            ranked.append((reading.value, reading.correspondence_count, reading.proposal_id))
-        return min(ranked, default=None)
+                improved[reading.proposal_id] = False
+            ranked.append((Fraction(reading.value, max(1, record.reference_value)), -record.attention, reading.correspondence_count, reading.proposal_id))
+        if not ranked:
+            return None
+        selected = min(ranked)
+        record = self._records[selected[-1]]
+        # Only the hypothesis winning attention for this successor spends its
+        # plateau patience. Other hypotheses may learn incidental new minima,
+        # but are not exhausted by an experiment selected for somebody else.
+        if not improved[selected[-1]]:
+            record.evaluations_since_improvement += 1
+            if record.evaluations_since_improvement >= self.plateau_patience:
+                record.status = "attention-suppressed-plateau"; record.attention_suppressions += 1
+                record.last_reason = "no-new-minimum-within-patience"
+                remaining = [row for row in ranked if row[-1] != selected[-1]]
+                return min(remaining, default=None)
+        return selected
 
     def __call__(self, observation, path, _source_key, _target_key):
         rendered = self.projection(observation)

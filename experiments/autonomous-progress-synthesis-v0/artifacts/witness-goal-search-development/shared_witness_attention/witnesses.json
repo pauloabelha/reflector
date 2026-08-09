@@ -1,0 +1,309 @@
+{
+  "protocol": "executable-progress-witness-selection-v0",
+  "witnesses": [
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 1,
+      "empirical_support": 0,
+      "family": "avoidance",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e002"
+      ],
+      "potential": "CollisionRisk",
+      "terminal": "NoCollision",
+      "witness_id": "gw:7db3ab15bcce76c2843ad9b9"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 1,
+      "empirical_support": 0,
+      "family": "connectivity",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e000"
+      ],
+      "potential": "ComponentDeficit",
+      "terminal": "Connected",
+      "witness_id": "gw:2c7ff2a5bbc89dcb4d2c07c9"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 1,
+      "empirical_support": 0,
+      "family": "connectivity",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e003"
+      ],
+      "potential": "ComponentDeficit",
+      "terminal": "Connected",
+      "witness_id": "gw:4a44959aa7f0b7624fa2816c"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 1,
+      "empirical_support": 0,
+      "family": "connectivity",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e001"
+      ],
+      "potential": "ComponentDeficit",
+      "terminal": "Connected",
+      "witness_id": "gw:756da346ab5f96cded8f961a"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 2,
+      "empirical_support": 0,
+      "family": "connectivity",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e000",
+        "e001"
+      ],
+      "potential": "ComponentDeficit",
+      "terminal": "Connected",
+      "witness_id": "gw:bfa3896950e61eee16d1767f"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 32,
+      "empirical_support": 0,
+      "family": "alignment",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e000",
+        "e001"
+      ],
+      "potential": "AlignmentResidual",
+      "terminal": "Aligned",
+      "witness_id": "gw:409cb5467762298046cfb7b4"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 32,
+      "empirical_support": 0,
+      "family": "alignment",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e001"
+      ],
+      "potential": "AlignmentResidual",
+      "terminal": "Aligned",
+      "witness_id": "gw:ed44fc119fb40d96df3d812d"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 42,
+      "empirical_support": 0,
+      "family": "alignment",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e002"
+      ],
+      "potential": "AlignmentResidual",
+      "terminal": "Aligned",
+      "witness_id": "gw:c2c9c0b91ac4eed57803b570"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 75,
+      "empirical_support": 0,
+      "family": "matching",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e003"
+      ],
+      "potential": "MismatchCount",
+      "terminal": "AllMatched",
+      "witness_id": "gw:c577dd75b83a5c4a20330cf5"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 75,
+      "empirical_support": 0,
+      "family": "transformation",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e003"
+      ],
+      "potential": "TransformationResidual",
+      "terminal": "TransformationComplete",
+      "witness_id": "gw:f3f55ef21ccdb1a63c7c1158"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 82,
+      "empirical_support": 0,
+      "family": "alignment",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e003"
+      ],
+      "potential": "AlignmentResidual",
+      "terminal": "Aligned",
+      "witness_id": "gw:d05b42f70dbb6fa39feea390"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 112,
+      "empirical_support": 0,
+      "family": "alignment",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e000"
+      ],
+      "potential": "AlignmentResidual",
+      "terminal": "Aligned",
+      "witness_id": "gw:b55b51c651454c01810a3f06"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 213,
+      "empirical_support": 0,
+      "family": "matching",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e000"
+      ],
+      "potential": "MismatchCount",
+      "terminal": "AllMatched",
+      "witness_id": "gw:8f75eb00e479f2f7d224fe6b"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 213,
+      "empirical_support": 0,
+      "family": "matching",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e001"
+      ],
+      "potential": "MismatchCount",
+      "terminal": "AllMatched",
+      "witness_id": "gw:bf16b58614beca31a552b443"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 213,
+      "empirical_support": 0,
+      "family": "transformation",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e000"
+      ],
+      "potential": "TransformationResidual",
+      "terminal": "TransformationComplete",
+      "witness_id": "gw:121b4ba0ef0cfae2937013a9"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 213,
+      "empirical_support": 0,
+      "family": "transformation",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e000",
+        "e001"
+      ],
+      "potential": "TransformationResidual",
+      "terminal": "TransformationComplete",
+      "witness_id": "gw:7a1c9c861f72eb36bd53f7ce"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 213,
+      "empirical_support": 0,
+      "family": "transformation",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e001"
+      ],
+      "potential": "TransformationResidual",
+      "terminal": "TransformationComplete",
+      "witness_id": "gw:90ad5f884dccae8a772efb6e"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 426,
+      "empirical_support": 0,
+      "family": "matching",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e000",
+        "e001"
+      ],
+      "potential": "MismatchCount",
+      "terminal": "AllMatched",
+      "witness_id": "gw:46f2c7657639fd7887ec8186"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 980,
+      "empirical_support": 0,
+      "family": "matching",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e002"
+      ],
+      "potential": "MismatchCount",
+      "terminal": "AllMatched",
+      "witness_id": "gw:e417f5520b050093ed203115"
+    },
+    {
+      "container_id": null,
+      "controlled_id": "p000",
+      "correspondence_count": 1,
+      "current_value": 980,
+      "empirical_support": 0,
+      "family": "transformation",
+      "grounding": "pixel-executable-agreement",
+      "members": [
+        "e002"
+      ],
+      "potential": "TransformationResidual",
+      "terminal": "TransformationComplete",
+      "witness_id": "gw:4efeef78861b9375ce4005aa"
+    }
+  ]
+}

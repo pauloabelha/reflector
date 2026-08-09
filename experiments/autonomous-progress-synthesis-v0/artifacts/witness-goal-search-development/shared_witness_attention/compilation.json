@@ -1,0 +1,19 @@
+{
+  "accepted": true,
+  "empirical_support": 0,
+  "goal": {
+    "container_id": null,
+    "controlled_id": "p000",
+    "family": "alignment",
+    "interaction_candidate": null,
+    "members": [
+      "e000",
+      "e001"
+    ],
+    "potential": "AlignmentResidual",
+    "rationale": "This witness's potential (AlignmentResidual) directly correlates with the mechanical evaluation of spatial congruence between e000 and e001, which are critical for the environment's structural integrity. The observed delta movements (im00-0",
+    "terminal": "Aligned"
+  },
+  "reason": "support-zero-witness-selection",
+  "witness_id": "gw:409cb5467762298046cfb7b4"
+}

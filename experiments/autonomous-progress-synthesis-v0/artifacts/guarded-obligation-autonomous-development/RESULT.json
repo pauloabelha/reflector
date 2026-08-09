@@ -1,0 +1,58 @@
+{
+  "action_sequence": [
+    3,
+    3,
+    3,
+    1,
+    1,
+    1,
+    1,
+    4,
+    4,
+    4,
+    1,
+    1,
+    1
+  ],
+  "consumed_game": "ls20",
+  "control_actions": [
+    1,
+    4,
+    4,
+    4,
+    1,
+    1,
+    1
+  ],
+  "development_only": true,
+  "direct_motion_calibrations": 3,
+  "environment_confirmations": 1,
+  "environment_support": 10,
+  "exact_replay": true,
+  "factual_actions": 13,
+  "grounded_roles": {
+    "actor": "vo:e800ed143f6086fb6ec4",
+    "obligation": "vo:e962e01f9ad60702c852",
+    "register": "vo:a6578ec045f524d1bd92",
+    "transformer": "vo:5d9cebc177ea846b5983"
+  },
+  "hypothesis_count": 1,
+  "initial_digest": "37ccd01f9b7b730eef4c744bbc585a4a9915d575a05570a6c2714b8c1ce1a00a",
+  "legal_intervention_count": 4,
+  "levels_completed": 1,
+  "mechanism_designed_after_source_inspection": true,
+  "probe_actions": [
+    3,
+    3,
+    3,
+    1,
+    1,
+    1
+  ],
+  "protocol": "guarded-obligation-autonomous-development-v0",
+  "reset_calibration_actions": 4,
+  "runtime_source_or_oracle_binding_used": false,
+  "scientific_conclusion": "Autonomous visual grounding, a direct transformer probe, environment evidence, and guarded control completed one consumed development level. A frozen cross-game test is still required before claiming transfer.",
+  "total_environment_actions_including_reset_calibration": 17,
+  "transferable_evidence": false
+}
