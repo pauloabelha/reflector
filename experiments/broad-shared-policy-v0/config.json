@@ -1,0 +1,14 @@
+{
+  "protocol": "broad-shared-policy-v0",
+  "action_budget": 400,
+  "baseline_candidate": "candidate-df8025bb91c33a59",
+  "baseline_public_score": 0.02,
+  "stagnation_threshold": 8,
+  "max_option_probes": 8,
+  "required_direct_confirmations": 2,
+  "revoke_on_direct_refutation": true,
+  "same_state_fallback_required": true,
+  "environment_only_support": true,
+  "internet": false,
+  "gpu": false
+}
