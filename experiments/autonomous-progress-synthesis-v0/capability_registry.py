@@ -22,6 +22,18 @@ class CapabilityProposal:
     interactive:bool
 
 @dataclass(frozen=True)
+class OperationalStatus:
+    """Whether a proposal can presently participate in control.
+
+    Attention is deliberately absent from this judgment.  A salient object
+    with unresolved grounding/effect ports remains useful workspace content,
+    but it must not win the arbiter merely because it was expensive to form.
+    """
+    state:str
+    reason:str
+    open_ports:tuple[str,...]=()
+
+@dataclass(frozen=True)
 class ExactOption:
     candidate:Any
     proposal:Any
@@ -44,22 +56,26 @@ def propose(
     motion={}
     for action,after in successors.items():
         for candidate in exact_candidates:
-            delta=synthesis.infer_role_translation(candidate,initial,after)
+            try:delta=synthesis.infer_role_translation(candidate,initial,after)
+            except synthesis.SynthesisError:continue
             if delta is not None and (delta[0]==0)!=(delta[1]==0):motion[delta]=int(action)
     nonmotion=tuple(action for action in simple if action not in motion.values());rows=[]
-    collection_capability=collection.induce_collection_capability(
-        initial,
-        tuple(
-            collection.CalibrationTransition(
-                opaque_action=action,
-                after=after,
-                evidence_id="transition:" + synthesis.stable_hash(
-                    {"opaque_action": int(action), "after": after}
-                )[:20],
-            )
-            for action,after in sorted(successors.items())
-        ),
-    )
+    try:
+        collection_capability=collection.induce_collection_capability(
+            initial,
+            tuple(
+                collection.CalibrationTransition(
+                    opaque_action=action,
+                    after=after,
+                    evidence_id="transition:" + synthesis.stable_hash(
+                        {"opaque_action": int(action), "after": after}
+                    )[:20],
+                )
+                for action,after in sorted(successors.items())
+            ),
+        )
+    except (synthesis.SynthesisError,collection.CollectionCapabilityError):
+        collection_capability=None
     if collection_capability is not None:
         rows.append(CapabilityProposal(
             "interactive:collection-transport",
@@ -179,4 +195,45 @@ def propose_guarded(world:guarded.GuardedWorld)->CapabilityProposal:
         True,
     )
 
-__all__=["CapabilityProposal","ExactOption","propose","propose_calibrated","propose_guarded"]
+
+def operational_status(proposal:CapabilityProposal)->OperationalStatus:
+    """Return a game-blind execution contract for one registry object."""
+    kind=proposal.capability
+    if kind.startswith("exact:"):
+        commands=tuple(getattr(getattr(proposal.execution,"proposal",None),"commands",()))
+        return OperationalStatus("ready","compiled-exact-plan") if commands else OperationalStatus("blocked","empty-exact-plan")
+    if kind.startswith("gradient:"):
+        actions=tuple(getattr(proposal.execution[2],"opaque_actions",()))
+        return OperationalStatus("ready","compiled-gradient-plan") if actions else OperationalStatus("blocked","empty-gradient-plan")
+    if kind=="interactive:conditional-route":
+        return OperationalStatus("ready","closed-loop-route-policy")
+    if kind=="interactive:symbolic-transformation":
+        return OperationalStatus("ready","closed-loop-symbolic-policy")
+    if kind=="interactive:guarded-obligations":
+        return OperationalStatus("ready","grounded-guarded-policy")
+    if kind=="interactive:collection-transport":
+        ports=tuple(getattr(proposal.execution,"open_ports",()))
+        if ports:
+            return OperationalStatus("blocked","unresolved-grounding-or-effect-ports",ports)
+        try:collection.compile_transport_probe(proposal.execution)
+        except Exception as error:
+            return OperationalStatus("blocked",f"probe-compilation-failed:{type(error).__name__}")
+        return OperationalStatus("probe","bounded-environment-adjudicated-transport-probe")
+    if kind=="interactive:editable-topology":
+        # Its planner consumes a replay/transition oracle.  That is useful in
+        # an offline lab, but unavailable to a one-pass Kaggle controller.
+        return OperationalStatus("offline-only","requires-transition-oracle")
+    return OperationalStatus("blocked","no-runtime-adapter")
+
+
+def select_operational(proposals:Sequence[CapabilityProposal])->CapabilityProposal|None:
+    """Choose only proposals that can act or run a bounded empirical probe."""
+    eligible=[]
+    rank={"ready":0,"probe":1}
+    for row in proposals:
+        status=operational_status(row)
+        if status.state in rank:
+            eligible.append((rank[status.state],-row.empirical_support,-row.attention,row.capability,str(row.execution),row))
+    return min(eligible)[-1] if eligible else None
+
+__all__=["CapabilityProposal","ExactOption","OperationalStatus","operational_status","propose","propose_calibrated","propose_guarded","select_operational"]

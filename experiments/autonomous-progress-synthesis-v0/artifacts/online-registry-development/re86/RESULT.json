@@ -1,0 +1,227 @@
+{
+  "actions": 30,
+  "controller": {
+    "abstention": null,
+    "calibration_count": 5,
+    "capability_actions": 20,
+    "phase": "executing",
+    "selected_capability": "exact:UncoveredRequirementCount"
+  },
+  "development_only": true,
+  "exact_replay": true,
+  "game": "re86",
+  "levels_completed": 1,
+  "protocol": "online-capability-registry-development-v0",
+  "trace": [
+    {
+      "action": 1,
+      "after": "0431b8106e42171c3ea6dd800d7ef987d62ee7df850a68f8055760e610a2dbe0",
+      "before": "fde90146d9ceb770949140b29c8436e7554051068e59598d4e68d76b478fb6a1",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "before": "0431b8106e42171c3ea6dd800d7ef987d62ee7df850a68f8055760e610a2dbe0",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 2,
+      "after": "878c4b85b1beb2f500451435f3ab8b7ef596d2446d230f042d25febb355ee866",
+      "before": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "before": "878c4b85b1beb2f500451435f3ab8b7ef596d2446d230f042d25febb355ee866",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 3,
+      "after": "75c40cab56fb26c199e243694c3e7761626b7550cdf5e02fed58d9a4841051f4",
+      "before": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "before": "75c40cab56fb26c199e243694c3e7761626b7550cdf5e02fed58d9a4841051f4",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 4,
+      "after": "ed73fdf2226573869cc8547d3abebbfd367b0c8d0b61c3f59dc3bb183c084d52",
+      "before": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "before": "ed73fdf2226573869cc8547d3abebbfd367b0c8d0b61c3f59dc3bb183c084d52",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 5,
+      "after": "a1688c921c6bc9d6b9813a1990576ea255c501c7f1ea7277fa04d23710219fb0",
+      "before": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "before": "a1688c921c6bc9d6b9813a1990576ea255c501c7f1ea7277fa04d23710219fb0",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 4,
+      "after": "ed73fdf2226573869cc8547d3abebbfd367b0c8d0b61c3f59dc3bb183c084d52",
+      "before": "f3b8379bc64194e7592c189aa02986926e3895400e6c34aa70d9a3a4c26b7b69",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 4,
+      "after": "563cdf0189884e872a84d1e803502a6ee79128d0e6be1700b68d6bb9dac43483",
+      "before": "ed73fdf2226573869cc8547d3abebbfd367b0c8d0b61c3f59dc3bb183c084d52",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 4,
+      "after": "3afb09d96bb6b660d68e551334faf9b36309547353e0c0b040ee5b044709ddbc",
+      "before": "563cdf0189884e872a84d1e803502a6ee79128d0e6be1700b68d6bb9dac43483",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 4,
+      "after": "74b254e7eb3f465b194a00ef71e00f7c8f3abdc84acea59c18d9e179ada58a33",
+      "before": "3afb09d96bb6b660d68e551334faf9b36309547353e0c0b040ee5b044709ddbc",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "c8dd793418a3d2fd08cba6bef6ada073b07faf5651abd352e6afb89ed798db0b",
+      "before": "74b254e7eb3f465b194a00ef71e00f7c8f3abdc84acea59c18d9e179ada58a33",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "a9f79caace975e4b8a1d9bbda6d64c0348691263e73a0aada6ca314d7778148a",
+      "before": "c8dd793418a3d2fd08cba6bef6ada073b07faf5651abd352e6afb89ed798db0b",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "df60c2e58a81979790c8dc2d34e2d06bc2606bd9dca3690afbea59ba80bce715",
+      "before": "a9f79caace975e4b8a1d9bbda6d64c0348691263e73a0aada6ca314d7778148a",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "b3306927362a932008d2042a0bac61b9e063aaed6b0cf2a111ec9b35c5cd7c3a",
+      "before": "df60c2e58a81979790c8dc2d34e2d06bc2606bd9dca3690afbea59ba80bce715",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "5682f730742737f2f7d828a571db3d021ef16527233517091dc5d6646855fca0",
+      "before": "b3306927362a932008d2042a0bac61b9e063aaed6b0cf2a111ec9b35c5cd7c3a",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "1998d5ddf18633edb188ce77168ed19b26c180102407eb58aedc3c54f1b736ae",
+      "before": "5682f730742737f2f7d828a571db3d021ef16527233517091dc5d6646855fca0",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "e2dc054173bf36b02913e63a115b35e16855ee9c05cd418182b681ba0537a1b8",
+      "before": "1998d5ddf18633edb188ce77168ed19b26c180102407eb58aedc3c54f1b736ae",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 5,
+      "after": "0d3e0c321380f55cefcb84660fbd82ed653d322fe327fbb3de266646969f4932",
+      "before": "e2dc054173bf36b02913e63a115b35e16855ee9c05cd418182b681ba0537a1b8",
+      "data": {},
+      "reason": "capability:switch-controller"
+    },
+    {
+      "action": 3,
+      "after": "33c5cd289eb7ef91cff0e90be27424331ce962be29ba703b776c47caa2a16732",
+      "before": "0d3e0c321380f55cefcb84660fbd82ed653d322fe327fbb3de266646969f4932",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 3,
+      "after": "77e7b3f7a79fbe2c9dce9c50a64e568a21d7023efa5bcdcc9a0f253f9adc6561",
+      "before": "33c5cd289eb7ef91cff0e90be27424331ce962be29ba703b776c47caa2a16732",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "7c2bb819caf41d08c9a2b08c987e1bce6b56612081a5feb9339562c95e82fb8c",
+      "before": "77e7b3f7a79fbe2c9dce9c50a64e568a21d7023efa5bcdcc9a0f253f9adc6561",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "1a71216b7029107fa739aa312edade716d4c7600fede6eec6ab652c5a3c2d1da",
+      "before": "7c2bb819caf41d08c9a2b08c987e1bce6b56612081a5feb9339562c95e82fb8c",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "8419e73044439a9e8980142d1782ef65fc88f159099645476197659557d09d54",
+      "before": "1a71216b7029107fa739aa312edade716d4c7600fede6eec6ab652c5a3c2d1da",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "a081430367ce8086c0ad88e57b1f5a4985d261be7afa1e4dac896ae0995165d9",
+      "before": "8419e73044439a9e8980142d1782ef65fc88f159099645476197659557d09d54",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "4730a49d163bb9a7c3ad3bafac89086259e6acfa62f83b2d013595569e405e63",
+      "before": "a081430367ce8086c0ad88e57b1f5a4985d261be7afa1e4dac896ae0995165d9",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    },
+    {
+      "action": 1,
+      "after": "adf9609da7cf0dbe91be3c7a18ff59809568438ed3c7fb23fad29bee49e3c03b",
+      "before": "4730a49d163bb9a7c3ad3bafac89086259e6acfa62f83b2d013595569e405e63",
+      "data": {},
+      "reason": "capability:cover-requirements"
+    }
+  ]
+}

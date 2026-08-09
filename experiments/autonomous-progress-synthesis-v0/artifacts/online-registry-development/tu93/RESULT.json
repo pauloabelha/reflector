@@ -1,0 +1,220 @@
+{
+  "actions": 29,
+  "controller": {
+    "abstention": null,
+    "calibration_count": 4,
+    "capability_actions": 7,
+    "phase": "executing",
+    "selected_capability": "interactive:conditional-route"
+  },
+  "development_only": true,
+  "exact_replay": true,
+  "game": "tu93",
+  "levels_completed": 1,
+  "protocol": "online-capability-registry-development-v0",
+  "trace": [
+    {
+      "action": 1,
+      "after": "3a4350c0e220dabb94ba4096d870425ae65b4b2abb5b82c07a7325784948a0d4",
+      "before": "8c429c4dbd812ee38c460f06d63100f7fb8d01e87d2ef5f2e21491478810aa9d",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "0733c85b5f938b93c1a16f9005e795256b5ac49a60d4c966ee502e62d55ce78f",
+      "before": "3a4350c0e220dabb94ba4096d870425ae65b4b2abb5b82c07a7325784948a0d4",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 2,
+      "after": "3a4350c0e220dabb94ba4096d870425ae65b4b2abb5b82c07a7325784948a0d4",
+      "before": "0733c85b5f938b93c1a16f9005e795256b5ac49a60d4c966ee502e62d55ce78f",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "0733c85b5f938b93c1a16f9005e795256b5ac49a60d4c966ee502e62d55ce78f",
+      "before": "3a4350c0e220dabb94ba4096d870425ae65b4b2abb5b82c07a7325784948a0d4",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 3,
+      "after": "3a4350c0e220dabb94ba4096d870425ae65b4b2abb5b82c07a7325784948a0d4",
+      "before": "0733c85b5f938b93c1a16f9005e795256b5ac49a60d4c966ee502e62d55ce78f",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "0733c85b5f938b93c1a16f9005e795256b5ac49a60d4c966ee502e62d55ce78f",
+      "before": "3a4350c0e220dabb94ba4096d870425ae65b4b2abb5b82c07a7325784948a0d4",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 4,
+      "after": "27c533e6bbad351af3a12178c455a6c706241cbf475e4f81972a100499440094",
+      "before": "0733c85b5f938b93c1a16f9005e795256b5ac49a60d4c966ee502e62d55ce78f",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "0733c85b5f938b93c1a16f9005e795256b5ac49a60d4c966ee502e62d55ce78f",
+      "before": "27c533e6bbad351af3a12178c455a6c706241cbf475e4f81972a100499440094",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 4,
+      "after": "27c533e6bbad351af3a12178c455a6c706241cbf475e4f81972a100499440094",
+      "before": "0733c85b5f938b93c1a16f9005e795256b5ac49a60d4c966ee502e62d55ce78f",
+      "data": {},
+      "reason": "capability:conditional-route"
+    },
+    {
+      "action": 1,
+      "after": "3970d2a76475345c89391a6a33bdec37a31e2e143dedc1206d08462b100544ce",
+      "before": "27c533e6bbad351af3a12178c455a6c706241cbf475e4f81972a100499440094",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 2,
+      "after": "938b53bf046bd68fd7e49f0392d02b00e35ced1d12dd123c4225cfcdf80f6b52",
+      "before": "3970d2a76475345c89391a6a33bdec37a31e2e143dedc1206d08462b100544ce",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 2,
+      "after": "8904f00c66a08ed57cee9389f3aad14e8af6d1c98b970416fd6ce8c32ec98606",
+      "before": "938b53bf046bd68fd7e49f0392d02b00e35ced1d12dd123c4225cfcdf80f6b52",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 4,
+      "after": "b74be86914a9109058afdbeee9cc2bfc297b69c8cf3d2b8cc2545386501f1710",
+      "before": "8904f00c66a08ed57cee9389f3aad14e8af6d1c98b970416fd6ce8c32ec98606",
+      "data": {},
+      "reason": "capability:conditional-route"
+    },
+    {
+      "action": 1,
+      "after": "2de0a876247d93b65f18979bcf3444bd4b426e42fb9f137811b890ce6cc0263d",
+      "before": "b74be86914a9109058afdbeee9cc2bfc297b69c8cf3d2b8cc2545386501f1710",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 4,
+      "after": "7070871871229965dca114e239caed53e6487bcac773d8c4ce0a7dc1964b22ae",
+      "before": "2de0a876247d93b65f18979bcf3444bd4b426e42fb9f137811b890ce6cc0263d",
+      "data": {},
+      "reason": "capability:conditional-route"
+    },
+    {
+      "action": 2,
+      "after": "f3ec3678157b2b0d89612839f54acd5423c45d7fe44cc045fed85d3c6eece53e",
+      "before": "7070871871229965dca114e239caed53e6487bcac773d8c4ce0a7dc1964b22ae",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 2,
+      "after": "274420d5328bc7d67c460b16944cd910e9584da9e47a2f57a69aea79ff97a88f",
+      "before": "f3ec3678157b2b0d89612839f54acd5423c45d7fe44cc045fed85d3c6eece53e",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 1,
+      "after": "34abaf2f5e86b6144bf96aa237af980afb606f0a95d9e0bdf1d8301ec35994d3",
+      "before": "274420d5328bc7d67c460b16944cd910e9584da9e47a2f57a69aea79ff97a88f",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 2,
+      "after": "5a1da17e4a819ed3f41a3ec201c921415d23c6a83ca174a1e6b781098907be80",
+      "before": "34abaf2f5e86b6144bf96aa237af980afb606f0a95d9e0bdf1d8301ec35994d3",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 3,
+      "after": "c024901585f81280351dd6ef080afe44701e5aad8943711206759578ba2a5928",
+      "before": "5a1da17e4a819ed3f41a3ec201c921415d23c6a83ca174a1e6b781098907be80",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 3,
+      "after": "9da659d149e73992803b4bfd341d06899d2e7e82a7dbd46758ca76fdae653332",
+      "before": "c024901585f81280351dd6ef080afe44701e5aad8943711206759578ba2a5928",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 2,
+      "after": "d2384be513bf250e6b58b7cc1bdfd61973bf3cc61cd94afe61591167e7ebc608",
+      "before": "9da659d149e73992803b4bfd341d06899d2e7e82a7dbd46758ca76fdae653332",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 4,
+      "after": "fb0eecd559bfeb9b6c408e29add4c0543911555cdb4e3009f827fa45dd5f4901",
+      "before": "d2384be513bf250e6b58b7cc1bdfd61973bf3cc61cd94afe61591167e7ebc608",
+      "data": {},
+      "reason": "capability:conditional-route"
+    },
+    {
+      "action": 4,
+      "after": "00118373448687770872d26a0becba96565990abef2ab8f6a89fff178e499c23",
+      "before": "fb0eecd559bfeb9b6c408e29add4c0543911555cdb4e3009f827fa45dd5f4901",
+      "data": {},
+      "reason": "capability:conditional-route"
+    },
+    {
+      "action": 2,
+      "after": "9806f5ffd3f183bec13d4731629ea9bda78f9da090d69d73ff5a80ebd7f6bc7e",
+      "before": "00118373448687770872d26a0becba96565990abef2ab8f6a89fff178e499c23",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 4,
+      "after": "3ddc11c892689399dcaa1807c023ec7bfb37db24a8dcf025c7a13494ab018083",
+      "before": "9806f5ffd3f183bec13d4731629ea9bda78f9da090d69d73ff5a80ebd7f6bc7e",
+      "data": {},
+      "reason": "capability:conditional-route"
+    },
+    {
+      "action": 1,
+      "after": "d324decb7b0957f806c1a5e46f3095f0f6d3683e38331af931c569bf2db15e22",
+      "before": "3ddc11c892689399dcaa1807c023ec7bfb37db24a8dcf025c7a13494ab018083",
+      "data": {},
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 4,
+      "after": "1aa8315e18c4a37ea81bab9b0c2b5803fcacf3fc4c2fe5ce87b809dc52a98259",
+      "before": "d324decb7b0957f806c1a5e46f3095f0f6d3683e38331af931c569bf2db15e22",
+      "data": {},
+      "reason": "capability:conditional-route"
+    },
+    {
+      "action": 2,
+      "after": "8aef8c81787d0677a3cf841f0b7552d2739c8ea9a7478dd2c9549fa001edf049",
+      "before": "1aa8315e18c4a37ea81bab9b0c2b5803fcacf3fc4c2fe5ce87b809dc52a98259",
+      "data": {},
+      "reason": "broad-fallback"
+    }
+  ]
+}

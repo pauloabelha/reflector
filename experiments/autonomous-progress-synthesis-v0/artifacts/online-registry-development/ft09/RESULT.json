@@ -1,0 +1,62 @@
+{
+  "actions": 4,
+  "controller": {
+    "abstention": [
+      [
+        "registry",
+        "no-simple-calibration-actions"
+      ]
+    ],
+    "calibration_count": 0,
+    "capability_actions": 0,
+    "phase": "abstained",
+    "selected_capability": null
+  },
+  "development_only": true,
+  "exact_replay": true,
+  "game": "ft09",
+  "levels_completed": 1,
+  "protocol": "online-capability-registry-development-v0",
+  "trace": [
+    {
+      "action": 6,
+      "after": "c85ce742fecd99e5cecdaba3b9ba0fa439ffd30e63722856e27eab2b0859c368",
+      "before": "a14579c5bb9044b7f577545623d7e4912919eab4c09314630bb0fc5a79db12ff",
+      "data": {
+        "x": 38,
+        "y": 38
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "15890aa6cc3cd87caa65ba3875e24edb2b7a2655f8d2026f4a1861a1fb2c02cc",
+      "before": "c85ce742fecd99e5cecdaba3b9ba0fa439ffd30e63722856e27eab2b0859c368",
+      "data": {
+        "x": 38,
+        "y": 46
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "42d64c13a17aaa81a24ea542478fd68b1750f332f92872c2adfba7f8fecc0863",
+      "before": "15890aa6cc3cd87caa65ba3875e24edb2b7a2655f8d2026f4a1861a1fb2c02cc",
+      "data": {
+        "x": 54,
+        "y": 46
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "d63fdfded9aa629e93dfe7601782207603d1a356e1452416b7326d49ae50c8c4",
+      "before": "42d64c13a17aaa81a24ea542478fd68b1750f332f92872c2adfba7f8fecc0863",
+      "data": {
+        "x": 38,
+        "y": 54
+      },
+      "reason": "broad-fallback"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "actions": 13,
+  "controller": {
+    "abstention": [],
+    "calibration_count": 2,
+    "capability_actions": 0,
+    "phase": "abstained",
+    "selected_capability": null
+  },
+  "development_only": true,
+  "exact_replay": true,
+  "game": "sb26",
+  "levels_completed": 1,
+  "protocol": "online-capability-registry-development-v0",
+  "trace": [
+    {
+      "action": 5,
+      "after": "4e30f91a5e6a1a4a61e3822efa0e9ed6acb8338fa263b2a4b004e1346a6dc614",
+      "before": "5b907e1071f1eeeeb8d2d9b44451def138b26801fc6442526e550891fe69e56e",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "28b615ddd537449b135dbe8a5f135c5fbdf03b5f5357b95ba81a668af166d6d3",
+      "before": "4e30f91a5e6a1a4a61e3822efa0e9ed6acb8338fa263b2a4b004e1346a6dc614",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 7,
+      "after": "28b615ddd537449b135dbe8a5f135c5fbdf03b5f5357b95ba81a668af166d6d3",
+      "before": "28b615ddd537449b135dbe8a5f135c5fbdf03b5f5357b95ba81a668af166d6d3",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "28b615ddd537449b135dbe8a5f135c5fbdf03b5f5357b95ba81a668af166d6d3",
+      "before": "28b615ddd537449b135dbe8a5f135c5fbdf03b5f5357b95ba81a668af166d6d3",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 6,
+      "after": "5726cb0e99a3d4d85dc45a370dab3674865f7e0075c9e2c2ede411f259cfeb2b",
+      "before": "28b615ddd537449b135dbe8a5f135c5fbdf03b5f5357b95ba81a668af166d6d3",
+      "data": {
+        "x": 35,
+        "y": 58
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "b81a9de9cdd22c55c9a10cb77565701531078e1598860e45b62bce82e5e5126f",
+      "before": "5726cb0e99a3d4d85dc45a370dab3674865f7e0075c9e2c2ede411f259cfeb2b",
+      "data": {
+        "x": 22,
+        "y": 29
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "b777b39af28c2954654285fe00b300fa93592e582bb4dbeaa0d7ab08ebf5e85e",
+      "before": "b81a9de9cdd22c55c9a10cb77565701531078e1598860e45b62bce82e5e5126f",
+      "data": {
+        "x": 19,
+        "y": 58
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "c1f280c171e241e7beabfc45dfc57123c39ef16b5f983aedf06c10069276e839",
+      "before": "b777b39af28c2954654285fe00b300fa93592e582bb4dbeaa0d7ab08ebf5e85e",
+      "data": {
+        "x": 28,
+        "y": 29
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "5afb72796676e2cde783569c7c1f97982d7dfba8ce8b6f59db8ba2b8a1ff3f1d",
+      "before": "c1f280c171e241e7beabfc45dfc57123c39ef16b5f983aedf06c10069276e839",
+      "data": {
+        "x": 43,
+        "y": 58
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "4b0add7e3729a8eab729c0e166bc057991ee20cc4213df36722c9315b42d29c4",
+      "before": "5afb72796676e2cde783569c7c1f97982d7dfba8ce8b6f59db8ba2b8a1ff3f1d",
+      "data": {
+        "x": 34,
+        "y": 29
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "e950b38848e7d11894ab18252f04ae3df5df5bf353df9af89dcaa3951ee5e5f6",
+      "before": "4b0add7e3729a8eab729c0e166bc057991ee20cc4213df36722c9315b42d29c4",
+      "data": {
+        "x": 27,
+        "y": 58
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 6,
+      "after": "2abe6bddda79a83bcc4fcdffb8a55a367ff199c0918c178af0ea0049858dffa6",
+      "before": "e950b38848e7d11894ab18252f04ae3df5df5bf353df9af89dcaa3951ee5e5f6",
+      "data": {
+        "x": 40,
+        "y": 29
+      },
+      "reason": "broad-fallback"
+    },
+    {
+      "action": 5,
+      "after": "980fc3623462c35b6a9e0756ef307177944a0b84dce6dedade3dcc734ef29ab4",
+      "before": "2abe6bddda79a83bcc4fcdffb8a55a367ff199c0918c178af0ea0049858dffa6",
+      "data": {},
+      "reason": "broad-fallback"
+    }
+  ]
+}

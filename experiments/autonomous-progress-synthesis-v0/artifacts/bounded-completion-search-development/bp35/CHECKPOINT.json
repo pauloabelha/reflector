@@ -1,0 +1,10 @@
+{
+  "game": "bp35",
+  "initial_digest": "51c50e8f694f4204e1a9b86fa5d85ebad7b76636a0937888c7d64aaef1c1c73b",
+  "latest_depth": 4,
+  "max_depth": 10,
+  "max_expansions": 500,
+  "planning_interactions": 1600,
+  "prefix_evaluations": 500,
+  "status": "searching"
+}

@@ -1,0 +1,115 @@
+{
+  "actions": 14,
+  "controller": {
+    "abstention": null,
+    "calibration_count": 5,
+    "capability_actions": 4,
+    "phase": "executing",
+    "selected_capability": "exact:UnservedTerminalCount"
+  },
+  "development_only": true,
+  "exact_replay": true,
+  "game": "sp80",
+  "levels_completed": 1,
+  "protocol": "online-capability-registry-development-v0",
+  "trace": [
+    {
+      "action": 1,
+      "after": "ea35c50d8c778f382acdf95c1200820e638c8f079cbdd9611f57230834b3c3d6",
+      "before": "e14ac2b5ce2f06db560711a9f8f85231145bcd865b898117793508b4b3fdc660",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "before": "ea35c50d8c778f382acdf95c1200820e638c8f079cbdd9611f57230834b3c3d6",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 2,
+      "after": "15fb8325687fed9534727628d3e67e8cfc9ec62ad42da40a3fdc27de144eb322",
+      "before": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "before": "15fb8325687fed9534727628d3e67e8cfc9ec62ad42da40a3fdc27de144eb322",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 3,
+      "after": "8fc20abdb54d88f01c3295144f1b9f7f270e8a086a8bc7fa58eb487f85b5f243",
+      "before": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "before": "8fc20abdb54d88f01c3295144f1b9f7f270e8a086a8bc7fa58eb487f85b5f243",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 4,
+      "after": "d467cf58ec4d2e37a95e40e5e70c6979318291bb8ef48090da0444d9e99afd20",
+      "before": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "before": "d467cf58ec4d2e37a95e40e5e70c6979318291bb8ef48090da0444d9e99afd20",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 5,
+      "after": "97455eca643948e203c2e5a62b74a8b065c2aa00a9adf4503f542481efb16aad",
+      "before": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "data": {},
+      "reason": "capability-one-step-calibration"
+    },
+    {
+      "action": 0,
+      "after": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "before": "97455eca643948e203c2e5a62b74a8b065c2aa00a9adf4503f542481efb16aad",
+      "data": {},
+      "reason": "capability-calibration-reset"
+    },
+    {
+      "action": 4,
+      "after": "d467cf58ec4d2e37a95e40e5e70c6979318291bb8ef48090da0444d9e99afd20",
+      "before": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "data": {},
+      "reason": "capability:transform"
+    },
+    {
+      "action": 4,
+      "after": "169135163bb0558c29e9cfdd1c2efed5b0294d8d2dec2eb90a98bcf5d9b5f3c5",
+      "before": "d467cf58ec4d2e37a95e40e5e70c6979318291bb8ef48090da0444d9e99afd20",
+      "data": {},
+      "reason": "capability:transform"
+    },
+    {
+      "action": 4,
+      "after": "8120eb7df91bbe3aed6811028318d581e905a85d7e96e7f5a169d608e08c82a5",
+      "before": "169135163bb0558c29e9cfdd1c2efed5b0294d8d2dec2eb90a98bcf5d9b5f3c5",
+      "data": {},
+      "reason": "capability:transform"
+    },
+    {
+      "action": 5,
+      "after": "a3217e1838e96c3cb333cc570d683583974f2a82a21127c2a611046317204121",
+      "before": "8120eb7df91bbe3aed6811028318d581e905a85d7e96e7f5a169d608e08c82a5",
+      "data": {},
+      "reason": "capability:release"
+    }
+  ]
+}

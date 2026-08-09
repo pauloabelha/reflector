@@ -1,0 +1,7 @@
+{
+  "development_only": true,
+  "error": "NoEditableTopologyPlan: expansion budget exhausted after 500 transitions",
+  "game": "bp35",
+  "protocol": "bounded-observed-state-completion-search-v0",
+  "status": "failed"
+}

@@ -21,7 +21,11 @@ def run_game(game,limit=64):
   panels=REGISTRY.symbolic.panel_rows(BASE.extract_figures(grid))
   proposals=REGISTRY.propose(grid,successors,parameterized_actions=complex_actions(env,initial_obs),symbolic_panels=panels)
   if not proposals:raise RuntimeError("capability registry abstained")
-  selected=proposals[0];obs=env.reset()
+  selected=REGISTRY.select_operational(proposals)
+  if selected is None:
+   blocked=[{"capability":row.capability,"status":REGISTRY.operational_status(row).__dict__} for row in proposals]
+   raise RuntimeError("capability registry has no operational proposal: "+json.dumps(blocked,sort_keys=True))
+  obs=env.reset()
   def act(action,data,role):
    nonlocal obs
    before=BASE.observation_record(obs);obs=BASE.execute_action(env,game,action,data,role);after=BASE.observation_record(obs);history.append({"action":action,"data":data,"before":before,"after":after,"role":role});return after

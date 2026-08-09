@@ -4,8 +4,115 @@
   "protocol": "unified-capability-registry-development-v0",
   "results": [
     {
+      "action_sequence": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "actions": 15,
+      "calibration_actions": 6,
+      "calibration_resets": 7,
+      "exact_replay": true,
+      "game": "ar25",
+      "goal_ast": {
+        "direction": "minimize",
+        "lower_bound": 0,
+        "potential": {
+          "arguments": [
+            "?a",
+            "?b"
+          ],
+          "op": "TranslationAlignmentResidual"
+        },
+        "protocol": "compositional-progress-dsl-v0",
+        "roles": {
+          "?a": {
+            "type": "ObservedRegion"
+          },
+          "?b": {
+            "type": "ObservedRegion"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "gradient:TranslationAlignmentResidual"
+    },
+    {
       "error": "SynthesisError: region population exceeds bounded grammar",
       "game": "bp35"
+    },
+    {
+      "error": "RuntimeError: capability registry has no operational proposal: [{\"capability\": \"interactive:collection-transport\", \"status\": {\"open_ports\": [\"?actor\", \"?members\", \"?container\", \"?interaction\"], \"reason\": \"unresolved-grounding-or-effect-ports\", \"state\": \"blocked\"}}]",
+      "game": "cd82"
+    },
+    {
+      "action_sequence": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "actions": 16,
+      "calibration_actions": 5,
+      "calibration_resets": 6,
+      "exact_replay": true,
+      "game": "cn04",
+      "goal_ast": {
+        "direction": "minimize",
+        "lower_bound": 0,
+        "potential": {
+          "arguments": [
+            "?a",
+            "?b"
+          ],
+          "op": "TranslationAlignmentResidual"
+        },
+        "protocol": "compositional-progress-dsl-v0",
+        "roles": {
+          "?a": {
+            "type": "ObservedRegion"
+          },
+          "?b": {
+            "type": "ObservedRegion"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 0,
+      "selected_capability": "gradient:TranslationAlignmentResidual"
     },
     {
       "action_sequence": [
@@ -69,42 +176,286 @@
     },
     {
       "error": "RuntimeError: capability registry abstained",
-      "game": "sc25"
+      "game": "ft09"
     },
     {
-      "action_sequence": [],
-      "actions": 0,
+      "error": "RuntimeError: capability registry abstained",
+      "game": "g50t"
+    },
+    {
+      "action_sequence": [
+        6,
+        4,
+        4,
+        4,
+        6,
+        3,
+        3,
+        3,
+        3,
+        2,
+        6,
+        1,
+        4
+      ],
+      "actions": 13,
+      "calibration_actions": 4,
+      "calibration_resets": 5,
+      "exact_replay": true,
+      "game": "ka59",
+      "goal_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UnassignedMemberCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "containers": {
+            "type": "CapacityCompatibleSet"
+          },
+          "members": {
+            "type": "EquivalenceClass"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "exact:UnassignedMemberCount"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "lf52"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "lp85"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "ls20"
+    },
+    {
+      "action_sequence": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "actions": 4,
       "calibration_actions": 5,
       "calibration_resets": 6,
       "exact_replay": true,
-      "game": "sk48",
+      "game": "m0r0",
       "goal_ast": {
+        "direction": "minimize",
+        "lower_bound": 0,
         "potential": {
-          "container": "?container",
-          "direction": "minimize",
-          "lower_bound": 0,
-          "members": "?members",
-          "type": "OutsideCount"
+          "arguments": [
+            "?a",
+            "?b"
+          ],
+          "op": "TranslationAlignmentResidual"
         },
-        "protocol": "goal-potential-ast-v0",
-        "roles": [
-          "?members",
-          "?container"
-        ],
+        "protocol": "compositional-progress-dsl-v0",
+        "roles": {
+          "?a": {
+            "type": "ObservedRegion"
+          },
+          "?b": {
+            "type": "ObservedRegion"
+          }
+        },
         "terminal": {
-          "container": "?container",
-          "members": "?members",
-          "type": "AllInside"
+          "type": "EqualsLowerBound"
         },
         "type": "GoalPotential"
       },
       "initial_support": 0,
       "levels_completed": 0,
-      "selected_capability": "interactive:collection-transport"
+      "selected_capability": "gradient:TranslationAlignmentResidual"
+    },
+    {
+      "error": "RuntimeError: capability registry has no operational proposal: [{\"capability\": \"interactive:collection-transport\", \"status\": {\"open_ports\": [\"?actor\", \"?members\", \"?container\", \"?interaction\"], \"reason\": \"unresolved-grounding-or-effect-ports\", \"state\": \"blocked\"}}]",
+      "game": "r11l"
+    },
+    {
+      "action_sequence": [
+        4,
+        4,
+        4,
+        4,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        5,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "actions": 20,
+      "calibration_actions": 5,
+      "calibration_resets": 6,
+      "exact_replay": true,
+      "game": "re86",
+      "goal_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UncoveredRequirementCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "controllers": {
+            "type": "TransformableSet"
+          },
+          "requirements": {
+            "type": "SparseSpecificationLayer"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "exact:UncoveredRequirementCount"
+    },
+    {
+      "error": "RuntimeError: capability registry has no operational proposal: [{\"capability\": \"interactive:collection-transport\", \"status\": {\"open_ports\": [\"?actor\", \"?members\", \"?container\", \"?interaction\"], \"reason\": \"unresolved-grounding-or-effect-ports\", \"state\": \"blocked\"}}]",
+      "game": "s5i5"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "sb26"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "sc25"
+    },
+    {
+      "error": "RuntimeError: capability registry has no operational proposal: [{\"capability\": \"interactive:collection-transport\", \"status\": {\"open_ports\": [\"?actor\", \"?members\", \"?container\", \"?interaction\"], \"reason\": \"unresolved-grounding-or-effect-ports\", \"state\": \"blocked\"}}]",
+      "game": "sk48"
+    },
+    {
+      "action_sequence": [
+        4,
+        4,
+        4,
+        5
+      ],
+      "actions": 4,
+      "calibration_actions": 5,
+      "calibration_resets": 6,
+      "exact_replay": true,
+      "game": "sp80",
+      "goal_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UnservedTerminalCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "source": {
+            "type": "BoundaryEmitter"
+          },
+          "terminals": {
+            "type": "RepeatedOpenRegions"
+          },
+          "transducer": {
+            "type": "Transformable"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "exact:UnservedTerminalCount"
     },
     {
       "error": "RuntimeError: capability registry abstained",
       "game": "su15"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "tn36"
+    },
+    {
+      "error": "SynthesisError: region population exceeds bounded grammar",
+      "game": "tr87"
+    },
+    {
+      "action_sequence": [
+        4,
+        1,
+        2,
+        2,
+        4,
+        1,
+        4,
+        2,
+        2,
+        3,
+        3,
+        2,
+        4,
+        4,
+        2,
+        4,
+        1,
+        4,
+        2
+      ],
+      "actions": 19,
+      "calibration_actions": 4,
+      "calibration_resets": 5,
+      "exact_replay": true,
+      "game": "tu93",
+      "goal_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "RemainingRouteSteps"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "controlled": {
+            "type": "ActionCorrelatedRegion"
+          },
+          "terminal": {
+            "type": "ReachableMarker"
+          }
+        },
+        "terminal": {
+          "type": "ReachTerminal"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "interactive:conditional-route"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "vc33"
     },
     {
       "error": "RuntimeError: capability registry abstained",
