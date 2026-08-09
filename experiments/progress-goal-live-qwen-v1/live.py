@@ -162,6 +162,12 @@ def generic_calibration(environment: Any, observation: Any, game: str, legal: An
         "transition_rows": transition_rows,
         "entities": rendered,
         "calibration": calibration,
+        # Exact observations used by goal-agnostic downstream progress
+        # mechanisms.  They remain local runtime state and are not semantic
+        # labels or privileged environment data.
+        "initial_grid": initial_grid,
+        "grid_successors": tuple(grid_successors),
+        "pixel_controller": pixel_controller,
     }
 
 
