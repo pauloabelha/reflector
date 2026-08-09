@@ -345,6 +345,79 @@ def test_initial_full_then_ordered_lossless_deltas_from_durable_cursor() -> None
         )
 
 
+def test_exact_context_admission_reserves_2048_and_fails_before_overflow() -> None:
+    state, events, _items = graph_fixture()
+    turn = COGNITION.build_turn(
+        state,
+        events,
+        COGNITION.Orientation("private-context-admission"),
+        request_id="req-context-admission",
+        token_budget=1_800,
+    )
+    qwen = {
+        "model": "test-model",
+        "context_window_tokens": 16_384,
+        "max_tokens": 2_048,
+        "thinking_budget_tokens": 1_024,
+    }
+    request = COGNITION.request_payload(turn, qwen)
+    seen: list[Any] = []
+
+    def exact_counter(value: Any) -> int:
+        seen.append(value)
+        # Calibrated full multimodal/chat-template occupancy is supplied by the
+        # serving boundary; cognition never substitutes a byte heuristic.
+        return 13_154
+
+    admitted = COGNITION.admit_request_context(
+        request,
+        qwen,
+        prompt_token_counter=exact_counter,
+    )
+    assert seen == [request]
+    assert request["max_tokens"] == 2_048
+    assert admitted == COGNITION.ContextAdmission(
+        prompt_tokens=13_154,
+        reserved_output_tokens=2_048,
+        occupied_tokens=15_202,
+        context_window_tokens=16_384,
+        headroom_tokens=1_182,
+        occupancy_fraction=15_202 / 16_384,
+    )
+
+    with pytest.raises(COGNITION.ContextAdmissionError) as captured:
+        COGNITION.admit_request_context(
+            request,
+            qwen,
+            prompt_token_counter=lambda _request: 14_400,
+        )
+    overflow = captured.value.report
+    assert overflow.occupied_tokens == 16_448
+    assert overflow.headroom_tokens == -64
+    assert overflow.occupancy_fraction > 1
+    assert "exceeds context window 16384 by 64 tokens" in str(captured.value)
+
+    # Exactly full is admissible, and configuration/request drift is not.
+    exact_fit = COGNITION.admit_request_context(
+        request,
+        qwen,
+        prompt_token_counter=lambda _request: 14_336,
+    )
+    assert exact_fit.headroom_tokens == 0
+    with pytest.raises(COGNITION.CognitionError, match="differs"):
+        COGNITION.admit_request_context(
+            request,
+            {**qwen, "max_tokens": 3_000},
+            prompt_token_counter=lambda _request: 1,
+        )
+    with pytest.raises(COGNITION.CognitionError, match="nonnegative integer"):
+        COGNITION.admit_request_context(
+            request,
+            qwen,
+            prompt_token_counter=lambda _request: True,
+        )
+
+
 def test_compact_alias_projection_builds_a_second_turn_schema() -> None:
     state, events, _items = graph_fixture()
     orientation = COGNITION.Orientation("private-workspace")

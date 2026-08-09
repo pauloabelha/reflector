@@ -11,7 +11,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 
 HERE = Path(__file__).resolve().parent
@@ -106,6 +106,65 @@ def test_graph_events_and_control_events_rebuild_from_one_ledger(tmp_path: Path)
         "EpistemicGraphEvent",
         "InitialObservation",
     ]
+
+
+def test_graph_event_batch_is_one_atomic_outer_commit_and_replays_exactly(tmp_path: Path) -> None:
+    root = tmp_path / "workspace"
+    workspace_id = "batch-workspace"
+    state = GRAPH.GraphState()
+    graph_events = []
+    for index in range(4):
+        event = GRAPH.object_event(
+            state,
+            kind="schema",
+            created_by="r2",
+            identity={"index": index},
+            payload={"predicate": f"p{index}"},
+            event_key=f"schema:{index}",
+        )
+        state = GRAPH.apply_event(state, event)
+        graph_events.append(event)
+
+    legacy = RUNNER.persist_graph_events(root, workspace_id, graph_events[:1])
+    persisted = RUNNER.persist_graph_events(root, workspace_id, graph_events[1:])
+
+    assert len(legacy) == 1
+    assert legacy[0]["event_type"] == "EpistemicGraphEvent"
+    assert len(persisted) == 1
+    assert persisted[0]["event_type"] == "EpistemicGraphBatch"
+    assert persisted[0]["payload"]["graph_event_count"] == 3
+    documents = LEDGER.graph_event_documents(LEDGER.list_events(root), root)
+    assert documents == [GRAPH.event_document(event) for event in graph_events]
+    rebuilt, replayed = RUNNER.rebuild_graph(root)
+    assert rebuilt == state
+    assert replayed == tuple(graph_events)
+
+
+def test_uncommitted_graph_batch_blob_is_invisible_to_recovery(tmp_path: Path) -> None:
+    state = GRAPH.GraphState()
+    event = GRAPH.object_event(
+        state,
+        kind="schema",
+        created_by="r2",
+        identity={"name": "orphan"},
+        payload={"predicate": "orphan"},
+        event_key="orphan",
+    )
+    document = GRAPH.event_document(event)
+    LEDGER.put_blob(
+        tmp_path,
+        {
+            "protocol": "shared-attention-graph-batch-v1",
+            "count": 1,
+            "first_revision": document["seq"],
+            "last_revision": document["seq"],
+            "first_prev_hash": document["prev_hash"],
+            "last_event_hash": document["event_hash"],
+            "documents": [document],
+        },
+    )
+
+    assert LEDGER.graph_event_documents(LEDGER.list_events(tmp_path), tmp_path) == []
 
 
 def test_qwen_local_schema_reference_becomes_real_dependency_and_attention_not_support() -> None:
@@ -462,6 +521,126 @@ def test_run_census_catch_marks_failed_job_progress(tmp_path: Path, monkeypatch:
     assert progress["status"] == "failed"
     assert progress["error"] == "ValueError: observable"
     assert progress["actions"] == 7
+    failed_result = json.loads(
+        (artifacts / "results" / "balanced--ar25--r2_only.json").read_text(encoding="utf-8")
+    )
+    assert failed_result["status"] == "failed"
+
+
+def test_independent_census_failure_does_not_cancel_other_jobs(tmp_path: Path, monkeypatch: Any) -> None:
+    artifacts = tmp_path / "artifacts"
+    monkeypatch.setattr(RUNNER, "ARTIFACTS", artifacts)
+    monkeypatch.setattr(RUNNER, "append_status", lambda _message: None)
+
+    class FakeQueue:
+        def __init__(self, *_args: Any, **_kwargs: Any) -> None:
+            pass
+
+        def stop(self, *, drain: bool = True) -> None:
+            assert drain
+
+    monkeypatch.setattr(RUNNER.QC, "ResidentServerQueue", FakeQueue)
+
+    def mixed(job: Mapping[str, Any], _fifo: Any) -> dict[str, Any]:
+        if job["arm_id"] == "r2_only":
+            raise ConnectionError("job-local environment loss")
+        return {
+            "profile_id": job["profile_id"],
+            "game": job["game"],
+            "arm_id": job["arm_id"],
+            "levels_completed": 1,
+            "actions": 9,
+            "graph_metrics": {"grounded_pickup_directions": {}},
+            "replay_verified": True,
+            "support_authority_violations": 0,
+        }
+
+    monkeypatch.setattr(RUNNER, "run_episode", mixed)
+    summary = RUNNER.run_census(
+        {
+            "games": ["ar25"],
+            "profiles": {"balanced": {}},
+            "arms": ["r2_only", "shared_attention_qwen"],
+            "max_parallel_arc_workers": 2,
+            "qwen": {"endpoint": "unused"},
+        },
+        {},
+    )
+
+    assert len(summary["results"]) == 1
+    assert len(summary["failures"]) == 1
+    assert summary["failures"][0]["failure_classification"] == {
+        "scope": "job",
+        "category": "independent_job_failure",
+        "request_cancellation": False,
+    }
+    assert summary["cancelled_jobs"] == []
+    assert summary["cancellation_requested"] is False
+    assert summary["counts"] == {
+        "total": 2,
+        "completed": 1,
+        "failed": 1,
+        "cancelled": 0,
+        "independent_job_failures": 1,
+        "global_invariant_failures": 0,
+    }
+
+
+def test_failure_classifier_cancels_only_explicit_global_invariants() -> None:
+    ordinary = RUNNER.classify_census_failure(TimeoutError("one game timed out"))
+    replay = RUNNER.classify_census_failure(RuntimeError("replay successor mismatch"))
+    ledger = RUNNER.classify_census_failure(RUNNER.LEDGER.LedgerError("event chain is not contiguous"))
+    support = RUNNER.classify_census_failure(result={"support_authority_violations": 1})
+
+    assert ordinary["request_cancellation"] is False
+    assert replay["category"] == "replay_or_workspace_invariant"
+    assert ledger["category"] == "ledger_integrity_violation"
+    assert support["category"] == "support_authority_violation"
+    assert replay["request_cancellation"] is True
+    assert ledger["request_cancellation"] is True
+    assert support["request_cancellation"] is True
+
+
+def test_reported_support_authority_violation_requests_global_cancellation(
+    tmp_path: Path, monkeypatch: Any
+) -> None:
+    artifacts = tmp_path / "artifacts"
+    monkeypatch.setattr(RUNNER, "ARTIFACTS", artifacts)
+    monkeypatch.setattr(RUNNER, "append_status", lambda _message: None)
+
+    class FakeQueue:
+        def __init__(self, *_args: Any, **_kwargs: Any) -> None:
+            pass
+
+        def stop(self, *, drain: bool = True) -> None:
+            assert drain
+
+    monkeypatch.setattr(RUNNER.QC, "ResidentServerQueue", FakeQueue)
+    monkeypatch.setattr(
+        RUNNER,
+        "run_episode",
+        lambda job, _fifo: {
+            "profile_id": job["profile_id"],
+            "game": job["game"],
+            "arm_id": job["arm_id"],
+            "support_authority_violations": 2,
+        },
+    )
+
+    summary = RUNNER.run_census(
+        {
+            "games": ["ar25"],
+            "profiles": {"balanced": {}},
+            "arms": ["r2_only"],
+            "max_parallel_arc_workers": 1,
+            "qwen": {"endpoint": "unused"},
+        },
+        {},
+    )
+
+    assert summary["cancellation_requested"] is True
+    assert summary["counts"]["global_invariant_failures"] == 1
+    assert summary["failures"][0]["failure_classification"]["category"] == "support_authority_violation"
 
 
 def test_initial_full_object_count_supports_compact_and_legacy_encodings() -> None:

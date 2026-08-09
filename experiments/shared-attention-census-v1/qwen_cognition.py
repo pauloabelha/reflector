@@ -141,6 +141,32 @@ class CognitionError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
+class ContextAdmission:
+    """Exact context occupancy for one already-rendered Qwen request."""
+
+    prompt_tokens: int
+    reserved_output_tokens: int
+    occupied_tokens: int
+    context_window_tokens: int
+    headroom_tokens: int
+    occupancy_fraction: float
+
+
+class ContextAdmissionError(CognitionError):
+    """A complete request plus its output reserve exceeds model context."""
+
+    def __init__(self, report: ContextAdmission) -> None:
+        self.report = report
+        super().__init__(
+            "Qwen context admission failed: "
+            f"prompt {report.prompt_tokens} + reserved output "
+            f"{report.reserved_output_tokens} = {report.occupied_tokens} exceeds "
+            f"context window {report.context_window_tokens} by "
+            f"{-report.headroom_tokens} tokens"
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Orientation:
     workspace_id: str
     initialized: bool = False
@@ -175,6 +201,58 @@ def stable_json(value: object) -> str:
 
 def stable_hash(value: object) -> str:
     return GRAPH.stable_hash(value)
+
+
+def admit_request_context(
+    request: Mapping[str, Any],
+    qwen: Mapping[str, Any],
+    *,
+    prompt_token_counter: Callable[[Mapping[str, Any]], int],
+) -> ContextAdmission:
+    """Require exact prompt-plus-output fit before completion transport.
+
+    ``prompt_token_counter`` must count the complete rendered request using the
+    serving stack's chat template and multimodal tokenization.  This boundary
+    intentionally has no byte/character fallback: image tokens and template
+    wrappers make such estimates unsafe for admission.  Reasoning tokens are
+    part of the completion and therefore share the single ``max_tokens``
+    reserve rather than being counted twice.
+    """
+
+    if not callable(prompt_token_counter):
+        raise CognitionError("context admission requires an exact prompt token counter")
+    context_window = qwen.get("context_window_tokens")
+    reserved = request.get("max_tokens")
+    configured_reserved = qwen.get("max_tokens", reserved)
+    if (
+        not isinstance(context_window, int)
+        or isinstance(context_window, bool)
+        or context_window < 1
+    ):
+        raise CognitionError("context_window_tokens must be a positive integer")
+    if not isinstance(reserved, int) or isinstance(reserved, bool) or reserved < 0:
+        raise CognitionError("request max_tokens must be a nonnegative integer")
+    if configured_reserved != reserved:
+        raise CognitionError("request max_tokens differs from configured output reserve")
+    prompt_tokens = prompt_token_counter(request)
+    if (
+        not isinstance(prompt_tokens, int)
+        or isinstance(prompt_tokens, bool)
+        or prompt_tokens < 0
+    ):
+        raise CognitionError("prompt token counter must return a nonnegative integer")
+    occupied = prompt_tokens + reserved
+    report = ContextAdmission(
+        prompt_tokens=prompt_tokens,
+        reserved_output_tokens=reserved,
+        occupied_tokens=occupied,
+        context_window_tokens=context_window,
+        headroom_tokens=context_window - occupied,
+        occupancy_fraction=occupied / context_window,
+    )
+    if occupied > context_window:
+        raise ContextAdmissionError(report)
+    return report
 
 
 def cursor_document(state: Any) -> dict[str, Any]:

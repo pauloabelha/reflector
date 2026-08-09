@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 from collections import Counter
-from concurrent.futures import Future, ThreadPoolExecutor, as_completed
+from concurrent.futures import CancelledError, Future, ThreadPoolExecutor, as_completed
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -145,7 +145,11 @@ def graph_state(root: Path) -> tuple[Any, list[Any]]:
 
 
 def commit_graph_events(root: Path, workspace_id: str, events: Sequence[Any]) -> None:
-    for event in events:
+    events = tuple(events)
+    if not events:
+        return
+    if len(events) == 1:
+        event = events[0]
         document = EG.event_document(event)
         blob = LEDGER.put_blob(root, document)
         LEDGER.append_event(
@@ -156,6 +160,33 @@ def commit_graph_events(root: Path, workspace_id: str, events: Sequence[Any]) ->
             payload={"graph_event_blob": blob, "graph_revision": int(event.seq), "graph_event_hash": event.event_hash},
             event_id=f"outer:{event.event_id}",
         )
+        return
+    documents = [EG.event_document(event) for event in events]
+    envelope = {
+        "protocol": "shared-attention-graph-batch-v1",
+        "count": len(documents),
+        "first_revision": int(documents[0]["seq"]),
+        "last_revision": int(documents[-1]["seq"]),
+        "first_prev_hash": documents[0]["prev_hash"],
+        "last_event_hash": documents[-1]["event_hash"],
+        "documents": documents,
+    }
+    blob = LEDGER.put_blob(root, envelope)
+    LEDGER.append_event(
+        root,
+        workspace_id=workspace_id,
+        event_type="EpistemicGraphBatch",
+        actor="coordinator",
+        payload={
+            "graph_batch_blob": blob,
+            "graph_event_count": len(documents),
+            "first_graph_revision": int(documents[0]["seq"]),
+            "last_graph_revision": int(documents[-1]["seq"]),
+            "first_graph_prev_hash": documents[0]["prev_hash"],
+            "last_graph_event_hash": documents[-1]["event_hash"],
+        },
+        event_id=f"outer-batch:{blob}",
+    )
 
 
 def persist_graph_events(root: Path, workspace_id: str, events: Sequence[Any]) -> tuple[dict[str, Any], ...]:
@@ -508,6 +539,7 @@ def ensure_graph_object(
     dependency_ids: Sequence[str] = (),
     event_key: str,
     object_lookup: dict[str, Any] | None = None,
+    pending_events: list[Any] | None = None,
 ) -> tuple[Any, str]:
     """Add one semantic object once, while retaining every later provenance event elsewhere."""
 
@@ -543,9 +575,11 @@ def ensure_graph_object(
         dependency_ids=dependency_ids,
         event_key=event_key,
     )
-    state = apply_graph_event(
-        root, workspace_id, state, event, object_lookup=object_lookup
-    )
+    state = EG.apply_event(state, event, object_index=object_lookup)
+    if pending_events is None:
+        commit_graph_events(root, workspace_id, (event,))
+    else:
+        pending_events.append(event)
     object_id = str(event.payload["item"]["object_id"])
     if object_lookup is not None:
         object_lookup[object_id] = candidate
@@ -571,6 +605,7 @@ def ingest_r2_workspace_objects(
     document = sanitize_r2_value(r2_workspace_document(cognition, legal))
     blob = LEDGER.put_blob(root, document)
     object_lookup = {item.object_id: item for item in state.objects}
+    pending_events: list[Any] = []
     schema_ids: dict[str, str] = {}
     current_ids: list[str] = []
     schema_activation: dict[str, int] = {}
@@ -588,6 +623,7 @@ def ingest_r2_workspace_objects(
             payload=semantic_payload,
             event_key=f"r2-schema:{item['id']}",
             object_lookup=object_lookup,
+            pending_events=pending_events,
         )
         schema_ids[str(item["id"])] = object_id
         schema_activation[object_id] = int(item["activation_milli"])
@@ -611,6 +647,7 @@ def ingest_r2_workspace_objects(
                 dependency_ids=dependencies,
                 event_key=f"r2-{kind}:{semantic}",
                 object_lookup=object_lookup,
+                pending_events=pending_events,
             )
             current_ids.append(object_id)
 
@@ -639,7 +676,9 @@ def ingest_r2_workspace_objects(
         observation_key=observation_key,
         basis_ids=tuple(sorted(set((*basis_ids, *current_ids)))),
     )
-    state = apply_ingest(root, workspace_id, result)
+    pending_events.extend(result.events)
+    state = result.state
+    commit_graph_events(root, workspace_id, pending_events)
     return state
 
 
@@ -1846,7 +1885,13 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
     return result
 
 
-def write_failed_progress(job: Mapping[str, Any], error: str) -> dict[str, Any]:
+def write_failed_progress(
+    job: Mapping[str, Any],
+    error: str,
+    *,
+    classification: Mapping[str, Any] | None = None,
+    status: str = "failed",
+) -> dict[str, Any]:
     """Atomically expose a terminal job failure without losing prior progress."""
 
     workspace_id = f"{job['profile_id']}--{job['game']}--{job['arm_id']}"
@@ -1864,11 +1909,119 @@ def write_failed_progress(job: Mapping[str, Any], error: str) -> dict[str, Any]:
         "game": str(job["game"]),
         "profile_id": str(job["profile_id"]),
         "arm_id": str(job["arm_id"]),
-        "status": "failed",
+        "status": status,
         "error": str(error),
     }
+    if classification is not None:
+        failed["failure_classification"] = dict(classification)
     LEDGER.atomic_json(path, failed)
+    LEDGER.atomic_json(ARTIFACTS / "results" / f"{workspace_id}.json", failed)
     return failed
+
+
+def classify_census_failure(
+    error: BaseException | None = None,
+    *,
+    result: Mapping[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """Classify the small, explicit set of failures that invalidate the census.
+
+    Ordinary environment, transport, controller, and job-local exceptions are
+    isolated to their job.  Cancellation is reserved for evidence that the
+    experiment's shared integrity assumptions are themselves broken.
+    """
+
+    if result is not None and int(result.get("support_authority_violations", 0)) > 0:
+        return {
+            "scope": "global",
+            "category": "support_authority_violation",
+            "request_cancellation": True,
+        }
+    if error is None:
+        return None
+    message = str(error).lower()
+    if isinstance(error, LEDGER.LedgerError) and any(
+        marker in message
+        for marker in (
+            "corrupt",
+            "digest mismatch",
+            "hash mismatch",
+            "chain is not contiguous",
+            "workspace id changed",
+            "workspace id mismatch",
+            "duplicate event id",
+            "contract mismatch",
+            "head exists without events",
+            "batch metadata mismatch",
+            "event id reused with different content",
+        )
+    ):
+        return {
+            "scope": "global",
+            "category": "ledger_integrity_violation",
+            "request_cancellation": True,
+        }
+    if isinstance(error, EG.EpistemicGraphError) and any(
+        marker in message
+        for marker in (
+            "assert empirical support",
+            "attempts to assert support",
+            "attempts to assert empirical support",
+            "support-changing edge requires environment evidence authority",
+            "evidence authority",
+            "hash mismatch",
+            "hash-chain",
+            "stable object id collision",
+        )
+    ):
+        category = "support_authority_violation" if any(
+            marker in message
+            for marker in (
+                "assert empirical support",
+                "attempts to assert support",
+                "attempts to assert empirical support",
+                "support-changing edge requires environment evidence authority",
+                "evidence authority",
+            )
+        ) else "graph_integrity_violation"
+        return {"scope": "global", "category": category, "request_cancellation": True}
+    if any(
+        marker in message
+        for marker in (
+            "replay predecessor mismatch",
+            "replay successor mismatch",
+            "cross-workspace",
+            "workspace leakage",
+            "cross-workspace leakage",
+        )
+    ):
+        return {
+            "scope": "global",
+            "category": "replay_or_workspace_invariant",
+            "request_cancellation": True,
+        }
+    return {"scope": "job", "category": "independent_job_failure", "request_cancellation": False}
+
+
+def census_counts(
+    *,
+    total: int,
+    results: Sequence[Mapping[str, Any]],
+    failures: Sequence[Mapping[str, Any]],
+    cancelled: Sequence[Mapping[str, Any]],
+) -> dict[str, int]:
+    global_failures = sum(
+        item.get("failure_classification", {}).get("scope") == "global"
+        for item in failures
+    )
+    return {
+        "total": int(total),
+        "completed": len(results),
+        "failed": len(failures),
+        "cancelled": len(cancelled),
+        "independent_job_failures": len(failures) - global_failures,
+        "global_invariant_failures": global_failures,
+    }
 
 
 def initial_full_object_count(turn_documents: Sequence[Mapping[str, Any]]) -> int:
@@ -1900,31 +2053,111 @@ def run_census(config: Mapping[str, Any], manifest: Mapping[str, Any], *, games:
     fifo = QC.ResidentServerQueue(config["qwen"]["endpoint"], timeout=650)
     results: list[dict[str, Any]] = []
     failures: list[dict[str, Any]] = []
+    cancelled: list[dict[str, Any]] = []
+    cancellation_requested = False
     append_status(f"\n## {time.strftime('%Y-%m-%d %H:%M:%S')} — live census launched\n\n- Jobs: {len(jobs)}; games: {len(selected_games)}; profiles: {len(selected_profiles)}; environment workers: {config['max_parallel_arc_workers']}.\n")
     try:
         with ThreadPoolExecutor(max_workers=int(config["max_parallel_arc_workers"]), thread_name_prefix="arc-census") as pool:
             futures = {pool.submit(run_episode, job, fifo): job for job in jobs}
             for future in as_completed(futures):
                 job = futures[future]
+                if future.cancelled():
+                    classification = {
+                        "scope": "job",
+                        "category": "cancelled_after_global_invariant",
+                        "request_cancellation": False,
+                    }
+                    failure = {
+                        **job,
+                        "status": "cancelled",
+                        "error": "CancelledError: census-wide integrity cancellation",
+                        "failure_classification": classification,
+                    }
+                    write_failed_progress(
+                        job,
+                        failure["error"],
+                        classification=classification,
+                        status="cancelled",
+                    )
+                    cancelled.append(failure)
+                    counts = census_counts(total=len(jobs), results=results, failures=failures, cancelled=cancelled)
+                    LEDGER.atomic_json(
+                        ARTIFACTS / "PARTIAL_RESULTS.json",
+                        {
+                            **counts,
+                            "counts": counts,
+                            "results": sorted(results, key=lambda item: (item['profile_id'], item['game'], item['arm_id'])),
+                            "failures": failures,
+                            "cancelled_jobs": cancelled,
+                            "cancellation_requested": cancellation_requested,
+                        },
+                    )
+                    continue
+                result: Mapping[str, Any] | None = None
                 try:
                     result = future.result()
+                    classification = classify_census_failure(result=result)
+                    if classification is not None:
+                        raise RuntimeError(
+                            f"support authority violations reported: {result['support_authority_violations']}"
+                        )
                     results.append(result)
                     append_status(f"- COMPLETE `{result['profile_id']}/{result['game']}/{result['arm_id']}`: levels={result['levels_completed']}, actions={result['actions']}, Q→R grounded={result['graph_metrics'].get('grounded_pickup_directions', {}).get('qwen->r2', 0)}, replay={result['replay_verified']}.")
-                except BaseException as error:
-                    failure = {**job, "error": f"{type(error).__name__}: {error}"}
-                    write_failed_progress(job, failure["error"])
+                except CancelledError:
+                    # ``future.cancelled`` is normally caught above; retain a
+                    # defensive branch for Future implementations with races.
+                    classification = {"scope": "job", "category": "cancelled_after_global_invariant", "request_cancellation": False}
+                    failure = {**job, "status": "cancelled", "error": "CancelledError: census-wide integrity cancellation", "failure_classification": classification}
+                    write_failed_progress(job, failure["error"], classification=classification, status="cancelled")
+                    cancelled.append(failure)
+                except Exception as error:
+                    classification = classify_census_failure(error)
+                    assert classification is not None
+                    # A completed result can reveal an authority violation;
+                    # preserve that stronger classification across the local
+                    # exception used to enter this common failure path.
+                    if result is not None:
+                        result_classification = classify_census_failure(result=result)
+                        if result_classification is not None:
+                            classification = result_classification
+                    failure = {
+                        **job,
+                        "status": "failed",
+                        "error": f"{type(error).__name__}: {error}",
+                        "failure_classification": classification,
+                    }
+                    write_failed_progress(job, failure["error"], classification=classification)
                     failures.append(failure)
                     append_status(f"- FAILED `{job['profile_id']}/{job['game']}/{job['arm_id']}`: {failure['error']}.")
-                    for other in futures:
-                        if other is not future:
-                            other.cancel()
-                    append_status("- FAIL-FAST requested: pending jobs cancelled; only already-running workers may finish checkpoint boundaries.")
-                LEDGER.atomic_json(ARTIFACTS / "PARTIAL_RESULTS.json", {"completed": len(results), "failed": len(failures), "total": len(jobs), "results": sorted(results, key=lambda item: (item['profile_id'], item['game'], item['arm_id'])), "failures": failures})
-                if failures:
-                    break
+                    if classification["request_cancellation"] and not cancellation_requested:
+                        cancellation_requested = True
+                        for other in futures:
+                            if other is not future:
+                                other.cancel()
+                        append_status("- GLOBAL INVARIANT FAILURE: pending jobs cancelled; already-running workers may finish checkpoint boundaries.")
+                counts = census_counts(total=len(jobs), results=results, failures=failures, cancelled=cancelled)
+                LEDGER.atomic_json(
+                    ARTIFACTS / "PARTIAL_RESULTS.json",
+                    {
+                        **counts,
+                        "counts": counts,
+                        "results": sorted(results, key=lambda item: (item['profile_id'], item['game'], item['arm_id'])),
+                        "failures": failures,
+                        "cancelled_jobs": cancelled,
+                        "cancellation_requested": cancellation_requested,
+                    },
+                )
     finally:
         fifo.stop(drain=True)
-    summary = {"results": results, "failures": failures, "complete": len(results) == len(jobs) and not failures}
+    counts = census_counts(total=len(jobs), results=results, failures=failures, cancelled=cancelled)
+    summary = {
+        "results": results,
+        "failures": failures,
+        "cancelled_jobs": cancelled,
+        "counts": counts,
+        "cancellation_requested": cancellation_requested,
+        "complete": len(results) == len(jobs) and not failures and not cancelled,
+    }
     if summary["complete"] and len(selected_games) == 25 and len(selected_profiles) == 3:
         summary["analysis"] = CENSUS.analyze_results(results, manifest, require_complete=True)
     LEDGER.atomic_json(ARTIFACTS / "SUMMARY.json", summary)

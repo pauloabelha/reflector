@@ -35,7 +35,7 @@
     "endpoint": "http://127.0.0.1:8081/v1/chat/completions",
     "context_window_tokens": 16384,
     "max_calls_per_episode": 3,
-    "max_tokens": 3000,
+    "max_tokens": 2048,
     "model": "qwen3-vl-4b-thinking-q4_k_m",
     "seed": 271828,
     "temperature": 0,

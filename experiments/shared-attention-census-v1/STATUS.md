@@ -125,6 +125,16 @@ Machine state is checkpointed after every epistemic event and real environment t
 - A read-only audit found turn 3 was queued before R2 evaluated turn 2, and compact deltas hid the exact repeated Qwen derivation. The next protocol must durably complete proposal→grounding→criticism before queuing revision, and pin that causal unit losslessly.
 - Full result and next prerequisites are recorded in `V1_3_RESULT.md`. Held-out games remain paused.
 
+## 2026-08-09 — nightly breadth freeze
+
+- The original 150-job/three-profile census is retired: its sensitivity budgets cannot carry the mandatory causal lane, and observed pre-batching runtime projected roughly 47 hours.
+- The authoritative nightly scope is now all 25 games under balanced only: 50 fresh paired jobs, 32 actions, at most 75 Qwen calls. The 24 non-ar25 games are the primary breadth evidence.
+- Exact transactional graph batching is implemented. Synthetic 300-event commit time improved 2.4973s→0.0098s (300 outer writes→1); a preserved 9,904-event graph replayed identically from one batch.
+- Qwen successor turns now occur only after durable grounding/criticism and pin the exact causal derivation/schema/criticism unit. Compact result reporting and independent-job failure persistence are repaired.
+- Ordinary job/context failures are isolated and the census continues; only epistemic authority, replay/cross-workspace, ledger/hash, or stable-ID integrity violations cancel globally.
+- Qwen completion reserve is reduced globally from 3,000 to 2,048 tokens; observed v1.3 completions were 1,462–1,560. The ar25-shaped initial request now has about 1,182 tokens of context headroom.
+- `NIGHTLY_BALANCED_CENSUS.md` and the amendment atop `PROPOSAL.md` freeze the run. A nine-action ar25 transport preflight—not a score gate—must pass and finish within 40 minutes before unchanged whole-suite launch.
+
 ## 2026-08-09 02:43:53 — live census launched
 
 - Jobs: 2; games: 1; profiles: 1; environment workers: 2.

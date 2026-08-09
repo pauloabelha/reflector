@@ -128,3 +128,36 @@ def test_repair_head_and_tamper_detection(tmp_path: Path) -> None:
     path.write_text(json.dumps(value))
     with pytest.raises(LEDGER.LedgerError, match="hash mismatch"):
         LEDGER.list_events(tmp_path)
+
+
+def test_graph_batch_rejects_metadata_that_does_not_match_documents(tmp_path: Path) -> None:
+    document = {"seq": 7, "prev_hash": "before", "event_hash": "after"}
+    blob = LEDGER.put_blob(
+        tmp_path,
+        {
+            "protocol": "shared-attention-graph-batch-v1",
+            "count": 2,
+            "first_revision": 7,
+            "last_revision": 7,
+            "first_prev_hash": "before",
+            "last_event_hash": "after",
+            "documents": [document],
+        },
+    )
+    LEDGER.append_event(
+        tmp_path,
+        workspace_id="ws",
+        event_type="EpistemicGraphBatch",
+        actor="coordinator",
+        payload={
+            "graph_batch_blob": blob,
+            "graph_event_count": 2,
+            "first_graph_revision": 7,
+            "last_graph_revision": 7,
+            "first_graph_prev_hash": "before",
+            "last_graph_event_hash": "after",
+        },
+    )
+
+    with pytest.raises(LEDGER.LedgerError, match="metadata mismatch"):
+        LEDGER.graph_event_documents(LEDGER.list_events(tmp_path), tmp_path)

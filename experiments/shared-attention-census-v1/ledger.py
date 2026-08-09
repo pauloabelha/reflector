@@ -22,6 +22,7 @@ EVENT_TYPES = frozenset(
         "WorkspaceStarted",
         "InitialObservation",
         "EpistemicGraphEvent",
+        "EpistemicGraphBatch",
         "QwenTaskQueued",
         "QwenTaskClaimed",
         "QwenTaskCompleted",
@@ -279,11 +280,61 @@ def read_cursor(root: Path, worker: str) -> dict[str, Any] | None:
 
 
 def graph_event_documents(events: Sequence[Mapping[str, Any]], root: Path) -> list[dict[str, Any]]:
-    output = []
+    """Flatten durable graph transactions into their exact inner documents.
+
+    A batch blob is made visible by one outer-ledger append, so recovery sees
+    either all of its graph events or none of them.  The documents themselves
+    retain their original graph sequence and hash chain and are replayed by
+    ``epistemic_graph`` exactly as legacy singleton events are.
+    """
+
+    output: list[dict[str, Any]] = []
     for event in events:
-        if event["event_type"] != "EpistemicGraphEvent":
+        event_type = event["event_type"]
+        if event_type == "EpistemicGraphEvent":
+            document = read_blob(root, str(event["payload"]["graph_event_blob"]))
+            if not isinstance(document, dict):
+                raise LedgerError("graph event blob must contain one document")
+            output.append(document)
             continue
-        output.append(read_blob(root, str(event["payload"]["graph_event_blob"])))
+        if event_type != "EpistemicGraphBatch":
+            continue
+        payload = event["payload"]
+        envelope = read_blob(root, str(payload["graph_batch_blob"]))
+        if not isinstance(envelope, dict) or set(envelope) != {
+            "protocol",
+            "count",
+            "first_revision",
+            "last_revision",
+            "first_prev_hash",
+            "last_event_hash",
+            "documents",
+        }:
+            raise LedgerError("graph batch contract mismatch")
+        if envelope["protocol"] != "shared-attention-graph-batch-v1":
+            raise LedgerError("unsupported graph batch protocol")
+        documents = envelope["documents"]
+        if not isinstance(documents, list) or not documents or not all(
+            isinstance(document, dict) for document in documents
+        ):
+            raise LedgerError("graph batch documents must be a nonempty list")
+        expected = {
+            "graph_event_count": len(documents),
+            "first_graph_revision": documents[0].get("seq"),
+            "last_graph_revision": documents[-1].get("seq"),
+            "first_graph_prev_hash": documents[0].get("prev_hash"),
+            "last_graph_event_hash": documents[-1].get("event_hash"),
+        }
+        envelope_expected = {
+            "graph_event_count": envelope["count"],
+            "first_graph_revision": envelope["first_revision"],
+            "last_graph_revision": envelope["last_revision"],
+            "first_graph_prev_hash": envelope["first_prev_hash"],
+            "last_graph_event_hash": envelope["last_event_hash"],
+        }
+        if expected != envelope_expected or any(payload.get(key) != value for key, value in expected.items()):
+            raise LedgerError("graph batch metadata mismatch")
+        output.extend(documents)
     return output
 
 

@@ -1,5 +1,52 @@
 # Shared Attention Census v1
 
+## 2026-08-09 nightly breadth amendment (authoritative for the next run)
+
+The original three-profile freeze below is retained as design history, but it
+is not the executable nightly scope. Evidence from v1.2/v1.3 invalidated its
+2,400/3,200-unit sensitivity profiles and its pre-batching runtime estimate.
+
+The next run freezes one generic architecture profile across the entire public
+suite:
+
+- corpus: all 25 listed games;
+- arms: fresh paired `r2_only` and `shared_attention_qwen` for every game;
+- profile: `balanced` only (12 optional roots, 4,000 frontier units, proposal
+  boost 1.0, 12-action half-life);
+- budget: 32 committed actions per arm;
+- Qwen: calls at actions 0/8/16, at most three, temperature 0, fixed seed,
+  1,024 reasoning tokens within a 2,048-token total completion reserve;
+- execution: four isolated ARC workers and one resident serialized Qwen queue;
+- persistence: exact ordered graph events are transactionally batched into one
+  hash-addressed outer commit per cognitive operation; replay expands the exact
+  original event stream;
+- causal order: proposal integration, R2 grounding/criticism, and durable
+  ledger reread must finish before a successor Qwen request is constructed;
+- context: the newest causal Qwen-derivation/schema/R2-criticism unit and current
+  relation packet are pinned losslessly; optional roots are evicted first.
+
+This is 50 fresh episodes / 25 pairs, at most 1,600 environment actions and 75
+Qwen calls. `ar25` is reported as an acknowledged development-game regression;
+the other 24 games are the primary breadth evidence. No game-specific rule,
+prompt, budget, or stop condition is permitted.
+
+An isolated context/frontier overflow is an `INVALID_CONTEXT_FEASIBILITY` job,
+not evidence of Qwen abstention or failure; it is checkpointed and independent
+games continue. Only support-authority violations, replay/cross-workspace
+mismatch, ledger/hash corruption, or stable-ID integrity failure cancel the
+global run. Failed/canceled pairs are excluded rather than substituted.
+
+Before launch, a fresh nine-action `ar25` transport preflight must verify exact
+batch replay, turn ordering through the first criticism and successor request,
+valid context/transport, and no authority violation. This is not a score gate
+or an opportunity to tune ar25. If its paired wall time is at most 40 minutes,
+the 25-game balanced census launches unchanged.
+
+The nightly headline remains control-facing: at least one held-out shared arm
+must complete level one when its control does not, or save at least 25% actions
+when both complete, with a supported prospective causal chain. Grounded pickup
+without score gain is reported as mechanistic-only, not `CONTROL_PROMISING`.
+
 ## Decision and rationale
 
 The next experiment should stop optimizing ar25 and perform a breadth-first diagnostic census over the complete 25-game public corpus.
