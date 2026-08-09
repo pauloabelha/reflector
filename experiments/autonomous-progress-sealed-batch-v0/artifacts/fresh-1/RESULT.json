@@ -1,0 +1,91 @@
+{
+  "frozen_batch": true,
+  "manifest_digest": "70140b9c1db857f52b0956ab5f36b05e6ff5b6d3fddf6d6cd867ff710607b86d",
+  "no_repairs_between_targets": true,
+  "protocol": "autonomous-progress-sealed-batch-v0",
+  "results": [
+    {
+      "error": "SynthesisError: region population exceeds bounded grammar",
+      "game": "bp35",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "cd82",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "cn04",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "ft09",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "g50t",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "lf52",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "lp85",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "m0r0",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "r11l",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "s5i5",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "sb26",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "sc25",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "sk48",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "su15",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "tn36",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: no synthesized goal has an executable grounding",
+      "game": "vc33",
+      "status": "ABSTAIN_OR_ERROR"
+    }
+  ],
+  "solved_count": 0,
+  "solved_games": [],
+  "source_blind_runtime": true
+}

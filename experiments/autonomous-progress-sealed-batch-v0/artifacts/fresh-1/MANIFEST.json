@@ -1,0 +1,34 @@
+{
+  "action_budget": 64,
+  "development_exclusions": [
+    "ar25",
+    "dc22",
+    "ka59",
+    "ls20",
+    "re86",
+    "sp80",
+    "tr87",
+    "tu93",
+    "wa30"
+  ],
+  "digest": "70140b9c1db857f52b0956ab5f36b05e6ff5b6d3fddf6d6cd867ff710607b86d",
+  "protocol": "autonomous-progress-sealed-batch-v0",
+  "targets": [
+    "bp35",
+    "cd82",
+    "cn04",
+    "ft09",
+    "g50t",
+    "lf52",
+    "lp85",
+    "m0r0",
+    "r11l",
+    "s5i5",
+    "sb26",
+    "sc25",
+    "sk48",
+    "su15",
+    "tn36",
+    "vc33"
+  ]
+}
