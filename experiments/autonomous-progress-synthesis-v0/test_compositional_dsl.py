@@ -18,7 +18,7 @@ def grid():
 
 def test_closed_primitives_are_generated_and_pixel_executable():
     rows=dsl.propose(grid());kinds={row.ast["potential"]["op"] for row in rows}
-    assert "ContainmentDeficit" in kinds and "AxisMisalignment" in kinds
+    assert {"ContainmentDeficit","AxisMisalignment","TranslationAlignmentResidual"}<=kinds
     assert all(isinstance(dsl.evaluate(row,grid()),int) for row in rows)
 
 

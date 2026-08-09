@@ -7,7 +7,7 @@ from typing import Any,Mapping,Sequence
 
 from progress_synthesis import GoalCandidate,Region,Scene,SynthesisError,perceive,stable_hash
 
-OPS=frozenset({"AxisMisalignment","BoundingBoxGap","NormalizedMaskMismatch","ContainmentDeficit","Sum","Max"})
+OPS=frozenset({"TranslationAlignmentResidual","AxisMisalignment","BoundingBoxGap","NormalizedMaskMismatch","ContainmentDeficit","Sum","Max"})
 MAX_DEPTH=3
 MAX_NODES=12
 MAX_TERMS=4
@@ -60,11 +60,12 @@ def propose(raw:Sequence[Sequence[int]],*,limit:int=96)->tuple[GoalCandidate,...
         ratio=max(left.width/right.width,right.width/left.width,left.height/right.height,right.height/left.height)
         binding={"?a":left.region_id,"?b":right.region_id}
         if ratio<=2:
+            rows.append(compile_candidate(_primitive("TranslationAlignmentResidual"),binding,scene,attention=45+(15 if left.normalized==right.normalized else 0)))
             rows.append(compile_candidate(_primitive("AxisMisalignment"),binding,scene,attention=35+(15 if left.normalized==right.normalized else 0)))
             rows.append(compile_candidate(_primitive("BoundingBoxGap"),binding,scene,attention=30))
             rows.append(compile_candidate(_primitive("NormalizedMaskMismatch"),binding,scene,attention=30+(15 if ratio<=1.25 else 0)))
         larger,smaller=(left,right) if left.area>=right.area else (right,left)
-        if larger.holes and larger.area>=smaller.area:
+        if larger.holes and larger.area>=smaller.area and abs((larger.width-2)-smaller.width)<=1 and abs((larger.height-2)-smaller.height)<=1:
             rows.append(compile_candidate(_primitive("ContainmentDeficit"),{"?a":smaller.region_id,"?b":larger.region_id},scene,attention=55))
     unique={(row.candidate_id,row.binding_id):row for row in rows}
     return tuple(sorted(unique.values(),key=lambda row:(-row.attention,row.candidate_id,row.binding_id))[:limit])
@@ -82,6 +83,7 @@ def _eval(expression:Mapping[str,Any],roles:Mapping[str,Region])->int:
         values=[_eval(term,roles) for term in expression["terms"]]
         return sum(values) if op=="Sum" else max(values)
     left,right=(roles[var] for var in expression["arguments"])
+    if op=="TranslationAlignmentResidual":return abs((left.x*2+left.width)-(right.x*2+right.width))+abs((left.y*2+left.height)-(right.y*2+right.height))
     if op=="AxisMisalignment":return min(abs((left.x*2+left.width)-(right.x*2+right.width)),abs((left.y*2+left.height)-(right.y*2+right.height)))
     if op=="BoundingBoxGap":
         dx=max(0,right.x-(left.x+left.width),left.x-(right.x+right.width));dy=max(0,right.y-(left.y+left.height),left.y-(right.y+right.height));return dx+dy
