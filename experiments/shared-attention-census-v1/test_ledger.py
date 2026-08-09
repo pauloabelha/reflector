@@ -83,6 +83,35 @@ def test_blob_cursor_idempotence_and_pending_protocol(tmp_path: Path) -> None:
     assert LEDGER.read_cursor(tmp_path, "qwen")["graph_revision"] == 7
 
 
+def test_completed_qwen_reply_can_be_marked_integrated_idempotently(tmp_path: Path) -> None:
+    completed = LEDGER.append_event(
+        tmp_path,
+        workspace_id="ws",
+        event_type="QwenTaskCompleted",
+        actor="qwen",
+        payload={"task_id": "task-0", "compilation_blob": "digest"},
+        event_id="completed-task-0",
+    )
+    integrated = LEDGER.append_event(
+        tmp_path,
+        workspace_id="ws",
+        event_type="QwenTaskIntegrated",
+        actor="coordinator",
+        payload={"task_id": "task-0", "graph_revision": 4, "action_count": 8},
+        event_id="integrated-task-0",
+    )
+    assert completed["seq"] == 0
+    assert integrated["seq"] == 1
+    assert LEDGER.append_event(
+        tmp_path,
+        workspace_id="ws",
+        event_type="QwenTaskIntegrated",
+        actor="coordinator",
+        payload={"task_id": "task-0", "graph_revision": 4, "action_count": 8},
+        event_id="integrated-task-0",
+    ) == integrated
+
+
 def test_repair_head_and_tamper_detection(tmp_path: Path) -> None:
     event = LEDGER.append_event(
         tmp_path,
@@ -99,4 +128,3 @@ def test_repair_head_and_tamper_detection(tmp_path: Path) -> None:
     path.write_text(json.dumps(value))
     with pytest.raises(LEDGER.LedgerError, match="hash mismatch"):
         LEDGER.list_events(tmp_path)
-

@@ -66,7 +66,15 @@ Machine state is checkpointed after every epistemic event and real environment t
 - Rolling-catalog correction: the initial turn exposes every compact object once; later turns retransmit only the dependency-closed current/salient cut. Newly seen dormant objects remain named in ordered delta rows and fully recoverable from the authoritative ledger/alias map.
 - Measured action-4 rolling turn: 2,215 raw graph events → 65 compact ordered rows, 10 indexed current objects, full current visual/relation packet, 6,029 actual prompt tokens, 1,567 completion tokens, valid strict schema+explanation+attention, zero transport error.
 - Post-correction verification remains v1 34/34 and repository 77/77 tests passing.
+- The next fresh gate reached the action-8 Qwen integration boundary and failed before influence because the new durable `QwenTaskIntegrated` marker was absent from the outer ledger whitelist. The exact workspace is preserved; its code-hashed job key intentionally forbids resuming it under repaired code.
+- Added the marker contract and regression. Reply integration is now idempotent across a crash after semantic writes, attention, or orientation persistence, and missing grounded-pickup edges are reconstructed from the binding/pickup ledger.
 
 ## 2026-08-09 01:42:44 — live census launched
 
 - Jobs: 2; games: 1; profiles: 1; environment workers: 2.
+
+## 2026-08-09 01:48:33 — live census launched
+
+- Jobs: 2; games: 1; profiles: 1; environment workers: 2.
+- FAILED `balanced/ar25/shared_attention_qwen`: LedgerError: unsupported event type: QwenTaskIntegrated.
+- FAIL-FAST requested: pending jobs cancelled; only already-running workers may finish checkpoint boundaries.

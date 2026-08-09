@@ -1052,6 +1052,32 @@ def apply_qwen_compilation(
     if any(item["event_id"] == integrated_id for item in LEDGER.list_events(root)):
         return state
     accepted = list(compilation.get("accepted", ()))
+
+    def contribute_once(
+        *, object_id: str, weight: int, channel: str, basis_ids: Sequence[str], contribution_key: str
+    ) -> None:
+        nonlocal state
+        candidate = EG.make_attention(
+            worker="qwen",
+            object_id=object_id,
+            weight=weight,
+            channel=channel,
+            basis_ids=basis_ids,
+            created_revision=state.revision + 1,
+            contribution_key=contribution_key,
+        )
+        if any(item.attention_id == candidate.attention_id for item in state.attention):
+            return
+        event = EG.attention_event(
+            state,
+            worker="qwen",
+            object_id=object_id,
+            weight=weight,
+            channel=channel,
+            basis_ids=basis_ids,
+            contribution_key=contribution_key,
+        )
+        state = apply_graph_event(root, workspace_id, state, event)
     schemas = [item for item in accepted if item.get("kind") == "schema"]
     others = [item for item in accepted if item.get("kind") not in {"schema", "explanation", "attention"}]
     local_schema_ids: dict[str, str] = {}
@@ -1078,34 +1104,30 @@ def apply_qwen_compilation(
         state = apply_ingest(root, workspace_id, EG.ingest_qwen_writes(state, others, response_id=task_id))
     boost = max(1, min(100, int(round(32 * float(profile["proposal_attention_boost"])))))
     for object_id in local_schema_ids.values():
-        event = EG.attention_event(
-            state,
-            worker="qwen",
+        contribute_once(
             object_id=object_id,
             weight=boost,
             channel="inspect",
             basis_ids=(),
             contribution_key=f"proposal:{task_id}:{object_id}",
         )
-        state = apply_graph_event(root, workspace_id, state, event)
     for item in [value for value in accepted if value.get("kind") == "attention"]:
-        event = EG.attention_event(
-            state,
-            worker="qwen",
+        contribute_once(
             object_id=str(item["object_id"]),
             weight=int(item["weight"]),
             channel=str(item["channel"]),
             basis_ids=tuple(item.get("basis_ids", ())),
             contribution_key=f"response:{task_id}:{item['object_id']}:{item['channel']}",
         )
-        state = apply_graph_event(root, workspace_id, state, event)
     orientation = QC.advance_orientation(read_orientation(root, workspace_id), turn, compilation)
-    orientation_event = EG.object_event(
+    orientation_spec = QC.orientation_object_spec(orientation)
+    state, _orientation_id = ensure_graph_object(
+        root,
+        workspace_id,
         state,
         event_key=f"qwen-orientation:{task_id}",
-        **QC.orientation_object_spec(orientation),
+        **orientation_spec,
     )
-    state = apply_graph_event(root, workspace_id, state, orientation_event)
     write_orientation(root, orientation)
     LEDGER.append_event(
         root,

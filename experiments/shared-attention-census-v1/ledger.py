@@ -25,6 +25,7 @@ EVENT_TYPES = frozenset(
         "QwenTaskQueued",
         "QwenTaskClaimed",
         "QwenTaskCompleted",
+        "QwenTaskIntegrated",
         "QwenTaskAbandoned",
         "ActionDecision",
         "ActionPending",
@@ -298,4 +299,3 @@ def pending_action(events: Sequence[Mapping[str, Any]]) -> Mapping[str, Any] | N
                 raise LedgerError("transition does not commit current pending action")
             pending = None
     return pending
-
