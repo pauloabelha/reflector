@@ -1,0 +1,21 @@
+{
+  "candidates": [
+    {
+      "game": "tr87",
+      "score": "7f6e561ea0319b5b61386869f282d6fa51a5aa2ad40a51a8185006c4e1b19f8d",
+      "version": "tr87-cd924810"
+    }
+  ],
+  "excluded": [
+    "ar25",
+    "g50t",
+    "ls20",
+    "wa30"
+  ],
+  "seed": "reflector2-progress-drive-cross-v1\u0000",
+  "selected": {
+    "game": "tr87",
+    "score": "7f6e561ea0319b5b61386869f282d6fa51a5aa2ad40a51a8185006c4e1b19f8d",
+    "version": "tr87-cd924810"
+  }
+}

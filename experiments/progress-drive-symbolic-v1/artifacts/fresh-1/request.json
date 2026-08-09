@@ -1,0 +1,68 @@
+{
+  "max_tokens": 2048,
+  "messages": [
+    {
+      "content": [
+        {
+          "text": "You are the semantic induction worker in one shared epistemic workspace.\nR2 has grounded rotation-invariant visual token IDs, demonstrated input-output pairs, a query sequence, and editable output slots. Every claim starts with support zero.\nInfer the output sequence by applying only relations demonstrated in the examples. Do not invent token IDs, actions, colors, coordinates, or a route. Return a transformation proposal; R2 will validate the IDs and execute opaque edits, and only the environment can confirm it.\n\nEPISTEMIC_WORKSPACE\n{\"allowed_input_ids\":[\"g:9922d79bcfbe\",\"g:ae25006eadb8\",\"g:d6bfab262d15\",\"g:e04fdd713780\",\"g:e1576061add1\",\"g:f003b525cace\"],\"allowed_output_ids\":[\"g:09496ae29609\",\"g:2dc6b3652164\",\"g:868e6c38baa8\",\"g:b538a4212c07\",\"g:d0fa80c6c6cf\",\"g:eaa8dfe22f2f\"],\"current_editable\":[\"g:2dc6b3652164\",\"g:d0fa80c6c6cf\",\"g:868e6c38baa8\",\"g:fdc90f2cdbbd\",\"g:09496ae29609\"],\"empirical_support\":0,\"examples\":[{\"input\":\"g:9922d79bcfbe\",\"output\":\"g:868e6c38baa8\"},{\"input\":\"g:ae25006eadb8\",\"output\":\"g:2dc6b3652164\"},{\"input\":\"g:d6bfab262d15\",\"output\":\"g:09496ae29609\"},{\"input\":\"g:e04fdd713780\",\"output\":\"g:b538a4212c07\"},{\"input\":\"g:e1576061add1\",\"output\":\"g:eaa8dfe22f2f\"},{\"input\":\"g:f003b525cace\",\"output\":\"g:d0fa80c6c6cf\"}],\"protocol\":\"grounded-symbolic-progress-v1\",\"query\":[\"g:e04fdd713780\",\"g:9922d79bcfbe\",\"g:d6bfab262d15\",\"g:e1576061add1\",\"g:ae25006eadb8\"],\"slot_count\":5}",
+          "type": "text"
+        },
+        {
+          "image_url": {
+            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAAFC0lEQVR42u3dMW7UTBgG4CxKxRWo0yYFCNoEReIEPkgkOAVFDuITREJAixSKpUNbcwVaqBK5Ge3Mzow9Yz9P9euX43gnevV9n9d4dv9u3p7BVr2wBAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAD06by5K/r6o/w53787fsztn/K/98sra1JrTVQAEAAQAFjPDDAxjuPJPzsMw+m/9+I+7Xcd7hZZk5jPmHp8j2uiAoAAgADAemaA1J4+Z2ZI7WWnPfH0v5eaB2b9W0SsiQoAAgACAGaAkv3udB6I6YOvPr88esz+4fQ+eM7eNzQLpd7vr7EmoXmg5e8EVAC0QCAAYAZoV6ivjZkH9p/+Hv8Ft330sjEzT+iY6VrlrEnqjKQCgACAAIAZoPl5I3CPv7VnXZZ6PqrHZ35UABAAEAB4tmtun2DvwLEmKgAIAAgAbGsGABUABAAEAAQABAAEAAQASrFH2BPPAvW1JioACAAIAKxnBsiw1H5YU0u9D6fUZ6+xVt4NCgIAAgBmgJ763Zj9sFrbFyzm3aC116qXdwepAGiBQADADNBur59zTO39sJYS2hshZs+E1DWJ6entEwwCAAIAZoCSPW6o759zj7A1yVmT0P3+XvYFUwFAAEAAMAP0Z87n3Vvra1M/e421skcYCAAIAJgB1jYb9Hg/e6l/F6ECgACAAEB37BGGCgACAAIAAgACAAIAAgDrZY+wJ/YI62tNVAAQABAAWM8MkGELe4TFvPt/zv0BvBcItEAgAGAG6KnXL9XTL/WenNBnj5kHasxFoWPsEwwCAAIAZoBTev2cY0rtEbamd2LmrEnM/gD2CQYBAAEAM0CumD1xg71sxn5YwetpoN/NucdfY980+wSDAIAAgBlgjnmgep/dcL8bsw6lngUKPc/j3wOAFggEALrT3v4A3oFjTVQAEAAQANjWDAAqAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAEztLh+vrQIqAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgAtOG8lwvdv/7mr9W4q583KgAIAAgAmAGqG8fx6DHDMFT9vaHzx1xb6jWHzjk9PuaYUp9RBQABAAEAM8DcavTfpfrgmGuL6d1Te/3a848KAAIAAgBmgLml9vel7tmXmitqfy9R4zxr/U5ABUALBAIAZoA+xPSgpe7f1+h9a5wz9fuBpT67CgACAAIAZoCS/fRS80bOteV8p1Fq3si5zt5nAxUALRAIAGzQ7vLxuosL9V6g9nkvEAgACACYAUAFAAEAAYDmdPks0K8330/+WTMPKgAIAAgAZoC+xfT0OTMDKgAIAAgArIxngVABQABAAGBbuvkeYP9w8Ndq3NWHCxUABAAEAMwAVYwX9yf/7HC4K3L+UudJPX8L54z57CoACAAIAJgBSpr2oNP+tXbf3MLssdQ5p+eJWXMVAAQABADMAK0L9cox/z+nF8/poXNmkqVmIRUABAAEAMwAc/TxOT1u6ncOtXvo2te5pnv8KgAIAAgArHMGqP1cfql73qnfM7Qw/6zpfr8KAAIAAgDPunk3qPcCtc97gUAAQACgC918D9Bjf4kKAAIAAgBmgDKm+/6m7hNsTzRUABAAEADMAH2b9vegAoAAgADAUTv3xVEBQABAAEAAQABAAEAAYLV2Zx9/WwVUABAAEADYjv84g99kwX12hwAAAABJRU5ErkJggg=="
+          },
+          "type": "image_url"
+        }
+      ],
+      "role": "user"
+    }
+  ],
+  "model": "qwen3-vl-4b-thinking-q4_k_m",
+  "response_format": {
+    "json_schema": {
+      "name": "symbolic_progress",
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "desired_outputs": {
+            "items": {
+              "enum": [
+                "g:09496ae29609",
+                "g:2dc6b3652164",
+                "g:868e6c38baa8",
+                "g:b538a4212c07",
+                "g:d0fa80c6c6cf",
+                "g:eaa8dfe22f2f"
+              ]
+            },
+            "maxItems": 5,
+            "minItems": 5,
+            "type": "array"
+          },
+          "family": {
+            "const": "transformation"
+          },
+          "protocol": {
+            "const": "grounded-symbolic-progress-v1"
+          },
+          "rule": {
+            "maxLength": 300,
+            "type": "string"
+          }
+        },
+        "required": [
+          "protocol",
+          "family",
+          "desired_outputs",
+          "rule"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    "type": "json_schema"
+  },
+  "seed": 271828,
+  "temperature": 0,
+  "thinking_budget_tokens": 1024
+}

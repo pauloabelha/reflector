@@ -1,0 +1,12 @@
+{
+  "accepted": true,
+  "desired_outputs": [
+    "g:b538a4212c07",
+    "g:868e6c38baa8",
+    "g:09496ae29609",
+    "g:eaa8dfe22f2f",
+    "g:2dc6b3652164"
+  ],
+  "rule": "direct-mapping",
+  "support": 0
+}

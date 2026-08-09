@@ -1,0 +1,54 @@
+{
+  "action_sequence": [
+    1,
+    2,
+    3,
+    4,
+    2,
+    2,
+    4,
+    2,
+    2,
+    4,
+    2,
+    2,
+    2,
+    2,
+    4,
+    2,
+    4,
+    2,
+    2
+  ],
+  "actions": 19,
+  "development_only": true,
+  "exact_replay": true,
+  "final_digest": "649fccb51ae115ad80e01221158d6f217ae636b5009e5b90867cc68a0a15554e",
+  "grounded_desired_outputs": [
+    "g:b538a4212c07",
+    "g:868e6c38baa8",
+    "g:09496ae29609",
+    "g:eaa8dfe22f2f",
+    "g:2dc6b3652164"
+  ],
+  "initial_digest": "a1617ba3bc9a13cacb16d0ef6bf21336717845e7f5b005d643ce41e935aa5288",
+  "levels_completed": 1,
+  "qwen_desired_outputs": [
+    "g:b538a4212c07",
+    "g:868e6c38baa8",
+    "g:09496ae29609",
+    "g:eaa8dfe22f2f",
+    "g:2dc6b3652164"
+  ],
+  "qwen_rule": "direct-mapping",
+  "qwen_support": 0,
+  "qwen_usage": {
+    "completion_tokens": 1129,
+    "prompt_tokens": 677,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 1806
+  },
+  "verdict": "PASS"
+}

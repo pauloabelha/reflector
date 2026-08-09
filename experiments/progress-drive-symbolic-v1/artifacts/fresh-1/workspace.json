@@ -1,0 +1,61 @@
+{
+  "allowed_input_ids": [
+    "g:9922d79bcfbe",
+    "g:ae25006eadb8",
+    "g:d6bfab262d15",
+    "g:e04fdd713780",
+    "g:e1576061add1",
+    "g:f003b525cace"
+  ],
+  "allowed_output_ids": [
+    "g:09496ae29609",
+    "g:2dc6b3652164",
+    "g:868e6c38baa8",
+    "g:b538a4212c07",
+    "g:d0fa80c6c6cf",
+    "g:eaa8dfe22f2f"
+  ],
+  "current_editable": [
+    "g:2dc6b3652164",
+    "g:d0fa80c6c6cf",
+    "g:868e6c38baa8",
+    "g:fdc90f2cdbbd",
+    "g:09496ae29609"
+  ],
+  "empirical_support": 0,
+  "examples": [
+    {
+      "input": "g:9922d79bcfbe",
+      "output": "g:868e6c38baa8"
+    },
+    {
+      "input": "g:ae25006eadb8",
+      "output": "g:2dc6b3652164"
+    },
+    {
+      "input": "g:d6bfab262d15",
+      "output": "g:09496ae29609"
+    },
+    {
+      "input": "g:e04fdd713780",
+      "output": "g:b538a4212c07"
+    },
+    {
+      "input": "g:e1576061add1",
+      "output": "g:eaa8dfe22f2f"
+    },
+    {
+      "input": "g:f003b525cace",
+      "output": "g:d0fa80c6c6cf"
+    }
+  ],
+  "protocol": "grounded-symbolic-progress-v1",
+  "query": [
+    "g:e04fdd713780",
+    "g:9922d79bcfbe",
+    "g:d6bfab262d15",
+    "g:e1576061add1",
+    "g:ae25006eadb8"
+  ],
+  "slot_count": 5
+}

@@ -1,0 +1,1032 @@
+{
+  "history": [
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "6942fd9c14b695bed64f7644f8cbbf5e9e0f6254cc9b4ff57a493c2a03ffd115",
+        "frame_sha256": "0f27b131b52053a9e71a6e0c468fca5c0fd8b2576e3314f0714d8a1259f8374b",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "a1617ba3bc9a13cacb16d0ef6bf21336717845e7f5b005d643ce41e935aa5288",
+        "frame_sha256": "55ec306c59c99105915135b0bec87f0ace49f59b42a3d91dd053105b95756fd9",
+        "full_reset": true,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im00",
+      "phase": "calibration"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "ad8f476acdccecf71fd2e22a180384a7c7a7a28bd6a2b51f9d30650a871fff05",
+        "frame_sha256": "26500038a87cb0fad1358feaf7890b5a5b6db44f1028c3d5c4c5b8d45288cf1e",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "6942fd9c14b695bed64f7644f8cbbf5e9e0f6254cc9b4ff57a493c2a03ffd115",
+        "frame_sha256": "0f27b131b52053a9e71a6e0c468fca5c0fd8b2576e3314f0714d8a1259f8374b",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im01",
+      "phase": "calibration"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "f3252e124e9aa7ae516aa3901d1832870181ee16a6b5bcc679f37735503562e2",
+        "frame_sha256": "939de4eaa3cc75becbdfe8393c6d25282f976f3f96f4c40feb71a59cf07d3e12",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "ad8f476acdccecf71fd2e22a180384a7c7a7a28bd6a2b51f9d30650a871fff05",
+        "frame_sha256": "26500038a87cb0fad1358feaf7890b5a5b6db44f1028c3d5c4c5b8d45288cf1e",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im02",
+      "phase": "calibration"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "7325be3741aa0a0740b3a283da83acb50eb5cd5ed2dedd6c054fdb0950e3bf68",
+        "frame_sha256": "eeffe52bcb2e9a1b70c6a4eeb2b7f13810dfcd23679348e04af292ce18e2fbf3",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "f3252e124e9aa7ae516aa3901d1832870181ee16a6b5bcc679f37735503562e2",
+        "frame_sha256": "939de4eaa3cc75becbdfe8393c6d25282f976f3f96f4c40feb71a59cf07d3e12",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im03",
+      "phase": "calibration"
+    },
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "a25f0d76eef27e9c8d473b6221027b7587f75fda435c1ae1dc8c9cc441f2f42c",
+        "frame_sha256": "a5dbc48a8e27702f1bf029f1d8df440cca0d8fd717ba00295d4e4eaabbc63e47",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "7325be3741aa0a0740b3a283da83acb50eb5cd5ed2dedd6c054fdb0950e3bf68",
+        "frame_sha256": "eeffe52bcb2e9a1b70c6a4eeb2b7f13810dfcd23679348e04af292ce18e2fbf3",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "74a7e0dc9c2dbe495325287666287d29d45544188b02968f87ae74e18d71eeba",
+        "frame_sha256": "ff1b96807c98ac485bb48d93fb3550d815bb9d43685d86cec8a8f6fd95aa12ce",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "a25f0d76eef27e9c8d473b6221027b7587f75fda435c1ae1dc8c9cc441f2f42c",
+        "frame_sha256": "a5dbc48a8e27702f1bf029f1d8df440cca0d8fd717ba00295d4e4eaabbc63e47",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "b9b1ab50a3c18c99047721bfbbf930356543190057425be80d26f65294cafd80",
+        "frame_sha256": "54fd7b766f337622a4f71bb265164f92068186a4f632bb4885e49aba768352c9",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "74a7e0dc9c2dbe495325287666287d29d45544188b02968f87ae74e18d71eeba",
+        "frame_sha256": "ff1b96807c98ac485bb48d93fb3550d815bb9d43685d86cec8a8f6fd95aa12ce",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "026e7cb5a31f57fbe9b890a7eda8224963e5b144e070682574871142e4a5282c",
+        "frame_sha256": "e801da0ff752a7ede2e827100c3837861672b03815eaf681f441dd191496b08c",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "b9b1ab50a3c18c99047721bfbbf930356543190057425be80d26f65294cafd80",
+        "frame_sha256": "54fd7b766f337622a4f71bb265164f92068186a4f632bb4885e49aba768352c9",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "c7b1ae55415868bf40047bc6efc8e113b19325a3516b8f7ee3fb67f0f924e319",
+        "frame_sha256": "c0ef15698398864ee4e5deb9d8cd6669f52adbb5bb63c9705a6bc655022be51c",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "026e7cb5a31f57fbe9b890a7eda8224963e5b144e070682574871142e4a5282c",
+        "frame_sha256": "e801da0ff752a7ede2e827100c3837861672b03815eaf681f441dd191496b08c",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "9a3a884ebbb5833e1d90f83e669cec5715317760d4d3e4ad871b48e57f5a5adc",
+        "frame_sha256": "19065181918d8d61813dc32d6f14be14a3cfb4eed53c3af7ea5588ea68041760",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "c7b1ae55415868bf40047bc6efc8e113b19325a3516b8f7ee3fb67f0f924e319",
+        "frame_sha256": "c0ef15698398864ee4e5deb9d8cd6669f52adbb5bb63c9705a6bc655022be51c",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "fae0b88335f368ab399fca415ccfa1c041f161d5d2b3479f02fabb437491f299",
+        "frame_sha256": "392dc475367c499ab651fbe0b3b3cb8f464798b687eb1a895ff368cd315b9c1c",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "9a3a884ebbb5833e1d90f83e669cec5715317760d4d3e4ad871b48e57f5a5adc",
+        "frame_sha256": "19065181918d8d61813dc32d6f14be14a3cfb4eed53c3af7ea5588ea68041760",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "e0af1fb7de0490acd68bf2feff39601fd15af71adeef1f3792a6904dabd3ac07",
+        "frame_sha256": "a6d57e5aa320cfafd7a6bfed636052bbdff134d0f076ff581647a1650ec940bc",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "fae0b88335f368ab399fca415ccfa1c041f161d5d2b3479f02fabb437491f299",
+        "frame_sha256": "392dc475367c499ab651fbe0b3b3cb8f464798b687eb1a895ff368cd315b9c1c",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "7e52ef847dda894279a59889a5df7ee870539b7621236ea80288ac44cf070b3c",
+        "frame_sha256": "9b80ae02f90be58e7391b995dfbebca5cf5b0f5296a3ab1d0eb9221a474e3932",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "e0af1fb7de0490acd68bf2feff39601fd15af71adeef1f3792a6904dabd3ac07",
+        "frame_sha256": "a6d57e5aa320cfafd7a6bfed636052bbdff134d0f076ff581647a1650ec940bc",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "c8889ecc0f794c25bc66f5707004d6761c14bc9f4969cc8c95d6706c13b08e5e",
+        "frame_sha256": "aea7ec3ea44db64a7f70161356190f62ddf5ccac6fe959abb6e8d956e563ed41",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "7e52ef847dda894279a59889a5df7ee870539b7621236ea80288ac44cf070b3c",
+        "frame_sha256": "9b80ae02f90be58e7391b995dfbebca5cf5b0f5296a3ab1d0eb9221a474e3932",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "a1e871bb0c0b41aa8d0dbea417a21f7be67eaee55bac9e4c78f0d99fd4cecdbe",
+        "frame_sha256": "bdcdddceb7a5ded813a03a4091b087d1b02b0c68a8f3fb7f12d250dc8e6f6dd1",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "c8889ecc0f794c25bc66f5707004d6761c14bc9f4969cc8c95d6706c13b08e5e",
+        "frame_sha256": "aea7ec3ea44db64a7f70161356190f62ddf5ccac6fe959abb6e8d956e563ed41",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "0a70dcd5c802d8daeeb15477d29ac481fb0eab278bd9f4035a2816dc47b66b79",
+        "frame_sha256": "96e1b8b6e17dc146ccc59b1b5ec17d2b0d6e35dcf967e816f9419de4d95f9f39",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "a1e871bb0c0b41aa8d0dbea417a21f7be67eaee55bac9e4c78f0d99fd4cecdbe",
+        "frame_sha256": "bdcdddceb7a5ded813a03a4091b087d1b02b0c68a8f3fb7f12d250dc8e6f6dd1",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "9de2586bddb7e4e120004e7ed1341bce557fdd8af30ef124bc6deb7589c5659d",
+        "frame_sha256": "c94d7cc3b92dcc2e2190738d0c5bddc05299e90db2dbeafa30a857e28f24c4bd",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "0a70dcd5c802d8daeeb15477d29ac481fb0eab278bd9f4035a2816dc47b66b79",
+        "frame_sha256": "96e1b8b6e17dc146ccc59b1b5ec17d2b0d6e35dcf967e816f9419de4d95f9f39",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "cce319eec116338c8efbc28a1fa42a82face251a0ef901632a41ed605245c246",
+        "frame_sha256": "68f62ea2171617d878a649b61cf98af9f671e5f0a7c1d58111e2cc56fe433a99",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "9de2586bddb7e4e120004e7ed1341bce557fdd8af30ef124bc6deb7589c5659d",
+        "frame_sha256": "c94d7cc3b92dcc2e2190738d0c5bddc05299e90db2dbeafa30a857e28f24c4bd",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "2fcc62daf9673de9e8aeb0180aa77e892806aff7a32d585923d00f1493b6784f",
+        "frame_sha256": "096887c1a8029fbf7c7bbbacd68883bc2799dfe75ad466f63d267c3fb697a19a",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "cce319eec116338c8efbc28a1fa42a82face251a0ef901632a41ed605245c246",
+        "frame_sha256": "68f62ea2171617d878a649b61cf98af9f671e5f0a7c1d58111e2cc56fe433a99",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "ee0deccb64927dffdf3f488d7b28b1000606e275821fd6a82ae8b6d746a1f44a",
+        "frame_sha256": "bec9821ab84ef83c538d180c4541d8db0dcb19d168928a6f045691303edc2fa3",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "2fcc62daf9673de9e8aeb0180aa77e892806aff7a32d585923d00f1493b6784f",
+        "frame_sha256": "096887c1a8029fbf7c7bbbacd68883bc2799dfe75ad466f63d267c3fb697a19a",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "222e04b82fa0f345c28cfa4e593f21da1c588e1e610dc9564950f6e86cc04db2",
+        "frame_sha256": "8ad33c71c67ce30b7834b50a182585b233c6d9fb7a257b1b3982e53347bdc935",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "ee0deccb64927dffdf3f488d7b28b1000606e275821fd6a82ae8b6d746a1f44a",
+        "frame_sha256": "bec9821ab84ef83c538d180c4541d8db0dcb19d168928a6f045691303edc2fa3",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "ea2cc891e8daa73629cc4add9b224f15de09aeafc9b885e80aab1eef6408e5b7",
+        "frame_sha256": "05dd9e7766ffc2a841e9ec44c80609c1f7b93508720ba859e4558b0e4139b306",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "222e04b82fa0f345c28cfa4e593f21da1c588e1e610dc9564950f6e86cc04db2",
+        "frame_sha256": "8ad33c71c67ce30b7834b50a182585b233c6d9fb7a257b1b3982e53347bdc935",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "5597eea6aefab77c1dcaa0b343ed18a1b733718b0f5132b1410690891c434ac1",
+        "frame_sha256": "e778c37b99d643fa036ec46a6807a0ee779c4079e0f6bfd4e34ee898bef8736f",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "ea2cc891e8daa73629cc4add9b224f15de09aeafc9b885e80aab1eef6408e5b7",
+        "frame_sha256": "05dd9e7766ffc2a841e9ec44c80609c1f7b93508720ba859e4558b0e4139b306",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "6e67fde8eff56e653d7c01bd86921fdbc9546506b3d041cbcbbad7c9c0dc33de",
+        "frame_sha256": "df629a74bb316a9592f7e1f463fa63d35207d6c5731b459149e78459fe4f5c4b",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "5597eea6aefab77c1dcaa0b343ed18a1b733718b0f5132b1410690891c434ac1",
+        "frame_sha256": "e778c37b99d643fa036ec46a6807a0ee779c4079e0f6bfd4e34ee898bef8736f",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "43862436e66540d7f9b0a252a7adfe26f862bf3f88a5a812b9d5de1e2875d83e",
+        "frame_sha256": "797b986f3e496b00b42ccc2c5b71af78246d8ed64f8f65dce95e683e616fa7fd",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "6e67fde8eff56e653d7c01bd86921fdbc9546506b3d041cbcbbad7c9c0dc33de",
+        "frame_sha256": "df629a74bb316a9592f7e1f463fa63d35207d6c5731b459149e78459fe4f5c4b",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "2fe9692305a094d756c1e89aa821b8c3d5b89836bd5fe96a7d5adab5dc8f8b47",
+        "frame_sha256": "e72c90108d167cca494d5ef0d238d182d3e9d5754926482f35259656a46ad3bc",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "43862436e66540d7f9b0a252a7adfe26f862bf3f88a5a812b9d5de1e2875d83e",
+        "frame_sha256": "797b986f3e496b00b42ccc2c5b71af78246d8ed64f8f65dce95e683e616fa7fd",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "35709507d009a67be253e5361857cee594e6b5c35245f24271f3bd630153d2e1",
+        "frame_sha256": "69da477782a2c52d90bd9c8385931b48b02388938d27bf8d79f474e139a6ddfa",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "2fe9692305a094d756c1e89aa821b8c3d5b89836bd5fe96a7d5adab5dc8f8b47",
+        "frame_sha256": "e72c90108d167cca494d5ef0d238d182d3e9d5754926482f35259656a46ad3bc",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "f9ce6462f4983c95757f7b7fc17b329569a57316cb4ee56154f267e45e76f48a",
+        "frame_sha256": "4e7b22fc2519ba557cf546cdb459355498a0a97530841915feccc23fc27926b5",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "35709507d009a67be253e5361857cee594e6b5c35245f24271f3bd630153d2e1",
+        "frame_sha256": "69da477782a2c52d90bd9c8385931b48b02388938d27bf8d79f474e139a6ddfa",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "a631375e72b72dd885cf8d5d5a6b9647b5193bd1effd42785311d37a70af9bab",
+        "frame_sha256": "0309dd695a65e6ae1a87c820c2a1102ac84e8bd8a1b41edc47c2824a1cb15db7",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "f9ce6462f4983c95757f7b7fc17b329569a57316cb4ee56154f267e45e76f48a",
+        "frame_sha256": "4e7b22fc2519ba557cf546cdb459355498a0a97530841915feccc23fc27926b5",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "88f712e8d7101587e92e0ed45af7b69d85a6f1f280b882f17ab1acba93cc78e4",
+        "frame_sha256": "50b1ebb16cc62391f13ee6c4a25650c066e42c902739aadeda6af1024de19dd6",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "a631375e72b72dd885cf8d5d5a6b9647b5193bd1effd42785311d37a70af9bab",
+        "frame_sha256": "0309dd695a65e6ae1a87c820c2a1102ac84e8bd8a1b41edc47c2824a1cb15db7",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "865fb3e6b28ad877b840db130daabd49f6c695671baf7e353623470769d786fe",
+        "frame_sha256": "38280832191ff51a1efe72f4ee8512c8e54f71a376588e7bf23410e89fab6641",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "88f712e8d7101587e92e0ed45af7b69d85a6f1f280b882f17ab1acba93cc78e4",
+        "frame_sha256": "50b1ebb16cc62391f13ee6c4a25650c066e42c902739aadeda6af1024de19dd6",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "756e9625230df6acb99e3bd2a85d7cf690a9f58d604379979eb8657070b6939d",
+        "frame_sha256": "1c65fc5d095f7bd6221494c8ddbbd50dab29a0d54179726e604d5898f0b4054c",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "digest": "865fb3e6b28ad877b840db130daabd49f6c695671baf7e353623470769d786fe",
+        "frame_sha256": "38280832191ff51a1efe72f4ee8512c8e54f71a376588e7bf23410e89fab6641",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "phase": "shared_cycle"
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "max_tokens": 3072,
+  "messages": [
+    {
+      "content": [
+        {
+          "text": "You are the slow semantic worker in a shared executable epistemic workspace.\nYou see the world directly and also see R2's exact grounded component and intervention deltas.\nConstruct at most one live goal hypothesis. It starts with empirical support zero: you may say what deserves testing, never that it is true.\n\nDo not assume every goal is pairwise. Consider these generic families equally: matching, alignment, collection/containment, connectivity, avoidance, transformation. A useful goal identifies a controlled entity, any set-valued roles, a measurable nonnegative potential, a terminal predicate, and\u2014only if warranted\u2014an opaque interaction candidate. Repeated visual classes may denote a set role. A differently patterned member of the same outline class may have a distinct controlled role. A region whose placement capacity matches a repeated class may deserve attention as a receptacle, but this is only a hypothesis.\n\nAvailable potential/terminal pairs are semantic contracts:\n- MismatchCount / AllMatched\n- AlignmentResidual / Aligned\n- OutsideCount / AllInside\n- ComponentDeficit / Connected\n- CollisionRisk / NoCollision\n- TransformationResidual / TransformationComplete\n\nUse only visible IDs and opaque intervention refs. Never emit action meanings, colors, coordinates, a policy, or an action sequence. Return null if no hypothesis is sufficiently grounded for a cheap empirical test.\n\nPROGRESS-SEEKING RULE: capacity_hypothesis.members is a candidate role population, never a claim that those regions are already inside. current_inside_count and outside_count are direct present-state measurements. When any exact grounded opportunity has outside_count > 0, you MUST write the single cheapest falsifiable goal hypothesis; uncertainty calls for testing, not abstention. Null is legal only when the workspace says progress_opportunity_present=false. Prefer hypotheses whose potential exactly measures the exposed deficit. Do not narrate an action sequence.\n\nA unique action-correlated visual process is itself a grounded progress opportunity even when no capacity hypothesis exists. Use the current frame to identify possible terminal exemplars, destinations, hazards, transformations, or connectivity changes. Choose the cheapest falsifiable family/potential/terminal hypothesis and keep unsupported roles OPEN through null container or minimal visible members. Do not default to collection and do not narrate a route.\n\nEPISTEMIC_WORKSPACE\n{\"calibrated_transitions\":[{\"controlled_candidates\":[],\"controlled_id\":null,\"entity_effects\":[{\"delta\":[0,0],\"entity_id\":\"e000\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e001\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e002\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e003\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e004\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e005\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e006\",\"status\":\"matched\"}],\"intervention_ref\":\"im00\",\"observation_changed\":true,\"observed_delta\":[0,0]},{\"controlled_candidates\":[],\"controlled_id\":null,\"entity_effects\":[{\"delta\":[0,0],\"entity_id\":\"e000\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e001\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e002\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e003\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e004\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e005\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e006\",\"status\":\"matched\"}],\"intervention_ref\":\"im01\",\"observation_changed\":true,\"observed_delta\":[0,0]},{\"controlled_candidates\":[],\"controlled_id\":null,\"entity_effects\":[{\"delta\":[0,0],\"entity_id\":\"e000\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e001\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e002\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e003\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e004\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e005\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e006\",\"status\":\"matched\"}],\"intervention_ref\":\"im02\",\"observation_changed\":true,\"observed_delta\":[0,0]},{\"controlled_candidates\":[],\"controlled_id\":null,\"entity_effects\":[{\"delta\":[0,0],\"entity_id\":\"e000\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e001\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e002\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e003\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e004\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e005\",\"status\":\"matched\"},{\"delta\":[0,0],\"entity_id\":\"e006\",\"status\":\"matched\"}],\"intervention_ref\":\"im03\",\"observation_changed\":true,\"observed_delta\":[0,0]}],\"capacity_hypotheses\":[],\"capacity_semantics\":\"integer shape tiling, not area equality alone\",\"cognitive_drive\":\"propose cheapest grounded falsifiable progress hypothesis when opportunity is present\",\"control_opportunity\":{\"controlled_candidates\":[],\"effects\":[],\"unique\":false},\"entities\":[{\"area\":101,\"id\":\"e000\",\"interior_class\":\"ic3\",\"kind\":\"region\",\"origin\":[12,4],\"outline_class\":\"oc1\",\"size\":[17,7]},{\"area\":101,\"id\":\"e001\",\"interior_class\":\"ic6\",\"kind\":\"region\",\"origin\":[12,13],\"outline_class\":\"oc1\",\"size\":[17,7]},{\"area\":101,\"id\":\"e002\",\"interior_class\":\"ic5\",\"kind\":\"region\",\"origin\":[12,22],\"outline_class\":\"oc1\",\"size\":[17,7]},{\"area\":101,\"id\":\"e003\",\"interior_class\":\"ic0\",\"kind\":\"region\",\"origin\":[35,4],\"outline_class\":\"oc1\",\"size\":[17,7]},{\"area\":101,\"id\":\"e004\",\"interior_class\":\"ic4\",\"kind\":\"region\",\"origin\":[35,13],\"outline_class\":\"oc1\",\"size\":[17,7]},{\"area\":101,\"id\":\"e005\",\"interior_class\":\"ic1\",\"kind\":\"region\",\"origin\":[35,22],\"outline_class\":\"oc1\",\"size\":[17,7]},{\"area\":1920,\"id\":\"e006\",\"interior_class\":\"ic2\",\"kind\":\"region\",\"origin\":[0,34],\"outline_class\":\"oc0\",\"size\":[64,30]}],\"epistemic_rules\":{\"all_roles_require_visible_ids\":true,\"attention_is_not_support\":true,\"only_environment_changes_support\":true},\"equivalence_classes\":[{\"kind\":\"same_outline\",\"members\":[\"e000\",\"e001\",\"e002\",\"e003\",\"e004\",\"e005\"]}],\"frame\":{\"height\":64,\"width\":64},\"progress_opportunity_present\":false,\"protocol\":\"live-progress-goal-v1\"}",
+          "type": "text"
+        },
+        {
+          "text": "current visual frame",
+          "type": "text"
+        },
+        {
+          "image_url": {
+            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAAFE0lEQVR42u3dMW4UPRgG4CxKxRWoI7qkAEGboEicYO9AGwlOQZGD7AkiIaBFCsXSoa25Am0oUKJprLXX9oztfZ7q16/JZNbRq+/7Zofx6uHqzQkcq2eWAAEAAQABAAEAAQABAAEAAQABAAEAAQABAAEAAYA+nTZ3RV9/lD/nu7f7j7n+U/73fnlhTWqtiQoAAgACAOPMABObzebgn12v14f/3rPbtN+1u1lkTWI+Y+rxPa6JCgACAAIA48wAqT19zsyQ2stOe+Lpfy81D8z6t4hYExUABAAEAMwAJfvd6TwQ0wdffH6+95jt3eF98Jy9b2gWSr3fX2NNQvNAy98JqABogUAAwAzQrlBfGzMPbD/93f8LrvvoZWNmntAx07XKWZPUGUkFAAEAAQAzQPPzRuAef2vPuiz1fFSPz/yoACAAIADwZNXcPsHegWNNVAAQABAAOK4ZAFQAEAAQABAAEAAQABAAKMUeYY88C9TXmqgAIAAgADDODJBhqf2wppZ6H06pz15jrbwbFAQABADMAD31uzH7YbW2L1jMu0Frr1Uv7w5SAdACgQCAGaDdXj/nmNr7YS0ltDdCzJ4JqWsS09PbJxgEAAQAzAAle9xQ3z/nHmEjyVmT0P3+XvYFUwFAAEAAMAP0Z87n3Vvra1M/e421skcYCAAIAJgBRpsNeryfvdS/i1ABQABAAKA79ghDBQABAAEAAQABAAEAAYBx2SPskT3C+loTFQAEAAQAxpkBMhzDHmEx7/6fc38A7wUCLRAIAJgBeur1S/X0S70nJ/TZY+aBGnNR6Bj7BIMAgACAGeCQXj/nmFJ7hI30TsycNYnZH8A+wSAAIABgBsgVsydusJfN2A8reD0N9Ls59/hr7Jtmn2AQABAAMAPMMQ9U77Mb7ndj1qHUs0Ch53n8ewDQAoEAQHfa2x/AO3CsiQoAAgACAMc1A4AKAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAFOr8/tLq4AKAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAAgACAAIAbTjt5UK3r775azXu4ueVCgACAAIAZoDqNpvN3mPW63XV3xs6f8y1pV5z6JzT42OOKfUZVQAQABAAMAPMrUb/XaoPjrm2mN49tdevPf+oACAAIABgBphban9f6p59qbmi9vcSNc4z6ncCKgBaIBAAMAP0IaYHLXX/vkbvW+Ocqd8PLPXZVQAQABAAMAOU7KeXmjdyri3nO41S80bOdfY+G6gAaIFAAOAIrc7vL7u4UO8Fap/3AoEAgACAGQBUABAAEABoTpfPAv16/f3gnzXzoAKAAIAAYAboW0xPnzMzoAKAAIAAwGA8C4QKAAIAAgDHpZvvAbZ3O3+txl28P1MBQABAAMAMUMXm7Pbgn13vboqcv9R5Us/fwjljPrsKAAIAAgBmgJKmPei0f63dN7cweyx1zul5YtZcBQABAAEAM0DrQr1yzP/P6cVzeuicmWSpWUgFAAEAAQAzwBx9fE6Pm/qdQ+0euvZ1jnSPXwUAAQABgDFngNrP5Ze65536PUML889I9/tVABAAEAB40s27Qb0XqH3eCwQCAAIAXejme4Ae+0tUABAAEAAwA5Qx3fc3dZ9ge6KhAoAAgABgBujbtL8HFQAEAAQA9lq5L44KAAIAAgACAAIAAgACAMNanXz8bRUY3sOHlyoACAAIAPz3D2CZ4PJPv1sLAAAAAElFTkSuQmCC"
+          },
+          "type": "image_url"
+        }
+      ],
+      "role": "user"
+    }
+  ],
+  "model": "qwen3-vl-4b-thinking-q4_k_m",
+  "response_format": {
+    "json_schema": {
+      "name": "live_progress_goal_v1",
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "goal": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "container_id": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "e000",
+                          "e001",
+                          "e002",
+                          "e003",
+                          "e004",
+                          "e005",
+                          "e006"
+                        ]
+                      }
+                    ]
+                  },
+                  "controlled_id": {
+                    "enum": [
+                      "e000",
+                      "e001",
+                      "e002",
+                      "e003",
+                      "e004",
+                      "e005",
+                      "e006"
+                    ]
+                  },
+                  "family": {
+                    "enum": [
+                      "matching",
+                      "alignment",
+                      "collection_containment",
+                      "connectivity",
+                      "avoidance",
+                      "transformation"
+                    ]
+                  },
+                  "interaction_candidate": {
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "enum": [
+                          "im00",
+                          "im01",
+                          "im02",
+                          "im03"
+                        ]
+                      }
+                    ]
+                  },
+                  "members": {
+                    "items": {
+                      "enum": [
+                        "e000",
+                        "e001",
+                        "e002",
+                        "e003",
+                        "e004",
+                        "e005",
+                        "e006"
+                      ]
+                    },
+                    "maxItems": 16,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "potential": {
+                    "enum": [
+                      "MismatchCount",
+                      "AlignmentResidual",
+                      "OutsideCount",
+                      "ComponentDeficit",
+                      "CollisionRisk",
+                      "TransformationResidual"
+                    ]
+                  },
+                  "rationale": {
+                    "maxLength": 320,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "terminal": {
+                    "enum": [
+                      "AllMatched",
+                      "Aligned",
+                      "AllInside",
+                      "Connected",
+                      "NoCollision",
+                      "TransformationComplete"
+                    ]
+                  }
+                },
+                "required": [
+                  "family",
+                  "controlled_id",
+                  "members",
+                  "container_id",
+                  "potential",
+                  "terminal",
+                  "interaction_candidate",
+                  "rationale"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "protocol": {
+            "const": "live-progress-goal-v1"
+          }
+        },
+        "required": [
+          "protocol",
+          "goal"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    "type": "json_schema"
+  },
+  "seed": 271828,
+  "stream": false,
+  "temperature": 0,
+  "thinking_budget_tokens": 1024
+}
