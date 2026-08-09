@@ -73,6 +73,24 @@ Settled history may be compacted into addressable summaries. Still-live alternat
 
 The Qwen server is shared and GPU-resident, but Qwen cognition is workspace-isolated. A durable global request queue serializes inference. A response is committed to its source workspace before the queue advances. Hidden KV or conversation state is an optimization only; restart reconstructs cognition from the workspace cursor and stored semantic orientation.
 
+#### Direct world interface
+
+Qwen and R2 receive the world in parallel. Every Qwen turn includes the current visual frame. After the first intervention it also includes the immediately preceding frame, the anonymous intervention reference, and the current frame as an ordered transition. A bounded number of older transitions may be retrieved by epistemic salience when they confirmed/refuted a live claim or caused a large structural change. The complete frame/transition history remains content-addressed and expandable; it is never reconstructed solely from R2 prose.
+
+ARC action IDs and semantic direction labels remain outside Qwen's control interface. The visual transition names an episode-local opaque intervention model, allowing causal comparison without letting Qwen emit environment commands.
+
+#### Observable grounding invariant
+
+Every situated Qwen explanation must either terminate in observable region/component addresses or expose an explicit open grounding port for R2. Region objects carry a frame reference, bounding box, mask blob/RLE digest, component identity, and perceptual descriptors. Temporal groundings additionally cite ordered before/after frame and transition IDs. R2 alone adjudicates whether a proposed grounding is bound, ambiguous, open, impossible, or contradicted.
+
+The executable chain is `pixels <-> regions/correspondences <-> bindings <-> schemas <-> explanations`. Generic schema objects need not contain coordinates, but any situated explanation or control-relevant binding must have a dependency path to observation-grounded objects.
+
+#### Context compression policy
+
+The authoritative layer is lossless: hash-chained events, content-addressed PNG frames, RLE masks, stable object IDs, correspondence/evidence edges, and the complete action ledger. The Qwen rendering uses short deterministic aliases, interned predicate vocabulary, current/recent images, compact graph deltas, and a dependency-closed salient cut.
+
+Small-lossy semantic compaction is permitted only for dormant or resolved payload bodies. Their stable ID, kind, support, dependency topology, payload hash, omission reason, and expansion handle remain visible. Live competing bindings, open grounding ports, rejection witnesses, and causal evidence paths may not be compacted away. Periodic visual keyframes plus lossless changed-cell/region deltas avoid resending the visual history.
+
 ## Salience model
 
 Workers write immutable attention contributions rather than assigning final salience directly:
@@ -137,14 +155,14 @@ For every game:
 
 No previous actions, rewards, notes, semantic labels, known solutions, or another game's cognitive objects enter either arm. Game IDs are transport metadata and are omitted from Qwen content.
 
-The R2-only arm is run once per game because its behavior is independent of Qwen frontier parameters. Each treatment profile is compared with that same preregistered fresh-start baseline. Environment initialization and action/replay protocol are identical across the pair.
+Both arms are run from a fresh environment for every `(profile, game)` pair. This yields three profile-matched R2-only controls rather than reusing one trajectory across profiles, so scheduling, checkpoint, and frontier-policy effects remain paired and auditable. Environment initialization and action/replay protocol are identical within each pair.
 
 ## Global architecture profiles
 
 There are three frozen, non-game-specific profiles:
 
-- `balanced` (primary): 12 frontier roots, 5,600-token budget, proposal boost 1.0, 12-action half-life.
-- `wide_frontier`: 24 roots and 7,200 tokens; other balanced parameters unchanged.
+- `balanced` (primary): 12 frontier roots, 2,400 compact-renderer token units, proposal boost 1.0, 12-action half-life.
+- `wide_frontier`: 24 roots and 3,200 compact-renderer token units; other balanced parameters unchanged.
 - `persistent_proposal`: balanced frontier with boost 2.0 and 24-action half-life.
 
 These are diagnostic sensitivity profiles, not a leaderboard search. No per-game selection is permitted. The primary scientific verdict uses `balanced`; the other profiles localize frontier-capacity versus attention-persistence bottlenecks.
@@ -159,7 +177,7 @@ These are diagnostic sensitivity profiles, not a leaderboard search. No per-game
 - Each committed action writes pending and committed checkpoints with predecessor/successor observation digests.
 - The parent scheduler alone writes the aggregate census state.
 
-At roughly 45–75 seconds per Qwen call, 75 treatment jobs across three profiles and three calls imply approximately 3–5 serial GPU hours, plus environment/replay overhead. The run is therefore suitable for an overnight census.
+The frozen census contains 25 games × three profiles × two arms = 150 fresh episodes (75 pairs), at most 4,800 environment actions and 225 Qwen calls. The measured-v0 estimate is 3.45 serial GPU hours, 4.52 central wall-clock hours with four environment workers, and 5.19 hours after a 15% census allowance; the operational range is 5–7 hours. The run is therefore suitable for an overnight census.
 
 ## Recorded measurements
 
@@ -225,4 +243,3 @@ Before the first v1 ARC action, hash and freeze:
 - environment package hashes.
 
 After freeze, no prompt, score weight, cutoff, graph rule, controller rule, or profile may change based on any game result. Failures are recorded and resumed; they are not repaired in place. The census may be rerun only under a new versioned experiment.
-

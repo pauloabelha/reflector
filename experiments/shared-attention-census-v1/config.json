@@ -12,19 +12,19 @@
   "profiles": {
     "balanced": {
       "frontier_root_limit": 12,
-      "frontier_token_budget": 5600,
+      "frontier_token_budget": 2400,
       "proposal_attention_boost": 1.0,
       "attention_half_life_actions": 12
     },
     "wide_frontier": {
       "frontier_root_limit": 24,
-      "frontier_token_budget": 7200,
+      "frontier_token_budget": 3200,
       "proposal_attention_boost": 1.0,
       "attention_half_life_actions": 12
     },
     "persistent_proposal": {
       "frontier_root_limit": 12,
-      "frontier_token_budget": 5600,
+      "frontier_token_budget": 2400,
       "proposal_attention_boost": 2.0,
       "attention_half_life_actions": 24
     }
@@ -45,4 +45,3 @@
   "support_policy": "environment-evidence-only",
   "workspace_protocol": "shared-attention-census-v1.0"
 }
-

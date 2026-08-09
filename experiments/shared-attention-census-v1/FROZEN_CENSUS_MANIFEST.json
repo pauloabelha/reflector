@@ -1,0 +1,14 @@
+{
+  "protocol": "shared-attention-census-v1.0",
+  "game_ids": [
+    "ar25", "bp35", "cd82", "cn04", "dc22", "ft09", "g50t", "ka59",
+    "lf52", "lp85", "ls20", "m0r0", "r11l", "re86", "s5i5", "sb26",
+    "sc25", "sk48", "sp80", "su15", "tn36", "tr87", "tu93", "vc33", "wa30"
+  ],
+  "corpus_digest": "27c0fda784a3879dfd6457bca1592a7d181e0c96b7fcf839125e9d90a1ff8317",
+  "manifest_digest": "98988cef23051abfbe6d5c9bc020d07154b885f80973732aa22c9e20de7d20a8",
+  "job_count": 150,
+  "pair_count": 75,
+  "maximum_environment_actions": 4800,
+  "maximum_qwen_calls": 225
+}
