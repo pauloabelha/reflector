@@ -63,6 +63,7 @@ def _return_evidence_as_criticism(
     workspace_id: str,
     state: Any,
     *,
+    before_grid: Any,
     after_grid: Any,
     legal: Sequence[int],
     selected_prediction_ids: Sequence[str],
@@ -78,6 +79,20 @@ def _return_evidence_as_criticism(
     if not schema_ids:
         return state
     raw_grounding, _figures = BASE.V0.relational_state(after_grid, len(legal), ())
+    temporal_relations = BASE.V0.motion_relations(before_grid, after_grid)
+    raw_grounding["relations"] = sorted(
+        {
+            BASE.LEDGER.stable_json(item): item
+            for item in (*raw_grounding.get("relations", ()), *temporal_relations)
+        }.values(),
+        key=BASE.LEDGER.stable_json,
+    )
+    raw_grounding["temporal_relation_provenance"] = {
+        "protocol": "action-free-transition-relations-v1",
+        "before_frame_digest": BASE.LEDGER.stable_hash(before_grid),
+        "after_frame_digest": BASE.LEDGER.stable_hash(after_grid),
+        "predicates": sorted({str(item["predicate"]) for item in temporal_relations}),
+    }
     grounding_state = BRIDGE.action_blind_grounding_state(raw_grounding)
     relation_set = _latest_relation_set(state)
     for schema_id in schema_ids:
@@ -175,6 +190,7 @@ def ingest_transition_graph(
             root,
             workspace_id,
             updated,
+            before_grid=before_grid,
             after_grid=after_grid,
             legal=legal,
             selected_prediction_ids=selected_ids,

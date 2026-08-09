@@ -1,0 +1,12 @@
+{
+  "fixture": "v1.11 preserved source_action_count=8 repair turn 79ac5bc87ffb54d61112649f77b11bba2cf6636aad6d35cb7cbee6264290f5ec",
+  "legacy_schema_bytes": 6703,
+  "legacy_schema_token_estimate_chars_div_4": 1676,
+  "revision_schema_bytes": 1486,
+  "revision_schema_token_estimate_chars_div_4": 372,
+  "byte_reduction_fraction": 0.7783082201999105,
+  "offline_multimodal_prompt_tokens": 10586,
+  "offline_completion_tokens": 1178,
+  "offline_finish_reason": "stop",
+  "note": "Final compact causal-packet turn with separate grammar-required relation and prospective evidence addresses. Offline responses are diagnostics only and never seed a fresh run."
+}

@@ -1,0 +1,11 @@
+{
+  "experiment": "parallel-cognitive-workspace-v1-12",
+  "protocol": "prospective-control-v1.12",
+  "workspace_protocol": "prospective-control-v1.12",
+  "qwen": {
+    "max_tokens": 3072,
+    "reserved_tokens": 3072,
+    "revision_max_tokens": 3072,
+    "revision_thinking_budget_tokens": 1024
+  }
+}
