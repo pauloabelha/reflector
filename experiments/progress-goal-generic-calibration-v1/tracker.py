@@ -36,6 +36,16 @@ class TrackedCalibration:
     unexplained_interventions: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class PixelMotion:
+    delta: tuple[int, int]
+    colors: tuple[int, ...]
+    mass: int
+    before_anchor: tuple[int, int]
+    after_anchor: tuple[int, int]
+    size: tuple[int, int]
+
+
 def _anchor(value: Any) -> tuple[int, int]:
     raw = getattr(value, "anchor", None)
     if not isinstance(raw, (tuple, list)) or len(raw) != 2:
@@ -87,6 +97,78 @@ def complete_correspondence(
         mapping[left] = right
         used.add(right)
     return mapping
+
+
+def pixel_motion_hypotheses(before: Sequence[Sequence[int]], after: Sequence[Sequence[int]]) -> tuple[PixelMotion, ...]:
+    """Recover translated multi-color objects even inside connected scenery."""
+
+    if len(before) != len(after) or not before or any(len(a) != len(b) for a, b in zip(before, after)):
+        raise CalibrationTrackingError("pixel transition grids differ in shape")
+    colors = sorted({int(value) for row in before for value in row} | {int(value) for row in after for value in row})
+    by_delta: dict[tuple[int, int], list[tuple[int, set[tuple[int, int]], set[tuple[int, int]]]]] = {}
+    for color in colors:
+        removed = {
+            (x, y) for y, row in enumerate(before) for x, value in enumerate(row)
+            if int(value) == color and int(after[y][x]) != color
+        }
+        added = {
+            (x, y) for y, row in enumerate(after) for x, value in enumerate(row)
+            if int(value) == color and int(before[y][x]) != color
+        }
+        if not removed or len(removed) != len(added):
+            continue
+        first = min(removed)
+        matches = []
+        for target in sorted(added):
+            delta = (target[0] - first[0], target[1] - first[1])
+            if delta == (0, 0):
+                continue
+            if {(x + delta[0], y + delta[1]) for x, y in removed} == added:
+                matches.append(delta)
+        for delta in matches:
+            by_delta.setdefault(delta, []).append((color, removed, added))
+    output = []
+    for delta, rows in by_delta.items():
+        removed_union = set().union(*(row[1] for row in rows))
+        added_union = set().union(*(row[2] for row in rows))
+        if {(x + delta[0], y + delta[1]) for x, y in removed_union} != added_union:
+            continue
+        min_x = min(x for x, _ in removed_union)
+        min_y = min(y for _, y in removed_union)
+        max_x = max(x for x, _ in removed_union)
+        max_y = max(y for _, y in removed_union)
+        output.append(PixelMotion(
+            delta=delta,
+            colors=tuple(sorted(row[0] for row in rows)),
+            mass=len(removed_union),
+            before_anchor=(min_x, min_y),
+            after_anchor=(min_x + delta[0], min_y + delta[1]),
+            size=(max_x - min_x + 1, max_y - min_y + 1),
+        ))
+    return tuple(sorted(output, key=lambda item: (-len(item.colors), -item.mass, item.delta, item.colors)))
+
+
+def consistent_pixel_controller(transitions: Sequence[tuple[PixelMotion, ...]]) -> tuple[PixelMotion, ...] | None:
+    """Select a persistent richest color signature, retaining no arbitrary tie."""
+
+    if not transitions or any(not rows for rows in transitions):
+        return None
+    signatures = set((row.colors, row.mass, row.size) for row in transitions[0])
+    for rows in transitions[1:]:
+        signatures &= {(row.colors, row.mass, row.size) for row in rows}
+    if not signatures:
+        return None
+    ranked = sorted(signatures, key=lambda item: (-len(item[0]), -item[1], item[0], item[2]))
+    best = ranked[0]
+    if len(ranked) > 1 and (len(ranked[1][0]), ranked[1][1]) == (len(best[0]), best[1]):
+        return None
+    selected = []
+    for rows in transitions:
+        matches = [row for row in rows if (row.colors, row.mass, row.size) == best]
+        if len(matches) != 1:
+            return None
+        selected.append(matches[0])
+    return tuple(selected)
 
 
 def track_calibration(
@@ -190,4 +272,4 @@ def workspace_transitions(calibration: TrackedCalibration) -> list[dict[str, Any
     return rows
 
 
-__all__ = ["CalibrationStep", "CalibrationTrackingError", "EntityEffect", "TrackedCalibration", "complete_correspondence", "track_calibration", "workspace_transitions"]
+__all__ = ["CalibrationStep", "CalibrationTrackingError", "EntityEffect", "PixelMotion", "TrackedCalibration", "complete_correspondence", "consistent_pixel_controller", "pixel_motion_hypotheses", "track_calibration", "workspace_transitions"]

@@ -66,3 +66,19 @@ def test_relaxed_completion_preserves_rotating_unmatched_controller() -> None:
     )
     assert result.controlled_id == "e000"
     assert result.movement_models == (((0, -2), "i0"),)
+
+
+def test_multicolor_pixel_motion_is_recovered_inside_connected_substrate() -> None:
+    before = [[3] * 8 for _ in range(6)]
+    after = [[3] * 8 for _ in range(6)]
+    # A two-color 2x2 object moves right by two, while substrate restoration is
+    # the complementary single-color motion in the opposite direction.
+    for x, y, color in ((1, 2, 9), (2, 2, 9), (1, 3, 12), (2, 3, 12)):
+        before[y][x] = color
+    for x, y, color in ((3, 2, 9), (4, 2, 9), (3, 3, 12), (4, 3, 12)):
+        after[y][x] = color
+    rows = T.pixel_motion_hypotheses(before, after)
+    assert rows[0].colors == (9, 12)
+    assert rows[0].delta == (2, 0)
+    assert rows[0].mass == 4
+    assert T.consistent_pixel_controller((rows, rows)) == (rows[0], rows[0])

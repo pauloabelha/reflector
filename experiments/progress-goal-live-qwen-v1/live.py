@@ -86,6 +86,7 @@ def generic_calibration(environment: Any, observation: Any, game: str, legal: An
     initial_grid = LAB.BASE.BASE.observation_grid(observation)
     initial_figures = LAB.BASE.V0.V0.select_figures(initial_grid)
     successors = []
+    grid_successors = []
     intervention_actions = {}
     history = []
     changed = []
@@ -95,7 +96,9 @@ def generic_calibration(environment: Any, observation: Any, game: str, legal: An
         before = LAB.BASE.BASE.observation_record(observation)
         observation = LAB.BASE.execute_action(environment, game, action, {}, "generic-live-goal-calibration")
         after = LAB.BASE.BASE.observation_record(observation)
-        successors.append(LAB.BASE.V0.V0.select_figures(LAB.BASE.BASE.observation_grid(observation)))
+        successor_grid = LAB.BASE.BASE.observation_grid(observation)
+        grid_successors.append(successor_grid)
+        successors.append(LAB.BASE.V0.V0.select_figures(successor_grid))
         changed.append(before["frame_sha256"] != after["frame_sha256"])
         history.append({"action": action, "before": before, "after": after, "phase": "calibration", "intervention_ref": reference})
         atomic_json(ARTIFACTS / "checkpoint.json", {"history": history})
@@ -104,17 +107,31 @@ def generic_calibration(environment: Any, observation: Any, game: str, legal: An
         before, after, LAB.BASE.V0.V0.BASE.correspond
     )
     calibration = TRACKER.track_calibration(initial_figures, successors, refs, correspondence)
+    pixel_controller = None
+    if calibration.controlled_id is None:
+        pixel_rows = []
+        prior_grid = initial_grid
+        for successor_grid in grid_successors:
+            pixel_rows.append(TRACKER.pixel_motion_hypotheses(prior_grid, successor_grid))
+            prior_grid = successor_grid
+        pixel_controller = TRACKER.consistent_pixel_controller(pixel_rows)
+    controlled_id = calibration.controlled_id if pixel_controller is None else "p000"
     transition_rows = []
     for index, step in enumerate(calibration.steps):
         effect = next(
             (item for item in step.effects if item.entity_id == calibration.controlled_id),
             None,
         )
+        pixel_effect = None if pixel_controller is None else pixel_controller[index]
         transition_rows.append({
             "intervention_ref": step.intervention_ref,
-            "controlled_id": calibration.controlled_id,
-            "controlled_candidates": list(calibration.controlled_candidates),
-            "observed_delta": [0, 0] if effect is None or effect.delta is None else list(effect.delta),
+            "controlled_id": controlled_id,
+            "controlled_candidates": list(calibration.controlled_candidates) if pixel_controller is None else ["p000"],
+            "observed_delta": (
+                list(pixel_effect.delta) if pixel_effect is not None
+                else [0, 0] if effect is None or effect.delta is None
+                else list(effect.delta)
+            ),
             "observation_changed": changed[index],
             "entity_effects": [
                 {"entity_id": item.entity_id, "delta": item.delta, "status": item.status}
@@ -125,11 +142,25 @@ def generic_calibration(environment: Any, observation: Any, game: str, legal: An
         tuple(delta): intervention_actions[reference]
         for delta, reference in calibration.movement_models
     }
+    rendered = tracked_entity_rows(calibration.final_entities)
+    if pixel_controller is not None:
+        movement = {
+            tuple(row.delta): intervention_actions[refs[index]]
+            for index, row in enumerate(pixel_controller)
+        }
+        final_pixel = pixel_controller[-1]
+        rendered.append({
+            "id": "p000", "kind": "action_correlated_pixel_process",
+            "outline_class": "pixel_motion_composite",
+            "interior_class": "colors:" + ",".join(map(str, final_pixel.colors)),
+            "area": final_pixel.mass, "origin": list(final_pixel.after_anchor),
+            "size": list(final_pixel.size),
+        })
     return {
         "observation": observation, "history": history,
         "movement": movement, "intervention_actions": intervention_actions,
         "transition_rows": transition_rows,
-        "entities": tracked_entity_rows(calibration.final_entities),
+        "entities": rendered,
         "calibration": calibration,
     }
 
