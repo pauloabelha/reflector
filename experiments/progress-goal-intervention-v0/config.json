@@ -1,0 +1,29 @@
+{
+  "experiment": "progress-goal-intervention-v0",
+  "development_game": "wa30",
+  "level_target": 1,
+  "action_budget": 48,
+  "fixed_calibration_prefix": "each available simple opaque intervention once in sorted order",
+  "arms": [
+    "null_writer",
+    "sham_goal",
+    "generic_goal_unbound",
+    "generic_goal_oracle_bound"
+  ],
+  "mock_attention_boost": 64,
+  "empirical_support_initial": 0,
+  "completion_action_gate": 40,
+  "fresh_environment_per_arm": true,
+  "oracle_development_only": true,
+  "oracle_solution_actions": 26,
+  "transferable_goal_ast_max_nodes": 8,
+  "forbidden_transfer_fields": [
+    "game_id",
+    "action_id",
+    "action_sequence",
+    "color",
+    "coordinate",
+    "frame_digest",
+    "entity_id"
+  ]
+}
