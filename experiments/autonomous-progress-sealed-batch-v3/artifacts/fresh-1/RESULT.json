@@ -1,0 +1,166 @@
+{
+  "manifest_digest": "d186e9331969b2b80a02a979e389dabccd64bcbc92b6563aaf42f038750bfff5",
+  "protocol": "autonomous-progress-sealed-batch-v3",
+  "results": [
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "bp35",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "cd82",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "action_sequence": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "actions": 16,
+      "exact_replay": true,
+      "game": "cn04",
+      "goal_ast": {
+        "direction": "minimize",
+        "lower_bound": 0,
+        "potential": {
+          "arguments": [
+            "?a",
+            "?b"
+          ],
+          "op": "TranslationAlignmentResidual"
+        },
+        "protocol": "compositional-progress-dsl-v0",
+        "roles": {
+          "?a": {
+            "type": "ObservedRegion"
+          },
+          "?b": {
+            "type": "ObservedRegion"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 0,
+      "selected_capability": "gradient:TranslationAlignmentResidual"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "ft09",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "g50t",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "lf52",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "lp85",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "action_sequence": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "actions": 4,
+      "exact_replay": true,
+      "game": "m0r0",
+      "goal_ast": {
+        "direction": "minimize",
+        "lower_bound": 0,
+        "potential": {
+          "arguments": [
+            "?a",
+            "?b"
+          ],
+          "op": "TranslationAlignmentResidual"
+        },
+        "protocol": "compositional-progress-dsl-v0",
+        "roles": {
+          "?a": {
+            "type": "ObservedRegion"
+          },
+          "?b": {
+            "type": "ObservedRegion"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 0,
+      "selected_capability": "gradient:TranslationAlignmentResidual"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "r11l",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "s5i5",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "sb26",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "sc25",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "sk48",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "su15",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "tn36",
+      "status": "ABSTAIN_OR_ERROR"
+    },
+    {
+      "error": "RuntimeError: capability registry abstained",
+      "game": "vc33",
+      "status": "ABSTAIN_OR_ERROR"
+    }
+  ],
+  "solved_count": 0,
+  "solved_games": []
+}

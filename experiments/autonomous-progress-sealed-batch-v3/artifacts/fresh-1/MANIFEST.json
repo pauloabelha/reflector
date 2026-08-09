@@ -1,0 +1,24 @@
+{
+  "action_budget": 64,
+  "digest": "d186e9331969b2b80a02a979e389dabccd64bcbc92b6563aaf42f038750bfff5",
+  "mechanism_commit": "16d2bb5",
+  "protocol": "autonomous-progress-sealed-batch-v3",
+  "targets": [
+    "bp35",
+    "cd82",
+    "cn04",
+    "ft09",
+    "g50t",
+    "lf52",
+    "lp85",
+    "m0r0",
+    "r11l",
+    "s5i5",
+    "sb26",
+    "sc25",
+    "sk48",
+    "su15",
+    "tn36",
+    "vc33"
+  ]
+}
