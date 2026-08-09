@@ -1329,7 +1329,13 @@ def run_census(config: Mapping[str, Any], manifest: Mapping[str, Any], *, games:
                     failure = {**job, "error": f"{type(error).__name__}: {error}"}
                     failures.append(failure)
                     append_status(f"- FAILED `{job['profile_id']}/{job['game']}/{job['arm_id']}`: {failure['error']}.")
+                    for other in futures:
+                        if other is not future:
+                            other.cancel()
+                    append_status("- FAIL-FAST requested: pending jobs cancelled; only already-running workers may finish checkpoint boundaries.")
                 LEDGER.atomic_json(ARTIFACTS / "PARTIAL_RESULTS.json", {"completed": len(results), "failed": len(failures), "total": len(jobs), "results": sorted(results, key=lambda item: (item['profile_id'], item['game'], item['arm_id'])), "failures": failures})
+                if failures:
+                    break
     finally:
         fifo.stop(drain=True)
     summary = {"results": results, "failures": failures, "complete": len(results) == len(jobs) and not failures}
