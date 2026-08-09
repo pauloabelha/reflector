@@ -1,0 +1,13 @@
+{
+  "experiment": "parallel-cognitive-workspace-v1-19",
+  "protocol": "unique-binding-calibration-capacity-v1.19",
+  "workspace_protocol": "unique-binding-calibration-capacity-v1.19",
+  "profiles": {
+    "generic_prospective": {
+      "attention_half_life_actions": 12,
+      "frontier_root_limit": 24,
+      "frontier_token_budget": 10000,
+      "proposal_attention_boost": 1.0
+    }
+  }
+}
