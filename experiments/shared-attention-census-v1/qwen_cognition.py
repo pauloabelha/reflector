@@ -376,33 +376,72 @@ def _compact_materialization(state: Any, aliases: Mapping[str, str]) -> dict[str
     }
 
 
-def _compact_event(event: Any, aliases: Mapping[str, str]) -> dict[str, Any]:
+def _compact_event(event: Any, aliases: Mapping[str, str]) -> list[Any]:
     item = event.payload["item"]
-    base = {"seq": event.seq, "type": event.event_type, "actor": event.actor, "event_hash": event.event_hash}
     if event.event_type == "ObjectAdded":
-        return {
-            **base,
-            "item": {
-                "id": aliases[item["object_id"]],
-                "kind": item["kind"],
-                "created_by": item["created_by"],
-                "dependencies": [aliases[value] for value in item["dependency_ids"]],
-                "identity_digest": stable_hash(json.loads(item["identity_json"]))[:16],
-                "payload_digest": stable_hash(json.loads(item["payload_json"]))[:16],
-            },
-        }
+        return [
+            "O",
+            aliases[item["object_id"]],
+            item["kind"],
+            [aliases[value] for value in item["dependency_ids"]],
+        ]
     if event.event_type == "EdgeAdded":
-        return {**base, "item": {"kind": item["kind"], "source": aliases[item["source_id"]], "target": aliases[item["target_id"]]}}
-    return {
-        **base,
-        "item": {
-            "worker": item["worker"],
-            "object": aliases[item["object_id"]],
-            "weight": item["weight"],
-            "channel": item["channel"],
-            "basis": [aliases[value] for value in item["basis_ids"]],
-        },
-    }
+        return ["E", item["kind"], aliases[item["source_id"]], aliases[item["target_id"]]]
+    return ["A", item["worker"], aliases[item["object_id"]], item["weight"]]
+
+
+def _stable_aliases(state: Any) -> dict[str, str]:
+    output: dict[str, str] = {}
+    used: set[str] = set()
+    for item in sorted(state.objects, key=lambda value: value.object_id):
+        digest = item.object_id.split(":", 1)[-1]
+        width = 8
+        alias = f"o{digest[:width]}"
+        while alias in used:
+            width += 2
+            alias = f"o{digest[:width]}"
+        used.add(alias)
+        output[item.object_id] = alias
+    return output
+
+
+def _compact_deltas(events: Sequence[Any], aliases: Mapping[str, str], selected_ids: set[str]) -> list[list[Any]]:
+    """Keep epistemically live rows exact; summarize contiguous dormant runs."""
+
+    rows: list[list[Any]] = []
+    pending: list[Any] = []
+
+    def flush() -> None:
+        if not pending:
+            return
+        counts: dict[str, int] = {}
+        for event in pending:
+            item = event.payload["item"]
+            label = f"{event.event_type[0]}:{item.get('kind', item.get('channel', 'attention'))}"
+            counts[label] = counts.get(label, 0) + 1
+        rows.append(["G", len(pending), counts, stable_hash([item.event_hash for item in pending])[:10]])
+        pending.clear()
+
+    epistemic_kinds = {"schema", "binding", "explanation", "environment_evidence", "transition", "qwen_orientation"}
+    for event in events:
+        item = event.payload["item"]
+        if event.event_type == "ObjectAdded":
+            critical = item["object_id"] in selected_ids or item["kind"] in epistemic_kinds
+        elif event.event_type == "EdgeAdded":
+            critical = (
+                item["kind"] in {"supports", "refutes", "invalidates", "grounds_pickup"}
+                or item["source_id"] in selected_ids
+                or item["target_id"] in selected_ids
+            )
+        else:
+            critical = item["worker"] == "qwen" or item["object_id"] in selected_ids
+        if critical:
+            flush()
+            rows.append(_compact_event(event, aliases))
+        else:
+            pending.append(event)
+    flush()
+    return rows
 
 
 def _cut_document(state: Any, selected_ids: set[str], mandatory: Sequence[str]) -> dict[str, Any]:
@@ -528,16 +567,17 @@ def build_turn(
         expansion_ids=orientation.expansion_ids,
     )
     real_to_alias = (
-        {item.object_id: f"o{index:03d}" for index, item in enumerate(sorted(state.objects, key=lambda value: value.object_id))}
+        _stable_aliases(state)
         if compact_ids
         else {item.object_id: item.object_id for item in state.objects}
     )
     rendered_cut = _replace_ids(cut, real_to_alias) if compact_ids else cut
+    selected_real_ids = {item["id"] for item in cut["objects"]}
     object_index = [
         {
             "id": real_to_alias[item.object_id],
             "kind": item.kind,
-            "dependencies": [real_to_alias[value] for value in item.dependency_ids],
+            **({} if compact_ids else {"dependencies": [real_to_alias[value] for value in item.dependency_ids]}),
         }
         for item in state.objects
     ]
@@ -555,10 +595,22 @@ def build_turn(
             if mode == "initial-full"
             else None
         ),
-        "ordered_lossless_deltas": [
-            (_compact_event(item, real_to_alias) if compact_ids else event_document(item))
-            for item in deltas
-        ],
+        "ordered_lossless_deltas": (
+            _compact_deltas(deltas, real_to_alias, selected_real_ids)
+            if compact_ids
+            else [event_document(item) for item in deltas]
+        ),
+        "delta_codec": (
+            {
+                "from_seq_exclusive": orientation.cursor_revision,
+                "rows_are_contiguous_and_ordered": True,
+                "rows": "[O,id,kind,deps] | [E,kind,source,target] | [A,worker,object,weight] | [G,event_count,kind_counts,ordered_run_hash10]",
+                "payloads": "expand object alias through object_index; exact prefix is authenticated by through_cursor.head_hash",
+                "G": "small-lossy dormant run: order/count/hash retained; exact events remain in authoritative ledger",
+            }
+            if compact_ids
+            else None
+        ),
         "sparse_cut": rendered_cut,
         "object_index": object_index,
         "allowed_vocabulary": {
@@ -626,11 +678,24 @@ def response_schema(turn: CognitionTurn) -> dict[str, Any]:
     if turn.mode == "initial-full":
         visible_ids.update(all_ids)
     for delta in turn.document["ordered_lossless_deltas"]:
-        payload = json.loads(delta["payload_json"])
-        item = payload.get("item", {})
-        for key in ("object_id", "source_id", "target_id"):
-            if key in item:
-                visible_ids.add(str(item[key]))
+        if "payload_json" in delta:
+            payload = json.loads(delta["payload_json"])
+            item = payload.get("item", {})
+            for key in ("object_id", "source_id", "target_id"):
+                if key in item:
+                    visible_ids.add(str(item[key]))
+        elif isinstance(delta, Mapping):
+            item = delta.get("item", {})
+            for key in ("id", "source", "target", "object"):
+                if key in item:
+                    visible_ids.add(str(item[key]))
+        elif isinstance(delta, list) and len(delta) >= 2:
+            if delta[0] == "O":
+                visible_ids.add(str(delta[1]))
+            elif delta[0] == "E" and len(delta) >= 4:
+                visible_ids.update((str(delta[2]), str(delta[3])))
+            elif delta[0] == "A" and len(delta) >= 3:
+                visible_ids.add(str(delta[2]))
     visible_ids.intersection_update(all_ids)
     entity_ids = sorted(
         item["id"]
@@ -847,11 +912,18 @@ def compile_response(response: Mapping[str, Any], turn: CognitionTurn) -> dict[s
             for key in ("object_id", "source_id", "target_id"):
                 if key in item:
                     visible.add(str(item[key]))
-        else:
+        elif isinstance(delta, Mapping):
             item = delta.get("item", {})
             for key in ("id", "source", "target", "object"):
                 if key in item:
                     visible.add(str(item[key]))
+        elif isinstance(delta, list) and len(delta) >= 2:
+            if delta[0] == "O":
+                visible.add(str(delta[1]))
+            elif delta[0] == "E" and len(delta) >= 4:
+                visible.update((str(delta[2]), str(delta[3])))
+            elif delta[0] == "A" and len(delta) >= 3:
+                visible.add(str(delta[2]))
 
     accepted: list[dict[str, Any]] = []
     rejected: list[dict[str, Any]] = []

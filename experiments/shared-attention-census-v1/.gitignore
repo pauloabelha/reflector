@@ -1,5 +1,8 @@
 artifacts/recordings/
-artifacts/workspaces/*/blobs/
+artifacts/workspaces/
+artifacts/progress/
+artifacts/PARTIAL_RESULTS.json
+artifacts/SUMMARY.json
 artifacts/run.lock
 artifacts/server-queue.lock
-
+artifacts-aborted-*/

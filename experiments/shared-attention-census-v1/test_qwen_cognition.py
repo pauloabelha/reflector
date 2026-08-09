@@ -171,6 +171,41 @@ def test_initial_full_then_ordered_lossless_deltas_from_durable_cursor() -> None
         )
 
 
+def test_compact_alias_projection_builds_a_second_turn_schema() -> None:
+    state, events, _items = graph_fixture()
+    orientation = COGNITION.Orientation("private-workspace")
+    initial = COGNITION.build_turn(
+        state,
+        events,
+        orientation,
+        request_id="req-compact-0",
+        token_budget=1800,
+        compact_ids=True,
+    )
+    compiled = COGNITION.compile_response(empty_response(initial), initial)
+    orientation = COGNITION.advance_orientation(orientation, initial, compiled)
+    state, _novel = add_object(
+        state,
+        events,
+        kind="explanation",
+        creator="r2",
+        name="compact-novel",
+    )
+    second = COGNITION.build_turn(
+        state,
+        events,
+        orientation,
+        request_id="req-compact-1",
+        token_budget=1800,
+        compact_ids=True,
+    )
+
+    assert second.mode == "ordered-deltas"
+    assert second.document["ordered_lossless_deltas"][0][0] == "O"
+    assert second.document["ordered_lossless_deltas"][0][1].startswith("o")
+    schema = COGNITION.response_schema(second)
+    assert schema["properties"]["request_id"]["const"] == "req-compact-1"
+
 def test_expansion_prioritizes_stable_id_and_orientation_is_reconstructable_not_model_authority() -> None:
     state, events, items = graph_fixture()
     target = items["distractors"][-1].object_id

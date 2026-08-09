@@ -724,12 +724,17 @@ def queue_qwen(
 ) -> tuple[str, Any, Future[Any]]:
     orientation = read_orientation(root, workspace_id)
     request_id = f"qr:{LEDGER.stable_hash({'workspace': workspace_id, 'index': task_index})[:24]}"
+    turn_budget = int(profile["frontier_token_budget"])
+    if orientation.initialized:
+        # Two visual frames consume roughly 2K model tokens.  Preserve a
+        # dependency-closed but smaller textual cut on delta turns.
+        turn_budget = min(turn_budget, 1400)
     turn = QC.build_turn(
         state,
         graph_events,
         orientation,
         request_id=request_id,
-        token_budget=int(profile["frontier_token_budget"]),
+        token_budget=turn_budget,
         max_deltas=1024,
         compact_ids=True,
     )
@@ -798,7 +803,7 @@ def integrate_qwen(
     for item in schemas:
         situated = {
             **item,
-            "payload": {**dict(item["payload"]), "eligible_action": action_count},
+            "payload": {**dict(item["payload"]), "eligible_step": action_count},
         }
         result = EG.ingest_qwen_writes(state, (situated,), response_id=f"{task_id}:{item['local_ref']}")
         state = apply_ingest(root, workspace_id, result)
@@ -889,7 +894,7 @@ def activate_visible_qwen(
     for item in state.objects:
         if item.created_by != "qwen" or item.kind != "schema" or item.object_id not in visible or item.object_id in activated:
             continue
-        eligible_action = int(item.payload.get("eligible_action", action_count))
+        eligible_action = int(item.payload.get("eligible_step", action_count))
         if action_count - eligible_action > int(profile["attention_half_life_actions"]):
             continue
         template = template_from_schema_object(item)
