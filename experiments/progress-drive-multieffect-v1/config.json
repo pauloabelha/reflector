@@ -1,0 +1,1 @@
+{"development_game":"tu93","endpoint":"http://127.0.0.1:8081/v1/chat/completions","model":"qwen3-vl-4b-thinking-q4_k_m","temperature":0,"seed":271828,"max_tokens":2048,"thinking_budget_tokens":1024,"action_budget":32,"completion_action_gate":24}

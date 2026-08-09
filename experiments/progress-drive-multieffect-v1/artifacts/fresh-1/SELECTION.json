@@ -1,0 +1,77 @@
+{
+  "candidates": [
+    {
+      "game": "tu93",
+      "score": "47d3fa4341ceef6411743cdce320f900a0276ac1fafb8c87b261e44bdedb06ed",
+      "version": "tu93-0768757b"
+    },
+    {
+      "game": "dc22",
+      "score": "5d5f0f44dec84fb06da1717265bb468487a05f5e2bca6be95297eb2be68bf18d",
+      "version": "dc22-fdcac232"
+    },
+    {
+      "game": "ka59",
+      "score": "64f5d27ebd096ae2cf01eb9d64a61e37e1e8a01de9bea5453ab5a37ad821d02e",
+      "version": "ka59-38d34dbb"
+    },
+    {
+      "game": "cd82",
+      "score": "6e00c65e7b18d41e4f3748d252cb78deabe78785af75430a7eed73eec9dd4253",
+      "version": "cd82-fb555c5d"
+    },
+    {
+      "game": "sc25",
+      "score": "845564b05aa7eb1eb86d1b60283c3c8d954b8ec950e24ce281a33c4edd130dd5",
+      "version": "sc25-635fd71a"
+    },
+    {
+      "game": "bp35",
+      "score": "847005c0301bab55208a78ea86903d2098efd1f39ceb69a8ad899ab3870f3415",
+      "version": "bp35-0a0ad940"
+    },
+    {
+      "game": "sp80",
+      "score": "924e0e7bfc45dad4d52416fc16a14f536fcacaa43b6701510fb34b2318148425",
+      "version": "sp80-589a99af"
+    },
+    {
+      "game": "m0r0",
+      "score": "a992a8b80bc170ea4b769dac17129655647fd536bb9c05e475edbf42186f5320",
+      "version": "m0r0-492f87ba"
+    },
+    {
+      "game": "sb26",
+      "score": "ab3cade50d04009baa6bdbad961f3a42ce20c8bc91dfb7d370ee54e0ec08c5bf",
+      "version": "sb26-7fbdac44"
+    },
+    {
+      "game": "re86",
+      "score": "ab7423999942f889624b30d853dfb071d8500af794085e745c553159e31523ba",
+      "version": "re86-8af5384d"
+    },
+    {
+      "game": "cn04",
+      "score": "b4cab11c9c2a1b611af8c29d02db0156e5465227194967988fd30bd28b682708",
+      "version": "cn04-2fe56bfb"
+    },
+    {
+      "game": "sk48",
+      "score": "ffd9371d20aaecd191bed2d503241ad40284c2293dcc85991f1b6858e114c1ee",
+      "version": "sk48-d8078629"
+    }
+  ],
+  "excluded": [
+    "ar25",
+    "g50t",
+    "ls20",
+    "tr87",
+    "wa30"
+  ],
+  "seed": "reflector2-multieffect-cross-v1\u0000",
+  "selected": {
+    "game": "tu93",
+    "score": "47d3fa4341ceef6411743cdce320f900a0276ac1fafb8c87b261e44bdedb06ed",
+    "version": "tu93-0768757b"
+  }
+}

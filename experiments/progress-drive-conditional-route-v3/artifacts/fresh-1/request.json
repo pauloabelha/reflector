@@ -1,0 +1,63 @@
+{
+  "max_tokens": 1536,
+  "messages": [
+    {
+      "content": [
+        {
+          "text": "You are the semantic worker in a shared grounded workspace. Write the single support-zero progress goal justified by the reachable route and terminal. Do not emit actions, directions, colors, coordinates, or a route. Evidence alone changes support.\nEPISTEMIC_WORKSPACE\n{\"blocked_probes_are_topology_evidence\":true,\"controlled_ref\":\"controlled0\",\"current_ref\":\"node0\",\"empirical_support\":0,\"protocol\":\"conditional-route-goal-v1\",\"reachable_node_count\":36,\"remaining_route_steps\":17,\"terminal_ref\":\"terminal0\"}",
+          "type": "text"
+        },
+        {
+          "image_url": {
+            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADVElEQVR42u3dMUoDQRSA4V3JBfQANmJvk/Qewq1FsNg+RcBasIi1nQfY3EF7K3vxDt4glmk084ph2Nn9vk5Yht2En3FheGmHYWhgrk58BAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACQAAgABAACAAEAAIAAcCULWq86e+7h+Q1m+Vp8pr2/SN5zTAMyWu6rktes79eZbmfXOtEnssOAAIAAYB3gLHbfH4d/rhf+XaxA4AAQAAw8XeAp6vLw/vA0peLHQAEAAKAqbwDXLw+Jq/ZBdbZN9s86wTO5+z6dfKaoW9G9Vx2ABAACAAEAAIAAYAAQAAgABAACACqspjzw4fm5/R51omczyk5FyjX/dQ+X8gOgH+BQAAgABAACAAEAAIAAYAAQAAwIbM+CxSa55NrncBcoNA8H/OF7AAgABAACAAEAAIAAYAAQAAgABAA/M1coIRs83MyzReKrFPy8yl5P3YAEAAIAAQAAgABgABAACAAEAAIAI6a9VmgyO9bRebe5DoPk2tOUS5jux87AAgABAACAAGAAEAAIAAQAAgABABHVXkWqOu65DWRcyyhuUAjWydy7qjk52MuEAgABAACAAGAAEAAIAAQAAgABACj0UZm44zNzUv6d7t2/brYOtgBQAAgABAACAAEAAIAAYAAQAAgABiBKucChebwNNtxrZNrDk/g7FbRuUAVniWzA4AAQAAIAAQAAgABgABAACAAEABMVJVngSLnT3aBdSLnfCJzgSK/k5XtfiLrBM75RJ4r1/3YAUAAIAAQAAgABAACAAGAAEAAIAAoosqzQEXn3vTlnqvknKLIcz2/3SavOa/8MJAdAP8CgQBAACAAEAAIAAQAAgABgABgQtraf+MJ7AAgABAACAAEAAIAAYAAQAAgABAACAAEgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQA/2h/zt58CtgBQAAgAJiPXxLmm4pgW3W1AAAAAElFTkSuQmCC"
+          },
+          "type": "image_url"
+        }
+      ],
+      "role": "user"
+    }
+  ],
+  "model": "qwen3-vl-4b-thinking-q4_k_m",
+  "response_format": {
+    "json_schema": {
+      "name": "route_goal",
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "controlled_ref": {
+            "const": "controlled0"
+          },
+          "family": {
+            "const": "navigation"
+          },
+          "potential": {
+            "const": "RemainingRouteSteps"
+          },
+          "protocol": {
+            "const": "conditional-route-goal-v1"
+          },
+          "terminal": {
+            "const": "ReachTerminal"
+          },
+          "terminal_ref": {
+            "const": "terminal0"
+          }
+        },
+        "required": [
+          "protocol",
+          "family",
+          "controlled_ref",
+          "terminal_ref",
+          "potential",
+          "terminal"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    "type": "json_schema"
+  },
+  "seed": 271828,
+  "temperature": 0,
+  "thinking_budget_tokens": 768
+}

@@ -1,0 +1,49 @@
+{
+  "action_sequence": [
+    1,
+    2,
+    3,
+    4,
+    1,
+    2,
+    2,
+    4,
+    1,
+    4,
+    2,
+    2,
+    3,
+    3,
+    2,
+    4,
+    4,
+    2,
+    4,
+    1,
+    4,
+    2
+  ],
+  "actions": 22,
+  "blocked_probe_count": 1,
+  "development_only": true,
+  "exact_replay": true,
+  "final_digest": "8aef8c81787d0677a3cf841f0b7552d2739c8ea9a7478dd2c9549fa001edf049",
+  "initial_digest": "8c429c4dbd812ee38c460f06d63100f7fb8d01e87d2ef5f2e21491478810aa9d",
+  "learned_action_deltas": {
+    "(-6, 0)": 3,
+    "(0, -6)": 1,
+    "(0, 6)": 2,
+    "(6, 0)": 4
+  },
+  "levels_completed": 1,
+  "qwen_goal": {
+    "controlled_ref": "controlled0",
+    "family": "navigation",
+    "potential": "RemainingRouteSteps",
+    "protocol": "conditional-route-goal-v1",
+    "terminal": "ReachTerminal",
+    "terminal_ref": "terminal0"
+  },
+  "qwen_support": 0,
+  "verdict": "PASS"
+}
