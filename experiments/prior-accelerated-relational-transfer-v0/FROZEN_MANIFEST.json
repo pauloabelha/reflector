@@ -1,0 +1,15 @@
+{
+  "files": {
+    "DESIGN_NOTES.md": "3b735b93cc1cd8f18854ad153259a9159fdc09e55d141495ebc71d6f6dc5fd0f",
+    "PROPOSAL.md": "f463de24e31bce80c58774517dc226b6a402a238bed63f80ff4a53c5ae1ee816",
+    "config.json": "20929ffd68d6eca9e25410005f4b9cf3ca8628637a10e478343461bcf3ed410c",
+    "experiment.py": "540964e723d9fc23be989bfadd4200b1804006367c8ff415fac5e9bbc1dd7549",
+    "external_prior.json": "f8ac9357d727a89daf21126271299b221804bf8362a17a9ff6e278594b275312",
+    "selected_targets.json": "5dbac8fdb948aed1b55ba048a48ceded3e5275c60702903f32e5099f03e40f05",
+    "self_built_schema.json": "f70db0f6b207c538607baa6a31ed2992a56ede08dc2538591b9997eab4e85db3"
+  },
+  "no_target_actions_executed": true,
+  "prepared_at": "2026-08-08",
+  "source_recording": "/home/pauloabelha/reflector-v164-pivot-goal/reports/v164-public-r1-recordings/ar25/ar25.reflectoragent.7c920744-1244-4c2d-bd8c-43c74f252adb.recording.jsonl",
+  "source_recording_sha256": "b7859f018249af517cb5052ce27e22c08dde76ca635e0e3cb2703bbe23bfb102"
+}

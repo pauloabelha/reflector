@@ -1,0 +1,584 @@
+{
+  "audit": [
+    {
+      "different_interior": 2,
+      "figures": 467,
+      "game": "ar25",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 2,
+          "group_size": 3,
+          "largest_layout_class": 2,
+          "layout_classes": 2,
+          "outline_hash": "outline:344d1de9e9bed47205f8",
+          "same_layout_pairs": 1
+        }
+      ],
+      "layout_motif_groups": [
+        {
+          "different_layout_pairs": 2,
+          "group_size": 3,
+          "largest_layout_class": 2,
+          "layout_classes": 2,
+          "outline_hash": "outline:344d1de9e9bed47205f8",
+          "same_layout_pairs": 1
+        }
+      ],
+      "legal_action_count": 7,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/ar25.reflectoragent.3b673829-b481-46fb-9c8e-3af7bf0bb444.recording.jsonl",
+      "same_interior": 1,
+      "same_outline": 3
+    },
+    {
+      "different_interior": 0,
+      "figures": 2553,
+      "game": "bp35",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 0,
+          "group_size": 150,
+          "largest_layout_class": 150,
+          "layout_classes": 1,
+          "outline_hash": "outline:5a86e376cdc22fced254",
+          "same_layout_pairs": 11175
+        },
+        {
+          "different_layout_pairs": 0,
+          "group_size": 7,
+          "largest_layout_class": 7,
+          "layout_classes": 1,
+          "outline_hash": "outline:a5d8513ea6d00a8704d0",
+          "same_layout_pairs": 21
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 4,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/bp35.reflectoragent.c4a75dd3-6929-49f3-b471-143356603884.recording.jsonl",
+      "same_interior": 128,
+      "same_outline": 128
+    },
+    {
+      "different_interior": 1,
+      "figures": 877,
+      "game": "cd82",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 1,
+          "group_size": 2,
+          "largest_layout_class": 1,
+          "layout_classes": 2,
+          "outline_hash": "outline:41a8c93f3dbe39bf68a7",
+          "same_layout_pairs": 0
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 6,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/cd82.reflectoragent.9833ad3a-d101-490b-8d41-ef4d929c4dcd.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 1
+    },
+    {
+      "different_interior": 0,
+      "figures": 358,
+      "game": "cn04",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 6,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/cn04.reflectoragent.103edd81-c74a-4e94-b41a-0e53ace59853.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 2883,
+      "game": "dc22",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 0,
+          "group_size": 4,
+          "largest_layout_class": 4,
+          "layout_classes": 1,
+          "outline_hash": "outline:5a86e376cdc22fced254",
+          "same_layout_pairs": 6
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 5,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/dc22.reflectoragent.fdaf4fea-013c-4241-ac52-81a2f06980a6.recording.jsonl",
+      "same_interior": 6,
+      "same_outline": 6
+    },
+    {
+      "different_interior": 17,
+      "figures": 2029,
+      "game": "ft09",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 75,
+          "group_size": 27,
+          "largest_layout_class": 24,
+          "layout_classes": 4,
+          "outline_hash": "outline:8ff1b793e84a1c6b8738",
+          "same_layout_pairs": 276
+        }
+      ],
+      "layout_motif_groups": [
+        {
+          "different_layout_pairs": 75,
+          "group_size": 27,
+          "largest_layout_class": 24,
+          "layout_classes": 4,
+          "outline_hash": "outline:8ff1b793e84a1c6b8738",
+          "same_layout_pairs": 276
+        }
+      ],
+      "legal_action_count": 1,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/ft09.reflectoragent.c51bd550-69db-4431-950b-045e65398937.recording.jsonl",
+      "same_interior": 111,
+      "same_outline": 128
+    },
+    {
+      "different_interior": 0,
+      "figures": 1108,
+      "game": "g50t",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 5,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/g50t.reflectoragent.757cbe77-f312-489b-ad85-5a93a946a3f3.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 863,
+      "game": "ka59",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 5,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/ka59.reflectoragent.91a4b3b7-2db1-4c59-a0e5-61c10905e6de.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 1571,
+      "game": "lf52",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 6,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/lf52.reflectoragent.2f6aff74-d527-4ec2-a9a2-a837b09dd20e.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 2182,
+      "game": "lp85",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 0,
+          "group_size": 2,
+          "largest_layout_class": 2,
+          "layout_classes": 1,
+          "outline_hash": "outline:339c60904b8ca7f14e73",
+          "same_layout_pairs": 1
+        },
+        {
+          "different_layout_pairs": 0,
+          "group_size": 4,
+          "largest_layout_class": 4,
+          "layout_classes": 1,
+          "outline_hash": "outline:39b0bda7c3339eee606f",
+          "same_layout_pairs": 6
+        },
+        {
+          "different_layout_pairs": 0,
+          "group_size": 20,
+          "largest_layout_class": 20,
+          "layout_classes": 1,
+          "outline_hash": "outline:61c801a928f4e47c5b65",
+          "same_layout_pairs": 190
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 1,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/lp85.reflectoragent.9aae8717-bdf2-4114-975a-7093397ed0e3.recording.jsonl",
+      "same_interior": 128,
+      "same_outline": 128
+    },
+    {
+      "different_interior": 1,
+      "figures": 1510,
+      "game": "ls20",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 1,
+          "group_size": 2,
+          "largest_layout_class": 1,
+          "layout_classes": 2,
+          "outline_hash": "outline:8d7938a06aaacad2c27a",
+          "same_layout_pairs": 0
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 4,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/ls20.reflectoragent.a953ea86-9e82-43b5-b11e-648250be8a45.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 1
+    },
+    {
+      "different_interior": 0,
+      "figures": 2649,
+      "game": "m0r0",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 6,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/m0r0.reflectoragent.6eb597fa-fb9d-440e-891d-24e86ba8064d.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 844,
+      "game": "r11l",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 0,
+          "group_size": 21,
+          "largest_layout_class": 21,
+          "layout_classes": 1,
+          "outline_hash": "outline:5a86e376cdc22fced254",
+          "same_layout_pairs": 210
+        },
+        {
+          "different_layout_pairs": 0,
+          "group_size": 2,
+          "largest_layout_class": 2,
+          "layout_classes": 1,
+          "outline_hash": "outline:8458e072f8d3b4a6346b",
+          "same_layout_pairs": 1
+        },
+        {
+          "different_layout_pairs": 0,
+          "group_size": 3,
+          "largest_layout_class": 3,
+          "layout_classes": 1,
+          "outline_hash": "outline:f389e9e6534ab8e9b3d9",
+          "same_layout_pairs": 3
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 1,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/r11l.reflectoragent.65c6b7f2-1806-4480-abe5-e8ef8b6684dc.recording.jsonl",
+      "same_interior": 128,
+      "same_outline": 128
+    },
+    {
+      "different_interior": 0,
+      "figures": 269,
+      "game": "re86",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 0,
+          "group_size": 8,
+          "largest_layout_class": 8,
+          "layout_classes": 1,
+          "outline_hash": "outline:41b7bb1ac5cc847d4fa6",
+          "same_layout_pairs": 28
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 5,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/re86.reflectoragent.890459da-62a5-437c-99c0-d0bf1c5cd336.recording.jsonl",
+      "same_interior": 28,
+      "same_outline": 28
+    },
+    {
+      "different_interior": 0,
+      "figures": 340,
+      "game": "s5i5",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 0,
+          "group_size": 8,
+          "largest_layout_class": 8,
+          "layout_classes": 1,
+          "outline_hash": "outline:5a86e376cdc22fced254",
+          "same_layout_pairs": 28
+        },
+        {
+          "different_layout_pairs": 1,
+          "group_size": 2,
+          "largest_layout_class": 1,
+          "layout_classes": 2,
+          "outline_hash": "outline:7013d986805695799667",
+          "same_layout_pairs": 0
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 1,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/s5i5.reflectoragent.d67d7913-be16-4ebb-95c3-b2d968ade6cd.recording.jsonl",
+      "same_interior": 29,
+      "same_outline": 29
+    },
+    {
+      "different_interior": 0,
+      "figures": 503,
+      "game": "sb26",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 0,
+          "group_size": 4,
+          "largest_layout_class": 4,
+          "layout_classes": 1,
+          "outline_hash": "outline:39b0bda7c3339eee606f",
+          "same_layout_pairs": 6
+        },
+        {
+          "different_layout_pairs": 0,
+          "group_size": 4,
+          "largest_layout_class": 4,
+          "layout_classes": 1,
+          "outline_hash": "outline:61c801a928f4e47c5b65",
+          "same_layout_pairs": 6
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 3,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/sb26.reflectoragent.da65adaf-bafc-4e18-a33f-b4b9dfd0a83f.recording.jsonl",
+      "same_interior": 12,
+      "same_outline": 12
+    },
+    {
+      "different_interior": 0,
+      "figures": 665,
+      "game": "sc25",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 5,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/sc25.reflectoragent.6c05948c-b654-4840-93fc-5d54c306ff80.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 1727,
+      "game": "sk48",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 6,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/sk48.reflectoragent.7b4ce05b-2975-4a67-a970-245126247b8f.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 599,
+      "game": "sp80",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 6,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/sp80.reflectoragent.33e5bcba-e961-4d02-a71b-e0825948406f.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 857,
+      "game": "su15",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 0,
+          "group_size": 19,
+          "largest_layout_class": 19,
+          "layout_classes": 1,
+          "outline_hash": "outline:5a86e376cdc22fced254",
+          "same_layout_pairs": 171
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 2,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/su15.reflectoragent.bcf21835-32cf-44dd-b489-07d34effea47.recording.jsonl",
+      "same_interior": 128,
+      "same_outline": 128
+    },
+    {
+      "different_interior": 18,
+      "figures": 1154,
+      "game": "tn36",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 18,
+          "group_size": 19,
+          "largest_layout_class": 18,
+          "layout_classes": 2,
+          "outline_hash": "outline:61c801a928f4e47c5b65",
+          "same_layout_pairs": 153
+        }
+      ],
+      "layout_motif_groups": [
+        {
+          "different_layout_pairs": 18,
+          "group_size": 19,
+          "largest_layout_class": 18,
+          "layout_classes": 2,
+          "outline_hash": "outline:61c801a928f4e47c5b65",
+          "same_layout_pairs": 153
+        }
+      ],
+      "legal_action_count": 1,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/tn36.reflectoragent.e499f4db-95cb-4b56-8ec2-4487aa110477.recording.jsonl",
+      "same_interior": 110,
+      "same_outline": 128
+    },
+    {
+      "different_interior": 11,
+      "figures": 2597,
+      "game": "tr87",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 15,
+          "group_size": 6,
+          "largest_layout_class": 1,
+          "layout_classes": 6,
+          "outline_hash": "outline:95b7b2697116a4e8fdd9",
+          "same_layout_pairs": 0
+        }
+      ],
+      "layout_motif_groups": [],
+      "legal_action_count": 4,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/tr87.reflectoragent.6ba2dbbe-8949-4df3-984e-d8e5850c3087.recording.jsonl",
+      "same_interior": 4,
+      "same_outline": 15
+    },
+    {
+      "different_interior": 0,
+      "figures": 699,
+      "game": "tu93",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 4,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/tu93.reflectoragent.3b7187c2-8891-479f-8983-f0df4d224db4.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 1528,
+      "game": "vc33",
+      "layout_groups": [],
+      "layout_motif_groups": [],
+      "legal_action_count": 1,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/vc33.reflectoragent.4a485c39-db7f-447a-89ea-90e09f0493a2.recording.jsonl",
+      "same_interior": 0,
+      "same_outline": 0
+    },
+    {
+      "different_interior": 0,
+      "figures": 193,
+      "game": "wa30",
+      "layout_groups": [
+        {
+          "different_layout_pairs": 3,
+          "group_size": 4,
+          "largest_layout_class": 3,
+          "layout_classes": 2,
+          "outline_hash": "outline:61c801a928f4e47c5b65",
+          "same_layout_pairs": 3
+        }
+      ],
+      "layout_motif_groups": [
+        {
+          "different_layout_pairs": 3,
+          "group_size": 4,
+          "largest_layout_class": 3,
+          "layout_classes": 2,
+          "outline_hash": "outline:61c801a928f4e47c5b65",
+          "same_layout_pairs": 3
+        }
+      ],
+      "legal_action_count": 5,
+      "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/wa30.reflectoragent.dcdda8cb-e059-4aff-bf4f-64b400235baa.recording.jsonl",
+      "same_interior": 6,
+      "same_outline": 6
+    }
+  ],
+  "negative": {
+    "different_interior": 0,
+    "figures": 358,
+    "game": "cn04",
+    "layout_groups": [],
+    "layout_motif_groups": [],
+    "legal_action_count": 6,
+    "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/cn04.reflectoragent.103edd81-c74a-4e94-b41a-0e53ace59853.recording.jsonl",
+    "same_interior": 0,
+    "same_outline": 0
+  },
+  "negative_candidates": [
+    "cn04",
+    "g50t",
+    "ka59",
+    "lf52",
+    "m0r0",
+    "sc25",
+    "sk48",
+    "sp80",
+    "tu93"
+  ],
+  "positive": {
+    "different_interior": 0,
+    "figures": 193,
+    "game": "wa30",
+    "layout_groups": [
+      {
+        "different_layout_pairs": 3,
+        "group_size": 4,
+        "largest_layout_class": 3,
+        "layout_classes": 2,
+        "outline_hash": "outline:61c801a928f4e47c5b65",
+        "same_layout_pairs": 3
+      }
+    ],
+    "layout_motif_groups": [
+      {
+        "different_layout_pairs": 3,
+        "group_size": 4,
+        "largest_layout_class": 3,
+        "layout_classes": 2,
+        "outline_hash": "outline:61c801a928f4e47c5b65",
+        "same_layout_pairs": 3
+      }
+    ],
+    "legal_action_count": 5,
+    "recording": "/home/pauloabelha/arc-agi-3-public-games-2026/recordings/reflector-v14-graph-400/wa30.reflectoragent.dcdda8cb-e059-4aff-bf4f-64b400235baa.recording.jsonl",
+    "same_interior": 6,
+    "same_outline": 6,
+    "selected_layout_group": {
+      "different_layout_pairs": 3,
+      "group_size": 4,
+      "largest_layout_class": 3,
+      "layout_classes": 2,
+      "outline_hash": "outline:61c801a928f4e47c5b65",
+      "same_layout_pairs": 3
+    },
+    "source_distance": [
+      1,
+      1,
+      0,
+      1
+    ]
+  },
+  "positive_candidates": [
+    "wa30"
+  ],
+  "protocol": "PROPOSAL.md source-nearest mechanical first-frame selector",
+  "source_excluded": "ar25",
+  "source_layout_group": {
+    "different_layout_pairs": 2,
+    "group_size": 3,
+    "largest_layout_class": 2,
+    "layout_classes": 2,
+    "outline_hash": "outline:344d1de9e9bed47205f8",
+    "same_layout_pairs": 1
+  }
+}

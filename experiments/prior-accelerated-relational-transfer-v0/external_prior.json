@@ -1,0 +1,13 @@
+{
+  "annotation": "For figures with equivalent outer structure, a matching-interior pair and a differing member, consequences aligning the matching-interior pair under a coupled intervention may be control-relevant.",
+  "body": [
+    ["SameOutline", ["?a", "?b"]],
+    ["SameOutline", ["?a", "?c"]],
+    ["SameInteriorLayout", ["?a", "?b"]],
+    ["DifferentInteriorLayout", ["?a", "?c"]]
+  ],
+  "effect": ["Decrease", ["TranslationAlignmentResidual", "?a", "?b"]],
+  "evidence": [],
+  "provenance": "externally-proposed",
+  "schema_language": "r2-structural-v0"
+}

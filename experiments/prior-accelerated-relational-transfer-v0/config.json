@@ -1,0 +1,42 @@
+{
+  "action_budget": 32,
+  "arms": [
+    "scratch",
+    "self_transfer",
+    "external",
+    "combined"
+  ],
+  "complex_action_policy": "epistemic-abstention",
+  "experiment": "prior-accelerated-relational-transfer-v0",
+  "external_prior_minimum_evidence": 0,
+  "max_parallel_workers": 4,
+  "negative_selector": {
+    "exclude": [
+      "ar25",
+      "$positive"
+    ],
+    "minimum_legal_actions": 2,
+    "same_outline_bindings": 0,
+    "tie_break": "lexicographic-game-id"
+  },
+  "positive_selector": {
+    "different_layout_pairs_minimum": 2,
+    "exclude": [
+      "ar25"
+    ],
+    "minimum_legal_actions": 2,
+    "minimum_group_size": 3,
+    "same_layout_pairs_minimum": 1,
+    "source_distance_fields": [
+      "group_size",
+      "largest_layout_class",
+      "layout_classes",
+      "different_layout_pairs"
+    ],
+    "tie_break": "lexicographic-game-id-then-outline-hash"
+  },
+  "source_game": "ar25",
+  "source_level": 1,
+  "source_minimum_decreasing_suffix": 2,
+  "target_level": 1
+}
