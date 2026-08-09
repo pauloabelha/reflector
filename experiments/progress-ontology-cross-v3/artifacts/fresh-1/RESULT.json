@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "actions": 25,
+      "arm": "r2_cycle",
+      "exact_replay": true,
+      "final_digest": "397fca46931a474afad74d89d044fae6620ac729b60d7ceb5f64b1cd187220ad",
+      "initial_digest": "e14ac2b5ce2f06db560711a9f8f85231145bcd865b898117793508b4b3fdc660",
+      "levels_completed": 0
+    },
+    {
+      "arm": "shared_progress_ontology",
+      "dispatcher": "SymbolicProgressError: no repeated two-glyph example panels",
+      "placement": "no balanced filled-object/hollow-slot population",
+      "status": "ontology_abstention"
+    }
+  ],
+  "same_start": false,
+  "verdict": "ABSTAIN"
+}

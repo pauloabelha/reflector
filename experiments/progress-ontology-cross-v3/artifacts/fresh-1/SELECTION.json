@@ -1,0 +1,65 @@
+{
+  "candidates": [
+    {
+      "game": "sp80",
+      "score": "115216618b7639f2720b68b2b19d23a8370ef0fedf68e9bc2d99767d16dee62e",
+      "version": "sp80-589a99af"
+    },
+    {
+      "game": "m0r0",
+      "score": "152ebf1bc33f1354d88bb6ff239e59895ffe911d823671a18ad0610b69672b58",
+      "version": "m0r0-492f87ba"
+    },
+    {
+      "game": "re86",
+      "score": "2f72a9018366efdd34808456ebde8212795cbccf1eb90ade2f6525614e908123",
+      "version": "re86-8af5384d"
+    },
+    {
+      "game": "sb26",
+      "score": "3105cef3fff2aae88a1ff31aed302ff380c0ae0d290a07aa273a46be8edddd00",
+      "version": "sb26-7fbdac44"
+    },
+    {
+      "game": "sk48",
+      "score": "311553eb058cd81d44ab77bd993983fdb56cc503f64370ee38e3f0e3ac163d37",
+      "version": "sk48-d8078629"
+    },
+    {
+      "game": "cn04",
+      "score": "494f90acb94deba9924b2537b3accbc92a9529599656e7170c165e4b15e34bd0",
+      "version": "cn04-2fe56bfb"
+    },
+    {
+      "game": "sc25",
+      "score": "abf922bc6248e6b52c67333322d3cca0ba8d79e2cfece3348bb2c04d0ea9b025",
+      "version": "sc25-635fd71a"
+    },
+    {
+      "game": "cd82",
+      "score": "d8c4068eba1c9136050ee4eaeb18026bee0891a99ebaf0a77d4a3823e83c06b9",
+      "version": "cd82-fb555c5d"
+    },
+    {
+      "game": "bp35",
+      "score": "f7d43c5336dcd33bdc09d6a2527e675e381b7d161f6d9375e088f66c67c5b75c",
+      "version": "bp35-0a0ad940"
+    }
+  ],
+  "excluded": [
+    "ar25",
+    "dc22",
+    "g50t",
+    "ka59",
+    "ls20",
+    "tr87",
+    "tu93",
+    "wa30"
+  ],
+  "seed": "reflector2-progress-ontology-cross-v3\u0000",
+  "selected": {
+    "game": "sp80",
+    "score": "115216618b7639f2720b68b2b19d23a8370ef0fedf68e9bc2d99767d16dee62e",
+    "version": "sp80-589a99af"
+  }
+}

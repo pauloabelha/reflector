@@ -1,0 +1,189 @@
+{
+  "history": [
+    {
+      "action": 1,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "ea35c50d8c778f382acdf95c1200820e638c8f079cbdd9611f57230834b3c3d6",
+        "frame_sha256": "0cd6c08e3c45cbc249b719b58104ba042439bda2a90b51ac61bb6b6a38c7b149",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "e14ac2b5ce2f06db560711a9f8f85231145bcd865b898117793508b4b3fdc660",
+        "frame_sha256": "9ca51bd7fa1778da99e047585b860aa7841198a06f2b716686cc4a3ae0ff4bd1",
+        "full_reset": true,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im00",
+      "phase": "calibration"
+    },
+    {
+      "action": 2,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "f29ae937061f0d42946e581381bca81eeacf0c89de5a3198b0a8c0bcab4769c8",
+        "frame_sha256": "d7e3acaf9a8f0c42bfa1c537ad82f7ee9c55a20828824dd9073df336adc71046",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "ea35c50d8c778f382acdf95c1200820e638c8f079cbdd9611f57230834b3c3d6",
+        "frame_sha256": "0cd6c08e3c45cbc249b719b58104ba042439bda2a90b51ac61bb6b6a38c7b149",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im01",
+      "phase": "calibration"
+    },
+    {
+      "action": 3,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "fa262856e9eff8d9c5529c0ff939afaf743058371e7fc9c2e672c43515f8a30a",
+        "frame_sha256": "f8899305d54f54decb0568138f7ce708094322ec7d2e0484cf1a472c19693370",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "f29ae937061f0d42946e581381bca81eeacf0c89de5a3198b0a8c0bcab4769c8",
+        "frame_sha256": "d7e3acaf9a8f0c42bfa1c537ad82f7ee9c55a20828824dd9073df336adc71046",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im02",
+      "phase": "calibration"
+    },
+    {
+      "action": 4,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "4d0e93b8cee2af630b27a051cece81314e9d4d67a00c69a72f41823d7a8a1162",
+        "frame_sha256": "cdcd13ec68c4aa1df37d1986baf945c29fedea6f0f859320359722719cd28085",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "fa262856e9eff8d9c5529c0ff939afaf743058371e7fc9c2e672c43515f8a30a",
+        "frame_sha256": "f8899305d54f54decb0568138f7ce708094322ec7d2e0484cf1a472c19693370",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im03",
+      "phase": "calibration"
+    },
+    {
+      "action": 5,
+      "after": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "17bf886811b4a584ed8bc2267df2db7a2bb7fb2dd5bb4b33fc607304b6affda2",
+        "frame_sha256": "59e19e201cc39de2c10fbb2729f07365215c731bd1511d02fb4465153b425d05",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "before": {
+        "available_actions": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "digest": "4d0e93b8cee2af630b27a051cece81314e9d4d67a00c69a72f41823d7a8a1162",
+        "frame_sha256": "cdcd13ec68c4aa1df37d1986baf945c29fedea6f0f859320359722719cd28085",
+        "full_reset": false,
+        "levels_completed": 0,
+        "state": "NOT_FINISHED",
+        "win_levels": 6
+      },
+      "intervention_ref": "im04",
+      "phase": "calibration"
+    }
+  ]
+}

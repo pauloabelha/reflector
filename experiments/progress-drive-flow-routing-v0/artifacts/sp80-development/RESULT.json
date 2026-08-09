@@ -1,0 +1,93 @@
+{
+  "actions": [
+    {
+      "after_digest": "d467cf58ec4d2e37a95e40e5e70c6979318291bb8ef48090da0444d9e99afd20",
+      "before_digest": "3b015a3942298b6d77fc760b69e13286cadac18b55c7500c1736aba2c151c006",
+      "opaque_action": 4
+    },
+    {
+      "after_digest": "169135163bb0558c29e9cfdd1c2efed5b0294d8d2dec2eb90a98bcf5d9b5f3c5",
+      "before_digest": "d467cf58ec4d2e37a95e40e5e70c6979318291bb8ef48090da0444d9e99afd20",
+      "opaque_action": 4
+    },
+    {
+      "after_digest": "8120eb7df91bbe3aed6811028318d581e905a85d7e96e7f5a169d608e08c82a5",
+      "before_digest": "169135163bb0558c29e9cfdd1c2efed5b0294d8d2dec2eb90a98bcf5d9b5f3c5",
+      "opaque_action": 4
+    },
+    {
+      "after_digest": "a3217e1838e96c3cb333cc570d683583974f2a82a21127c2a611046317204121",
+      "before_digest": "8120eb7df91bbe3aed6811028318d581e905a85d7e96e7f5a169d608e08c82a5",
+      "opaque_action": 5
+    }
+  ],
+  "calibration": [
+    {
+      "opaque_action": 1,
+      "reflector_delta": [
+        0,
+        -1
+      ],
+      "state": "NOT_FINISHED"
+    },
+    {
+      "opaque_action": 2,
+      "reflector_delta": [
+        0,
+        1
+      ],
+      "state": "NOT_FINISHED"
+    },
+    {
+      "opaque_action": 3,
+      "reflector_delta": [
+        -1,
+        0
+      ],
+      "state": "NOT_FINISHED"
+    },
+    {
+      "opaque_action": 4,
+      "reflector_delta": [
+        1,
+        0
+      ],
+      "state": "NOT_FINISHED"
+    },
+    {
+      "opaque_action": 5,
+      "reflector_delta": [
+        0,
+        0
+      ],
+      "state": "NOT_FINISHED"
+    }
+  ],
+  "calibration_interactions": 5,
+  "exact_replay": true,
+  "factual_actions": 4,
+  "final_digest": "a3217e1838e96c3cb333cc570d683583974f2a82a21127c2a611046317204121",
+  "goal_potential": {
+    "after_predicted": 0,
+    "before": 2,
+    "name": "UnservedTerminalCount"
+  },
+  "grounding": {
+    "reflector_span": [
+      3,
+      7
+    ],
+    "source_column": 9,
+    "terminal_ports": [
+      5,
+      11
+    ]
+  },
+  "levels_completed": 1,
+  "predicted_exit_columns": [
+    5,
+    11
+  ],
+  "protocol": "generic-flow-routing-development-v0",
+  "total_interactions": 9
+}
