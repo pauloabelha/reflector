@@ -50,3 +50,23 @@ Machine checkpoints are written atomically under `artifacts/checkpoints/` after 
 - This proposal run is scientifically invalid and will not be used. Its files are preserved under `artifacts-contaminated-duplicate-prepare-20260808T2216/` rather than deleted.
 - The clean rerun uses seed 1730, an empty artifact namespace, and an OS-level exclusive preparation lock, so a second client fails before sending a request.
 - Qwen partial 4/6: `cd82` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 1/6: `ar25` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 2/6: `wa30` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 3/6: `cn04` transport_error=None, valid_contract=True, accepted=2, rejected=0.
+- Qwen partial 4/6: `cd82` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 5/6: `tr87` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 6/6: `bp35` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+
+## Frozen pre-play manifest
+
+- All six raw requests, raw responses, compiler decisions, and structured inputs are durable.
+- `FROZEN_MANIFEST.json` was written before any live target action.
+- The instruction hash is identical across games; only each anonymous structured state differs.
+
+## 2026-08-08 22:21 BRT — Frozen proposal preflight
+
+- Clean accepted hypotheses: ar25=4, wa30=4, cn04=2, cd82=4, tr87=4, bp35=4; every response satisfied the strict JSON contract with zero compiler rejections.
+- Unique own-proposal effect pairs on the frozen initial snapshots: ar25=2 and cd82=2.
+- All own proposals for wa30, cn04, tr87, and bp35 are ambiguous or unbound and therefore must abstain unless the live initial snapshot changes grounding.
+- No real ARC action had been executed. The next phase is 20 isolated, checkpointed first-level arms.
+- The `cd82` line appearing immediately after the invalidation heading was a late status append from the quarantined in-flight request; it is not part of the clean artifact namespace or manifest.

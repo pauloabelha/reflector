@@ -1,0 +1,106 @@
+{
+  "accepted": [
+    {
+      "canonical_hash": "02d3a3c97466fdf49f21453ce933c98417eb9804fc833f09df9e56960bbf3d0f",
+      "conditions": [
+        [
+          "SameArea",
+          [
+            "?a",
+            "?b"
+          ]
+        ],
+        [
+          "SameOutline",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "71c7b739664b5571844f329d0ea7b78c2cefde71bd8c44f238014af6d2a61973",
+      "conditions": [
+        [
+          "AlignedHorizontal",
+          [
+            "?a",
+            "?b"
+          ]
+        ],
+        [
+          "DifferentInteriorLayout",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Increase",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "bd2f5f261e09c100057e2940fd6012130aedc3311e0a9c23a2b481fc4c1e2e8c",
+      "conditions": [
+        [
+          "Disjoint",
+          [
+            "?a",
+            "?b"
+          ]
+        ],
+        [
+          "SameInteriorLayout",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "31b2b12a9a01332b277ec4636f8916925953994c5b8f72dc2b9ebccccddd7f2b",
+      "conditions": [
+        [
+          "AlignedVertical",
+          [
+            "?a",
+            "?b"
+          ]
+        ],
+        [
+          "DifferentArea",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Increase",
+      "provenance": "externally-proposed"
+    }
+  ],
+  "rejected": [],
+  "valid_json_contract": true
+}

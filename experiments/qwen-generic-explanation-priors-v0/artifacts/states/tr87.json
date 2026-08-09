@@ -1,0 +1,772 @@
+{
+  "entities": [
+    {
+      "area": 101,
+      "bounding_box_origin": [
+        12,
+        4
+      ],
+      "centroid2": [
+        40,
+        14
+      ],
+      "id": "f00",
+      "interior_layout_class": "interior_class_03",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 101,
+      "bounding_box_origin": [
+        12,
+        13
+      ],
+      "centroid2": [
+        40,
+        32
+      ],
+      "id": "f01",
+      "interior_layout_class": "interior_class_06",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 101,
+      "bounding_box_origin": [
+        12,
+        22
+      ],
+      "centroid2": [
+        40,
+        50
+      ],
+      "id": "f02",
+      "interior_layout_class": "interior_class_05",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 101,
+      "bounding_box_origin": [
+        35,
+        4
+      ],
+      "centroid2": [
+        86,
+        14
+      ],
+      "id": "f03",
+      "interior_layout_class": "interior_class_00",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 101,
+      "bounding_box_origin": [
+        35,
+        13
+      ],
+      "centroid2": [
+        86,
+        32
+      ],
+      "id": "f04",
+      "interior_layout_class": "interior_class_04",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 101,
+      "bounding_box_origin": [
+        35,
+        22
+      ],
+      "centroid2": [
+        86,
+        50
+      ],
+      "id": "f05",
+      "interior_layout_class": "interior_class_01",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 1920,
+      "bounding_box_origin": [
+        0,
+        34
+      ],
+      "centroid2": [
+        63,
+        97
+      ],
+      "id": "f06",
+      "interior_layout_class": "interior_class_02",
+      "kind": "Figure",
+      "outline_class": "outline_class_00"
+    }
+  ],
+  "frame": {
+    "height": 64,
+    "width": 64
+  },
+  "opaque_legal_action_count": 4,
+  "relations": [
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "AlignedHorizontal"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f04"
+      ],
+      "predicate": "AlignedHorizontal"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f05"
+      ],
+      "predicate": "AlignedHorizontal"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "AlignedVertical"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "AlignedVertical"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "AlignedVertical"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f04"
+      ],
+      "predicate": "AlignedVertical"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f05"
+      ],
+      "predicate": "AlignedVertical"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f05"
+      ],
+      "predicate": "AlignedVertical"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f06"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f06"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f06"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f06"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f06"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f05",
+        "f06"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f04"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f05"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f06"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f03"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f04"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f05"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f06"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f03"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f04"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f05"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f06"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f04"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f05"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f06"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f05"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f06"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f05",
+        "f06"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f06"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f06"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f06"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f06"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f06"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f05",
+        "f06"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f04"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f05"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f06"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f03"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f04"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f05"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f06"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f03"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f04"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f05"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f06"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f04"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f05"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f06"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f05"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f06"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f05",
+        "f06"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f04"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f05"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f03"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f04"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f05"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f03"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f04"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f05"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f04"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f05"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f05"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f04"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f05"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f03"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f04"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f05"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f03"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f04"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f05"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f04"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f03",
+        "f05"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f04",
+        "f05"
+      ],
+      "predicate": "SameOutline"
+    }
+  ],
+  "truncation": {
+    "entities_retained": 7,
+    "maximum_entities": 8,
+    "selection": "largest repeated-outline groups first; then largest unique figures"
+  }
+}

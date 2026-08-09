@@ -1,0 +1,125 @@
+{
+  "max_tokens": 900,
+  "messages": [
+    {
+      "content": "You propose relational control hypotheses for an unfamiliar interactive grid environment.\n\nThe input is one initial observation expressed as anonymous entities, attributes, relations, frame geometry, and an opaque legal-action count. It contains no game identity, action meaning, trajectory, reward, progress signal, note, or solution.\n\nReturn exactly one JSON object matching the supplied JSON Schema.\n\nA hypothesis describes a structural situation and a preferred future consequence. It is a prior with zero evidence, not a fact or an action command.\n\nRules:\n\n1. Propose zero to four hypotheses.\n2. Use only the predicates, variables, operators, and measure listed below.\n3. Conditions must be jointly groundable in STRUCTURED_STATE.\n4. Variables represent anonymous entities. Never copy entity IDs, action tokens, palette tokens, coordinates, class IDs, hashes, or other observation-specific constants into the output.\n5. The preferred consequence must be action-agnostic. Never name, choose, order, or interpret an opaque action.\n6. Do not assign semantic roles such as player, goal, key, obstacle, agent, enemy, tool, or reward.\n7. Do not use color or location as semantic meaning.\n8. Do not claim that a hypothesis is true, successful, confirmed, or evidenced.\n9. Do not emit duplicate or paraphrase-equivalent hypotheses.\n10. If no useful jointly groundable hypothesis is available, return an empty hypotheses array.\n11. Return JSON only. Do not emit prose, Markdown, code fences, comments, confidence scores, or extra keys.\n\nAllowed variables:\n?a, ?b, ?c, ?d\n\nAllowed condition predicates:\nSameOutline\nDifferentOutline\nSameInteriorLayout\nDifferentInteriorLayout\nSameArea\nDifferentArea\nAlignedHorizontal\nAlignedVertical\nTouches\nDisjoint\n\nAllowed consequence operators:\nDecrease\nIncrease\n\nAllowed scalar measure:\nTranslationAlignmentResidual\n\nTranslationAlignmentResidual(a,b) is Manhattan distance between entity centroids.\n\nThe order of hypotheses conveys no authority. All accepted hypotheses enter the system with provenance externally-proposed and evidence count zero. The system will test consequences locally.\n\nSTRUCTURED_STATE:\n\n{\"entities\":[{\"area\":16,\"bounding_box_origin\":[16,28],\"centroid2\":[35,59],\"id\":\"f00\",\"interior_layout_class\":\"interior_class_01\",\"kind\":\"Figure\",\"outline_class\":\"outline_class_00\"},{\"area\":16,\"bounding_box_origin\":[32,36],\"centroid2\":[67,75],\"id\":\"f01\",\"interior_layout_class\":\"interior_class_01\",\"kind\":\"Figure\",\"outline_class\":\"outline_class_00\"},{\"area\":16,\"bounding_box_origin\":[32,44],\"centroid2\":[67,91],\"id\":\"f02\",\"interior_layout_class\":\"interior_class_00\",\"kind\":\"Figure\",\"outline_class\":\"outline_class_00\"},{\"area\":16,\"bounding_box_origin\":[44,24],\"centroid2\":[91,51],\"id\":\"f03\",\"interior_layout_class\":\"interior_class_01\",\"kind\":\"Figure\",\"outline_class\":\"outline_class_00\"},{\"area\":64,\"bounding_box_origin\":[0,63],\"centroid2\":[63,126],\"id\":\"f04\",\"interior_layout_class\":\"interior_class_03\",\"kind\":\"Figure\",\"outline_class\":\"outline_class_01\"},{\"area\":48,\"bounding_box_origin\":[28,28],\"centroid2\":[67,59],\"id\":\"f05\",\"interior_layout_class\":\"interior_class_02\",\"kind\":\"Figure\",\"outline_class\":\"outline_class_02\"}],\"frame\":{\"height\":64,\"width\":64},\"opaque_legal_action_count\":5,\"relations\":[{\"arguments\":[\"f00\",\"f05\"],\"predicate\":\"AlignedHorizontal\"},{\"arguments\":[\"f01\",\"f02\"],\"predicate\":\"AlignedVertical\"},{\"arguments\":[\"f01\",\"f05\"],\"predicate\":\"AlignedVertical\"},{\"arguments\":[\"f02\",\"f05\"],\"predicate\":\"AlignedVertical\"},{\"arguments\":[\"f00\",\"f04\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f00\",\"f05\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f01\",\"f04\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f01\",\"f05\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f02\",\"f04\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f02\",\"f05\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f03\",\"f04\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f03\",\"f05\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f04\",\"f05\"],\"predicate\":\"DifferentArea\"},{\"arguments\":[\"f00\",\"f02\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f00\",\"f04\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f00\",\"f05\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f01\",\"f02\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f01\",\"f04\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f01\",\"f05\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f02\",\"f03\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f02\",\"f04\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f02\",\"f05\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f03\",\"f04\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f03\",\"f05\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f04\",\"f05\"],\"predicate\":\"DifferentInteriorLayout\"},{\"arguments\":[\"f00\",\"f04\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f00\",\"f05\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f01\",\"f04\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f01\",\"f05\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f02\",\"f04\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f02\",\"f05\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f03\",\"f04\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f03\",\"f05\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f04\",\"f05\"],\"predicate\":\"DifferentOutline\"},{\"arguments\":[\"f00\",\"f01\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f00\",\"f02\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f00\",\"f03\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f00\",\"f04\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f00\",\"f05\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f01\",\"f02\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f01\",\"f03\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f01\",\"f04\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f01\",\"f05\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f02\",\"f03\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f02\",\"f04\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f02\",\"f05\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f03\",\"f04\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f03\",\"f05\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f04\",\"f05\"],\"predicate\":\"Disjoint\"},{\"arguments\":[\"f00\",\"f01\"],\"predicate\":\"SameArea\"},{\"arguments\":[\"f00\",\"f02\"],\"predicate\":\"SameArea\"},{\"arguments\":[\"f00\",\"f03\"],\"predicate\":\"SameArea\"},{\"arguments\":[\"f01\",\"f02\"],\"predicate\":\"SameArea\"},{\"arguments\":[\"f01\",\"f03\"],\"predicate\":\"SameArea\"},{\"arguments\":[\"f02\",\"f03\"],\"predicate\":\"SameArea\"},{\"arguments\":[\"f00\",\"f01\"],\"predicate\":\"SameInteriorLayout\"},{\"arguments\":[\"f00\",\"f03\"],\"predicate\":\"SameInteriorLayout\"},{\"arguments\":[\"f01\",\"f03\"],\"predicate\":\"SameInteriorLayout\"},{\"arguments\":[\"f00\",\"f01\"],\"predicate\":\"SameOutline\"},{\"arguments\":[\"f00\",\"f02\"],\"predicate\":\"SameOutline\"},{\"arguments\":[\"f00\",\"f03\"],\"predicate\":\"SameOutline\"},{\"arguments\":[\"f01\",\"f02\"],\"predicate\":\"SameOutline\"},{\"arguments\":[\"f01\",\"f03\"],\"predicate\":\"SameOutline\"},{\"arguments\":[\"f02\",\"f03\"],\"predicate\":\"SameOutline\"}],\"truncation\":{\"entities_retained\":6,\"maximum_entities\":8,\"selection\":\"largest repeated-outline groups first; then largest unique figures\"}}",
+      "role": "user"
+    }
+  ],
+  "model": "qwen3-vl-4b-thinking-q4_k_m",
+  "response_format": {
+    "json_schema": {
+      "name": "r2_relational_prior_v0",
+      "schema": {
+        "additionalProperties": false,
+        "properties": {
+          "hypotheses": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "conditions": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "arguments": {
+                        "items": {
+                          "enum": [
+                            "?a",
+                            "?b",
+                            "?c",
+                            "?d"
+                          ]
+                        },
+                        "maxItems": 2,
+                        "minItems": 2,
+                        "type": "array"
+                      },
+                      "predicate": {
+                        "enum": [
+                          "AlignedHorizontal",
+                          "AlignedVertical",
+                          "DifferentArea",
+                          "DifferentInteriorLayout",
+                          "DifferentOutline",
+                          "Disjoint",
+                          "SameArea",
+                          "SameInteriorLayout",
+                          "SameOutline",
+                          "Touches"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "predicate",
+                      "arguments"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 6,
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "preferred_consequence": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "arguments": {
+                      "items": {
+                        "enum": [
+                          "?a",
+                          "?b",
+                          "?c",
+                          "?d"
+                        ]
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "measure": {
+                      "const": "TranslationAlignmentResidual"
+                    },
+                    "operator": {
+                      "enum": [
+                        "Decrease",
+                        "Increase"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "operator",
+                    "measure",
+                    "arguments"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "conditions",
+                "preferred_consequence"
+              ],
+              "type": "object"
+            },
+            "maxItems": 4,
+            "minItems": 0,
+            "type": "array"
+          },
+          "schema_version": {
+            "const": "r2-relational-prior-v0"
+          }
+        },
+        "required": [
+          "schema_version",
+          "hypotheses"
+        ],
+        "type": "object"
+      },
+      "strict": true
+    },
+    "type": "json_schema"
+  },
+  "seed": 1730,
+  "stream": false,
+  "temperature": 0,
+  "thinking_budget_tokens": 256,
+  "top_p": 1
+}

@@ -1,0 +1,251 @@
+{
+  "entities": [
+    {
+      "area": 45,
+      "bounding_box_origin": [
+        18,
+        12
+      ],
+      "centroid2": [
+        46,
+        30
+      ],
+      "id": "f00",
+      "interior_layout_class": "interior_class_01",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 45,
+      "bounding_box_origin": [
+        36,
+        12
+      ],
+      "centroid2": [
+        78,
+        30
+      ],
+      "id": "f01",
+      "interior_layout_class": "interior_class_02",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 45,
+      "bounding_box_origin": [
+        51,
+        45
+      ],
+      "centroid2": [
+        108,
+        96
+      ],
+      "id": "f02",
+      "interior_layout_class": "interior_class_02",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 316,
+      "bounding_box_origin": [
+        0,
+        0
+      ],
+      "centroid2": [
+        75,
+        75
+      ],
+      "id": "f03",
+      "interior_layout_class": "interior_class_00",
+      "kind": "Figure",
+      "outline_class": "outline_class_00"
+    }
+  ],
+  "frame": {
+    "height": 64,
+    "width": 64
+  },
+  "opaque_legal_action_count": 7,
+  "relations": [
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "AlignedHorizontal"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f03"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f03"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f03"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f03"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f03"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f03"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f03"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f03"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f02",
+        "f03"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "SameArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "SameInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "SameOutline"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "SameOutline"
+    }
+  ],
+  "truncation": {
+    "entities_retained": 4,
+    "maximum_entities": 8,
+    "selection": "largest repeated-outline groups first; then largest unique figures"
+  }
+}

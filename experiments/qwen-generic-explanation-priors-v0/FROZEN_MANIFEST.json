@@ -1,0 +1,71 @@
+{
+  "files": {
+    "PROMPT.txt": "2d8e317cc83e7f11321079b3fbf6335ace2af919e265a12dc0fa50ff5c5a258d",
+    "PROPOSAL.md": "0b79f25e045ff8328c587806b13ea402088f00313bf12773ede774ca16a0ebe4",
+    "config.json": "4b0e93b17b5b579d5ae7c9e90ba69b78bddb0171882debf005a7cfb60776a5ec",
+    "experiment.py": "2545a00770532860819cf1121d1d9557796838f5cdef4887d0fdab6ba352ab7b",
+    "selected_games.json": "303f44666743ba2f3757cb9b2f32992118ca1a3c8eec1fbf31437e7c9aef81c1"
+  },
+  "frozen_at_utc": "2026-08-09T01:20:36Z",
+  "no_live_target_actions_executed": true,
+  "proposals": {
+    "ar25": {
+      "accepted": 4,
+      "compilation_sha256": "27b7f47e6ccf430b080aa31d6626dc2c96b8fd731cb548a57a3382a442665715",
+      "rejected": 0,
+      "response_sha256": "49229dbca23087857b3cff62dd721ff4ce425ce4834583f215d49585fd2d013e",
+      "transport_error": null,
+      "valid_json_contract": true
+    },
+    "bp35": {
+      "accepted": 4,
+      "compilation_sha256": "cd6ed4c7f38bf51e1d54021ca43fb1a5e3ff86f847b229b0c37f94526de9d2cb",
+      "rejected": 0,
+      "response_sha256": "eb30930b57f12bf1f088240d7d38b1a4d1853f0531c6ba29ddb10810ac5efab7",
+      "transport_error": null,
+      "valid_json_contract": true
+    },
+    "cd82": {
+      "accepted": 4,
+      "compilation_sha256": "ed9746cca800081f95af6634fefc2d7979181d8d44291df77fb76f26b0c109fa",
+      "rejected": 0,
+      "response_sha256": "510fd68c6dbf91c9462b1d8594e9796217d312ce96838be92d1e73515e0de258",
+      "transport_error": null,
+      "valid_json_contract": true
+    },
+    "cn04": {
+      "accepted": 2,
+      "compilation_sha256": "9c44d92fd334c480c5deee582d8432ce229be2876ce52c2c7a7622394ed5cc2b",
+      "rejected": 0,
+      "response_sha256": "980d94009b7e4df41666f8396eccf755ff482882298b1f346e5a9abd67a041e9",
+      "transport_error": null,
+      "valid_json_contract": true
+    },
+    "tr87": {
+      "accepted": 4,
+      "compilation_sha256": "5da0c7775129797a31a55553516e42ae4144ce55e61c79e2b890f7e17013b825",
+      "rejected": 0,
+      "response_sha256": "b67d49757bacd335e7e5c661eb4c05c97b477d65b7d2035db3c5a7e68da1d69b",
+      "transport_error": null,
+      "valid_json_contract": true
+    },
+    "wa30": {
+      "accepted": 4,
+      "compilation_sha256": "ef6da767b1c14dc92f4267974d864a78a11064e6be4aff8bcd64c62b78af3039",
+      "rejected": 0,
+      "response_sha256": "61aa915409c5a7b807ef4b30a0e3bd448e4d58af7f63d6f05ede8719cccf9a1f",
+      "transport_error": null,
+      "valid_json_contract": true
+    }
+  },
+  "protocol": "qwen-generic-explanation-priors-v0.1",
+  "qwen_request_count": 6,
+  "structured_states": {
+    "ar25": "8042d5789609896351ccebcd0ad149db7f9366c09942b922b0b2bf649cdbddf3",
+    "bp35": "a78ea7fe2fdad24310f4dec315c1a93146878dc17a864070f5145ceccfd772c5",
+    "cd82": "7ad1e1cb5c5cad447104dcc90e0f981dd9c98f1776f24b233e19d47242fb66e6",
+    "cn04": "50b976e0305d03c6981d643ef7ae5d616c501161ebd95bb2b4b1c2ba508869ed",
+    "tr87": "5edca896bebf7c2acfd43148ea9c5c79b78ab4fadc719dca5cc021da4c70a809",
+    "wa30": "35beeff82a90919bb731c059d7deb0a772ccc02ca6664090335ffa6837765ae0"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "accepted": [
+    {
+      "canonical_hash": "1099c9782ee296885ff71e82ee77dcf5cbab57ed3ba90b1bf361644226ac25e5",
+      "conditions": [
+        [
+          "SameArea",
+          [
+            "?a",
+            "?b"
+          ]
+        ],
+        [
+          "SameInteriorLayout",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "7b6536e4dd16eeca939131fd9e9cae1eccec44255a2ec2823e68c50d86e27762",
+      "conditions": [
+        [
+          "DifferentOutline",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Increase",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "5b05ab674932a7e25a17b542a3e8d436f5edaabf66ff4fd632d55f7db85f7312",
+      "conditions": [
+        [
+          "AlignedHorizontal",
+          [
+            "?a",
+            "?b"
+          ]
+        ],
+        [
+          "AlignedVertical",
+          [
+            "?a",
+            "?c"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?b",
+        "?c"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+      "conditions": [
+        [
+          "Touches",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    }
+  ],
+  "rejected": [],
+  "valid_json_contract": true
+}

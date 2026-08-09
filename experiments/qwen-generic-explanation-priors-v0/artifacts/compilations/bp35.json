@@ -1,0 +1,78 @@
+{
+  "accepted": [
+    {
+      "canonical_hash": "daf71590728966a8dad0a1e2f15aa8b7373ff690eb56fb655ca859136ce7ff06",
+      "conditions": [
+        [
+          "SameOutline",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+      "conditions": [
+        [
+          "SameInteriorLayout",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Increase",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+      "conditions": [
+        [
+          "AlignedVertical",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+      "conditions": [
+        [
+          "SameArea",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    }
+  ],
+  "rejected": [],
+  "valid_json_contract": true
+}

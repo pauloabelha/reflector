@@ -1,0 +1,145 @@
+{
+  "entities": [
+    {
+      "area": 162,
+      "bounding_box_origin": [
+        38,
+        29
+      ],
+      "centroid2": [
+        89,
+        78
+      ],
+      "id": "f00",
+      "interior_layout_class": "interior_class_00",
+      "kind": "Figure",
+      "outline_class": "outline_class_01"
+    },
+    {
+      "area": 153,
+      "bounding_box_origin": [
+        11,
+        8
+      ],
+      "centroid2": [
+        36,
+        30
+      ],
+      "id": "f01",
+      "interior_layout_class": "interior_class_01",
+      "kind": "Figure",
+      "outline_class": "outline_class_02"
+    },
+    {
+      "area": 32,
+      "bounding_box_origin": [
+        16,
+        0
+      ],
+      "centroid2": [
+        63,
+        0
+      ],
+      "id": "f02",
+      "interior_layout_class": "interior_class_02",
+      "kind": "Figure",
+      "outline_class": "outline_class_00"
+    }
+  ],
+  "frame": {
+    "height": 64,
+    "width": 64
+  },
+  "opaque_legal_action_count": 6,
+  "relations": [
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "DifferentArea"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "DifferentInteriorLayout"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "DifferentOutline"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f01"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f00",
+        "f02"
+      ],
+      "predicate": "Disjoint"
+    },
+    {
+      "arguments": [
+        "f01",
+        "f02"
+      ],
+      "predicate": "Disjoint"
+    }
+  ],
+  "truncation": {
+    "entities_retained": 3,
+    "maximum_entities": 8,
+    "selection": "largest repeated-outline groups first; then largest unique figures"
+  }
+}

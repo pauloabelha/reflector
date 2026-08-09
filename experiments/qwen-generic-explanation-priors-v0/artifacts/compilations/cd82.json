@@ -1,0 +1,78 @@
+{
+  "accepted": [
+    {
+      "canonical_hash": "8ac16a2d5d6a918ff2bff10b01eb7c67b70fb4e24b68d732d9f6353e5cdf892a",
+      "conditions": [
+        [
+          "DifferentOutline",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+      "conditions": [
+        [
+          "SameInteriorLayout",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Increase",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+      "conditions": [
+        [
+          "AlignedVertical",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Decrease",
+      "provenance": "externally-proposed"
+    },
+    {
+      "canonical_hash": "62e08923198a35aae6da86bafcb47aa6e79c07c85829ff79ee0909a530433a95",
+      "conditions": [
+        [
+          "Disjoint",
+          [
+            "?a",
+            "?b"
+          ]
+        ]
+      ],
+      "effect_variables": [
+        "?a",
+        "?b"
+      ],
+      "operator": "Increase",
+      "provenance": "externally-proposed"
+    }
+  ],
+  "rejected": [],
+  "valid_json_contract": true
+}
