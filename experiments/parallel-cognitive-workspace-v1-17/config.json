@@ -1,0 +1,24 @@
+{
+  "experiment": "parallel-cognitive-workspace-v1-17",
+  "protocol": "prospective-transplant-v1.17",
+  "workspace_protocol": "prospective-transplant-v1.17",
+  "games": ["wa30"],
+  "transplant_selector": {
+    "frozen_parent_commit": "77bc32cdb489b43c6cfa4787cc4cff8d95b30d61",
+    "eligibility_rule": "exactly one installed metadata.json, game_id != ar25, and metadata tags exactly ['keyboard']",
+    "eligible_game_ids": ["g50t", "ls20", "tr87", "wa30"],
+    "score_rule": "sha256(frozen_parent_commit + '|' + game_id)",
+    "winner_rule": "smallest hexadecimal score",
+    "selected_game": "wa30",
+    "selected_score": "6b6a120480452cdcf70bfc74a113ff38f44f003f591816b9e4e8b1e1bf8bb6bf"
+  },
+  "binary_gate": {
+    "require_initial_ambiguous_qwen_grounding": true,
+    "require_prospective_environment_evidence": true,
+    "require_evidence_citing_non_alpha_revision": true,
+    "require_unique_confirmed_revision_binding": true,
+    "require_qwen_changed_control_decision": true,
+    "require_favorable_same_state_counterfactual": true,
+    "level_completion_is_bonus": true
+  }
+}

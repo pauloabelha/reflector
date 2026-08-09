@@ -1,0 +1,43 @@
+{
+  "protocol": "metadata-keyboard-parent-commit-hash-v1",
+  "frozen_parent_commit": "77bc32cdb489b43c6cfa4787cc4cff8d95b30d61",
+  "eligibility": {
+    "excluded_game_ids": ["ar25"],
+    "metadata_count": 1,
+    "tags_exactly": ["keyboard"]
+  },
+  "candidates": [
+    {
+      "game_id": "g50t",
+      "environment_id": "g50t-5849a774",
+      "score": "fe39b6c59f69d03dcd1d0d5c020211031f49acc65213071c62aa4a1cb94339e1"
+    },
+    {
+      "game_id": "ls20",
+      "environment_id": "ls20-9607627b",
+      "score": "ddabeb61ffa451419654f3fa14efe066baddb8a17d10152ee32511a3e7d481d3"
+    },
+    {
+      "game_id": "tr87",
+      "environment_id": "tr87-cd924810",
+      "score": "fa9aff5550dfc682ac2dfaee3047809d2d6883fac85c54a7f6cc352071d5b39e"
+    },
+    {
+      "game_id": "wa30",
+      "environment_id": "wa30-ee6fef47",
+      "score": "6b6a120480452cdcf70bfc74a113ff38f44f003f591816b9e4e8b1e1bf8bb6bf"
+    }
+  ],
+  "winner_rule": "smallest hexadecimal score",
+  "selected_game": "wa30",
+  "selected_environment_id": "wa30-ee6fef47",
+  "forbidden_selection_inputs": [
+    "frames",
+    "observations",
+    "recordings",
+    "outcomes",
+    "notes",
+    "schemas",
+    "action meanings"
+  ]
+}
