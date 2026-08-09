@@ -1,0 +1,87 @@
+{
+  "actions": [
+    {
+      "action": 4,
+      "data": {}
+    },
+    {
+      "action": 4,
+      "data": {}
+    },
+    {
+      "action": 4,
+      "data": {}
+    },
+    {
+      "action": 3,
+      "data": {}
+    },
+    {
+      "action": 2,
+      "data": {}
+    },
+    {
+      "action": 3,
+      "data": {}
+    },
+    {
+      "action": 3,
+      "data": {}
+    },
+    {
+      "action": 3,
+      "data": {}
+    },
+    {
+      "action": 6,
+      "data": {
+        "x": 43,
+        "y": 31
+      }
+    },
+    {
+      "action": 1,
+      "data": {}
+    },
+    {
+      "action": 4,
+      "data": {}
+    }
+  ],
+  "factual_action_count": 11,
+  "final": {
+    "available_actions": [
+      1,
+      2,
+      3,
+      4,
+      6
+    ],
+    "digest": "8f4f2cdfce28087e46d8b1b6ed85dc216615fd47ef4afd736199bd99f74a42a6",
+    "frame_sha256": "b0944f82ac40a14fbc77f0fd09c21e06da88aae8cfabdf103812aecc0fec77b9",
+    "full_reset": false,
+    "levels_completed": 1,
+    "state": "NOT_FINISHED",
+    "win_levels": 7
+  },
+  "grounded_points": [
+    [
+      19,
+      31
+    ],
+    [
+      28,
+      31
+    ],
+    [
+      46,
+      28
+    ],
+    [
+      13,
+      34
+    ]
+  ],
+  "observed_state_count": 2304,
+  "planning_interactions": 123132
+}

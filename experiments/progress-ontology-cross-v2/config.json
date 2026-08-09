@@ -1,0 +1,1 @@
+{"endpoint":"http://127.0.0.1:8081/v1/chat/completions","model":"qwen3-vl-4b-thinking-q4_k_m","temperature":0,"seed":271828,"max_tokens":1024,"thinking_budget_tokens":512,"action_budget":48,"search_depth":28,"search_expansions":60000}

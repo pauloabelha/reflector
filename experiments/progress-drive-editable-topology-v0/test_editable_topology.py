@@ -62,3 +62,30 @@ def test_search_deduplicates_visual_states_and_has_a_hard_budget() -> None:
         assert "observed 1 states" in str(error)
     else:
         raise AssertionError("expected a bounded failure")
+
+
+def test_global_object_addresses_are_not_limited_to_a_side_panel() -> None:
+    grid = (
+        (0, 0, 0, 0, 0, 0),
+        (0, 3, 3, 0, 4, 4),
+        (0, 3, 3, 0, 4, 4),
+        (0, 0, 0, 0, 0, 0),
+    )
+    assert M.grounded_object_points(
+        grid, background_values=frozenset({0})
+    ) == ((1, 31), (4, 31))
+
+
+def test_parameterized_addresses_can_be_regrounded_after_motion() -> None:
+    move = M.Intervention("move", 1)
+    def observe(prefix):
+        position=0;selected=False
+        for item in prefix:
+            if item.token.startswith("select:"):selected=int(item.token.split(":")[1])==position
+            elif item.token=="move" and selected:position+=1;selected=False
+        return {"position":position,"selected":selected,"done":position==2}
+    result=M.search_observed_state_space(
+        (),observe_prefix=observe,state_key=lambda s:(s["position"],s["selected"]),completed=lambda s:s["done"],max_depth=4,
+        interventions_for_state=lambda state:(M.Intervention(f"select:{state['position']}",6),move),
+    )
+    assert [item.token for item in result.plan]==["select:0","move","select:1","move"]

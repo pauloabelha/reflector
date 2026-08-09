@@ -95,6 +95,46 @@ def grounded_interaction_points(
     return tuple(sorted(set(centres)))
 
 
+def grounded_object_points(
+    grid: Grid,
+    *,
+    background_values: frozenset[int] | None = None,
+    min_component_mass: int = 2,
+    max_components: int = 32,
+) -> tuple[tuple[int, int], ...]:
+    """Propose display-space addresses for stable same-valued visual objects.
+
+    Unlike :func:`grounded_interaction_points`, this covers the whole scene.  It
+    supports games whose parameterized intervention selects a world object rather
+    than a detached UI control.  The two most frequent values are treated as
+    background by default; no semantic color identity is assumed.
+    """
+    if not grid or not grid[0] or any(len(row) != len(grid[0]) for row in grid):
+        raise EditableTopologyError("grid must be a nonempty rectangle")
+    height, width = len(grid), len(grid[0])
+    if background_values is None:
+        from collections import Counter
+
+        background_values = frozenset(
+            value for value, _count in Counter(value for row in grid for value in row).most_common(2)
+        )
+    padding_y = (64 - height) // 2
+    ranked: list[tuple[int, int, int, int]] = []
+    values = sorted({value for row in grid for value in row} - set(background_values))
+    for value in values:
+        points = {(x, y) for y, row in enumerate(grid) for x, item in enumerate(row) if item == value}
+        for component in _components(points):
+            if len(component) < min_component_mass:
+                continue
+            xs = [point[0] for point in component]
+            ys = [point[1] for point in component]
+            centre_x = (min(xs) + max(xs)) // 2
+            centre_y = (min(ys) + max(ys)) // 2 + padding_y
+            ranked.append((len(component), centre_y, centre_x, value))
+    ranked.sort(key=lambda row: (row[0], row[1], row[2], row[3]))
+    return tuple((x, y) for _mass, y, x, _value in ranked[:max_components])
+
+
 def intervention_vocabulary(
     simple_action_ids: Iterable[int],
     *,
@@ -121,23 +161,25 @@ def search_observed_state_space(
     state_key: Callable[[Mapping[str, object]], Hashable],
     completed: Callable[[Mapping[str, object]], bool],
     viable: Callable[[Mapping[str, object]], bool] = lambda _state: True,
+    interventions_for_state: Callable[[Mapping[str, object]], Sequence[Intervention]] | None = None,
     max_depth: int = 32,
     max_expansions: int = 100_000,
 ) -> SearchResult:
     """Breadth-first search with exact observed-state transposition pruning."""
-    if not interventions:
+    if not interventions and interventions_for_state is None:
         raise EditableTopologyError("at least one intervention is required")
     initial = observe_prefix(())
     if completed(initial):
         return SearchResult((), 0, 1)
-    queue = deque([()])
+    queue = deque([((), initial)])
     seen = {state_key(initial)}
     expanded = 0
     while queue:
-        prefix = queue.popleft()
+        prefix, current_state = queue.popleft()
         if len(prefix) >= max_depth:
             continue
-        for intervention in interventions:
+        available = interventions if interventions_for_state is None else interventions_for_state(current_state)
+        for intervention in available:
             candidate = prefix + (intervention,)
             state = observe_prefix(candidate)
             expanded += 1
@@ -146,7 +188,7 @@ def search_observed_state_space(
             key = state_key(state)
             if viable(state) and key not in seen:
                 seen.add(key)
-                queue.append(candidate)
+                queue.append((candidate, state))
             if expanded >= max_expansions:
                 raise NoEditableTopologyPlan(
                     f"expansion budget exhausted after {expanded} transitions"
@@ -154,4 +196,3 @@ def search_observed_state_space(
     raise NoEditableTopologyPlan(
         f"no plan within depth {max_depth}; observed {len(seen)} states"
     )
-
