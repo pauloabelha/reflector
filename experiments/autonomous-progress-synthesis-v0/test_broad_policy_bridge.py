@@ -1,4 +1,4 @@
-from broad_policy_bridge import BridgeError, EnvironmentOutcome, OptionProposal, SharedBroadPolicy
+from broad_policy_bridge import BridgeError, EnvironmentOutcome, OptionProposal, SharedBroadPolicy,decode_frame
 import pytest
 
 
@@ -31,7 +31,10 @@ def test_no_option_is_exact_fallback_and_cognition_is_shared():
     decision=policy.choose_action(Observation())
     assert (decision.action_id,dict(decision.data),decision.mode)==(1,{"x":2},"fallback")
     events=policy.workspace_document()["events"]
-    assert events[0]=={"kind":"world_observation","creator":"environment","payload":{"frame":[[0,1],[1,0]],"transition_id":"transition:0"}}
+    assert events[0]["kind"]=="world_observation"
+    assert "frame" not in events[0]["payload"]
+    ref=events[0]["payload"]["frame_ref"]
+    assert decode_frame(policy.frame_blobs,ref)==((0,1),(1,0))
     assert events[1]["kind"]=="broad_cognitive_event"
 
 
@@ -90,3 +93,18 @@ def test_frontier_rotates_across_unresolved_goal_families():
     d1=policy.choose_from_frontier(object(),(first,second))
     assert d1.candidate_id==second.candidate_id
     assert policy.workspace_document()["probe_counts"]=={first.candidate_id:1,second.candidate_id:1}
+
+
+def test_frames_use_lossless_sparse_deltas_and_periodic_checkpoints():
+    policy=SharedBroadPolicy(Baseline())
+    frames=[]
+    for index in range(35):
+        frame=[[(row+column)%2 for column in range(16)] for row in range(16)]
+        for changed in range(index+1):frame[changed//16][changed%16]=2
+        frames.append(tuple(tuple(row) for row in frame))
+        class Current:
+            def to_dict(self,frame=frame):return {"frame":frame}
+        policy.choose_action(Current())
+    refs=[event["payload"]["frame_ref"] for event in policy.events if event["kind"]=="world_observation"]
+    assert all(decode_frame(policy.frame_blobs,ref)==frame for ref,frame in zip(refs,frames))
+    assert {blob["codec"] for blob in policy.frame_blobs.values()}=={"rle-v1","delta-v1"}

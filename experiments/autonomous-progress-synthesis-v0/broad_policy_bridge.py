@@ -24,6 +24,53 @@ def _hash(value: Any) -> str:
     return hashlib.sha256(body.encode("ascii")).hexdigest()
 
 
+def _grid(value: Any) -> tuple[tuple[int, ...], ...]:
+    rows = tuple(tuple(int(cell) for cell in row) for row in value)
+    if not rows or not rows[0] or any(len(row) != len(rows[0]) for row in rows):
+        raise BridgeError("frame must be a nonempty rectangular grid")
+    return rows
+
+
+def _rle(values: tuple[int, ...]) -> list[list[int]]:
+    output: list[list[int]] = []
+    for value in values:
+        if output and output[-1][0] == value:
+            output[-1][1] += 1
+        else:
+            output.append([value, 1])
+    return output
+
+
+def decode_frame(blobs: Mapping[str, Mapping[str, Any]], frame_ref: str) -> tuple[tuple[int, ...], ...]:
+    """Exactly reconstruct a frame from a full checkpoint and sparse deltas."""
+    chain: list[Mapping[str, Any]] = []
+    cursor = frame_ref
+    while True:
+        blob = blobs.get(cursor)
+        if blob is None:
+            raise BridgeError("frame blob is unavailable")
+        chain.append(blob)
+        if blob["codec"] == "rle-v1":
+            break
+        if blob["codec"] != "delta-v1" or not isinstance(blob.get("parent"), str):
+            raise BridgeError("unknown frame codec")
+        cursor = blob["parent"]
+    base = chain.pop()
+    height, width = map(int, base["shape"])
+    flat: list[int] = []
+    for value, count in base["runs"]:
+        flat.extend([int(value)] * int(count))
+    if len(flat) != height * width:
+        raise BridgeError("corrupt RLE frame")
+    while chain:
+        delta = chain.pop()
+        if tuple(map(int, delta["shape"])) != (height, width):
+            raise BridgeError("delta shape mismatch")
+        for index, value in delta["changes"]:
+            flat[int(index)] = int(value)
+    return tuple(tuple(flat[row * width:(row + 1) * width]) for row in range(height))
+
+
 class DecisionLike(Protocol):
     action_id: int
 
@@ -146,6 +193,37 @@ class SharedBroadPolicy:
         self.proposals: dict[str, OptionProposal] = {}
         self.probe_counts: dict[str, int] = {}
         self.events: list[dict[str, Any]] = []
+        self.frame_blobs: dict[str, dict[str, Any]] = {}
+        self._last_frame_ref: str | None = None
+        self._frames_since_checkpoint = 0
+
+    def _store_frame(self, value: Any) -> str:
+        frame = _grid(value)
+        frame_ref = "frame:" + _hash(frame)
+        if frame_ref in self.frame_blobs:
+            self._last_frame_ref = frame_ref
+            return frame_ref
+        height, width = len(frame), len(frame[0]);flat = tuple(cell for row in frame for cell in row)
+        parent = self._last_frame_ref
+        checkpoint = parent is None or self._frames_since_checkpoint >= 31
+        if not checkpoint:
+            previous = decode_frame(self.frame_blobs, parent)
+            if (len(previous), len(previous[0])) != (height, width):
+                checkpoint = True
+        if checkpoint:
+            blob = {"codec": "rle-v1", "shape": [height, width], "runs": _rle(flat)}
+            self._frames_since_checkpoint = 0
+        else:
+            old = tuple(cell for row in previous for cell in row)
+            changes = [[index, value] for index, (before, value) in enumerate(zip(old, flat)) if before != value]
+            full = {"codec": "rle-v1", "shape": [height, width], "runs": _rle(flat)}
+            delta = {"codec": "delta-v1", "shape": [height, width], "parent": parent, "changes": changes}
+            if len(json.dumps(delta, separators=(",", ":"))) < len(json.dumps(full, separators=(",", ":"))):
+                blob = delta;self._frames_since_checkpoint += 1
+            else:
+                blob = full;self._frames_since_checkpoint = 0
+        self.frame_blobs[frame_ref] = blob;self._last_frame_ref = frame_ref
+        return frame_ref
 
     @staticmethod
     def _decision_data(decision: DecisionLike) -> tuple[tuple[str, int], ...]:
@@ -163,10 +241,13 @@ class SharedBroadPolicy:
             raw_observation = serialize()
             if not isinstance(raw_observation, Mapping):
                 raise BridgeError("serialized observation must be a mapping")
+            payload = dict(raw_observation)
+            if "frame" in payload:
+                payload["frame_ref"] = self._store_frame(payload.pop("frame"))
             self.events.append({
                 "kind": "world_observation",
                 "creator": "environment",
-                "payload": dict(raw_observation),
+                "payload": payload,
             })
         fallback = self.baseline.choose_action(observation)
         fallback_data = self._decision_data(fallback)
@@ -288,6 +369,7 @@ class SharedBroadPolicy:
             "authority": "environment-evidence-only",
             "probe_budget": {"used": self.probes_used, "limit": self.max_option_probes},
             "probe_counts": dict(sorted(self.probe_counts.items())),
+            "frame_blobs": dict(sorted(self.frame_blobs.items())),
             "leases": {
                 key: {
                     "confirmations": value.confirmations,
@@ -308,4 +390,5 @@ __all__ = [
     "HybridDecision",
     "OptionProposal",
     "SharedBroadPolicy",
+    "decode_frame",
 ]
