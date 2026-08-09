@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Hashable, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 
 class CalibrationTrackingError(ValueError):
@@ -41,6 +41,52 @@ def _anchor(value: Any) -> tuple[int, int]:
     if not isinstance(raw, (tuple, list)) or len(raw) != 2:
         raise CalibrationTrackingError("tracked entity lacks a two-coordinate anchor")
     return int(raw[0]), int(raw[1])
+
+
+def _shape_key(value: Any) -> tuple[int, tuple[int, int] | None]:
+    area = int(getattr(value, "area", -1))
+    cells = getattr(value, "normalized_cells", None)
+    if not cells:
+        return area, None
+    width = 1 + max(int(x) for x, _ in cells)
+    height = 1 + max(int(y) for _, y in cells)
+    return area, tuple(sorted((width, height)))
+
+
+def complete_correspondence(
+    before: Sequence[Any],
+    after: Sequence[Any],
+    primary: Callable[[Sequence[Any], Sequence[Any]], Mapping[Any, Any]],
+) -> dict[Any, Any]:
+    """Complete an exact matcher across pose-dependent appearance changes.
+
+    Exact/static matches are frozen first. Remaining entities may match only
+    when area and unordered bounding dimensions agree; candidates are assigned
+    by deterministic minimum displacement. This preserves a rotating controlled
+    sprite without conflating already matched repeated stationary objects.
+    """
+
+    mapping = dict(primary(before, after))
+    used = set(mapping.values())
+    remaining_before = [item for item in before if item not in mapping]
+    remaining_after = [item for item in after if item not in used]
+    candidates = []
+    for left in remaining_before:
+        for right in remaining_after:
+            if _shape_key(left) != _shape_key(right):
+                continue
+            la, ra = _anchor(left), _anchor(right)
+            candidates.append((
+                abs(la[0] - ra[0]) + abs(la[1] - ra[1]),
+                la, ra, repr(getattr(left, "outline", "")),
+                repr(getattr(right, "outline", "")), left, right,
+            ))
+    for _distance, _la, _ra, _lo, _ro, left, right in sorted(candidates, key=lambda row: row[:5]):
+        if left in mapping or right in used:
+            continue
+        mapping[left] = right
+        used.add(right)
+    return mapping
 
 
 def track_calibration(
@@ -144,4 +190,4 @@ def workspace_transitions(calibration: TrackedCalibration) -> list[dict[str, Any
     return rows
 
 
-__all__ = ["CalibrationStep", "CalibrationTrackingError", "EntityEffect", "TrackedCalibration", "track_calibration", "workspace_transitions"]
+__all__ = ["CalibrationStep", "CalibrationTrackingError", "EntityEffect", "TrackedCalibration", "complete_correspondence", "track_calibration", "workspace_transitions"]

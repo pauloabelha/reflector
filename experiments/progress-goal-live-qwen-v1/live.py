@@ -62,6 +62,78 @@ def entity_rows(figures: Any) -> list[dict[str, Any]]:
     return output
 
 
+def tracked_entity_rows(tracked_entities: Any) -> list[dict[str, Any]]:
+    figures = [figure for _entity_id, figure in tracked_entities]
+    outlines = {value: f"oc{index}" for index, value in enumerate(sorted({item.outline for item in figures}))}
+    interiors = {value: f"ic{index}" for index, value in enumerate(sorted({item.interior_pattern for item in figures}, key=repr))}
+    output = []
+    for entity_id, figure in tracked_entities:
+        width = 1 + max(x for x, _ in figure.normalized_cells)
+        height = 1 + max(y for _, y in figure.normalized_cells)
+        output.append({
+            "id": str(entity_id), "kind": "region",
+            "outline_class": outlines[figure.outline],
+            "interior_class": interiors[figure.interior_pattern],
+            "area": int(figure.area), "origin": list(figure.anchor),
+            "size": [width, height],
+        })
+    return output
+
+
+def generic_calibration(environment: Any, observation: Any, game: str, legal: Any) -> dict[str, Any]:
+    """Calibrate every visible entity before assuming any goal ontology."""
+
+    initial_grid = LAB.BASE.BASE.observation_grid(observation)
+    initial_figures = LAB.BASE.V0.V0.select_figures(initial_grid)
+    successors = []
+    intervention_actions = {}
+    history = []
+    changed = []
+    for index, action in enumerate(legal):
+        reference = f"im{index:02d}"
+        intervention_actions[reference] = action
+        before = LAB.BASE.BASE.observation_record(observation)
+        observation = LAB.BASE.execute_action(environment, game, action, {}, "generic-live-goal-calibration")
+        after = LAB.BASE.BASE.observation_record(observation)
+        successors.append(LAB.BASE.V0.V0.select_figures(LAB.BASE.BASE.observation_grid(observation)))
+        changed.append(before["frame_sha256"] != after["frame_sha256"])
+        history.append({"action": action, "before": before, "after": after, "phase": "calibration", "intervention_ref": reference})
+        atomic_json(ARTIFACTS / "checkpoint.json", {"history": history})
+    refs = tuple(intervention_actions)
+    correspondence = lambda before, after: TRACKER.complete_correspondence(
+        before, after, LAB.BASE.V0.V0.BASE.correspond
+    )
+    calibration = TRACKER.track_calibration(initial_figures, successors, refs, correspondence)
+    transition_rows = []
+    for index, step in enumerate(calibration.steps):
+        effect = next(
+            (item for item in step.effects if item.entity_id == calibration.controlled_id),
+            None,
+        )
+        transition_rows.append({
+            "intervention_ref": step.intervention_ref,
+            "controlled_id": calibration.controlled_id,
+            "controlled_candidates": list(calibration.controlled_candidates),
+            "observed_delta": [0, 0] if effect is None or effect.delta is None else list(effect.delta),
+            "observation_changed": changed[index],
+            "entity_effects": [
+                {"entity_id": item.entity_id, "delta": item.delta, "status": item.status}
+                for item in step.effects
+            ],
+        })
+    movement = {
+        tuple(delta): intervention_actions[reference]
+        for delta, reference in calibration.movement_models
+    }
+    return {
+        "observation": observation, "history": history,
+        "movement": movement, "intervention_actions": intervention_actions,
+        "transition_rows": transition_rows,
+        "entities": tracked_entity_rows(calibration.final_entities),
+        "calibration": calibration,
+    }
+
+
 def post_completion(endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
     encoded = json.dumps(payload, separators=(",", ":")).encode("utf-8")
     request = Request(endpoint, data=encoded, headers={"Content-Type": "application/json"}, method="POST")
@@ -110,41 +182,50 @@ def main() -> int:
         observation = environment.observation_space or environment.reset()
         initial_record = LAB.BASE.BASE.observation_record(observation)
         initial_grid = LAB.BASE.BASE.observation_grid(observation)
-        figures = LAB.BASE.V0.V0.select_figures(initial_grid)
-        grounding_scaffold = LAB.infer_roles(figures)
-        actor_outline = grounding_scaffold["actor"]["outline"]
-        actor_area = grounding_scaffold["actor"]["area"]
-        item_interior = grounding_scaffold["items"][0]["interior"]
         legal = LAB.BASE.BASE.simple_legal_actions(environment, observation)
-        movement: dict[tuple[int, int], int] = {}
-        intervention_actions: dict[str, int] = {}
-        transition_rows: list[dict[str, Any]] = []
-        for index, action in enumerate(legal):
-            reference = f"im{index:02d}"
-            intervention_actions[reference] = action
-            before = LAB.BASE.BASE.observation_record(observation)
-            before_grid = LAB.BASE.BASE.observation_grid(observation)
-            before_anchor = LAB._actor_anchor(before_grid, item_interior, actor_outline, actor_area)
-            observation = LAB.BASE.execute_action(environment, game, action, {}, "live-goal-calibration")
-            after = LAB.BASE.BASE.observation_record(observation)
-            after_grid = LAB.BASE.BASE.observation_grid(observation)
-            after_anchor = LAB._actor_anchor(after_grid, item_interior, actor_outline, actor_area)
-            delta = (after_anchor[0] - before_anchor[0], after_anchor[1] - before_anchor[1])
-            if delta != (0, 0):
-                movement[delta] = action
-            transition_rows.append({
-                "intervention_ref": reference,
-                "controlled_id": grounding_scaffold["actor"]["id"],
-                "observed_delta": list(delta),
-                "observation_changed": before["frame_sha256"] != after["frame_sha256"],
-            })
-            history.append({"action": action, "before": before, "after": after, "phase": "calibration", "intervention_ref": reference})
-            atomic_json(ARTIFACTS / "checkpoint.json", {"history": history})
+        if globals().get("TRACKER") is not None:
+            calibrated = generic_calibration(environment, observation, game, legal)
+            observation = calibrated["observation"]
+            history = calibrated["history"]
+            movement = calibrated["movement"]
+            intervention_actions = calibrated["intervention_actions"]
+            transition_rows = calibrated["transition_rows"]
+            rendered_entities = calibrated["entities"]
+        else:
+            figures = LAB.BASE.V0.V0.select_figures(initial_grid)
+            grounding_scaffold = LAB.infer_roles(figures)
+            actor_outline = grounding_scaffold["actor"]["outline"]
+            actor_area = grounding_scaffold["actor"]["area"]
+            item_interior = grounding_scaffold["items"][0]["interior"]
+            movement = {}
+            intervention_actions = {}
+            transition_rows = []
+            for index, action in enumerate(legal):
+                reference = f"im{index:02d}"
+                intervention_actions[reference] = action
+                before = LAB.BASE.BASE.observation_record(observation)
+                before_grid = LAB.BASE.BASE.observation_grid(observation)
+                before_anchor = LAB._actor_anchor(before_grid, item_interior, actor_outline, actor_area)
+                observation = LAB.BASE.execute_action(environment, game, action, {}, "live-goal-calibration")
+                after = LAB.BASE.BASE.observation_record(observation)
+                after_grid = LAB.BASE.BASE.observation_grid(observation)
+                after_anchor = LAB._actor_anchor(after_grid, item_interior, actor_outline, actor_area)
+                delta = (after_anchor[0] - before_anchor[0], after_anchor[1] - before_anchor[1])
+                if delta != (0, 0):
+                    movement[delta] = action
+                transition_rows.append({
+                    "intervention_ref": reference,
+                    "controlled_id": grounding_scaffold["actor"]["id"],
+                    "observed_delta": list(delta),
+                    "observation_changed": before["frame_sha256"] != after["frame_sha256"],
+                })
+                history.append({"action": action, "before": before, "after": after, "phase": "calibration", "intervention_ref": reference})
+                atomic_json(ARTIFACTS / "checkpoint.json", {"history": history})
+            rendered_entities = entity_rows(LAB.BASE.V0.V0.select_figures(LAB.BASE.BASE.observation_grid(observation)))
 
         current_grid = LAB.BASE.BASE.observation_grid(observation)
-        current_figures = LAB.BASE.V0.V0.select_figures(current_grid)
         workspace = GP.build_workspace(
-            entities=entity_rows(current_figures),
+            entities=rendered_entities,
             transitions=transition_rows,
             frame={"height": len(current_grid), "width": len(current_grid[0])},
         )

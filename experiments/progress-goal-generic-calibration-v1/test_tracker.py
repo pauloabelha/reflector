@@ -17,6 +17,8 @@ SPEC.loader.exec_module(T)
 class Node:
     identity: str
     anchor: tuple[int, int]
+    area: int = 4
+    normalized_cells: tuple[tuple[int, int], ...] = ((0, 0), (1, 0), (0, 1), (1, 1))
 
 
 def correspond(before, after):
@@ -46,3 +48,21 @@ def test_tied_movers_remain_ambiguous_and_birth_death_are_preserved() -> None:
     assert result.controlled_candidates == ("e000", "e001")
     statuses = {row.status for row in result.steps[0].effects}
     assert statuses == {"matched", "appeared"}
+
+
+def test_relaxed_completion_preserves_rotating_unmatched_controller() -> None:
+    before = (Node("old-pose", (4, 4)), Node("static", (8, 8)))
+    after = (Node("new-pose", (4, 2)), Node("static", (8, 8)))
+
+    def exact(left, right):
+        by_id = {item.identity: item for item in right}
+        return {item: by_id[item.identity] for item in left if item.identity in by_id}
+
+    mapping = T.complete_correspondence(before, after, exact)
+    assert mapping[before[0]] == after[0]
+    result = T.track_calibration(
+        before, (after,), ("i0",),
+        lambda left, right: T.complete_correspondence(left, right, exact),
+    )
+    assert result.controlled_id == "e000"
+    assert result.movement_models == (((0, -2), "i0"),)

@@ -5,4 +5,8 @@
 - It observes every region under every opaque intervention before any goal
   family is proposed, preserving competing controlled candidates and all
   appearance/disappearance/motion effects.
-- Integration into the live runner and a new cross-game freeze remain pending.
+- The inherited live runner now exposes a tracker hook. The goal-agnostic path
+  renders stable tracked IDs, every per-entity effect, the unique controlled
+  candidate when one exists, learned displacement models, and unexplained
+  interventions before Qwen sees any goal family.
+- A fresh wa30 regression is frozen as v6 before another cross-game selection.
