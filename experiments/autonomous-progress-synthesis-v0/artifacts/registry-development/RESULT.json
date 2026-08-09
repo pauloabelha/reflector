@@ -1,0 +1,235 @@
+{
+  "development_only": true,
+  "game_ids_used_only_by_harness": true,
+  "protocol": "unified-capability-registry-development-v0",
+  "results": [
+    {
+      "action_sequence": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "actions": 15,
+      "exact_replay": true,
+      "game": "ar25",
+      "goal_ast": {
+        "direction": "minimize",
+        "lower_bound": 0,
+        "potential": {
+          "arguments": [
+            "?a",
+            "?b"
+          ],
+          "op": "TranslationAlignmentResidual"
+        },
+        "protocol": "compositional-progress-dsl-v0",
+        "roles": {
+          "?a": {
+            "type": "ObservedRegion"
+          },
+          "?b": {
+            "type": "ObservedRegion"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "gradient:TranslationAlignmentResidual"
+    },
+    {
+      "action_sequence": [
+        6,
+        4,
+        4,
+        4,
+        6,
+        3,
+        3,
+        3,
+        3,
+        2,
+        6,
+        1,
+        4
+      ],
+      "actions": 13,
+      "exact_replay": true,
+      "game": "ka59",
+      "goal_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UnassignedMemberCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "containers": {
+            "type": "CapacityCompatibleSet"
+          },
+          "members": {
+            "type": "EquivalenceClass"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "exact:UnassignedMemberCount"
+    },
+    {
+      "action_sequence": [
+        4,
+        4,
+        4,
+        5
+      ],
+      "actions": 4,
+      "exact_replay": true,
+      "game": "sp80",
+      "goal_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UnservedTerminalCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "source": {
+            "type": "BoundaryEmitter"
+          },
+          "terminals": {
+            "type": "RepeatedOpenRegions"
+          },
+          "transducer": {
+            "type": "Transformable"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "exact:UnservedTerminalCount"
+    },
+    {
+      "action_sequence": [
+        4,
+        4,
+        4,
+        4,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        5,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "actions": 20,
+      "exact_replay": true,
+      "game": "re86",
+      "goal_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UncoveredRequirementCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "controllers": {
+            "type": "TransformableSet"
+          },
+          "requirements": {
+            "type": "SparseSpecificationLayer"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "exact:UncoveredRequirementCount"
+    },
+    {
+      "action_sequence": [
+        4,
+        1,
+        2,
+        2,
+        4,
+        1,
+        4,
+        2,
+        2,
+        3,
+        3,
+        2,
+        4,
+        4,
+        2,
+        4,
+        1,
+        4,
+        2
+      ],
+      "actions": 19,
+      "exact_replay": true,
+      "game": "tu93",
+      "goal_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "RemainingRouteSteps"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "controlled": {
+            "type": "ActionCorrelatedRegion"
+          },
+          "terminal": {
+            "type": "ReachableMarker"
+          }
+        },
+        "terminal": {
+          "type": "ReachTerminal"
+        },
+        "type": "GoalPotential"
+      },
+      "initial_support": 0,
+      "levels_completed": 1,
+      "selected_capability": "interactive:conditional-route"
+    }
+  ]
+}
