@@ -1779,6 +1779,31 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
     return result
 
 
+def write_failed_progress(job: Mapping[str, Any], error: str) -> dict[str, Any]:
+    """Atomically expose a terminal job failure without losing prior progress."""
+
+    workspace_id = f"{job['profile_id']}--{job['game']}--{job['arm_id']}"
+    path = ARTIFACTS / "progress" / f"{workspace_id}.json"
+    existing: dict[str, Any] = {}
+    if path.exists():
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(value, dict):
+                existing = value
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            pass
+    failed = {
+        **existing,
+        "game": str(job["game"]),
+        "profile_id": str(job["profile_id"]),
+        "arm_id": str(job["arm_id"]),
+        "status": "failed",
+        "error": str(error),
+    }
+    LEDGER.atomic_json(path, failed)
+    return failed
+
+
 def run_census(config: Mapping[str, Any], manifest: Mapping[str, Any], *, games: Sequence[str] | None = None, profiles: Sequence[str] | None = None) -> dict[str, Any]:
     selected_games = tuple(games or config["games"])
     selected_profiles = tuple(profiles or config["profiles"])
@@ -1803,6 +1828,7 @@ def run_census(config: Mapping[str, Any], manifest: Mapping[str, Any], *, games:
                     append_status(f"- COMPLETE `{result['profile_id']}/{result['game']}/{result['arm_id']}`: levels={result['levels_completed']}, actions={result['actions']}, Q→R grounded={result['graph_metrics'].get('grounded_pickup_directions', {}).get('qwen->r2', 0)}, replay={result['replay_verified']}.")
                 except BaseException as error:
                     failure = {**job, "error": f"{type(error).__name__}: {error}"}
+                    write_failed_progress(job, failure["error"])
                     failures.append(failure)
                     append_status(f"- FAILED `{job['profile_id']}/{job['game']}/{job['arm_id']}`: {failure['error']}.")
                     for other in futures:

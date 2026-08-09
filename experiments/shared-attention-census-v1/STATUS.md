@@ -97,3 +97,19 @@ Machine state is checkpointed after every epistemic event and real environment t
 - Preserved action-17 benchmark: replay 3.951s→2.310s; 1,000 object lookups 0.1154s→0.000355s; R2 frontier 1.871s→0.0255s cold and 0.0105s warm.
 - Verification: all 40 v1 tests and all 77 repository tests pass; Python compilation and diff check pass.
 - The next run is frozen in `V1_2_AR25_GATE.md`: one fresh paired `ar25` gate, balanced profile, 25 actions, calls at 0/8/16, no in-run tuning, and held-out games paused unless a unique grounded Qwen→R2→control→environment chain succeeds.
+
+## 2026-08-09 02:20:07 — live census launched
+
+- Jobs: 2; games: 1; profiles: 1; environment workers: 2.
+- FAILED `balanced/ar25/shared_attention_qwen`: FrontierBudgetError: frontier budget 2400 is below mandatory closure cost 2979.
+- FAIL-FAST requested: pending jobs cancelled; only already-running workers may finish checkpoint boundaries.
+
+## 2026-08-09 — v1.2 gate verdict and v1.3 freeze
+
+- v1.2 terminated correctly at action 8 before sending its second Qwen request. It is a configuration-feasibility failure, not a negative cognition result.
+- Turn 1 was valid: `SameOutline(a,b) -> Decrease TranslationAlignmentResidual(a,b)`. Its false concrete explanation was rejected.
+- R2's new ambiguity witness was complete and untruncated: six oriented substitutions over three effect pairs. It preserved discriminators including `SameInteriorLayout`, `DifferentInteriorLayout`, `MovedTogether`, `MovedWhileStationary`, and alignment relations. Support remained zero.
+- The indivisible criticism/schema/current-relation closure cost 2,979 frontier units, exceeding the frozen balanced budget of 2,400. The explicit failure prevented lossy context, but Qwen never saw the witness; grounded pickup and control influence therefore remained zero.
+- A stale pre-v1.2 census process was discovered and terminated. Its unrelated per-job workspaces were isolated by path and archived separately; the v1.2 balanced ledgers were not mixed with them. The resident Qwen server remained loaded.
+- Read-only budget measurements on the preserved action-8 state: 3,200 fits the eight-object essential unit but defers two requested roots; 3,600 defers one; 4,000 fits all 11 objects at a 3,630-unit cut. The estimated actual prompt at 4,000 is 8,236 tokens, leaving about 5,148 tokens after the maximum completion reserve.
+- `V1_3_AR25_GATE.md` freezes the replacement: balanced budget 4,000, exact production-budget regression, atomic failed-progress reporting, and otherwise unchanged v1.2 cognition/control semantics.

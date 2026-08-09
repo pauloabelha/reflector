@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import threading
 from dataclasses import replace
@@ -606,6 +607,57 @@ def test_ambiguous_criticism_cut_keeps_witness_target_and_current_relations() ->
     ).dependency_ids
     assert "refine the schema conditions to retain exactly one effect pair" in COGNITION.PROMPT
     assert "ar25" not in COGNITION.PROMPT.lower()
+
+
+def test_balanced_production_budget_fits_complete_ambiguity_unit() -> None:
+    state, events, items = relational_triad_fixture()
+    target_payload = {
+        "conditions": [{"predicate": "SameOutline", "arguments": ["?a", "?b"]}],
+        "preferred_consequence": {
+            "operator": "Decrease",
+            "measure": "TranslationAlignmentResidual",
+            "arguments": ["?a", "?b"],
+        },
+    }
+    state, target = add_object(
+        state,
+        events,
+        kind="schema",
+        creator="qwen",
+        name="production-budget-template",
+        payload=target_payload,
+    )
+    witness = AMBIGUITY.compile_ambiguity_witness(
+        {**target_payload, "canonical_hash": target.object_id},
+        {"relations": items["relation_set"].payload["relations"]},
+    )
+    criticism = GRAPH.ingest_structured_criticism(
+        state,
+        worker="r2",
+        target_id=target.object_id,
+        status="ambiguous-grounding",
+        criticism_key="production-budget-criticism",
+        payload=witness,
+    )
+    config = json.loads((HERE / "config.json").read_text(encoding="utf-8"))
+    turn = COGNITION.build_turn(
+        criticism.state,
+        [*events, *criticism.events],
+        COGNITION.Orientation("production-budget-workspace"),
+        request_id="production-budget-request",
+        token_budget=config["profiles"]["balanced"]["frontier_token_budget"],
+        compact_ids=True,
+    )
+    cut = turn.document["sparse_cut"]
+    budget = config["profiles"]["balanced"]["frontier_token_budget"]
+    assert budget == 4_000
+    assert cut["used_tokens"] <= budget
+    aliases = {real: alias for alias, real in turn.id_aliases}
+    rendered = {item["id"] for item in cut["objects"]}
+    assert aliases[target.object_id] in rendered
+    assert aliases[criticism.object_ids[0]] in rendered
+    assert aliases[items["relation_set"].object_id] in rendered
+
 
 
 def test_large_initial_materialization_is_columnar_and_request_stays_below_eight_k() -> None:

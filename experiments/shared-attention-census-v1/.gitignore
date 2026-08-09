@@ -9,3 +9,5 @@ artifacts/server-queue.lock
 artifacts-aborted-*/
 artifacts-pilot-*/
 artifacts-dev-*/
+artifacts-gate-*/
+artifacts-stale-*/

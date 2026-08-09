@@ -12,7 +12,7 @@
   "profiles": {
     "balanced": {
       "frontier_root_limit": 12,
-      "frontier_token_budget": 2400,
+      "frontier_token_budget": 4000,
       "proposal_attention_boost": 1.0,
       "attention_half_life_actions": 12
     },

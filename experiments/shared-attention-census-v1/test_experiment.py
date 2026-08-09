@@ -8,6 +8,7 @@ tests; duplicating them here would hide integration mistakes behind mocks.
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -392,3 +393,72 @@ def test_ambiguous_grounding_witnesses_preserve_competing_pairs() -> None:
     assert pairs == {("f00", "f01"), ("f00", "f02"), ("f01", "f02")}
     assert witness["candidate_substitutions"]
     assert "exactly one" in witness["refinement_goal"]
+
+
+def test_failed_progress_atomically_preserves_readable_checkpoint(tmp_path: Path, monkeypatch: Any) -> None:
+    artifacts = tmp_path / "artifacts"
+    monkeypatch.setattr(RUNNER, "ARTIFACTS", artifacts)
+    job = {"profile_id": "balanced", "game": "ar25", "arm_id": "shared_attention_qwen"}
+    path = artifacts / "progress" / "balanced--ar25--shared_attention_qwen.json"
+    RUNNER.LEDGER.atomic_json(
+        path,
+        {
+            "status": "running",
+            "actions": 16,
+            "levels_completed": 0,
+            "graph_metrics": {"object_count": 6816},
+        },
+    )
+
+    recorded = RUNNER.write_failed_progress(job, "RuntimeError: synthetic failure")
+    persisted = json.loads(path.read_text(encoding="utf-8"))
+
+    assert persisted == recorded
+    assert persisted["status"] == "failed"
+    assert persisted["error"] == "RuntimeError: synthetic failure"
+    assert persisted["actions"] == 16
+    assert persisted["graph_metrics"] == {"object_count": 6816}
+    assert persisted["game"] == "ar25"
+
+
+def test_run_census_catch_marks_failed_job_progress(tmp_path: Path, monkeypatch: Any) -> None:
+    artifacts = tmp_path / "artifacts"
+    monkeypatch.setattr(RUNNER, "ARTIFACTS", artifacts)
+    monkeypatch.setattr(RUNNER, "append_status", lambda _message: None)
+
+    class FakeQueue:
+        def __init__(self, *_args: Any, **_kwargs: Any) -> None:
+            self.stopped = False
+
+        def stop(self, *, drain: bool = True) -> None:
+            self.stopped = drain
+
+    monkeypatch.setattr(RUNNER.QC, "ResidentServerQueue", FakeQueue)
+
+    def fail(_job: Any, _fifo: Any) -> Any:
+        path = artifacts / "progress" / "balanced--ar25--r2_only.json"
+        RUNNER.LEDGER.atomic_json(path, {"status": "running", "actions": 7})
+        raise ValueError("observable")
+
+    monkeypatch.setattr(RUNNER, "run_episode", fail)
+    summary = RUNNER.run_census(
+        {
+            "games": ["ar25"],
+            "profiles": {"balanced": {}},
+            "arms": ["r2_only"],
+            "max_parallel_arc_workers": 1,
+            "qwen": {"endpoint": "unused"},
+        },
+        {},
+    )
+    progress = json.loads(
+        (artifacts / "progress" / "balanced--ar25--r2_only.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert summary["complete"] is False
+    assert summary["failures"][0]["error"] == "ValueError: observable"
+    assert progress["status"] == "failed"
+    assert progress["error"] == "ValueError: observable"
+    assert progress["actions"] == 7
