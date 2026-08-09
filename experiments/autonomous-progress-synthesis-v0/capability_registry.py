@@ -35,13 +35,15 @@ def propose(
     simple=tuple(sorted(map(int,successors)))
     try:high=list(synthesis.synthesize(initial))
     except synthesis.SynthesisError:high=[]
+    executable_kinds={"UnassignedMemberCount","UnservedTerminalCount","UncoveredRequirementCount"}
+    exact_candidates=[candidate for candidate in high if candidate.ast["potential"]["type"] in executable_kinds]
     motion={}
     for action,after in successors.items():
-        deltas=[synthesis.infer_role_translation(candidate,initial,after) for candidate in high]
-        delta=next((row for row in deltas if row is not None and (row[0]==0)!=(row[1]==0)),None)
-        if delta is not None:motion[delta]=int(action)
+        for candidate in exact_candidates:
+            delta=synthesis.infer_role_translation(candidate,initial,after)
+            if delta is not None and (delta[0]==0)!=(delta[1]==0):motion[delta]=int(action)
     nonmotion=tuple(action for action in simple if action not in motion.values());rows=[]
-    for candidate in high:
+    for candidate in exact_candidates:
         try:
             execution=exact.compile_execution(candidate,initial,motion_actions=motion,parameterized_actions=parameterized_actions,release_actions=nonmotion)
             option=ExactOption(candidate,execution,tuple(sorted(motion.items())),tuple(parameterized_actions),nonmotion)
@@ -52,12 +54,25 @@ def propose(
     except Exception:pass
     try:compositional=dsl.propose(initial)
     except synthesis.SynthesisError:compositional=()
+    before_scene=None;delta_by_action={}
+    if compositional:
+        try:
+            before_scene=synthesis.perceive(initial)
+            for action,after in successors.items():
+                after_scene=synthesis.perceive(after);deltas={}
+                for source in before_scene.regions:
+                    matches=[row for row in after_scene.regions if (row.width,row.height,row.normalized)==(source.width,source.height,source.normalized)]
+                    if not matches:continue
+                    distance=min(abs(row.x-source.x)+abs(row.y-source.y) for row in matches);nearest=[row for row in matches if abs(row.x-source.x)+abs(row.y-source.y)==distance]
+                    values={(row.x-source.x,row.y-source.y) for row in nearest}
+                    if len(values)==1 and next(iter(values))!=(0,0):deltas[source.region_id]=next(iter(values))
+                delta_by_action[int(action)]=deltas
+        except synthesis.SynthesisError:delta_by_action={}
     for candidate in compositional:
         for variable,region_id in candidate.binding.items():
             local={}
-            for action,after in successors.items():
-                moved=gradient.moved_variables(candidate,initial,after)
-                if variable in moved:local[moved[variable]]=int(action)
+            for action,deltas in delta_by_action.items():
+                if region_id in deltas:local[deltas[region_id]]=action
             if not local:continue
             try:
                 execution=gradient.plan(candidate,initial,movable_variable=variable,motion_actions=local)

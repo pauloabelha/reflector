@@ -22,7 +22,7 @@ class RouteOption:
     field:object
     motion_actions:tuple[tuple[tuple[int,int],int],...]
 
-def compile_option(initial:Sequence[Sequence[int]],successors:Mapping[int,Sequence[Sequence[int]]])->RouteOption:
+def calibrated_controller(initial:Sequence[Sequence[int]],successors:Mapping[int,Sequence[Sequence[int]]]):
     rows={int(action):TRACKER.pixel_motion_hypotheses(initial,after) for action,after in successors.items()}
     signatures={}
     for action,motions in rows.items():
@@ -39,6 +39,10 @@ def compile_option(initial:Sequence[Sequence[int]],successors:Mapping[int,Sequen
         if left==right:raise ROUTE.ConditionalRouteError("controller signature is ambiguous")
     mapping={motion.delta:action for action,motion in observations}
     if len(mapping)!=len(observations):raise ROUTE.ConditionalRouteError("opaque motion model is nonfunctional")
+    return signature,observations,mapping
+
+def compile_option(initial:Sequence[Sequence[int]],successors:Mapping[int,Sequence[Sequence[int]]])->RouteOption:
+    signature,observations,mapping=calibrated_controller(initial,successors)
     seed=min(observations,key=lambda row:(row[0],row[1].delta))[1]
     field=ROUTE.infer_route_field(initial,before_anchor=seed.before_anchor,after_anchor=seed.after_anchor,size=seed.size,actor_colors=seed.colors)
     path=ROUTE.shortest_route(field,initial,start=seed.before_anchor);current=seed.before_anchor;actions=[]
@@ -55,4 +59,4 @@ def controlled_anchor(option:RouteOption,grid:Sequence[Sequence[int]])->tuple[in
 def desired_delta(option:RouteOption,grid:Sequence[Sequence[int]])->tuple[int,int]:
     current=controlled_anchor(option,grid);path=ROUTE.shortest_route(option.field,grid,start=current);return ROUTE.desired_delta(current,path)
 
-__all__=["RouteOption","compile_option","controlled_anchor","desired_delta"]
+__all__=["RouteOption","calibrated_controller","compile_option","controlled_anchor","desired_delta"]

@@ -54,18 +54,27 @@ def _primitive(op:str,a:str="?a",b:str="?b")->dict[str,Any]:return {"op":op,"arg
 
 
 def propose(raw:Sequence[Sequence[int]],*,limit:int=96)->tuple[GoalCandidate,...]:
-    scene=perceive(raw);rows=[]
+    scene=perceive(raw);rows=[];pair_rows=[]
     useful=[region for region in scene.regions if region.area>=2 and region.width<scene.width and region.height<scene.height]
     for left,right in combinations(useful,2):
         ratio=max(left.width/right.width,right.width/left.width,left.height/right.height,right.height/left.height)
-        binding={"?a":left.region_id,"?b":right.region_id}
+        larger,smaller=(left,right) if left.area>=right.area else (right,left)
+        containment=bool(larger.holes and larger.area>=smaller.area and abs((larger.width-2)-smaller.width)<=1 and abs((larger.height-2)-smaller.height)<=1)
+        if ratio<=2 or containment:
+            pair_rows.append((not containment,left.normalized!=right.normalized,ratio,left.region_id,right.region_id,left,right,containment))
+    # Bound composition before allocating candidates.  The ordering is purely
+    # structural: capacity-compatible and repeated-shape pairs first, then
+    # scale similarity and stable addresses.
+    max_pairs=max(8,(limit+3)//4)
+    for _nc,_nd,_ratio,_lid,_rid,left,right,containment in sorted(pair_rows)[:max_pairs]:
+        ratio=max(left.width/right.width,right.width/left.width,left.height/right.height,right.height/left.height);binding={"?a":left.region_id,"?b":right.region_id}
         if ratio<=2:
             rows.append(compile_candidate(_primitive("TranslationAlignmentResidual"),binding,scene,attention=45+(15 if left.normalized==right.normalized else 0)))
             rows.append(compile_candidate(_primitive("AxisMisalignment"),binding,scene,attention=35+(15 if left.normalized==right.normalized else 0)))
             rows.append(compile_candidate(_primitive("BoundingBoxGap"),binding,scene,attention=30))
             rows.append(compile_candidate(_primitive("NormalizedMaskMismatch"),binding,scene,attention=30+(15 if ratio<=1.25 else 0)))
         larger,smaller=(left,right) if left.area>=right.area else (right,left)
-        if larger.holes and larger.area>=smaller.area and abs((larger.width-2)-smaller.width)<=1 and abs((larger.height-2)-smaller.height)<=1:
+        if containment:
             rows.append(compile_candidate(_primitive("ContainmentDeficit"),{"?a":smaller.region_id,"?b":larger.region_id},scene,attention=55))
     unique={(row.candidate_id,row.binding_id):row for row in rows}
     return tuple(sorted(unique.values(),key=lambda row:(-row.attention,row.candidate_id,row.binding_id))[:limit])
