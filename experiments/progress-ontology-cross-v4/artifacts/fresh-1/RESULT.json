@@ -1,0 +1,24 @@
+{
+  "protocol": "progress-ontology-cross-v4",
+  "results": [
+    {
+      "actions": 48,
+      "arm": "r2_cycle",
+      "exact_replay": true,
+      "final_digest": "d0bffd187e0e3c60a5401479749d8a84434ac152d02f3b4c5e7f9d1024598f6a",
+      "initial_digest": "fde90146d9ceb770949140b29c8436e7554051068e59598d4e68d76b478fb6a1",
+      "levels_completed": 0
+    },
+    {
+      "arm": "shared_progress_ontology",
+      "diagnostics": [
+        "placement:PlacementError:no balanced filled-object/hollow-slot population",
+        "flow:FlowRoutingError:no repeated open receptacle population",
+        "symbolic:KeyError:'model'"
+      ],
+      "status": "ontology_abstention"
+    }
+  ],
+  "same_start": false,
+  "verdict": "ABSTAIN"
+}

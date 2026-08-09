@@ -1,0 +1,444 @@
+{
+  "protocol": "autonomous-progress-synthesis-development-matrix-v0",
+  "results": [
+    {
+      "actions": [
+        {
+          "data": {
+            "x": 19,
+            "y": 31
+          },
+          "opaque_action": 6,
+          "role": "select-pusher"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "prospective-push"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "prospective-push"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "prospective-push"
+        },
+        {
+          "data": {
+            "x": 25,
+            "y": 31
+          },
+          "opaque_action": 6,
+          "role": "select"
+        },
+        {
+          "data": {},
+          "opaque_action": 3,
+          "role": "move"
+        },
+        {
+          "data": {},
+          "opaque_action": 3,
+          "role": "move"
+        },
+        {
+          "data": {},
+          "opaque_action": 3,
+          "role": "move"
+        },
+        {
+          "data": {},
+          "opaque_action": 3,
+          "role": "move"
+        },
+        {
+          "data": {},
+          "opaque_action": 2,
+          "role": "move"
+        },
+        {
+          "data": {
+            "x": 43,
+            "y": 31
+          },
+          "opaque_action": 6,
+          "role": "select"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "move"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "move"
+        }
+      ],
+      "calibration": [
+        {
+          "changed_cells": 19,
+          "opaque_action": 1,
+          "role_translation": [
+            0,
+            -3
+          ]
+        },
+        {
+          "changed_cells": 19,
+          "opaque_action": 2,
+          "role_translation": [
+            0,
+            3
+          ]
+        },
+        {
+          "changed_cells": 19,
+          "opaque_action": 3,
+          "role_translation": [
+            -3,
+            0
+          ]
+        },
+        {
+          "changed_cells": 19,
+          "opaque_action": 4,
+          "role_translation": [
+            3,
+            0
+          ]
+        }
+      ],
+      "candidate_count": 8,
+      "exact_replay": true,
+      "factual_actions": 13,
+      "final_digest": "8f4f2cdfce28087e46d8b1b6ed85dc216615fd47ef4afd736199bd99f74a42a6",
+      "game": "ka59",
+      "initial_digest": "7c6c5fcf2a5e7d78250c13ee3d346f1f91d53ccccf6bf9eac739d5aacd106595",
+      "levels_completed": 1,
+      "planning_rounds": [
+        {
+          "complete": false,
+          "expected_after": 1,
+          "expected_before": 2,
+          "potential": "UnassignedMemberCount"
+        },
+        {
+          "complete": true,
+          "expected_after": 0,
+          "expected_before": 2,
+          "potential": "UnassignedMemberCount"
+        }
+      ],
+      "selected_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UnassignedMemberCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "containers": {
+            "type": "CapacityCompatibleSet"
+          },
+          "members": {
+            "type": "EquivalenceClass"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "selected_support": 0,
+      "total_interactions": 17
+    },
+    {
+      "actions": [
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "transform"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "transform"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "transform"
+        },
+        {
+          "data": {},
+          "opaque_action": 5,
+          "role": "release"
+        }
+      ],
+      "calibration": [
+        {
+          "changed_cells": 162,
+          "opaque_action": 1,
+          "role_translation": [
+            0,
+            -1
+          ]
+        },
+        {
+          "changed_cells": 162,
+          "opaque_action": 2,
+          "role_translation": [
+            0,
+            1
+          ]
+        },
+        {
+          "changed_cells": 34,
+          "opaque_action": 3,
+          "role_translation": [
+            -1,
+            0
+          ]
+        },
+        {
+          "changed_cells": 34,
+          "opaque_action": 4,
+          "role_translation": [
+            1,
+            0
+          ]
+        },
+        {
+          "changed_cells": 2,
+          "opaque_action": 5,
+          "role_translation": null
+        }
+      ],
+      "candidate_count": 2,
+      "exact_replay": true,
+      "factual_actions": 4,
+      "final_digest": "a3217e1838e96c3cb333cc570d683583974f2a82a21127c2a611046317204121",
+      "game": "sp80",
+      "initial_digest": "e14ac2b5ce2f06db560711a9f8f85231145bcd865b898117793508b4b3fdc660",
+      "levels_completed": 1,
+      "planning_rounds": [
+        {
+          "complete": true,
+          "expected_after": 0,
+          "expected_before": 2,
+          "potential": "UnservedTerminalCount"
+        }
+      ],
+      "selected_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UnservedTerminalCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "source": {
+            "type": "BoundaryEmitter"
+          },
+          "terminals": {
+            "type": "RepeatedOpenRegions"
+          },
+          "transducer": {
+            "type": "Transformable"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "selected_support": 0,
+      "total_interactions": 9
+    },
+    {
+      "actions": [
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 4,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 5,
+          "role": "switch-controller"
+        },
+        {
+          "data": {},
+          "opaque_action": 3,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 3,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        },
+        {
+          "data": {},
+          "opaque_action": 1,
+          "role": "cover-requirements"
+        }
+      ],
+      "calibration": [
+        {
+          "changed_cells": 61,
+          "opaque_action": 1,
+          "role_translation": [
+            0,
+            -3
+          ]
+        },
+        {
+          "changed_cells": 61,
+          "opaque_action": 2,
+          "role_translation": [
+            0,
+            3
+          ]
+        },
+        {
+          "changed_cells": 61,
+          "opaque_action": 3,
+          "role_translation": [
+            -3,
+            0
+          ]
+        },
+        {
+          "changed_cells": 61,
+          "opaque_action": 4,
+          "role_translation": [
+            3,
+            0
+          ]
+        },
+        {
+          "changed_cells": 3,
+          "opaque_action": 5,
+          "role_translation": null
+        }
+      ],
+      "candidate_count": 64,
+      "exact_replay": true,
+      "factual_actions": 20,
+      "final_digest": "adf9609da7cf0dbe91be3c7a18ff59809568438ed3c7fb23fad29bee49e3c03b",
+      "game": "re86",
+      "initial_digest": "fde90146d9ceb770949140b29c8436e7554051068e59598d4e68d76b478fb6a1",
+      "levels_completed": 1,
+      "planning_rounds": [
+        {
+          "complete": true,
+          "expected_after": 0,
+          "expected_before": 8,
+          "potential": "UncoveredRequirementCount"
+        }
+      ],
+      "selected_ast": {
+        "potential": {
+          "direction": "minimize",
+          "lower_bound": 0,
+          "type": "UncoveredRequirementCount"
+        },
+        "protocol": "autonomous-progress-synthesis-v0",
+        "roles": {
+          "controllers": {
+            "type": "TransformableSet"
+          },
+          "requirements": {
+            "type": "SparseSpecificationLayer"
+          }
+        },
+        "terminal": {
+          "type": "EqualsLowerBound"
+        },
+        "type": "GoalPotential"
+      },
+      "selected_support": 0,
+      "total_interactions": 25
+    }
+  ],
+  "source_blind_runtime": true
+}
