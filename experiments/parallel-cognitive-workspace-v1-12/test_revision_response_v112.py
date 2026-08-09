@@ -153,8 +153,7 @@ def test_revision_request_uses_small_contract_but_keeps_exact_turn_and_visuals()
     assert turn.document["revision_task"]["chain_ref"] in content[0]["text"]
     assert content[2]["image_url"]["url"].startswith("data:image/png")
     assert "attention writes" in content[0]["text"]
-    assert "current_relation_set.id" in content[0]["text"]
-    assert "causing_evidence_ids" in content[0]["text"]
+    assert "relation_evidence_id and prospective_evidence_id" in content[0]["text"]
     assert "exactly one unordered pair" in content[0]["text"]
 
 

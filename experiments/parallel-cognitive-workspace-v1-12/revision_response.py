@@ -20,13 +20,38 @@ Return exactly one JSON branch allowed by the response schema:
 - revision: a single evidence-citing schema revision; or
 - abstain: true when the visible closed vocabulary cannot uniquely ground one effect pair.
 Do not emit explanations, alternatives, attention writes, expansion requests, prose, or actions.
-The revision must cite the exact chain and visible evidence, be alpha-novel, and uniquely retain one grounded effect pair. Enumerate the complete current_grounding before writing: every condition must hold and the conjunction must retain exactly one unordered pair. If no old candidate can be isolated, you may replace the old conditions and select a different uniquely grounded pair; never emit a predicate shared by multiple retained pairs. Set relation_evidence_id to causal_revision_packet.current_relation_set.id and prospective_evidence_id to one revision_task.causing_evidence_ids entry. These are addresses, not support. Reality and the compiler decide acceptance.
+The revision must cite the exact chain and visible evidence, be alpha-novel, and uniquely retain one grounded effect pair. Enumerate the complete grounding before writing: every condition must hold and the conjunction must retain exactly one unordered pair. If no old candidate can be isolated, you may replace the old conditions and select a different uniquely grounded pair; never emit a predicate shared by multiple retained pairs. Evidence fields are addresses, not support. Reality and the compiler decide acceptance.
 EPISTEMIC_INPUT=
 """
 
 
 def is_revision_turn(turn: Any) -> bool:
     return isinstance(turn.document.get("revision_task"), Mapping)
+
+
+def is_prospective_revision_turn(turn: Any) -> bool:
+    return is_revision_turn(turn) and isinstance(
+        turn.document.get("causal_revision_packet"), Mapping
+    )
+
+
+def _relation_evidence_id(qc: Any, turn: Any) -> str:
+    if is_prospective_revision_turn(turn):
+        return str(
+            turn.document["causal_revision_packet"]["current_relation_set"]["id"]
+        )
+    candidates = [
+        item
+        for item in qc._visible_object_documents(turn).values()
+        if item.get("kind") == "relation_set"
+    ]
+    if not candidates:
+        raise RuntimeError("revision turn exposes no relation-set evidence address")
+    selected = max(
+        candidates,
+        key=lambda item: (int(item.get("revision", item.get("created_revision", -1))), str(item["id"])),
+    )
+    return str(selected["id"])
 
 
 def _revision_object_schema(qc: Any, turn: Any) -> dict[str, Any]:
@@ -43,18 +68,20 @@ def _revision_object_schema(qc: Any, turn: Any) -> dict[str, Any]:
             value = deepcopy(nullable)
         else:
             raise RuntimeError("authoritative compiler exposed no revision object schema")
-    relation_id = str(
-        turn.document["causal_revision_packet"]["current_relation_set"]["id"]
-    )
-    causing_ids = [str(item) for item in turn.document["revision_task"]["causing_evidence_ids"]]
-    if not causing_ids:
-        raise RuntimeError("revision turn exposes no prospective evidence address")
+    relation_id = _relation_evidence_id(qc, turn)
     value["required"] = [
         key for key in value["required"] if key != "evidence_ids"
-    ] + ["relation_evidence_id", "prospective_evidence_id"]
+    ] + ["relation_evidence_id"]
     value["properties"].pop("evidence_ids", None)
     value["properties"]["relation_evidence_id"] = {"const": relation_id}
-    value["properties"]["prospective_evidence_id"] = {"enum": causing_ids}
+    if is_prospective_revision_turn(turn):
+        causing_ids = [
+            str(item) for item in turn.document["revision_task"]["causing_evidence_ids"]
+        ]
+        if not causing_ids:
+            raise RuntimeError("revision turn exposes no prospective evidence address")
+        value["required"].append("prospective_evidence_id")
+        value["properties"]["prospective_evidence_id"] = {"enum": causing_ids}
     return value
 
 
@@ -110,9 +137,16 @@ def compile_revision_response(qc: Any, response: Mapping[str, Any], turn: Any) -
         revision = dict(parsed["revision"])
         relation_id = revision.pop("relation_evidence_id", None)
         prospective_id = revision.pop("prospective_evidence_id", None)
-        if not isinstance(relation_id, str) or not isinstance(prospective_id, str):
+        if not isinstance(relation_id, str):
             return _adapter_rejection("revision-evidence-address-contract", parsed)
-        revision["evidence_ids"] = [relation_id, prospective_id]
+        evidence_ids = [relation_id]
+        if is_prospective_revision_turn(turn):
+            if not isinstance(prospective_id, str):
+                return _adapter_rejection("revision-evidence-address-contract", parsed)
+            evidence_ids.append(prospective_id)
+        elif prospective_id is not None:
+            return _adapter_rejection("premature-prospective-evidence-address", parsed)
+        revision["evidence_ids"] = evidence_ids
         decision = "revision"
     else:
         return _adapter_rejection("revision-exclusive-branch", parsed)
@@ -143,7 +177,12 @@ def revision_request_payload(
         return qc._revision_response_base_request(
             turn, qwen, visual_evidence=visual_evidence
         )
-    text = REVISION_PROMPT + qc.stable_json(turn.document)
+    phase_rule = (
+        "Set relation_evidence_id and prospective_evidence_id to the grammar-required addresses."
+        if is_prospective_revision_turn(turn)
+        else "This is a pre-probe grounding repair. Set relation_evidence_id to the grammar-required current relation-set address; no prospective evidence exists yet."
+    )
+    text = REVISION_PROMPT + phase_rule + "\n" + qc.stable_json(turn.document)
     content: str | list[dict[str, Any]]
     if visual_evidence:
         parts: list[dict[str, Any]] = [{"type": "text", "text": text}]
