@@ -20,7 +20,9 @@ AST_PROTOCOL = "goal-potential-ast-v0"
 BINDING_PROTOCOL = "goal-potential-situated-binding-v0"
 EVIDENCE_PROTOCOL = "goal-potential-environment-evidence-v0"
 MAX_MEMBERS = 32
-PROVENANCE_KINDS = frozenset({"oracle_intervention", "mock_intervention"})
+PROVENANCE_KINDS = frozenset(
+    {"self_built", "oracle_intervention", "mock_intervention"}
+)
 
 
 class GoalWorkspaceError(ValueError):

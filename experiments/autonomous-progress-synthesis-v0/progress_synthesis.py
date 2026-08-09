@@ -115,8 +115,10 @@ def _coarsen_lattice(grid: Grid) -> Grid:
     return tuple(out)
 
 
-def perceive(raw: Sequence[Sequence[int]]) -> Scene:
-    grid = _coarsen_lattice(_grid(raw)); height, width = len(grid), len(grid[0])
+def perceive(raw: Sequence[Sequence[int]], *, coarsen: bool = True) -> Scene:
+    grid = _grid(raw)
+    if coarsen:grid = _coarsen_lattice(grid)
+    height, width = len(grid), len(grid[0])
     ranked=Counter(value for row in grid for value in row).most_common();backgrounds={ranked[0][0]}
     # A second overwhelmingly common value is usually substrate/interior, not
     # an independently manipulable object. This is a frequency relation, never

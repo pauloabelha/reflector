@@ -83,10 +83,28 @@ class BroadPolicy(Protocol):
     def cognitive_event(self, observation: Any, decision: DecisionLike) -> Mapping[str, Any]: ...
 
 
+class OnlineOptionSource(Protocol):
+    def option_proposals(
+        self, *, control_candidate_ids: frozenset[str] = frozenset()
+    ) -> tuple["OptionProposal", ...]: ...
+
+    def observe_option_transition(
+        self,
+        *,
+        opaque_action: int,
+        after: Any,
+        transition_id: str,
+        executed_candidate_id: str | None = None,
+        direct: bool = True,
+    ) -> "EnvironmentOutcome | None": ...
+
+
 @dataclass(frozen=True, slots=True)
 class OptionProposal:
     candidate_id: str
     schema_id: str
+    lineage_id: str
+    effect_variable: str
     action_id: int
     data: tuple[tuple[str, int], ...]
     mode: str
@@ -109,6 +127,8 @@ class OptionProposal:
         proposer: str,
         data: Mapping[str, int] | None = None,
         attention: int = 0,
+        lineage_id: str = "",
+        effect_variable: str = "",
     ) -> "OptionProposal":
         if mode not in {"probe", "control"}:
             raise BridgeError("option mode must be probe or control")
@@ -118,6 +138,8 @@ class OptionProposal:
             raise BridgeError("an option must cite observable workspace objects")
         payload = {
             "schema_id": schema_id,
+            "lineage_id": str(lineage_id),
+            "effect_variable": str(effect_variable),
             "action_id": int(action_id),
             "data": sorted((data or {}).items()),
             "predicted_delta": int(predicted_after) - int(potential_before),
@@ -125,6 +147,8 @@ class OptionProposal:
         return cls(
             candidate_id="option:" + _hash(payload)[:24],
             schema_id=str(schema_id),
+            lineage_id=str(lineage_id),
+            effect_variable=str(effect_variable),
             action_id=int(action_id),
             data=tuple(sorted((str(key), int(value)) for key, value in (data or {}).items())),
             mode=mode,
@@ -334,6 +358,43 @@ class SharedBroadPolicy:
             self.probe_counts[selected.candidate_id] = self.probe_counts.get(selected.candidate_id, 0) + 1
         return decision
 
+    def choose_from_inducer(
+        self,
+        observation: Any,
+        inducer: OnlineOptionSource,
+    ) -> HybridDecision:
+        """Read an online option frontier using this bridge's evidence leases."""
+
+        controls = frozenset(
+            candidate_id
+            for candidate_id, lease in self.leases.items()
+            if lease.control_eligible
+        )
+        return self.choose_from_frontier(
+            observation,
+            inducer.option_proposals(control_candidate_ids=controls),
+        )
+
+    def observe_inducer_transition(
+        self,
+        inducer: OnlineOptionSource,
+        decision: HybridDecision,
+        *,
+        after: Any,
+        transition_id: str,
+        direct: bool = True,
+    ) -> str | None:
+        """Update the inducer and, when addressed, this bridge's lease."""
+
+        outcome = inducer.observe_option_transition(
+            opaque_action=decision.action_id,
+            after=after,
+            transition_id=transition_id,
+            executed_candidate_id=decision.candidate_id,
+            direct=direct,
+        )
+        return None if outcome is None else self.adjudicate(outcome)
+
     def adjudicate(self, outcome: EnvironmentOutcome) -> str:
         proposal = self.proposals.get(outcome.candidate_id)
         if proposal is None:
@@ -383,12 +444,63 @@ class SharedBroadPolicy:
             "events": list(self.events),
         }
 
+    def working_context(self, *, max_events: int = 32, max_historical_frames: int = 2) -> dict[str, Any]:
+        """Return a bounded, explicitly lossy attention cut for Qwen.
+
+        The cut is a cache over :meth:`workspace_document`, never authority.
+        Stable frame references make every omitted observation addressable.
+        """
+        if max_events < 1 or max_historical_frames < 0:
+            raise BridgeError("working-context bounds are invalid")
+        world = [event for event in self.events if event.get("kind") == "world_observation"]
+        refs = [event["payload"].get("frame_ref") for event in world]
+        refs = [value for value in refs if isinstance(value, str)]
+        current_ref = refs[-1] if refs else None
+        historical = []
+        for value in reversed(refs[:-1]):
+            if value not in historical:
+                historical.append(value)
+            if len(historical) >= max_historical_frames:
+                break
+        active = []
+        for candidate_id, proposal in sorted(self.proposals.items()):
+            lease = self.leases[candidate_id]
+            active.append({
+                "candidate_id": candidate_id,
+                "schema_id": proposal.schema_id,
+                "lineage_id": proposal.lineage_id,
+                "effect_variable": proposal.effect_variable,
+                "proposer": proposal.proposer,
+                "attention": proposal.attention,
+                "empirical": {
+                    "confirmations": lease.confirmations,
+                    "refutations": lease.refutations,
+                    "unresolved": lease.unresolved,
+                    "control_eligible": lease.control_eligible,
+                },
+                "basis_ids": list(proposal.basis_ids),
+            })
+        start = max(0, len(self.events) - max_events)
+        return {
+            "protocol": "shared-broad-policy-working-context-v0",
+            "authoritative_workspace_event_count": len(self.events),
+            "delta_cursor_start": start,
+            "omitted_event_count": start,
+            "omission_fidelity": "small-lossy-dormant-history; exact objects remain externally addressable",
+            "current_frame_ref": current_ref,
+            "current_frame": [list(row) for row in decode_frame(self.frame_blobs, current_ref)] if current_ref else None,
+            "historical_frame_refs": historical,
+            "active_options": active,
+            "recent_events": self.events[start:],
+        }
+
 
 __all__ = [
     "BridgeError",
     "EnvironmentOutcome",
     "HybridDecision",
     "OptionProposal",
+    "OnlineOptionSource",
     "SharedBroadPolicy",
     "decode_frame",
 ]

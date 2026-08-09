@@ -74,6 +74,10 @@ def test_option_identity_survives_new_state_and_provenance_basis():
     later=OptionProposal.create(schema_id=first.schema_id,action_id=first.action_id,mode="control",potential_before=2,predicted_after=1,basis_ids=("frame:9","evidence:4"),proposer="r2")
     assert later.candidate_id==first.candidate_id
     assert later.basis_ids!=(first.basis_ids)
+    changed_effect=OptionProposal.create(schema_id=first.schema_id,action_id=first.action_id,mode="probe",potential_before=4,predicted_after=2,basis_ids=("frame:10",),proposer="r2")
+    assert changed_effect.candidate_id!=first.candidate_id
+    other_lineage=OptionProposal.create(schema_id=first.schema_id,lineage_id="grounding:other",effect_variable="?x",action_id=first.action_id,mode="probe",potential_before=3,predicted_after=2,basis_ids=("frame:11",),proposer="r2")
+    assert other_lineage.candidate_id!=first.candidate_id
 
 
 def test_unresolved_is_not_support_and_non_environment_authority_fails():
@@ -108,3 +112,17 @@ def test_frames_use_lossless_sparse_deltas_and_periodic_checkpoints():
     refs=[event["payload"]["frame_ref"] for event in policy.events if event["kind"]=="world_observation"]
     assert all(decode_frame(policy.frame_blobs,ref)==frame for ref,frame in zip(refs,frames))
     assert {blob["codec"] for blob in policy.frame_blobs.values()}=={"rle-v1","delta-v1"}
+
+
+def test_qwen_cut_has_current_pixels_addresses_and_truthful_omission():
+    policy=SharedBroadPolicy(Baseline(stagnation=99))
+    for index in range(4):
+        class Current:
+            def to_dict(self,index=index):return {"frame":[[0,index],[0,0]],"sequence":index}
+        policy.choose_from_frontier(Current(),(proposal(),))
+    context=policy.working_context(max_events=3,max_historical_frames=2)
+    assert context["current_frame"]==[[0,3],[0,0]]
+    assert len(context["historical_frame_refs"])==2
+    assert context["omitted_event_count"]==len(policy.events)-3
+    assert "small-lossy" in context["omission_fidelity"]
+    assert context["active_options"][0]["empirical"]["control_eligible"] is False
