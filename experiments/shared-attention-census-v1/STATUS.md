@@ -152,3 +152,16 @@ Machine state is checkpointed after every epistemic event and real environment t
 
 - Batched nine-action transport preflight: R2-only completed and replayed in seconds; shared context correctly stopped before turn 2 because the newly ordered exact causal closure required 4,250 units and balanced allowed 4,000. Failure was isolated and checkpointed; no lossy request was sent.
 - Before any held-out launch, the one global balanced frontier floor is revised to 4,800 units. This is preflight admission margin, not game-specific tuning; the unchanged nine-action transport preflight must now pass.
+
+## 2026-08-09 — nightly preflight passed
+
+- The fresh paired nine-action preflight under the final 4,800-unit balanced profile completed in 66.4 seconds with no failures.
+- Both arms replayed exactly. The shared arm completed two valid Qwen calls, reported valid context and transport, zero support-authority violations, correct integration→grounding/criticism→successor-queue order, and one grounded Qwen→R2 pickup.
+- This is an infrastructure release check only; its ar25 cognition/score is not used to alter the frozen nightly run.
+- The unchanged 25-game balanced census is authorized to launch: 50 fresh jobs, four isolated environment workers, one resident Qwen FIFO, 32 actions, and calls at 0/8/16.
+
+## 2026-08-09 04:03:17 — live census launched
+
+- Jobs: 2; games: 1; profiles: 1; environment workers: 2.
+- COMPLETE `balanced/ar25/r2_only`: levels=0, actions=9, Q→R grounded=0, replay=True.
+- COMPLETE `balanced/ar25/shared_attention_qwen`: levels=0, actions=9, Q→R grounded=1, replay=True.
