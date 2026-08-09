@@ -1349,6 +1349,7 @@ def ingest_structured_criticism(
             "unsupported-potential",
             "unbound",
             "ambiguous-grounding",
+            "prospective-evidence-return",
             "refuted-grounding",
             "rejected",
         }
