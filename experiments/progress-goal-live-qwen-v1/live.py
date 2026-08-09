@@ -153,6 +153,16 @@ def main() -> int:
         response = post_completion(config["endpoint"], payload)
         atomic_json(ARTIFACTS / "response.json", response)
         compilation = GP.compile_response(response, workspace)
+        if not compilation.get("accepted") and hasattr(GP, "revise_response"):
+            response, compilation = GP.revise_response(
+                workspace=workspace,
+                config=config,
+                image_url=LAB.BASE.grid_data_url(current_grid),
+                prior_response=response,
+                criticism=compilation,
+                completion_poster=post_completion,
+            )
+            atomic_json(ARTIFACTS / "revision_response.json", response)
         atomic_json(ARTIFACTS / "compilation.json", compilation)
 
         goal = compilation.get("goal") if compilation.get("accepted") else None
