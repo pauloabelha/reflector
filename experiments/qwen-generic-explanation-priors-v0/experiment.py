@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import importlib.util
 import itertools
 import json
@@ -1248,7 +1249,14 @@ def parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = parser().parse_args()
     if args.command == "prepare":
-        result = prepare(args)
+        lock_path = HERE / "artifacts" / "prepare.lock"
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
+        with lock_path.open("a+", encoding="utf-8") as lock:
+            try:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as error:
+                raise RuntimeError("another proposal preparation process is already active") from error
+            result = prepare(args)
     elif args.command == "run":
         result = run_parallel(args)
     else:

@@ -35,3 +35,18 @@ Machine checkpoints are written atomically under `artifacts/checkpoints/` after 
 - Focused generic-prompt/compiler/grounding/controller tests: 14 passed.
 - Full repository suite: 77 passed.
 - No Qwen proposal request and no live target action had been issued at this checkpoint.
+- Qwen partial 1/6: `ar25` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 2/6: `wa30` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 1/6: `ar25` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 2/6: `wa30` transport_error=None, valid_contract=True, accepted=4, rejected=0.
+- Qwen partial 3/6: `cn04` transport_error=None, valid_contract=True, accepted=2, rejected=0.
+- Qwen partial 3/6: `cn04` transport_error=None, valid_contract=True, accepted=3, rejected=0.
+
+## 2026-08-08 22:16 BRT — Proposal run invalidated before play
+
+- The first orchestration client remained alive after its tool session appeared to end. A second client was started, causing two preparation processes to race.
+- ar25 and wa30 produced duplicated status entries from reuse of the same completed files. cn04 received two actual completions, observed as accepted-count 2 and 3; the shared atomic path retained only the last writer.
+- Both preparation clients were stopped before any ARC environment action. The Qwen server itself remained loaded and healthy.
+- This proposal run is scientifically invalid and will not be used. Its files are preserved under `artifacts-contaminated-duplicate-prepare-20260808T2216/` rather than deleted.
+- The clean rerun uses seed 1730, an empty artifact namespace, and an OS-level exclusive preparation lock, so a second client fails before sending a request.
+- Qwen partial 4/6: `cd82` transport_error=None, valid_contract=True, accepted=4, rejected=0.

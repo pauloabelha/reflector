@@ -13,7 +13,7 @@
     "endpoint": "http://127.0.0.1:8081/v1/chat/completions",
     "max_tokens": 900,
     "model": "qwen3-vl-4b-thinking-q4_k_m",
-    "seed": 1729,
+    "seed": 1730,
     "temperature": 0,
     "thinking_budget": 256,
     "top_p": 1
