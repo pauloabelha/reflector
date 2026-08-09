@@ -23,6 +23,8 @@ the exact ordered event stream while a 300-event benchmark improved from
 
 - 25 public games × 2 fresh arms = 50 jobs.
 - One `balanced` profile only; no sensitivity sweep tonight.
+- The balanced frontier is 4,800 units. A batched preflight measured a 4,250-unit
+  exact causal closure; the common 550-unit margin is frozen across all games.
 - 32 actions/job; Qwen at 0, 8, 16 only.
 - Four environment threads; one FIFO resident GPU model.
 - Maximum 75 Qwen calls.
@@ -46,4 +48,3 @@ epistemic-integrity failures stop the matrix.
 
 No held-out observation may change this run's code or configuration. Any repair
 creates a new version and a new fresh matrix.
-

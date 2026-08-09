@@ -141,3 +141,14 @@ Machine state is checkpointed after every epistemic event and real environment t
 - COMPLETE `balanced/ar25/r2_only`: levels=0, actions=25, Q→R grounded=0, replay=True.
 - FAILED `balanced/ar25/shared_attention_qwen`: KeyError: 'objects'.
 - FAIL-FAST requested: pending jobs cancelled; only already-running workers may finish checkpoint boundaries.
+
+## 2026-08-09 04:01:05 — live census launched
+
+- Jobs: 2; games: 1; profiles: 1; environment workers: 2.
+- COMPLETE `balanced/ar25/r2_only`: levels=0, actions=9, Q→R grounded=0, replay=True.
+- FAILED `balanced/ar25/shared_attention_qwen`: FrontierBudgetError: frontier budget 4000 is below mandatory closure cost 4250.
+
+## 2026-08-09 — batched preflight revision
+
+- Batched nine-action transport preflight: R2-only completed and replayed in seconds; shared context correctly stopped before turn 2 because the newly ordered exact causal closure required 4,250 units and balanced allowed 4,000. Failure was isolated and checkpointed; no lossy request was sent.
+- Before any held-out launch, the one global balanced frontier floor is revised to 4,800 units. This is preflight admission margin, not game-specific tuning; the unchanged nine-action transport preflight must now pass.

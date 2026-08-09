@@ -11,7 +11,7 @@ suite:
 
 - corpus: all 25 listed games;
 - arms: fresh paired `r2_only` and `shared_attention_qwen` for every game;
-- profile: `balanced` only (12 optional roots, 4,000 frontier units, proposal
+- profile: `balanced` only (12 optional roots, 4,800 frontier units, proposal
   boost 1.0, 12-action half-life);
 - budget: 32 committed actions per arm;
 - Qwen: calls at actions 0/8/16, at most three, temperature 0, fixed seed,
@@ -41,6 +41,11 @@ batch replay, turn ordering through the first criticism and successor request,
 valid context/transport, and no authority violation. This is not a score gate
 or an opportunity to tune ar25. If its paired wall time is at most 40 minutes,
 the 25-game balanced census launches unchanged.
+
+The first batched preflight measured the corrected causal closure at 4,250
+units, so the earlier 4,000-unit floor rejected it before transport. The frozen
+nightly floor is therefore 4,800 units for every game. This is a single global
+admission margin established before any held-out run, not a per-game override.
 
 The nightly headline remains control-facing: at least one held-out shared arm
 must complete level one when its control does not, or save at least 25% actions

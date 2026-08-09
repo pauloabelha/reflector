@@ -724,7 +724,7 @@ def test_balanced_production_budget_fits_complete_ambiguity_unit() -> None:
     )
     cut = turn.document["sparse_cut"]
     budget = config["profiles"]["balanced"]["frontier_token_budget"]
-    assert budget == 4_000
+    assert budget == 4_800
     assert cut["used_tokens"] <= budget
     aliases = {real: alias for alias, real in turn.id_aliases}
     rendered = {item["id"] for item in cut["objects"]}
