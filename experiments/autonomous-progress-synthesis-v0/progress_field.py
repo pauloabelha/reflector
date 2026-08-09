@@ -147,9 +147,9 @@ def decide(state:FieldState,legal_actions:Sequence[int])->FieldDecision:
         for action in legal:
             expected,basis=_model(state,candidate,action)
             if expected is not None and expected>0:
-                control.append((-expected,-candidate.support,-candidate.attention,action,candidate,basis))
+                control.append((-expected,-candidate.support,-candidate.attention,action,candidate.candidate_id,candidate.binding_id,candidate,basis))
     if control:
-        _a,_s,_t,action,candidate,basis=min(control)
+        _a,_s,_t,action,_cid,_bid,candidate,basis=min(control)
         return FieldDecision("control",action,candidate.candidate_id,candidate.binding_id,-_a,basis,"confirmed-progress-effect")
 
     attempts={(a,b,c):n for a,b,c,n in state.attempts}

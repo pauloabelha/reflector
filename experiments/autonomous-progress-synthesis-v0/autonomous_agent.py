@@ -23,7 +23,10 @@ class TransitionAdjudication:
 
 class AutonomousProgressAgent:
     def __init__(self,initial_grid:Sequence[Sequence[int]],*,frontier_size:int=12):
-        candidates=list(synthesis.synthesize(initial_grid))+list(dsl.propose(initial_grid))
+        try:candidates=list(synthesis.synthesize(initial_grid))
+        except synthesis.SynthesisError:candidates=[]
+        try:candidates.extend(dsl.propose(initial_grid))
+        except synthesis.SynthesisError:pass
         candidates.sort(key=lambda row:(-row.attention,row.candidate_id,row.binding_id))
         self.state=field.make_state(candidates[:frontier_size]);self.current_grid=tuple(tuple(map(int,row)) for row in initial_grid)
 

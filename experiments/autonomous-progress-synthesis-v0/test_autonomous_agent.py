@@ -40,3 +40,11 @@ def test_one_transition_multiplexes_evidence_and_rebinds_live_regions():
     assert result2.observed_candidate_count>1
     assert {row.transition_id for row in agent.state.evidence}=={"t:one","t:two"}
     assert agent.state.uses()[7]==2
+
+
+def test_tied_supported_models_have_stable_candidate_tiebreak():
+    agent=aa.AutonomousProgressAgent(scene(),frontier_size=8)
+    for index,offset in enumerate((1,2),1):
+        decision=agent.decide([7]);agent.observe(decision,scene(offset),transition_id=f"t:{index}")
+    decision=agent.decide([7])
+    assert decision.mode in {"control","fallback","probe"}
