@@ -1,0 +1,8 @@
+{
+  "experiment": "parallel-cognitive-workspace-v1-11",
+  "protocol": "prospective-control-v1.11",
+  "workspace_protocol": "prospective-control-v1.11",
+  "qwen": {
+    "trigger_action_counts": [0, 8, 16, 24]
+  }
+}

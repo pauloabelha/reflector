@@ -195,6 +195,41 @@ def compile_ambiguity_witness(
         conditions, facts, enumeration_limit=enumeration_limit
     )
 
+    condition_diagnostics = []
+    blocking_conditions = []
+    for index, (predicate, variables) in enumerate(conditions):
+        without = tuple(condition for offset, condition in enumerate(conditions) if offset != index)
+        without_assignments, without_truncated = (
+            _ground(without, facts, enumeration_limit=enumeration_limit)
+            if without
+            else ([], False)
+        )
+        without_pairs = sorted(
+            {
+                tuple(sorted((assignment[effect_variables[0]], assignment[effect_variables[1]])))
+                for assignment in without_assignments
+                if all(variable in assignment for variable in effect_variables)
+                and assignment[effect_variables[0]] != assignment[effect_variables[1]]
+            }
+        )
+        alone_assignments, alone_truncated = _ground(
+            ((predicate, variables),), facts, enumeration_limit=enumeration_limit
+        )
+        row = {
+            "condition_index": index,
+            "predicate": predicate,
+            "arguments": list(variables),
+            "fact_count": len(facts.get(predicate, ())),
+            "alone_grounding_count": len(alone_assignments),
+            "alone_truncated": alone_truncated,
+            "grounding_count_without_condition": len(without_assignments),
+            "effect_pairs_without_condition": [list(pair) for pair in without_pairs[:max_effect_pairs]],
+            "without_condition_truncated": without_truncated or len(without_pairs) > max_effect_pairs,
+        }
+        condition_diagnostics.append(row)
+        if not assignments and without_assignments:
+            blocking_conditions.append(index)
+
     pair_groups: dict[tuple[str, str], list[dict[str, str]]] = defaultdict(list)
     for assignment in assignments:
         if not all(variable in assignment for variable in effect_variables):
@@ -284,5 +319,10 @@ def compile_ambiguity_witness(
         "candidate_substitutions_truncated": len(assignments) > len(candidate_rows),
         "effect_pairs": effect_pair_rows,
         "effect_pairs_truncated": len(pairs) > len(effect_pair_rows),
-        "refinement_goal": "add relational conditions that retain exactly one effect pair",
+        "condition_diagnostics": condition_diagnostics,
+        "blocking_condition_indices": blocking_conditions,
+        "refinement_goal": (
+            "if unbound, remove or replace a diagnosed blocking condition using current relation facts; "
+            "otherwise add relational conditions that retain exactly one effect pair"
+        ),
     }

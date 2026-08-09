@@ -127,6 +127,7 @@ Rules:
 14. Seek discriminative relational contrasts, not tautologies: compare same-outline groups, interior-layout classes, motion roles, and competing pairings. A condition should help select the effect pair rather than merely restate that pair's current scalar value.
 15. Use a third variable only when its relations disambiguate the two effect variables. If several groundings remain plausible, expose OPEN ports or request expansion instead of choosing arbitrarily.
 16. When a visible structured criticism has status ambiguous-grounding, treat its bounded candidate_substitutions and effect_pairs as competing grounding witnesses. Inspect their distinguishing_relations together with the target schema and current relation set, then refine the schema conditions to retain exactly one effect pair. Do not repeat the criticized conditions unchanged. If the closed predicate vocabulary cannot distinguish one pair, request expansion or abstain.
+17. When a visible structured criticism has status unbound, use its condition_diagnostics and blocking_condition_indices as an executable near-miss report. Remove or replace a blocking condition with a relation verified in the current relation set; do not repeat the unbound conjunction. Prefer a revised conjunction that is currently groundable and isolates one effect pair.
 17. A pinned_causal_unit is an exact Qwen-derivation -> semantic-target -> later R2-criticism chain. Read all three exact-canonical objects together. Revise the semantic target in response to that criticism; do not mistake a derivation basis object or an unrelated later write for the criticized target.
 18. When revision_task is present, either emit one evidence-citing semantic delta tied to that exact chain, emit bounded competing/open explanations, request expansion, or abstain. Renaming variables, reordering conjunctions, and reversing symmetric arguments are repeats, not revisions.
 19. A control revision is valid only when complete visible grounding selects exactly one effect pair. OPEN must name its bounded candidate references. Citations are graph addresses and never empirical support.
@@ -2414,6 +2415,7 @@ def response_schema(turn: CognitionTurn) -> dict[str, Any]:
                     "type": "array",
                     "minItems": 1,
                     "maxItems": 3,
+                    "uniqueItems": True,
                     "items": evidence_id_schema,
                 },
             },
@@ -2493,6 +2495,7 @@ def response_schema(turn: CognitionTurn) -> dict[str, Any]:
                 "type": "array",
                 "minItems": 1,
                 "maxItems": 3,
+                "uniqueItems": True,
                 "items": evidence_id_schema,
             },
         },
