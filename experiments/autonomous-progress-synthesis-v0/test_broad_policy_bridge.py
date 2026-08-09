@@ -66,6 +66,13 @@ def test_two_direct_matches_license_control_but_refutation_revokes():
     assert policy.choose_action(object(),control).mode=="fallback"
 
 
+def test_option_identity_survives_new_state_and_provenance_basis():
+    first=proposal()
+    later=OptionProposal.create(schema_id=first.schema_id,action_id=first.action_id,mode="control",potential_before=2,predicted_after=1,basis_ids=("frame:9","evidence:4"),proposer="r2")
+    assert later.candidate_id==first.candidate_id
+    assert later.basis_ids!=(first.basis_ids)
+
+
 def test_unresolved_is_not_support_and_non_environment_authority_fails():
     policy=SharedBroadPolicy(Baseline(stagnation=99));option=proposal();policy.choose_action(object(),option)
     assert policy.adjudicate(EnvironmentOutcome(option.candidate_id,"transition:x",None,None,False))=="unresolved"

@@ -73,9 +73,7 @@ class OptionProposal:
             "schema_id": schema_id,
             "action_id": int(action_id),
             "data": sorted((data or {}).items()),
-            "potential_before": int(potential_before),
-            "predicted_after": int(predicted_after),
-            "basis_ids": sorted(basis_ids),
+            "predicted_delta": int(predicted_after) - int(potential_before),
         }
         return cls(
             candidate_id="option:" + _hash(payload)[:24],
