@@ -1,0 +1,34 @@
+{
+  "actor": "environment",
+  "basis": {
+    "head_hash": "03a2be118653a1f9105443ff44f83594f645a45382e33b81acce5f15e07e5980",
+    "observation_digest": "349f266c0bf9cf249c7f3d34f93a018e4c5032ef9d827943ad6eddce93c12990",
+    "observation_version": 14
+  },
+  "event_hash": "db18d5fc47039a283b09908c1f65e1f8ce1dc9fa7eff56f5f2bbe43845124389",
+  "event_id": "54bc5ae5acd6e242ed2ab6b13bf3c3494f2375645ac08d2446bf3bfd1ca35bf1",
+  "payload": {
+    "action_id": 3,
+    "after_blob": "34f3a663c602684d1921b4e58feef18a894e97dcbbbccedcc91d98426f65ff3d",
+    "after_digest": "3ca6308e8579f3c11453134758f110f0465f4404027afea2af345bb599359c81",
+    "after_version": 15,
+    "before_digest": "349f266c0bf9cf249c7f3d34f93a018e4c5032ef9d827943ad6eddce93c12990",
+    "before_version": 14,
+    "legal_actions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "levels_completed": 0,
+    "pending_event_id": "b77261446ad911815e87b3ef2778fe66eb293f7d09a88942926ace787c9cb665"
+  },
+  "prev_event_hash": "03a2be118653a1f9105443ff44f83594f645a45382e33b81acce5f15e07e5980",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 50,
+  "type": "TransitionCommitted",
+  "workspace_id": "offline-ar25-regression"
+}

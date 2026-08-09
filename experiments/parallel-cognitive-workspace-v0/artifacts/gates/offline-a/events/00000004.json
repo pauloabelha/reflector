@@ -1,0 +1,20 @@
+{
+  "actor": "qwen",
+  "basis": {
+    "head_hash": "59a95fb6b4e4db4f638bde2663ec80832bdb649dbda537408ca71239c49c07bc",
+    "observation_digest": "8c9c38b5c049817e37ea6525b513983e3628a3f1224df5eafb3146175bb2a51b",
+    "observation_version": 0
+  },
+  "event_hash": "38ea9ed11b7cda3a27ff2bbe530dab96ce9460c78ea2db953385176712dfc5b0",
+  "event_id": "357c3aeb218e19b95137a65e5526477e77978f34364c0140638eb178c10367d5",
+  "payload": {
+    "response_blob": "95aaa441eb7be95aeb6a577fef5dfcf53375d796d89d6a1196412c2e73199f03",
+    "task_id": "b519fec919b4103b088f9a6c351fd215e82a5329befdcd542bd21fc5ca6197e6",
+    "worker_epoch": "frozen-injection:offline-frozen-proposal"
+  },
+  "prev_event_hash": "59a95fb6b4e4db4f638bde2663ec80832bdb649dbda537408ca71239c49c07bc",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 4,
+  "type": "QwenReplyRecorded",
+  "workspace_id": "offline-ar25-regression"
+}

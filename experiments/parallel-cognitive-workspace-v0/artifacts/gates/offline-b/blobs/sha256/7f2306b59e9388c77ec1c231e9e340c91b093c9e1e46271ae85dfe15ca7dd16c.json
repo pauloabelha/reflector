@@ -1,0 +1,1 @@
+{"decision":{"action_id":2,"fallback_action_id":2,"predicted_residual_after":null,"prior_used":false,"reason":"no-locally-confirmed-improvement","residual_before":null,"template_hash":null},"qwen_changed_action":false,"same_state_no_qwen_action":2,"source":"frozen-ar25-qwen-own-chronology"}

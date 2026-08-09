@@ -1,0 +1,26 @@
+{
+  "actor": "environment",
+  "basis": {},
+  "event_hash": "e748e5cc9b4c03dff7d2738f4dc1eec48a66325ce918d79d30beddb4db105f17",
+  "event_id": "25861a8fd3c19a25526b12fde927dcd8116623d028a5b3bb8cbf57e2b10e7b80",
+  "payload": {
+    "legal_actions": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "levels_completed": 0,
+    "observation_blob": "1eb006de3181e1a86e5f9dad9314a55009a578193d8aee64fa863695798ae11f",
+    "observation_digest": "8c9c38b5c049817e37ea6525b513983e3628a3f1224df5eafb3146175bb2a51b",
+    "observation_version": 0
+  },
+  "prev_event_hash": "37a0ff408186d2fa2f863743b5014a77bd37e0e583a1e89c55c4cc69ffff49fd",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 1,
+  "type": "ObservationCommitted",
+  "workspace_id": "offline-ar25-regression"
+}

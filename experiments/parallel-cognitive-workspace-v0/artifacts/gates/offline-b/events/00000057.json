@@ -1,0 +1,18 @@
+{
+  "actor": "coordinator",
+  "basis": {
+    "head_hash": "d8dda2598ecff03704ee1afcc51f394c66ed18b1252cfd5fd2a33a25fe545f7a",
+    "observation_digest": "5fcedd77e98b48bdd9d1d78ccf1d6f65898a2e21c466f71a9822fec9b405f8b0",
+    "observation_version": 17
+  },
+  "event_hash": "2dc19b13d40c23ce6acb477a3d5a1b12bbab7ff09067c05773be7a4d7970553e",
+  "event_id": "1c703f1932d6c059bcfe6289e826b678275ac0b0dcb2849e52a90acf336ed2a0",
+  "payload": {
+    "reason": "historical-chronology-complete"
+  },
+  "prev_event_hash": "d8dda2598ecff03704ee1afcc51f394c66ed18b1252cfd5fd2a33a25fe545f7a",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 57,
+  "type": "WorkspaceStopped",
+  "workspace_id": "offline-ar25-regression"
+}

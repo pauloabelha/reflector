@@ -1,0 +1,27 @@
+{
+  "action_sequence": [
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    3
+  ],
+  "all_prefix_resumes_identical": true,
+  "byte_identical_replays": true,
+  "final_workspace_hash": "2dc19b13d40c23ce6acb477a3d5a1b12bbab7ff09067c05773be7a4d7970553e",
+  "levels_completed": 1,
+  "passed": true,
+  "transition_count": 17
+}
