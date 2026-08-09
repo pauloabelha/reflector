@@ -54,3 +54,31 @@ manifest must then be frozen before either arm resets.
   `qwen3-vl-4b-thinking-q4_k_m`, llama.cpp build `b8660-d00685831`, one slot,
   vision enabled, `n_ctx=24576`. The model SHA-256 is
   `474ecaf1284aa6ff3273fb796c3cba55d2ee33ec0d8c63464fbd84500a9a462d`.
+
+## 2026-08-09 — fresh paired run result
+
+- Frozen checkpoint: git commit `72bc3e8`.
+- Binary verdict: **INVALID (implementation protocol mismatch)**. This is not a
+  valid scientific failure and no PASS/FAIL inference is made.
+- `r2_only` completed its 64-action budget at level 0 and exact replay passed;
+  final digest
+  `d575fa2426d4d502aac4bcd4529edb3c29687fc61f5616605292bb4b9431971d`.
+- `shared_live_qwen` durably reached action 8. Its first live Qwen task was
+  claimed and the first selected prospective judgment reached the evidence
+  bridge, but graph ingestion rejected the new criticism status with
+  `EpistemicGraphError: unknown structured criticism status`.
+- The arm stopped without silently dropping the event or taking a subsequent
+  unvalidated action. Its ledger and per-action checkpoints remain intact.
+- Root cause: v1.9 added the typed cognition/bridge protocol
+  `prospective-evidence-return`, but the authoritative graph reducer's closed
+  structured-criticism vocabulary was not extended and the focused tests used
+  fixture objects rather than the real reducer ingestion boundary.
+- Any correction and rerun requires a new version. The minimal next preflight
+  must add the status to the reducer vocabulary and prove real ingestion,
+  replay, exact-chain selection, and revision-turn construction end to end.
+
+## 2026-08-09 11:32:26 — live census launched
+
+- Jobs: 2; games: 1; profiles: 1; environment workers: 2.
+- FAILED `generic_prospective/ar25/shared_live_qwen`: EpistemicGraphError: unknown structured criticism status.
+- COMPLETE `generic_prospective/ar25/r2_only`: levels=0, actions=64, Q→R grounded=0, replay=True.
