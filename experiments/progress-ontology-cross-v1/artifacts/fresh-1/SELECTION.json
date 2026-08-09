@@ -1,0 +1,73 @@
+{
+  "candidates": [
+    {
+      "game": "dc22",
+      "score": "0ff32c5ddee45a973d9cb2e95bdcf92ff6642dedbcef5c7954982325f718a705",
+      "version": "dc22-fdcac232"
+    },
+    {
+      "game": "bp35",
+      "score": "267e97e8f1aad5d19a811d9126ee0cc6a6df813cef4fce5364fe50af550a6872",
+      "version": "bp35-0a0ad940"
+    },
+    {
+      "game": "sb26",
+      "score": "2ae9093698eb40b38b2f1cc42bd73cf1307dc80570be3898cfece1cd7bf2d977",
+      "version": "sb26-7fbdac44"
+    },
+    {
+      "game": "ka59",
+      "score": "42ac91dd718728c0522d6828f80a4c47a30d1ec32ecdfdfd16b782ccf1a4a1cc",
+      "version": "ka59-38d34dbb"
+    },
+    {
+      "game": "m0r0",
+      "score": "4b5461d2d5f37a77063acaa316e5c03f9c1e5412b46feeece497d0c88e0e24e4",
+      "version": "m0r0-492f87ba"
+    },
+    {
+      "game": "re86",
+      "score": "51e9940958564cdbe16a17f5c9481e898ecc6feeb01c4b53fd7778567f2b5e1f",
+      "version": "re86-8af5384d"
+    },
+    {
+      "game": "sc25",
+      "score": "9830b3029f06a3bc430cf78986dd181fa7936f4b4ff31003df9453b5f1233d3a",
+      "version": "sc25-635fd71a"
+    },
+    {
+      "game": "sk48",
+      "score": "9c01a62c5fa9d5b61cb939a4c7173f1b37fa7c9531d10dc5d4aea75b27ae47e2",
+      "version": "sk48-d8078629"
+    },
+    {
+      "game": "cd82",
+      "score": "b23bef0b6e869d5bdc79ea02e8fdc8d1695bd158a89775e41ab6bd8a0f5ff11e",
+      "version": "cd82-fb555c5d"
+    },
+    {
+      "game": "cn04",
+      "score": "db4f860da78c5e1bef628ce8b58faa2496c8c05efc508ce2d3684e8dc953ed1d",
+      "version": "cn04-2fe56bfb"
+    },
+    {
+      "game": "sp80",
+      "score": "f2c2365736278d45ae3c44aaa51bfe7c3f064ea0dc8719b66179789a7094dcc9",
+      "version": "sp80-589a99af"
+    }
+  ],
+  "excluded": [
+    "ar25",
+    "g50t",
+    "ls20",
+    "tr87",
+    "tu93",
+    "wa30"
+  ],
+  "seed": "reflector2-progress-ontology-cross-v1\u0000",
+  "selected": {
+    "game": "dc22",
+    "score": "0ff32c5ddee45a973d9cb2e95bdcf92ff6642dedbcef5c7954982325f718a705",
+    "version": "dc22-fdcac232"
+  }
+}
