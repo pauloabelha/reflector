@@ -5,12 +5,14 @@ import hashlib,importlib.util,json,pathlib,sys
 HERE=pathlib.Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
 CONFIG=json.loads((HERE/"config.json").read_text())
+SYNTHESIS_DIR=HERE.parent/"autonomous-progress-synthesis-v0"
+if str(SYNTHESIS_DIR) not in sys.path:sys.path.insert(0,str(SYNTHESIS_DIR))
 
 def load(name,path):
     spec=importlib.util.spec_from_file_location(name,path);assert spec and spec.loader
     module=importlib.util.module_from_spec(spec);sys.modules[name]=module;spec.loader.exec_module(module);return module
 
-MATRIX=load("sealed_synthesis_matrix",HERE.parent/"autonomous-progress-synthesis-v0"/"run_development_matrix.py")
+MATRIX=load("sealed_synthesis_matrix",SYNTHESIS_DIR/"run_development_matrix.py")
 
 def manifest():
     universe=tuple(CONFIG["candidate_universe"]);excluded=set(CONFIG["development_exclusions"])
