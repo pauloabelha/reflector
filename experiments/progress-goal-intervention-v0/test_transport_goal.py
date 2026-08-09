@@ -40,6 +40,12 @@ def replay(goal, plan):
             assert goal.grid_bounds.contains(position)
             assert position not in goal.obstacle_anchors
             assert position not in dropped
+        elif step.kind == "face":
+            assert step.actor_before == step.actor_after == position
+            delta = inverse_moves[step.action]
+            assert remaining[step.item_index] == (
+                position[0] + delta[0], position[1] + delta[1]
+            )
         elif step.kind == "pickup":
             assert step.action == goal.interaction_action
             item_position = remaining[step.item_index]
@@ -72,8 +78,8 @@ def test_shortest_pickup_carry_drop_plan_uses_opaque_actions() -> None:
         grid_bounds=TG.GridBounds(3, 4),
     )
     plan = TG.plan_transport(goal)
-    assert plan.actions == (INTERACT, "opaque-east", "opaque-east", INTERACT)
-    assert [step.kind for step in plan.steps] == ["pickup", "carry", "carry", "drop"]
+    assert plan.actions == ("opaque-east", INTERACT, "opaque-east", "opaque-east", INTERACT)
+    assert [step.kind for step in plan.steps] == ["face", "pickup", "carry", "carry", "drop"]
     assert plan.item_to_slot == ((0, (1, 3)),)
     assert replay(goal, plan)[2:] == ({}, {(1, 3): 0})
 
@@ -90,7 +96,7 @@ def test_fixed_obstacles_force_a_collision_free_detour() -> None:
         obstacle_anchors=frozenset({(2, 2), (2, 3)}),
     )
     plan = TG.plan_transport(goal)
-    assert len(plan.actions) == 9
+    assert len(plan.actions) == 10
     assert all(step.actor_after not in goal.obstacle_anchors for step in plan.steps)
     assert replay(goal, plan)[2:] == ({}, {(2, 4): 0})
 

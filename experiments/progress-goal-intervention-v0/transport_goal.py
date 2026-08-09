@@ -274,6 +274,16 @@ def plan_transport(goal: CollectionTransportGoal) -> TransportPlan:
                     PlanStep(action, "move", before, after, item_index)
                     for before, after, action in to_item
                 ) + (
+                    # Attempting the displacement into the occupied item is a
+                    # grounded orientation probe: position is predicted to be
+                    # preserved while the actor acquires the interaction pose.
+                    PlanStep(
+                        goal.learned_delta_actions[interaction_delta],
+                        "face",
+                        approach,
+                        approach,
+                        item_index,
+                    ),
                     PlanStep(
                         goal.interaction_action,
                         "pickup",

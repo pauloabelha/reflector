@@ -29,3 +29,15 @@
 - The correspondence rule was repaired generically: within the relevant
   outline/area class, identify the controlled singleton as the member outside
   the repeated item-interior subclass. All four arms will be restarted fresh.
+
+## 2026-08-09 — attempt 2: correct goal, incomplete interaction model
+
+- Null and sham remained at level 0 through 48 actions.
+- Both generic-goal arms inferred the same correct actor/items/container roles
+  and emitted the same 25-action transport suffix, but remained at level 0.
+- Inspection of their live visual trajectory localized the failure to a generic
+  missing precondition: interaction requires orientation toward the adjacent
+  object. Reaching an adjacent pose alone does not establish that orientation.
+- The motor model now inserts an explicit collision-preserving facing probe
+  immediately before each pickup. No goal role, action identity, or action
+  sequence was changed or supplied. Attempt 3 will use fresh roots for all arms.
