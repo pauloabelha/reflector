@@ -8,3 +8,4 @@ artifacts/run.lock
 artifacts/server-queue.lock
 artifacts-aborted-*/
 artifacts-pilot-*/
+artifacts-dev-*/

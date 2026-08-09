@@ -955,10 +955,6 @@ def queue_qwen(
     orientation = read_orientation(root, workspace_id)
     request_id = f"qr:{LEDGER.stable_hash({'workspace': workspace_id, 'index': task_index})[:24]}"
     turn_budget = int(profile["frontier_token_budget"])
-    if orientation.initialized:
-        # Two visual frames consume roughly 2K model tokens.  Preserve a
-        # dependency-closed but smaller textual cut on delta turns.
-        turn_budget = min(turn_budget, 1400)
     turn = QC.build_turn(
         state,
         graph_events,

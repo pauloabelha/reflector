@@ -377,6 +377,11 @@ def test_compact_alias_projection_builds_a_second_turn_schema() -> None:
     assert second.document["delta_codec"]["fidelity"].startswith("mixed compact")
     assert "small-lossy" in second.document["delta_codec"]["G"]
     assert "small-lossy" in COGNITION.PROMPT
+    rolling_index = COGNITION._object_index_documents(second.document["object_index"])
+    assert {item["id"] for item in rolling_index} == {
+        item["id"] for item in second.document["sparse_cut"]["objects"]
+    }
+    assert len(rolling_index) < len(state.objects)
     schema = COGNITION.response_schema(second)
     assert schema["properties"]["request_id"]["const"] == "req-compact-1"
 

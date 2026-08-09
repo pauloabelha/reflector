@@ -62,3 +62,11 @@ Machine state is checkpointed after every epistemic event and real environment t
 - Context transport preserves all 272 initial ar25 objects in a columnar topology, renders the triad/relation packet in full, projects large masks by stable digest, and uses explicitly small-lossy hash/count summaries only for dormant event runs whose exact bodies remain authoritative.
 - Measured local-Qwen prompt: 12,865 tokens including vision and JSON grammar. The resident server now uses a 16,384-token context (3,750 MiB projected GPU allocation); a 1,549-token completion produced a valid strict response with no transport error.
 - Verification before the replacement real-game gate: v1 34/34 tests and repository 77/77 tests pass; Python compilation and diff check pass.
+- First replacement gate was intentionally stopped after four committed actions when exact R2 materialization reached 2,482 objects. The checkpoint is preserved under `artifacts-dev-scaling-2abce24-20260809-0146/`; no held-out result was used.
+- Rolling-catalog correction: the initial turn exposes every compact object once; later turns retransmit only the dependency-closed current/salient cut. Newly seen dormant objects remain named in ordered delta rows and fully recoverable from the authoritative ledger/alias map.
+- Measured action-4 rolling turn: 2,215 raw graph events → 65 compact ordered rows, 10 indexed current objects, full current visual/relation packet, 6,029 actual prompt tokens, 1,567 completion tokens, valid strict schema+explanation+attention, zero transport error.
+- Post-correction verification remains v1 34/34 and repository 77/77 tests passing.
+
+## 2026-08-09 01:42:44 — live census launched
+
+- Jobs: 2; games: 1; profiles: 1; environment workers: 2.

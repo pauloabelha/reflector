@@ -438,8 +438,19 @@ def _compact_materialization(state: Any, aliases: Mapping[str, str]) -> dict[str
     }
 
 
-def _compact_object_index(state: Any, aliases: Mapping[str, str]) -> dict[str, Any]:
-    objects = sorted(state.objects, key=lambda item: (item.created_revision, item.object_id))
+def _compact_object_index(
+    state: Any,
+    aliases: Mapping[str, str],
+    object_ids: set[str] | None = None,
+) -> dict[str, Any]:
+    objects = sorted(
+        (
+            item
+            for item in state.objects
+            if object_ids is None or item.object_id in object_ids
+        ),
+        key=lambda item: (item.created_revision, item.object_id),
+    )
     kinds = sorted({item.kind for item in objects})
     if len(kinds) > len(CODE_ALPHABET):
         raise CognitionError("too many object kinds for compact index")
@@ -725,8 +736,13 @@ def build_turn(
     )
     rendered_cut = _replace_ids(cut, real_to_alias) if compact_ids else cut
     selected_real_ids = {item["id"] for item in cut["objects"]}
+    # Initial residency exposes the complete compact catalog once.  Later
+    # turns keep a rolling catalog of the dependency-closed live cut; newly
+    # seen dormant IDs remain in ordered delta rows and in the durable alias
+    # map, but are not redundantly retransmitted forever.
+    indexed_real_ids = None if mode == "initial-full" else set(selected_real_ids)
     object_index: Any = (
-        _compact_object_index(state, real_to_alias)
+        _compact_object_index(state, real_to_alias, indexed_real_ids)
         if compact_ids
         else [
             {
@@ -735,6 +751,7 @@ def build_turn(
                 "dependencies": [real_to_alias[value] for value in item.dependency_ids],
             }
             for item in state.objects
+            if indexed_real_ids is None or item.object_id in indexed_real_ids
         ]
     )
     document = {
@@ -1476,8 +1493,9 @@ def compile_response(response: Mapping[str, Any], turn: CognitionTurn) -> dict[s
             rejected.append({"kind": "attention", "index": index, "reason": str(error), "raw": raw})
 
     valid_expansions = []
+    known_expansion_ids = set(object_index).union(alias for alias, _real in turn.id_aliases)
     for index, object_id in enumerate(expansions):
-        if object_id not in object_index:
+        if object_id not in known_expansion_ids:
             rejected.append({"kind": "expansion", "index": index, "reason": "unknown-expansion-id", "raw": object_id})
         else:
             valid_expansions.append(object_id)
