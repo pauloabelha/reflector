@@ -26,3 +26,17 @@ def test_qwen_turn_exposes_one_workspace_not_a_private_qwen_state():
     text=str(turn)
     assert "workspace" in turn and "composition_contract" in turn
     assert "qwen_state" not in text and "action_id" not in text
+
+
+def test_one_transition_multiplexes_evidence_and_rebinds_live_regions():
+    agent=aa.AutonomousProgressAgent(scene(),frontier_size=8)
+    assert len(agent.state.candidates)>1
+    first=agent.decide([7]);result=agent.observe(first,scene(1),transition_id="t:one")
+    assert result.observed_candidate_count>1
+    assert len(agent.state.evidence)==result.observed_candidate_count
+    # A second physical transition can still address the moved regions because
+    # their situated bindings advanced while their stable lineage IDs did not.
+    second=agent.decide([7]);result2=agent.observe(second,scene(2),transition_id="t:two")
+    assert result2.observed_candidate_count>1
+    assert {row.transition_id for row in agent.state.evidence}=={"t:one","t:two"}
+    assert agent.state.uses()[7]==2

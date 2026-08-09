@@ -91,6 +91,43 @@ def record_attempt(state:FieldState,*,candidate_id:str,binding_id:str,opaque_act
     return replace(state,action_uses=tuple(sorted(uses.items())),attempts=attempts)
 
 
+def observe_transition(
+    state:FieldState,
+    *,
+    opaque_action:int,
+    transition_id:str,
+    observations:Mapping[tuple[str,str],tuple[int,int,bool]|None],
+)->FieldState:
+    """Adjudicate one transition against every addressed live potential.
+
+    A world transition is shared evidence, not private feedback for whichever
+    hypothesis nominated the action.  Candidate-specific attempts are updated
+    for the whole rendered field while the physical intervention use is
+    counted exactly once.
+    """
+    if not transition_id:raise ProgressFieldError("evidence requires a transition ID")
+    live={(row.candidate_id,row.binding_id):row for row in state.candidates}
+    if not set(observations)<=set(live):raise ProgressFieldError("batch evidence targets a non-live potential")
+    if any(row.transition_id==transition_id for row in state.evidence):raise ProgressFieldError("duplicate transition evidence")
+    updated=[];evidence=list(state.evidence);attempts={(a,b,c):n for a,b,c,n in state.attempts}
+    for key,candidate in live.items():
+        if key not in observations:
+            updated.append(candidate);continue
+        attempt=key+(int(opaque_action),);attempts[attempt]=attempts.get(attempt,0)+1
+        values=observations[key]
+        if values is not None:
+            before,after,direct=values
+            record=EffectRecord(key[0],key[1],int(opaque_action),int(before),int(after),bool(direct),transition_id)
+            evidence.append(record)
+            candidate=adjudicate(candidate,PotentialObservation(key[0],key[1],before,after,direct,transition_id))
+        updated.append(candidate)
+    uses=state.uses();uses[int(opaque_action)]=uses.get(int(opaque_action),0)+1
+    return FieldState(
+        tuple(updated),tuple(evidence),tuple(sorted(uses.items())),
+        tuple(sorted((a,b,c,n) for (a,b,c),n in attempts.items())),
+    )
+
+
 def _model(state:FieldState,candidate:GoalCandidate,action:int)->tuple[int|None,tuple[str,...]]:
     rows=[row for row in state.evidence if row.direct and row.candidate_id==candidate.candidate_id and row.binding_id==candidate.binding_id and row.opaque_action==action]
     if len(rows)<2:return None,tuple(row.transition_id for row in rows)
@@ -141,4 +178,4 @@ def workspace_document(state:FieldState)->dict:
     return {"protocol":"shared-progress-field-v0","authority":"only-direct-environment-evidence-changes-support","potentials":rows,"evidence_count":len(state.evidence)}
 
 
-__all__=["EffectRecord","FieldDecision","FieldState","ProgressFieldError","decide","make_state","observe","record_attempt","workspace_document"]
+__all__=["EffectRecord","FieldDecision","FieldState","ProgressFieldError","decide","make_state","observe","observe_transition","record_attempt","workspace_document"]
