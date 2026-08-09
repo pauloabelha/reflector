@@ -1,0 +1,42 @@
+{
+  "actions": 32,
+  "arm": "scratch",
+  "controller": {
+    "abstentions": 32,
+    "action_uses": {
+      "1": 6,
+      "2": 6,
+      "3": 5,
+      "4": 5,
+      "5": 5,
+      "7": 5
+    },
+    "bindings": [],
+    "bound_pairs": 0,
+    "latent_projections": 0,
+    "local_confirmations": 0,
+    "overrides": 0,
+    "prior_decisions": 0,
+    "provenance": "scratch",
+    "provenance_states": []
+  },
+  "elapsed_this_process_s": 2.5560294289971353,
+  "final_digest": "4ad4b6de038e67c5d80092f092b63c359fcfbd517671a659e5e838fe1b41bba9",
+  "final_state": "NOT_FINISHED",
+  "first_level_completed": false,
+  "game": "ar25",
+  "grounding": {
+    "groundings": [],
+    "live_initial_state_sha256": "218cec40362e0479e385ddf3419b03b483437a79b642e386b24821564c946682",
+    "proposal_source": null,
+    "provenance": "scratch",
+    "template_count": 0,
+    "templates": []
+  },
+  "job_key": "2d54cf0d0990c291161cad227d649848a3c2abd21d4039b0668913dc906bc599",
+  "levels_completed": 0,
+  "replay_verified": true,
+  "resumed": false,
+  "status": "completed",
+  "stop_reason": "action-budget"
+}

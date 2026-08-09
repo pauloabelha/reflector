@@ -70,3 +70,43 @@ Machine checkpoints are written atomically under `artifacts/checkpoints/` after 
 - All own proposals for wa30, cn04, tr87, and bp35 are ambiguous or unbound and therefore must abstain unless the live initial snapshot changes grounding.
 - No real ARC action had been executed. The next phase is 20 isolated, checkpointed first-level arms.
 - The `cd82` line appearing immediately after the invalidation heading was a late status append from the quarantined in-flight request; it is not part of the clean artifact namespace or manifest.
+
+## Live real-ARC run started
+
+- 20 isolated arms launched with up to 4 workers.
+- Every action uses pending→committed atomic checkpoints; each final ledger gets a fresh replay.
+- Arm partial `ar25/human_reference`: actions=17, levels=1, bound=1, confirmations=13, prior_decisions=14, replay=True.
+- Arm partial `ar25/qwen_own`: actions=17, levels=1, bound=2, confirmations=14, prior_decisions=14, replay=True.
+- Arm partial `ar25/self_built_reference`: actions=17, levels=1, bound=1, confirmations=13, prior_decisions=14, replay=True.
+- Arm partial `ar25/scratch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `ar25/qwen_mismatch`: actions=32, levels=0, bound=1, confirmations=5, prior_decisions=31, replay=True.
+- Arm partial `wa30/scratch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `wa30/qwen_own`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `wa30/qwen_mismatch`: actions=32, levels=0, bound=1, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `cn04/scratch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `cn04/qwen_own`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `cn04/qwen_mismatch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `cd82/scratch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `cd82/qwen_own`: actions=32, levels=0, bound=1, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `cd82/qwen_mismatch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `tr87/scratch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `tr87/qwen_own`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `tr87/qwen_mismatch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `bp35/scratch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `bp35/qwen_own`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+- Arm partial `bp35/qwen_mismatch`: actions=32, levels=0, bound=0, confirmations=0, prior_decisions=0, replay=True.
+
+## Live run complete
+
+- Verdict: `ANCHOR_ONLY`.
+- Improved games: `['ar25']`.
+- All final ledgers replay-verified: `True`.
+
+## 2026-08-08 22:23 BRT — Causal wrap-up
+
+- ar25 Qwen-own solved in 17 actions versus scratch failing at 32, exactly matching human-reference and transferred-self-built-reference action counts and action sequence.
+- The main Qwen driver was `SameInteriorLayout(?a,?b) → Decrease(TranslationAlignmentResidual(?a,?b))`, uniquely grounded to the candidate/target pair; it drove 13 actions after local confirmation.
+- Qwen's secondary aligned-pair/increase hypothesis drove one action but did not change the successful sequence relative to the references.
+- A mismatched wa30 prior uniquely grounded on ar25, drove 31 actions, and failed—an important causal negative rather than a cosmetic comparison.
+- cd82's own prior bound one pair but received zero direct relative-motion confirmations and therefore made zero decisions. Other non-anchor own priors abstained through ambiguity or lack of binding.
+- The honest conclusion is `ANCHOR_ONLY`: the generic external explanation interface can solve ar25.1 faster, but this vocabulary/prompt/controller combination did not transfer a win to another first level.

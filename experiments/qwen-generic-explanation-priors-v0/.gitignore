@@ -1,4 +1,5 @@
 artifacts/checkpoints/
 artifacts/recordings/
 artifacts/prepare.lock
+artifacts/run.lock
 artifacts-contaminated-*/

@@ -1,0 +1,178 @@
+{
+  "actions": 32,
+  "arm": "qwen_own",
+  "controller": {
+    "abstentions": 32,
+    "action_uses": {
+      "1": 8,
+      "2": 8,
+      "3": 8,
+      "4": 8
+    },
+    "bindings": [],
+    "bound_pairs": 0,
+    "latent_projections": 0,
+    "local_confirmations": 0,
+    "overrides": 0,
+    "prior_decisions": 0,
+    "provenance": "externally-proposed",
+    "provenance_states": []
+  },
+  "elapsed_this_process_s": 3.097032350000518,
+  "final_digest": "756e9625230df6acb99e3bd2a85d7cf690a9f58d604379979eb8657070b6939d",
+  "final_state": "NOT_FINISHED",
+  "first_level_completed": false,
+  "game": "tr87",
+  "grounding": {
+    "groundings": [
+      {
+        "effect_pair": null,
+        "effect_pair_count": 15,
+        "grounding_count": 30,
+        "operator": "Decrease",
+        "status": "ambiguous",
+        "template_hash": "02d3a3c97466fdf49f21453ce933c98417eb9804fc833f09df9e56960bbf3d0f",
+        "truncated": false
+      },
+      {
+        "effect_pair": null,
+        "effect_pair_count": 3,
+        "grounding_count": 6,
+        "operator": "Increase",
+        "status": "ambiguous",
+        "template_hash": "71c7b739664b5571844f329d0ea7b78c2cefde71bd8c44f238014af6d2a61973",
+        "truncated": false
+      },
+      {
+        "effect_pair": null,
+        "effect_pair_count": 0,
+        "grounding_count": 0,
+        "operator": "Decrease",
+        "status": "unbound",
+        "template_hash": "bd2f5f261e09c100057e2940fd6012130aedc3311e0a9c23a2b481fc4c1e2e8c",
+        "truncated": false
+      },
+      {
+        "effect_pair": null,
+        "effect_pair_count": 0,
+        "grounding_count": 0,
+        "operator": "Increase",
+        "status": "unbound",
+        "template_hash": "31b2b12a9a01332b277ec4636f8916925953994c5b8f72dc2b9ebccccddd7f2b",
+        "truncated": false
+      }
+    ],
+    "live_initial_state_sha256": "63d6a0a7d84965113a37ac2a758ecc3642613c2c87172f0cf3b232ff77331e6f",
+    "proposal_source": "tr87",
+    "provenance": "externally-proposed",
+    "template_count": 4,
+    "templates": [
+      {
+        "canonical_hash": "02d3a3c97466fdf49f21453ce933c98417eb9804fc833f09df9e56960bbf3d0f",
+        "conditions": [
+          [
+            "SameArea",
+            [
+              "?a",
+              "?b"
+            ]
+          ],
+          [
+            "SameOutline",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Decrease",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "71c7b739664b5571844f329d0ea7b78c2cefde71bd8c44f238014af6d2a61973",
+        "conditions": [
+          [
+            "AlignedHorizontal",
+            [
+              "?a",
+              "?b"
+            ]
+          ],
+          [
+            "DifferentInteriorLayout",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Increase",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "bd2f5f261e09c100057e2940fd6012130aedc3311e0a9c23a2b481fc4c1e2e8c",
+        "conditions": [
+          [
+            "Disjoint",
+            [
+              "?a",
+              "?b"
+            ]
+          ],
+          [
+            "SameInteriorLayout",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Decrease",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "31b2b12a9a01332b277ec4636f8916925953994c5b8f72dc2b9ebccccddd7f2b",
+        "conditions": [
+          [
+            "AlignedVertical",
+            [
+              "?a",
+              "?b"
+            ]
+          ],
+          [
+            "DifferentArea",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Increase",
+        "provenance": "externally-proposed"
+      }
+    ]
+  },
+  "job_key": "e96a08cee9d87e19e7132395ba9c0b3ab1c875191bc93ed433539639f05ed146",
+  "levels_completed": 0,
+  "replay_verified": true,
+  "resumed": false,
+  "status": "completed",
+  "stop_reason": "action-budget"
+}

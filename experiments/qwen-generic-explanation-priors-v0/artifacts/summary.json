@@ -1,0 +1,2565 @@
+{
+  "all_replay_verified": true,
+  "arms": [
+    {
+      "actions": 17,
+      "arm": "human_reference",
+      "controller": {
+        "abstentions": 3,
+        "action_uses": {
+          "1": 1,
+          "2": 11,
+          "3": 5
+        },
+        "bindings": [
+          {
+            "action_deltas": {
+              "1": [
+                [
+                  0,
+                  -6
+                ]
+              ],
+              "2": [
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ]
+              ],
+              "3": [
+                [
+                  6,
+                  0
+                ]
+              ]
+            },
+            "confirmations": 13,
+            "latent_steps": 4,
+            "operator": "Decrease",
+            "residual": 0,
+            "template_hash": "eceab0c720105f30dfeeb8db46b59c736d2462bc49b215959555195253de9379"
+          }
+        ],
+        "bound_pairs": 1,
+        "latent_projections": 4,
+        "local_confirmations": 13,
+        "overrides": 14,
+        "prior_decisions": 14,
+        "provenance": "externally-proposed",
+        "provenance_states": [
+          "externally-proposed",
+          "externally-proposed-and-locally-confirmed"
+        ]
+      },
+      "elapsed_this_process_s": 1.0332660889980616,
+      "final_digest": "5fcedd77e98b48bdd9d1d78ccf1d6f65898a2e21c466f71a9822fec9b405f8b0",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": true,
+      "game": "ar25",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": [
+              "f01",
+              "f02"
+            ],
+            "effect_pair_count": 1,
+            "grounding_count": 2,
+            "operator": "Decrease",
+            "status": "bound",
+            "template_hash": "eceab0c720105f30dfeeb8db46b59c736d2462bc49b215959555195253de9379",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "218cec40362e0479e385ddf3419b03b483437a79b642e386b24821564c946682",
+        "proposal_source": "human-reference",
+        "provenance": "externally-proposed",
+        "template_count": 1,
+        "templates": [
+          {
+            "canonical_hash": "eceab0c720105f30dfeeb8db46b59c736d2462bc49b215959555195253de9379",
+            "conditions": [
+              [
+                "DifferentInteriorLayout",
+                [
+                  "?a",
+                  "?c"
+                ]
+              ],
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameOutline",
+                [
+                  "?a",
+                  "?c"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "3a94c0dec3d2e9fe12617b2a6ef88935272cb7eb2e8401a15b9a8c69e5a0f3b0",
+      "levels_completed": 1,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "first-level-completed"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_mismatch",
+      "controller": {
+        "abstentions": 1,
+        "action_uses": {
+          "1": 32
+        },
+        "bindings": [
+          {
+            "action_deltas": {
+              "1": [
+                [
+                  0,
+                  -6
+                ],
+                [
+                  0,
+                  -6
+                ],
+                [
+                  0,
+                  -6
+                ],
+                [
+                  0,
+                  -6
+                ],
+                [
+                  0,
+                  -6
+                ]
+              ]
+            },
+            "confirmations": 5,
+            "latent_steps": 0,
+            "operator": "Increase",
+            "residual": 120,
+            "template_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92"
+          }
+        ],
+        "bound_pairs": 1,
+        "latent_projections": 0,
+        "local_confirmations": 5,
+        "overrides": 31,
+        "prior_decisions": 31,
+        "provenance": "externally-proposed",
+        "provenance_states": [
+          "externally-proposed",
+          "externally-proposed-and-locally-confirmed"
+        ]
+      },
+      "elapsed_this_process_s": 2.6731554529978894,
+      "final_digest": "290a0944f29f6ec9e588e511474054c418acf103dafd5214f3b91e359dc5bba3",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "ar25",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "daf71590728966a8dad0a1e2f15aa8b7373ff690eb56fb655ca859136ce7ff06",
+            "truncated": false
+          },
+          {
+            "effect_pair": [
+              "f01",
+              "f02"
+            ],
+            "effect_pair_count": 1,
+            "grounding_count": 2,
+            "operator": "Increase",
+            "status": "bound",
+            "template_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Decrease",
+            "status": "unbound",
+            "template_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "218cec40362e0479e385ddf3419b03b483437a79b642e386b24821564c946682",
+        "proposal_source": "bp35",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "daf71590728966a8dad0a1e2f15aa8b7373ff690eb56fb655ca859136ce7ff06",
+            "conditions": [
+              [
+                "SameOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+            "conditions": [
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+            "conditions": [
+              [
+                "AlignedVertical",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "a94b3583d4c6f7b92f4d0b24c9f23e4c59b0383635b929e54c86ba0971695b8c",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 17,
+      "arm": "qwen_own",
+      "controller": {
+        "abstentions": 3,
+        "action_uses": {
+          "1": 1,
+          "2": 11,
+          "3": 5
+        },
+        "bindings": [
+          {
+            "action_deltas": {
+              "1": [
+                [
+                  0,
+                  -6
+                ]
+              ],
+              "2": [
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ]
+              ],
+              "3": [
+                [
+                  6,
+                  0
+                ]
+              ]
+            },
+            "confirmations": 13,
+            "latent_steps": 4,
+            "operator": "Decrease",
+            "residual": 0,
+            "template_hash": "25a911f8811b23cc76439eaff4e71892b9a56f755d2fb0e866592bdd23837029"
+          },
+          {
+            "action_deltas": {
+              "3": [
+                [
+                  -12,
+                  0
+                ]
+              ]
+            },
+            "confirmations": 1,
+            "latent_steps": 4,
+            "operator": "Increase",
+            "residual": 92,
+            "template_hash": "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0"
+          }
+        ],
+        "bound_pairs": 2,
+        "latent_projections": 8,
+        "local_confirmations": 14,
+        "overrides": 14,
+        "prior_decisions": 14,
+        "provenance": "externally-proposed",
+        "provenance_states": [
+          "externally-proposed",
+          "externally-proposed-and-locally-confirmed"
+        ]
+      },
+      "elapsed_this_process_s": 1.0727109580038814,
+      "final_digest": "5fcedd77e98b48bdd9d1d78ccf1d6f65898a2e21c466f71a9822fec9b405f8b0",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": true,
+      "game": "ar25",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": [
+              "f01",
+              "f02"
+            ],
+            "effect_pair_count": 1,
+            "grounding_count": 2,
+            "operator": "Decrease",
+            "status": "bound",
+            "template_hash": "25a911f8811b23cc76439eaff4e71892b9a56f755d2fb0e866592bdd23837029",
+            "truncated": false
+          },
+          {
+            "effect_pair": [
+              "f00",
+              "f01"
+            ],
+            "effect_pair_count": 1,
+            "grounding_count": 2,
+            "operator": "Increase",
+            "status": "bound",
+            "template_hash": "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Decrease",
+            "status": "unbound",
+            "template_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "218cec40362e0479e385ddf3419b03b483437a79b642e386b24821564c946682",
+        "proposal_source": "ar25",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "25a911f8811b23cc76439eaff4e71892b9a56f755d2fb0e866592bdd23837029",
+            "conditions": [
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0",
+            "conditions": [
+              [
+                "AlignedHorizontal",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+            "conditions": [
+              [
+                "Touches",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "8c68f441bfe5119450eb0ad021f6d211333dba8edf9c865f47553c179c07a873",
+      "levels_completed": 1,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "first-level-completed"
+    },
+    {
+      "actions": 32,
+      "arm": "scratch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 6,
+          "2": 6,
+          "3": 5,
+          "4": 5,
+          "5": 5,
+          "7": 5
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "scratch",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 2.5560294289971353,
+      "final_digest": "4ad4b6de038e67c5d80092f092b63c359fcfbd517671a659e5e838fe1b41bba9",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "ar25",
+      "grounding": {
+        "groundings": [],
+        "live_initial_state_sha256": "218cec40362e0479e385ddf3419b03b483437a79b642e386b24821564c946682",
+        "proposal_source": null,
+        "provenance": "scratch",
+        "template_count": 0,
+        "templates": []
+      },
+      "job_key": "2d54cf0d0990c291161cad227d649848a3c2abd21d4039b0668913dc906bc599",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 17,
+      "arm": "self_built_reference",
+      "controller": {
+        "abstentions": 3,
+        "action_uses": {
+          "1": 1,
+          "2": 11,
+          "3": 5
+        },
+        "bindings": [
+          {
+            "action_deltas": {
+              "1": [
+                [
+                  0,
+                  -6
+                ]
+              ],
+              "2": [
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ],
+                [
+                  0,
+                  6
+                ]
+              ],
+              "3": [
+                [
+                  6,
+                  0
+                ]
+              ]
+            },
+            "confirmations": 13,
+            "latent_steps": 4,
+            "operator": "Decrease",
+            "residual": 0,
+            "template_hash": "eceab0c720105f30dfeeb8db46b59c736d2462bc49b215959555195253de9379"
+          }
+        ],
+        "bound_pairs": 1,
+        "latent_projections": 4,
+        "local_confirmations": 13,
+        "overrides": 14,
+        "prior_decisions": 14,
+        "provenance": "transferred-self-built",
+        "provenance_states": [
+          "transferred-self-built"
+        ]
+      },
+      "elapsed_this_process_s": 0.9504299299951526,
+      "final_digest": "5fcedd77e98b48bdd9d1d78ccf1d6f65898a2e21c466f71a9822fec9b405f8b0",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": true,
+      "game": "ar25",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": [
+              "f01",
+              "f02"
+            ],
+            "effect_pair_count": 1,
+            "grounding_count": 2,
+            "operator": "Decrease",
+            "status": "bound",
+            "template_hash": "eceab0c720105f30dfeeb8db46b59c736d2462bc49b215959555195253de9379",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "218cec40362e0479e385ddf3419b03b483437a79b642e386b24821564c946682",
+        "proposal_source": "self-built-reference",
+        "provenance": "transferred-self-built",
+        "template_count": 1,
+        "templates": [
+          {
+            "canonical_hash": "eceab0c720105f30dfeeb8db46b59c736d2462bc49b215959555195253de9379",
+            "conditions": [
+              [
+                "DifferentInteriorLayout",
+                [
+                  "?a",
+                  "?c"
+                ]
+              ],
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameOutline",
+                [
+                  "?a",
+                  "?c"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "transferred-self-built"
+          }
+        ]
+      },
+      "job_key": "b9cf5ad27120d16fdbfff8d818012893a919a74cb1abcb75996229827b33dc37",
+      "levels_completed": 1,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "first-level-completed"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_mismatch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "3": 11,
+          "4": 11,
+          "7": 10
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 3.589384216000326,
+      "final_digest": "7d0c13fed2befcf29b7f9838274a492296aad05448c10df6f55726359678ca3c",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "bp35",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 28,
+            "grounding_count": 56,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "02d3a3c97466fdf49f21453ce933c98417eb9804fc833f09df9e56960bbf3d0f",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Increase",
+            "status": "unbound",
+            "template_hash": "71c7b739664b5571844f329d0ea7b78c2cefde71bd8c44f238014af6d2a61973",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 28,
+            "grounding_count": 56,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "bd2f5f261e09c100057e2940fd6012130aedc3311e0a9c23a2b481fc4c1e2e8c",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Increase",
+            "status": "unbound",
+            "template_hash": "31b2b12a9a01332b277ec4636f8916925953994c5b8f72dc2b9ebccccddd7f2b",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "f9aff29e3ae8d5acf145c08b0597746e46102ae002b75cba1d1bfa0ba02ce074",
+        "proposal_source": "tr87",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "02d3a3c97466fdf49f21453ce933c98417eb9804fc833f09df9e56960bbf3d0f",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "71c7b739664b5571844f329d0ea7b78c2cefde71bd8c44f238014af6d2a61973",
+            "conditions": [
+              [
+                "AlignedHorizontal",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "DifferentInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "bd2f5f261e09c100057e2940fd6012130aedc3311e0a9c23a2b481fc4c1e2e8c",
+            "conditions": [
+              [
+                "Disjoint",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "31b2b12a9a01332b277ec4636f8916925953994c5b8f72dc2b9ebccccddd7f2b",
+            "conditions": [
+              [
+                "AlignedVertical",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "DifferentArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "ee06d8fee9692ebdfbc3cba0a6f34d6fb2446e51e1a814577fb63ebdecae0c8d",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_own",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "3": 11,
+          "4": 11,
+          "7": 10
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 3.643710803000431,
+      "final_digest": "7d0c13fed2befcf29b7f9838274a492296aad05448c10df6f55726359678ca3c",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "bp35",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 28,
+            "grounding_count": 56,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "daf71590728966a8dad0a1e2f15aa8b7373ff690eb56fb655ca859136ce7ff06",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 28,
+            "grounding_count": 56,
+            "operator": "Increase",
+            "status": "ambiguous",
+            "template_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 28,
+            "grounding_count": 56,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 28,
+            "grounding_count": 56,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "f9aff29e3ae8d5acf145c08b0597746e46102ae002b75cba1d1bfa0ba02ce074",
+        "proposal_source": "bp35",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "daf71590728966a8dad0a1e2f15aa8b7373ff690eb56fb655ca859136ce7ff06",
+            "conditions": [
+              [
+                "SameOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+            "conditions": [
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+            "conditions": [
+              [
+                "AlignedVertical",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "900608a6b5e5ea74d60668fff428afd4e738011ce25aee28b48b50553607119d",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "scratch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "3": 11,
+          "4": 11,
+          "7": 10
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "scratch",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 3.775413331000891,
+      "final_digest": "7d0c13fed2befcf29b7f9838274a492296aad05448c10df6f55726359678ca3c",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "bp35",
+      "grounding": {
+        "groundings": [],
+        "live_initial_state_sha256": "f9aff29e3ae8d5acf145c08b0597746e46102ae002b75cba1d1bfa0ba02ce074",
+        "proposal_source": null,
+        "provenance": "scratch",
+        "template_count": 0,
+        "templates": []
+      },
+      "job_key": "054400455d37987edcbc9b62cda7cc16714db603ba4287c9d37b6c72568a700d",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_mismatch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 2.6089329110036488,
+      "final_digest": "5e6fb5d7d6ad055d14141b2085b520144b4f8c073d8cf57a4641ea6fc4e05423",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cd82",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 8,
+            "grounding_count": 16,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "ca36d327e6e61fa2269a6e5e93d3f8cb632a3806b72affb57a3ce456459f8f20",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Increase",
+            "status": "unbound",
+            "template_hash": "91f287e5f8fa68924ea3e7d17c3ea7f8c7019f9141d2f60c3e799c459577ef03",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "66d05ed63928a7d561ec8354f67c294d3f37ce309035ca7e6e6c6f13066fe263",
+        "proposal_source": "cn04",
+        "provenance": "externally-proposed",
+        "template_count": 2,
+        "templates": [
+          {
+            "canonical_hash": "ca36d327e6e61fa2269a6e5e93d3f8cb632a3806b72affb57a3ce456459f8f20",
+            "conditions": [
+              [
+                "DifferentInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "DifferentOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "91f287e5f8fa68924ea3e7d17c3ea7f8c7019f9141d2f60c3e799c459577ef03",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "3ceeddf8da1b557c0dfc3a2416289393e57ed996ffbffd756fcbcb4ee02b2864",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_own",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [
+          {
+            "action_deltas": {},
+            "confirmations": 0,
+            "latent_steps": 0,
+            "operator": "Increase",
+            "residual": 49,
+            "template_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92"
+          }
+        ],
+        "bound_pairs": 1,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": [
+          "externally-proposed"
+        ]
+      },
+      "elapsed_this_process_s": 2.621897484001238,
+      "final_digest": "5e6fb5d7d6ad055d14141b2085b520144b4f8c073d8cf57a4641ea6fc4e05423",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cd82",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 9,
+            "grounding_count": 18,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "8ac16a2d5d6a918ff2bff10b01eb7c67b70fb4e24b68d732d9f6353e5cdf892a",
+            "truncated": false
+          },
+          {
+            "effect_pair": [
+              "f01",
+              "f04"
+            ],
+            "effect_pair_count": 1,
+            "grounding_count": 2,
+            "operator": "Increase",
+            "status": "bound",
+            "template_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 10,
+            "grounding_count": 20,
+            "operator": "Increase",
+            "status": "ambiguous",
+            "template_hash": "62e08923198a35aae6da86bafcb47aa6e79c07c85829ff79ee0909a530433a95",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "66d05ed63928a7d561ec8354f67c294d3f37ce309035ca7e6e6c6f13066fe263",
+        "proposal_source": "cd82",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "8ac16a2d5d6a918ff2bff10b01eb7c67b70fb4e24b68d732d9f6353e5cdf892a",
+            "conditions": [
+              [
+                "DifferentOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+            "conditions": [
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+            "conditions": [
+              [
+                "AlignedVertical",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "62e08923198a35aae6da86bafcb47aa6e79c07c85829ff79ee0909a530433a95",
+            "conditions": [
+              [
+                "Disjoint",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "1776f235d322e15ce2d38d4243af60727afc1559f28aa55495a223ac66b8533f",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "scratch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "scratch",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 2.6310199859944987,
+      "final_digest": "5e6fb5d7d6ad055d14141b2085b520144b4f8c073d8cf57a4641ea6fc4e05423",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cd82",
+      "grounding": {
+        "groundings": [],
+        "live_initial_state_sha256": "66d05ed63928a7d561ec8354f67c294d3f37ce309035ca7e6e6c6f13066fe263",
+        "proposal_source": null,
+        "provenance": "scratch",
+        "template_count": 0,
+        "templates": []
+      },
+      "job_key": "60ac982631ad51cbdd025946be6662cf0d9233a740ddadfb3606d54577447931",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_mismatch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 2.5920059960044455,
+      "final_digest": "fd002273484a0266b6bd0d8e089401b6b8a9bd70d0c65cb977cdb300312f2e2d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cn04",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Decrease",
+            "status": "unbound",
+            "template_hash": "1099c9782ee296885ff71e82ee77dcf5cbab57ed3ba90b1bf361644226ac25e5",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Increase",
+            "status": "ambiguous",
+            "template_hash": "7b6536e4dd16eeca939131fd9e9cae1eccec44255a2ec2823e68c50d86e27762",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Decrease",
+            "status": "unbound",
+            "template_hash": "5b05ab674932a7e25a17b542a3e8d436f5edaabf66ff4fd632d55f7db85f7312",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Decrease",
+            "status": "unbound",
+            "template_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "f664e1fef3c00b83efcccb385b5246ff83e329194e5889b7c23eeb59739bed9e",
+        "proposal_source": "wa30",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "1099c9782ee296885ff71e82ee77dcf5cbab57ed3ba90b1bf361644226ac25e5",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "7b6536e4dd16eeca939131fd9e9cae1eccec44255a2ec2823e68c50d86e27762",
+            "conditions": [
+              [
+                "DifferentOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "5b05ab674932a7e25a17b542a3e8d436f5edaabf66ff4fd632d55f7db85f7312",
+            "conditions": [
+              [
+                "AlignedHorizontal",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "AlignedVertical",
+                [
+                  "?a",
+                  "?c"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?b",
+              "?c"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+            "conditions": [
+              [
+                "Touches",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "ed5f13dbab63485ec23cea473115dd1d8bec74e6b9ea3820f5a4ffcd8a53a158",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_own",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 2.505310370994266,
+      "final_digest": "fd002273484a0266b6bd0d8e089401b6b8a9bd70d0c65cb977cdb300312f2e2d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cn04",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "ca36d327e6e61fa2269a6e5e93d3f8cb632a3806b72affb57a3ce456459f8f20",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Increase",
+            "status": "unbound",
+            "template_hash": "91f287e5f8fa68924ea3e7d17c3ea7f8c7019f9141d2f60c3e799c459577ef03",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "f664e1fef3c00b83efcccb385b5246ff83e329194e5889b7c23eeb59739bed9e",
+        "proposal_source": "cn04",
+        "provenance": "externally-proposed",
+        "template_count": 2,
+        "templates": [
+          {
+            "canonical_hash": "ca36d327e6e61fa2269a6e5e93d3f8cb632a3806b72affb57a3ce456459f8f20",
+            "conditions": [
+              [
+                "DifferentInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "DifferentOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "91f287e5f8fa68924ea3e7d17c3ea7f8c7019f9141d2f60c3e799c459577ef03",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "4bcc058503887968ed4c37fd543e0bfe330e3e8595a5f562bc7cead2fcb159f9",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "scratch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "scratch",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 2.483314283999789,
+      "final_digest": "fd002273484a0266b6bd0d8e089401b6b8a9bd70d0c65cb977cdb300312f2e2d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "cn04",
+      "grounding": {
+        "groundings": [],
+        "live_initial_state_sha256": "f664e1fef3c00b83efcccb385b5246ff83e329194e5889b7c23eeb59739bed9e",
+        "proposal_source": null,
+        "provenance": "scratch",
+        "template_count": 0,
+        "templates": []
+      },
+      "job_key": "0b25bebe46bdd5eab692e55322175e79c58e72f8b710d616b0a57763674e9dae",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_mismatch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 8,
+          "2": 8,
+          "3": 8,
+          "4": 8
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 3.1315062810026575,
+      "final_digest": "756e9625230df6acb99e3bd2a85d7cf690a9f58d604379979eb8657070b6939d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "tr87",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 6,
+            "grounding_count": 12,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "8ac16a2d5d6a918ff2bff10b01eb7c67b70fb4e24b68d732d9f6353e5cdf892a",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Increase",
+            "status": "unbound",
+            "template_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 6,
+            "grounding_count": 12,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 21,
+            "grounding_count": 42,
+            "operator": "Increase",
+            "status": "ambiguous",
+            "template_hash": "62e08923198a35aae6da86bafcb47aa6e79c07c85829ff79ee0909a530433a95",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "63d6a0a7d84965113a37ac2a758ecc3642613c2c87172f0cf3b232ff77331e6f",
+        "proposal_source": "cd82",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "8ac16a2d5d6a918ff2bff10b01eb7c67b70fb4e24b68d732d9f6353e5cdf892a",
+            "conditions": [
+              [
+                "DifferentOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+            "conditions": [
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+            "conditions": [
+              [
+                "AlignedVertical",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "62e08923198a35aae6da86bafcb47aa6e79c07c85829ff79ee0909a530433a95",
+            "conditions": [
+              [
+                "Disjoint",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "0ed5021dab808bcd08a058efcdca6f32f495c992820ac8deaa8df153b1330d41",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_own",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 8,
+          "2": 8,
+          "3": 8,
+          "4": 8
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 3.097032350000518,
+      "final_digest": "756e9625230df6acb99e3bd2a85d7cf690a9f58d604379979eb8657070b6939d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "tr87",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 15,
+            "grounding_count": 30,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "02d3a3c97466fdf49f21453ce933c98417eb9804fc833f09df9e56960bbf3d0f",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Increase",
+            "status": "ambiguous",
+            "template_hash": "71c7b739664b5571844f329d0ea7b78c2cefde71bd8c44f238014af6d2a61973",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Decrease",
+            "status": "unbound",
+            "template_hash": "bd2f5f261e09c100057e2940fd6012130aedc3311e0a9c23a2b481fc4c1e2e8c",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Increase",
+            "status": "unbound",
+            "template_hash": "31b2b12a9a01332b277ec4636f8916925953994c5b8f72dc2b9ebccccddd7f2b",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "63d6a0a7d84965113a37ac2a758ecc3642613c2c87172f0cf3b232ff77331e6f",
+        "proposal_source": "tr87",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "02d3a3c97466fdf49f21453ce933c98417eb9804fc833f09df9e56960bbf3d0f",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "71c7b739664b5571844f329d0ea7b78c2cefde71bd8c44f238014af6d2a61973",
+            "conditions": [
+              [
+                "AlignedHorizontal",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "DifferentInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "bd2f5f261e09c100057e2940fd6012130aedc3311e0a9c23a2b481fc4c1e2e8c",
+            "conditions": [
+              [
+                "Disjoint",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "31b2b12a9a01332b277ec4636f8916925953994c5b8f72dc2b9ebccccddd7f2b",
+            "conditions": [
+              [
+                "AlignedVertical",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "DifferentArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "e96a08cee9d87e19e7132395ba9c0b3ab1c875191bc93ed433539639f05ed146",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "scratch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 8,
+          "2": 8,
+          "3": 8,
+          "4": 8
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "scratch",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 3.146545771000092,
+      "final_digest": "756e9625230df6acb99e3bd2a85d7cf690a9f58d604379979eb8657070b6939d",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "tr87",
+      "grounding": {
+        "groundings": [],
+        "live_initial_state_sha256": "63d6a0a7d84965113a37ac2a758ecc3642613c2c87172f0cf3b232ff77331e6f",
+        "proposal_source": null,
+        "provenance": "scratch",
+        "template_count": 0,
+        "templates": []
+      },
+      "job_key": "c48612a5e8c3b215c824d8b6d99908dfab7a099bc18d245e79851b42bf481df2",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_mismatch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [
+          {
+            "action_deltas": {},
+            "confirmations": 0,
+            "latent_steps": 0,
+            "operator": "Increase",
+            "residual": 32,
+            "template_hash": "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0"
+          }
+        ],
+        "bound_pairs": 1,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": [
+          "externally-proposed"
+        ]
+      },
+      "elapsed_this_process_s": 2.3902644970003166,
+      "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "wa30",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "25a911f8811b23cc76439eaff4e71892b9a56f755d2fb0e866592bdd23837029",
+            "truncated": false
+          },
+          {
+            "effect_pair": [
+              "f00",
+              "f05"
+            ],
+            "effect_pair_count": 1,
+            "grounding_count": 2,
+            "operator": "Increase",
+            "status": "bound",
+            "template_hash": "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 6,
+            "grounding_count": 12,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Decrease",
+            "status": "unbound",
+            "template_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "cd9b94187a42e40bd33f56f5bacb271d69c4432051e0f0b67855558588e1408d",
+        "proposal_source": "ar25",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "25a911f8811b23cc76439eaff4e71892b9a56f755d2fb0e866592bdd23837029",
+            "conditions": [
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0",
+            "conditions": [
+              [
+                "AlignedHorizontal",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+            "conditions": [
+              [
+                "Touches",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "b6e9da377e25584c821145005283eacbfd5836003d13bec3bb361a6f5c4cea22",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "qwen_own",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "externally-proposed",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 2.417851770995185,
+      "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "wa30",
+      "grounding": {
+        "groundings": [
+          {
+            "effect_pair": null,
+            "effect_pair_count": 3,
+            "grounding_count": 6,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "1099c9782ee296885ff71e82ee77dcf5cbab57ed3ba90b1bf361644226ac25e5",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 9,
+            "grounding_count": 18,
+            "operator": "Increase",
+            "status": "ambiguous",
+            "template_hash": "7b6536e4dd16eeca939131fd9e9cae1eccec44255a2ec2823e68c50d86e27762",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 2,
+            "grounding_count": 2,
+            "operator": "Decrease",
+            "status": "ambiguous",
+            "template_hash": "5b05ab674932a7e25a17b542a3e8d436f5edaabf66ff4fd632d55f7db85f7312",
+            "truncated": false
+          },
+          {
+            "effect_pair": null,
+            "effect_pair_count": 0,
+            "grounding_count": 0,
+            "operator": "Decrease",
+            "status": "unbound",
+            "template_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+            "truncated": false
+          }
+        ],
+        "live_initial_state_sha256": "cd9b94187a42e40bd33f56f5bacb271d69c4432051e0f0b67855558588e1408d",
+        "proposal_source": "wa30",
+        "provenance": "externally-proposed",
+        "template_count": 4,
+        "templates": [
+          {
+            "canonical_hash": "1099c9782ee296885ff71e82ee77dcf5cbab57ed3ba90b1bf361644226ac25e5",
+            "conditions": [
+              [
+                "SameArea",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "SameInteriorLayout",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "7b6536e4dd16eeca939131fd9e9cae1eccec44255a2ec2823e68c50d86e27762",
+            "conditions": [
+              [
+                "DifferentOutline",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Increase",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "5b05ab674932a7e25a17b542a3e8d436f5edaabf66ff4fd632d55f7db85f7312",
+            "conditions": [
+              [
+                "AlignedHorizontal",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ],
+              [
+                "AlignedVertical",
+                [
+                  "?a",
+                  "?c"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?b",
+              "?c"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          },
+          {
+            "canonical_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+            "conditions": [
+              [
+                "Touches",
+                [
+                  "?a",
+                  "?b"
+                ]
+              ]
+            ],
+            "effect_variables": [
+              "?a",
+              "?b"
+            ],
+            "operator": "Decrease",
+            "provenance": "externally-proposed"
+          }
+        ]
+      },
+      "job_key": "f7eb9314ce3c1db822d4d39e8b1f7a3a41e688b0ffb7e8413b0c2e8f02d7d915",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    },
+    {
+      "actions": 32,
+      "arm": "scratch",
+      "controller": {
+        "abstentions": 32,
+        "action_uses": {
+          "1": 7,
+          "2": 7,
+          "3": 6,
+          "4": 6,
+          "5": 6
+        },
+        "bindings": [],
+        "bound_pairs": 0,
+        "latent_projections": 0,
+        "local_confirmations": 0,
+        "overrides": 0,
+        "prior_decisions": 0,
+        "provenance": "scratch",
+        "provenance_states": []
+      },
+      "elapsed_this_process_s": 2.3835290349961724,
+      "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+      "final_state": "NOT_FINISHED",
+      "first_level_completed": false,
+      "game": "wa30",
+      "grounding": {
+        "groundings": [],
+        "live_initial_state_sha256": "cd9b94187a42e40bd33f56f5bacb271d69c4432051e0f0b67855558588e1408d",
+        "proposal_source": null,
+        "provenance": "scratch",
+        "template_count": 0,
+        "templates": []
+      },
+      "job_key": "10d220066b6146d6c966d732737fdfae1c34780a8100a2afee1e619fc2d08a8c",
+      "levels_completed": 0,
+      "replay_verified": true,
+      "resumed": false,
+      "stop_reason": "action-budget"
+    }
+  ],
+  "comparisons": [
+    {
+      "action_savings_fraction": null,
+      "completion_gain": true,
+      "completion_regression": false,
+      "game": "ar25",
+      "qualifying_improvement": true
+    },
+    {
+      "action_savings_fraction": null,
+      "completion_gain": false,
+      "completion_regression": false,
+      "game": "wa30",
+      "qualifying_improvement": false
+    },
+    {
+      "action_savings_fraction": null,
+      "completion_gain": false,
+      "completion_regression": false,
+      "game": "cn04",
+      "qualifying_improvement": false
+    },
+    {
+      "action_savings_fraction": null,
+      "completion_gain": false,
+      "completion_regression": false,
+      "game": "cd82",
+      "qualifying_improvement": false
+    },
+    {
+      "action_savings_fraction": null,
+      "completion_gain": false,
+      "completion_regression": false,
+      "game": "tr87",
+      "qualifying_improvement": false
+    },
+    {
+      "action_savings_fraction": null,
+      "completion_gain": false,
+      "completion_regression": false,
+      "game": "bp35",
+      "qualifying_improvement": false
+    }
+  ],
+  "improved_games": [
+    "ar25"
+  ],
+  "negative_control_regression": false,
+  "verdict": "ANCHOR_ONLY"
+}

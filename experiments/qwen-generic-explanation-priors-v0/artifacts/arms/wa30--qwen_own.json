@@ -1,0 +1,164 @@
+{
+  "actions": 32,
+  "arm": "qwen_own",
+  "controller": {
+    "abstentions": 32,
+    "action_uses": {
+      "1": 7,
+      "2": 7,
+      "3": 6,
+      "4": 6,
+      "5": 6
+    },
+    "bindings": [],
+    "bound_pairs": 0,
+    "latent_projections": 0,
+    "local_confirmations": 0,
+    "overrides": 0,
+    "prior_decisions": 0,
+    "provenance": "externally-proposed",
+    "provenance_states": []
+  },
+  "elapsed_this_process_s": 2.417851770995185,
+  "final_digest": "6efd5f7bb548f105eb3aec22862eb9b62067cd76566594c051ce43f0f9137b75",
+  "final_state": "NOT_FINISHED",
+  "first_level_completed": false,
+  "game": "wa30",
+  "grounding": {
+    "groundings": [
+      {
+        "effect_pair": null,
+        "effect_pair_count": 3,
+        "grounding_count": 6,
+        "operator": "Decrease",
+        "status": "ambiguous",
+        "template_hash": "1099c9782ee296885ff71e82ee77dcf5cbab57ed3ba90b1bf361644226ac25e5",
+        "truncated": false
+      },
+      {
+        "effect_pair": null,
+        "effect_pair_count": 9,
+        "grounding_count": 18,
+        "operator": "Increase",
+        "status": "ambiguous",
+        "template_hash": "7b6536e4dd16eeca939131fd9e9cae1eccec44255a2ec2823e68c50d86e27762",
+        "truncated": false
+      },
+      {
+        "effect_pair": null,
+        "effect_pair_count": 2,
+        "grounding_count": 2,
+        "operator": "Decrease",
+        "status": "ambiguous",
+        "template_hash": "5b05ab674932a7e25a17b542a3e8d436f5edaabf66ff4fd632d55f7db85f7312",
+        "truncated": false
+      },
+      {
+        "effect_pair": null,
+        "effect_pair_count": 0,
+        "grounding_count": 0,
+        "operator": "Decrease",
+        "status": "unbound",
+        "template_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+        "truncated": false
+      }
+    ],
+    "live_initial_state_sha256": "cd9b94187a42e40bd33f56f5bacb271d69c4432051e0f0b67855558588e1408d",
+    "proposal_source": "wa30",
+    "provenance": "externally-proposed",
+    "template_count": 4,
+    "templates": [
+      {
+        "canonical_hash": "1099c9782ee296885ff71e82ee77dcf5cbab57ed3ba90b1bf361644226ac25e5",
+        "conditions": [
+          [
+            "SameArea",
+            [
+              "?a",
+              "?b"
+            ]
+          ],
+          [
+            "SameInteriorLayout",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Decrease",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "7b6536e4dd16eeca939131fd9e9cae1eccec44255a2ec2823e68c50d86e27762",
+        "conditions": [
+          [
+            "DifferentOutline",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Increase",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "5b05ab674932a7e25a17b542a3e8d436f5edaabf66ff4fd632d55f7db85f7312",
+        "conditions": [
+          [
+            "AlignedHorizontal",
+            [
+              "?a",
+              "?b"
+            ]
+          ],
+          [
+            "AlignedVertical",
+            [
+              "?a",
+              "?c"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?b",
+          "?c"
+        ],
+        "operator": "Decrease",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef",
+        "conditions": [
+          [
+            "Touches",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Decrease",
+        "provenance": "externally-proposed"
+      }
+    ]
+  },
+  "job_key": "f7eb9314ce3c1db822d4d39e8b1f7a3a41e688b0ffb7e8413b0c2e8f02d7d915",
+  "levels_completed": 0,
+  "replay_verified": true,
+  "resumed": false,
+  "stop_reason": "action-budget"
+}

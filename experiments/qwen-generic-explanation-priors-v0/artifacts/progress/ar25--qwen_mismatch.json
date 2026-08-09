@@ -1,0 +1,185 @@
+{
+  "actions": 32,
+  "arm": "qwen_mismatch",
+  "controller": {
+    "abstentions": 1,
+    "action_uses": {
+      "1": 32
+    },
+    "bindings": [
+      {
+        "action_deltas": {
+          "1": [
+            [
+              0,
+              -6
+            ],
+            [
+              0,
+              -6
+            ],
+            [
+              0,
+              -6
+            ],
+            [
+              0,
+              -6
+            ],
+            [
+              0,
+              -6
+            ]
+          ]
+        },
+        "confirmations": 5,
+        "latent_steps": 0,
+        "operator": "Increase",
+        "residual": 120,
+        "template_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92"
+      }
+    ],
+    "bound_pairs": 1,
+    "latent_projections": 0,
+    "local_confirmations": 5,
+    "overrides": 31,
+    "prior_decisions": 31,
+    "provenance": "externally-proposed",
+    "provenance_states": [
+      "externally-proposed",
+      "externally-proposed-and-locally-confirmed"
+    ]
+  },
+  "elapsed_this_process_s": 2.6731554529978894,
+  "final_digest": "290a0944f29f6ec9e588e511474054c418acf103dafd5214f3b91e359dc5bba3",
+  "final_state": "NOT_FINISHED",
+  "first_level_completed": false,
+  "game": "ar25",
+  "grounding": {
+    "groundings": [
+      {
+        "effect_pair": null,
+        "effect_pair_count": 3,
+        "grounding_count": 6,
+        "operator": "Decrease",
+        "status": "ambiguous",
+        "template_hash": "daf71590728966a8dad0a1e2f15aa8b7373ff690eb56fb655ca859136ce7ff06",
+        "truncated": false
+      },
+      {
+        "effect_pair": [
+          "f01",
+          "f02"
+        ],
+        "effect_pair_count": 1,
+        "grounding_count": 2,
+        "operator": "Increase",
+        "status": "bound",
+        "template_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+        "truncated": false
+      },
+      {
+        "effect_pair": null,
+        "effect_pair_count": 0,
+        "grounding_count": 0,
+        "operator": "Decrease",
+        "status": "unbound",
+        "template_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+        "truncated": false
+      },
+      {
+        "effect_pair": null,
+        "effect_pair_count": 3,
+        "grounding_count": 6,
+        "operator": "Decrease",
+        "status": "ambiguous",
+        "template_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+        "truncated": false
+      }
+    ],
+    "live_initial_state_sha256": "218cec40362e0479e385ddf3419b03b483437a79b642e386b24821564c946682",
+    "proposal_source": "bp35",
+    "provenance": "externally-proposed",
+    "template_count": 4,
+    "templates": [
+      {
+        "canonical_hash": "daf71590728966a8dad0a1e2f15aa8b7373ff690eb56fb655ca859136ce7ff06",
+        "conditions": [
+          [
+            "SameOutline",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Decrease",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "d8ebcf62b5c2350ef13accacf23061c8bb178df2f80c97c12b87608feed3fa92",
+        "conditions": [
+          [
+            "SameInteriorLayout",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Increase",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "6823daab1fc6312bbfc0ecae9417863bba0d70b770664ebf1923c3e6a89be3c3",
+        "conditions": [
+          [
+            "AlignedVertical",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Decrease",
+        "provenance": "externally-proposed"
+      },
+      {
+        "canonical_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c",
+        "conditions": [
+          [
+            "SameArea",
+            [
+              "?a",
+              "?b"
+            ]
+          ]
+        ],
+        "effect_variables": [
+          "?a",
+          "?b"
+        ],
+        "operator": "Decrease",
+        "provenance": "externally-proposed"
+      }
+    ]
+  },
+  "job_key": "a94b3583d4c6f7b92f4d0b24c9f23e4c59b0383635b929e54c86ba0971695b8c",
+  "levels_completed": 0,
+  "replay_verified": true,
+  "resumed": false,
+  "status": "completed",
+  "stop_reason": "action-budget"
+}
