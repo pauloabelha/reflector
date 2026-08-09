@@ -18,7 +18,8 @@ def run_game(game,limit=64):
  try:
   initial_obs=env.observation_space or env.reset();initial=BASE.observation_record(initial_obs);grid=BASE.observation_grid(initial_obs);legal=BASE.simple_legal_actions(env,initial_obs);successors={}
   for action in legal:env.reset();successors[action]=BASE.observation_grid(BASE.execute_action(env,game,action,{},"capability-calibration"))
-  proposals=REGISTRY.propose(grid,successors,parameterized_actions=complex_actions(env,initial_obs))
+  panels=REGISTRY.symbolic.panel_rows(BASE.extract_figures(grid))
+  proposals=REGISTRY.propose(grid,successors,parameterized_actions=complex_actions(env,initial_obs),symbolic_panels=panels)
   if not proposals:raise RuntimeError("capability registry abstained")
   selected=proposals[0];obs=env.reset()
   def act(action,data,role):
@@ -49,6 +50,13 @@ def run_game(game,limit=64):
      if after_anchor==before_anchor:continue
      mapping[(after_anchor[0]-before_anchor[0],after_anchor[1]-before_anchor[1])]=action;moved=True;break
     if not moved:break
+  elif selected.capability=="interactive:symbolic-transformation":
+   option=selected.execution;state=REGISTRY.symbolic.SymbolicExecutionState()
+   while len(history)<limit and BASE.observation_record(obs)["levels_completed"]<1:
+    before_grid=BASE.observation_grid(obs);command=REGISTRY.symbolic.decide(option,state,before_grid)
+    if command is None:break
+    after_record=act(command.opaque_action,{},command.role);after_grid=BASE.observation_grid(obs)
+    state=REGISTRY.symbolic.observe(option,state,command,before_grid,after_grid,transition_id="transition:"+after_record["digest"][:20])
   final=BASE.observation_record(obs)
  finally:arcade.close_scorecard()
  replay_arcade,replay_env=BASE.open_environment(ROOT/"environment_files",root/"replay",game)

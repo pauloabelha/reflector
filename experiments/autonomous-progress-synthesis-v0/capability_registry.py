@@ -4,10 +4,12 @@ from dataclasses import dataclass
 from typing import Any,Mapping,Sequence
 
 import compositional_dsl as dsl
+import collection_transport as collection
 import executor_registry as exact
 import gradient_executor as gradient
 import progress_synthesis as synthesis
 import route_option
+import symbolic_transform_adapter as symbolic
 
 @dataclass(frozen=True)
 class CapabilityProposal:
@@ -31,6 +33,7 @@ def propose(
     successors:Mapping[int,Sequence[Sequence[int]]],
     *,
     parameterized_actions:Sequence[int]=(),
+    symbolic_panels:Sequence[Mapping[str,object]]=(),
 )->tuple[CapabilityProposal,...]:
     simple=tuple(sorted(map(int,successors)))
     try:high=list(synthesis.synthesize(initial))
@@ -43,6 +46,28 @@ def propose(
             delta=synthesis.infer_role_translation(candidate,initial,after)
             if delta is not None and (delta[0]==0)!=(delta[1]==0):motion[delta]=int(action)
     nonmotion=tuple(action for action in simple if action not in motion.values());rows=[]
+    collection_capability=collection.induce_collection_capability(
+        initial,
+        tuple(
+            collection.CalibrationTransition(
+                opaque_action=action,
+                after=after,
+                evidence_id="transition:" + synthesis.stable_hash(
+                    {"opaque_action": int(action), "after": after}
+                )[:20],
+            )
+            for action,after in sorted(successors.items())
+        ),
+    )
+    if collection_capability is not None:
+        rows.append(CapabilityProposal(
+            "interactive:collection-transport",
+            dict(collection_capability.candidate.ast),
+            collection_capability.attention,
+            collection_capability.empirical_support,
+            collection_capability,
+            True,
+        ))
     for candidate in exact_candidates:
         try:
             execution=exact.compile_execution(candidate,initial,motion_actions=motion,parameterized_actions=parameterized_actions,release_actions=nonmotion)
@@ -52,6 +77,10 @@ def propose(
     try:
         option=route_option.compile_option(initial,successors);rows.append(CapabilityProposal("interactive:conditional-route",option.goal_ast,90,0,option,True))
     except Exception:pass
+    try:
+        for option in symbolic.propose(initial,successors,panels=symbolic_panels):
+            rows.append(CapabilityProposal("interactive:symbolic-transformation",option.candidate.ast,option.candidate.attention,0,option,True))
+    except (synthesis.SynthesisError, symbolic.SYMBOLIC.SymbolicProgressError):pass
     try:compositional=dsl.propose(initial)
     except synthesis.SynthesisError:compositional=()
     before_scene=None;delta_by_action={}
