@@ -1,0 +1,37 @@
+{
+  "cohort": [
+    "ar25",
+    "wa30",
+    "cn04",
+    "cd82",
+    "tr87",
+    "bp35"
+  ],
+  "input_boundary": "first rendered frame and first-packet legal actions only",
+  "rules": [
+    {
+      "games": ["ar25", "wa30", "cn04"],
+      "rule": "fixed diagnostic anchors declared before Qwen inference"
+    },
+    {
+      "game": "cd82",
+      "rule": "lexicographic actionable game with a size-2 outline group split into two interior-layout classes"
+    },
+    {
+      "game": "tr87",
+      "rule": "after earlier selections, actionable heterogeneous group maximizing layout_classes, different_layout_pairs, then group_size"
+    },
+    {
+      "game": "bp35",
+      "rule": "after earlier selections, actionable homogeneous group maximizing group_size then same_layout_pairs"
+    }
+  ],
+  "structural_audit": {
+    "ar25": {"legal_actions": 7, "group_size": 3, "layout_classes": 2, "same_layout_pairs": 1, "different_layout_pairs": 2},
+    "wa30": {"legal_actions": 5, "group_size": 4, "layout_classes": 2, "same_layout_pairs": 3, "different_layout_pairs": 3},
+    "cn04": {"legal_actions": 6, "group_size": 0, "layout_classes": 0, "same_layout_pairs": 0, "different_layout_pairs": 0},
+    "cd82": {"legal_actions": 6, "group_size": 2, "layout_classes": 2, "same_layout_pairs": 0, "different_layout_pairs": 1},
+    "tr87": {"legal_actions": 4, "group_size": 6, "layout_classes": 6, "same_layout_pairs": 0, "different_layout_pairs": 15},
+    "bp35": {"legal_actions": 4, "group_size": 150, "layout_classes": 1, "same_layout_pairs": 11175, "different_layout_pairs": 0}
+  }
+}
