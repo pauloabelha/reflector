@@ -1,0 +1,110 @@
+{
+  "action_sequence": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    1,
+    2
+  ],
+  "actions": 32,
+  "arm": "parallel_qwen",
+  "controller": {
+    "abstentions": 32,
+    "action_uses": {
+      "1": 6,
+      "2": 6,
+      "3": 5,
+      "4": 5,
+      "5": 5,
+      "7": 5
+    },
+    "activations": [
+      {
+        "activated_at_action": 4,
+        "effect_pair": null,
+        "operator": "Decrease",
+        "source_task": "18cced4bfc8d4ef4470b766bbd0d4c6e6971c692ee7bbc60c672df750153e065",
+        "status": "ambiguous",
+        "template_hash": "66e1f3647642276410e2c3ab84756453d1233f447f58facebbcc266650cae008"
+      },
+      {
+        "activated_at_action": 8,
+        "effect_pair": null,
+        "operator": "Decrease",
+        "source_task": "4eea558518978635cd486b65ec345b0ef9bcc733bbf863b88d00a77afa9a5ecd",
+        "status": "ambiguous",
+        "template_hash": "e6fb9bbeef6e13ea44545ea95d2dff51a0dc474777741e5660d6bfce9d96f12c"
+      },
+      {
+        "activated_at_action": 12,
+        "effect_pair": null,
+        "operator": "Decrease",
+        "source_task": "092ea26d656653ff09e6b899ca4fa3c9df4a350ee4e33eb00da3c359048374d9",
+        "status": "unbound",
+        "template_hash": "1fb2f0461012e672e4d1a7667da468adc91c64c3041efa74ce70e956cac9cd4f"
+      },
+      {
+        "activated_at_action": 16,
+        "effect_pair": null,
+        "operator": "Decrease",
+        "source_task": "2dd5d2dd874ea24aaa9faaf6c7c49866a810f9b02e5c4eca947799deba931f03",
+        "status": "ambiguous",
+        "template_hash": "bdaf2477f196882795111327b2c181b1b5f5fb3f50db639cb571f6be565ff17a"
+      }
+    ],
+    "bindings": [],
+    "bound_pairs": 0,
+    "increase_lease": {},
+    "latent_projections": 0,
+    "local_confirmations": 0,
+    "overrides": 0,
+    "prior_decisions": 0,
+    "provenance": "externally-proposed",
+    "provenance_states": []
+  },
+  "elapsed_s": 261.5945360620026,
+  "final_digest": "4ad4b6de038e67c5d80092f092b63c359fcfbd517671a659e5e838fe1b41bba9",
+  "first_level_completed": false,
+  "game": "ar25",
+  "job_key": "645637c11af7484c8e1a5bffb0bcd61694c7dbfbb6c7990dbc706e81121d14f9",
+  "levels_completed": 0,
+  "post_initial_qwen_requests": 3,
+  "prior_decisions": 0,
+  "qwen_changed_decisions": 0,
+  "qwen_task_count": 4,
+  "qwen_task_statuses": {
+    "adjudicated": 4
+  },
+  "replay_verified": true,
+  "stop_reason": "action-budget",
+  "workspace_hash": "847a7440f011e9daec1e35900207dd446060ff71ad8114ba4cce27c02d3699b8",
+  "workspace_head": 114,
+  "workspace_rebuild_hash": "d4d1c58166ada1385f8ff63c1539d90ca7a6308bb01edb6b7d0d908c75df304e"
+}

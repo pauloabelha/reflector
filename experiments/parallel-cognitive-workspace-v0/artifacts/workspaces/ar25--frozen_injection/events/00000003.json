@@ -1,0 +1,19 @@
+{
+  "actor": "qwen",
+  "basis": {
+    "head_hash": "4b7d689b094a510458ccd2f6b448c357e506c74ca9db980dbae7e5cbfe172233",
+    "observation_digest": "8c9c38b5c049817e37ea6525b513983e3628a3f1224df5eafb3146175bb2a51b",
+    "observation_version": 0
+  },
+  "event_hash": "02ed9c078d1598f994583a0345429bcc09310bb2d4c9f5577be4f5c9e504f629",
+  "event_id": "928a520bccdee738e2592c58a9fab52f5252c62996c5be04d0030eaa37053809",
+  "payload": {
+    "task_id": "05ef9790f789b9fb96f6eb5456e7273c8dc447e8a076c9cc407d6bdde7015475",
+    "worker_epoch": "frozen-injection:frozen-own-proposal"
+  },
+  "prev_event_hash": "4b7d689b094a510458ccd2f6b448c357e506c74ca9db980dbae7e5cbfe172233",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 3,
+  "type": "QwenTaskClaimed",
+  "workspace_id": "ar25--frozen_injection"
+}

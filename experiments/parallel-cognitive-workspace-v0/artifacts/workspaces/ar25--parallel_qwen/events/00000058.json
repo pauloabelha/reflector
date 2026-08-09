@@ -1,0 +1,21 @@
+{
+  "actor": "r2",
+  "basis": {
+    "head_hash": "c33a0ff45c17c04bb6246d8b26a4eaffb82c06890f99e4b393f3349d1af99f72",
+    "observation_digest": "45740c0bad980fd19ca756a29b3ceb911bc01272baee0b49af79ff893d784529",
+    "observation_version": 14
+  },
+  "event_hash": "dc25c0cd1b53bab6ef07ce73b510dfaa778e13da1a46647dc6bb87392c58b4e6",
+  "event_id": "7dfa46160671f04da0f019595215f9758e7ff584f7189cce760e42baa0113896",
+  "payload": {
+    "decision_blob": "afa8316fa4e8b7503eb54bac9400b776e0938cdff72c229502b98cc1bbf700dd",
+    "decision_id": "decision-0014",
+    "observation_digest": "45740c0bad980fd19ca756a29b3ceb911bc01272baee0b49af79ff893d784529",
+    "observation_version": 14
+  },
+  "prev_event_hash": "c33a0ff45c17c04bb6246d8b26a4eaffb82c06890f99e4b393f3349d1af99f72",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 58,
+  "type": "R2DecisionPublished",
+  "workspace_id": "ar25--parallel_qwen"
+}

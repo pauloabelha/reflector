@@ -1,0 +1,19 @@
+{
+  "actor": "qwen",
+  "basis": {
+    "basis_observation_digest": "b576e3dd65da36b9379d12a748d1b2fc55a8b89044c6920d0ff737f7f4f3c16e",
+    "basis_observation_version": 4,
+    "request_blob": "7bb15c4d9b43cc83a517802b590278a12814bffdf4281dcec3593521c16ba7d9"
+  },
+  "event_hash": "74cca8bcc880739590e19399a5608a21d92d3a6402db88b9e734bacf45cf7616",
+  "event_id": "qwen-claim:ar25--parallel_qwen:5c6c630ebb4f131e9df99d15c1dcb4b6f723906d6596406932abffc2b4b77e82:qwen-17150cf96d694e43916067cd1d681e00",
+  "payload": {
+    "task_id": "5c6c630ebb4f131e9df99d15c1dcb4b6f723906d6596406932abffc2b4b77e82",
+    "worker_epoch": "qwen-17150cf96d694e43916067cd1d681e00"
+  },
+  "prev_event_hash": "57d57eca424d18a0b7414e846c71bf38ecc56cbfeec26e952aa52fbd71f9b63a",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 21,
+  "type": "QwenTaskClaimed",
+  "workspace_id": "ar25--parallel_qwen"
+}

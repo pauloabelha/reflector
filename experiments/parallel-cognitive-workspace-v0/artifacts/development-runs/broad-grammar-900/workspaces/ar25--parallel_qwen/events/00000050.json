@@ -1,0 +1,22 @@
+{
+  "actor": "environment",
+  "basis": {
+    "head_hash": "f3080ecdee9a10fae3531971d300f462700c61fbc063dece3c7e568bd3ad46eb",
+    "observation_digest": "173b70c694c8a596bdbc83218e0140d3de372783759d3ec6e6b3153b6b7d670f",
+    "observation_version": 12
+  },
+  "event_hash": "a5b0999efc48d85dfeac9e7825d1bab29b0059ee1e1730a3f2f379124a4fa62c",
+  "event_id": "115afef25d88bc9da76a7d92ae62e141cc713ea865b2643d88a3d5d2f3c3edbf",
+  "payload": {
+    "basis_observation_digest": "173b70c694c8a596bdbc83218e0140d3de372783759d3ec6e6b3153b6b7d670f",
+    "basis_observation_version": 12,
+    "projection_blob": "24edd7b064c08faf350642a2b10d95e8773eb699255ce5716c21237fd5916e3d",
+    "request_blob": "758e3a2dfa929e3612f7afbae725e1aa57ed15e331a2f744ffef71c3f92573ea",
+    "task_id": "19b62875a6c6d56a871f0970279cb0c6cd04680ece1a5f71efdd8fe5d48dd884"
+  },
+  "prev_event_hash": "f3080ecdee9a10fae3531971d300f462700c61fbc063dece3c7e568bd3ad46eb",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 50,
+  "type": "QwenTaskQueued",
+  "workspace_id": "ar25--parallel_qwen"
+}

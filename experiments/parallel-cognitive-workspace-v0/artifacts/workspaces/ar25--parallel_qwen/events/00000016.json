@@ -1,0 +1,18 @@
+{
+  "actor": "qwen",
+  "basis": {
+    "request_blob": "6fbf2fb003222e0aaf7b527111a8d91a549a94deb6fe6fcefbbbfa54816a5a2f"
+  },
+  "event_hash": "c958b1df155953de02fa998b27c98a792b7670102104bb80c969620db723c962",
+  "event_id": "qwen-reply:ar25--parallel_qwen:18cced4bfc8d4ef4470b766bbd0d4c6e6971c692ee7bbc60c672df750153e065:qwen-c7e6cbdc9a5d4145a55f18354e82004d:1f571f0003110bd9ee84b092f34a9364ff70063955b5d4ea290f00afe37f87dc",
+  "payload": {
+    "response_blob": "1f571f0003110bd9ee84b092f34a9364ff70063955b5d4ea290f00afe37f87dc",
+    "task_id": "18cced4bfc8d4ef4470b766bbd0d4c6e6971c692ee7bbc60c672df750153e065",
+    "worker_epoch": "qwen-c7e6cbdc9a5d4145a55f18354e82004d"
+  },
+  "prev_event_hash": "4bad6cfec308a788dd9d68ed4c061129b8d594f860719426748789f97c5bb48a",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 16,
+  "type": "QwenReplyRecorded",
+  "workspace_id": "ar25--parallel_qwen"
+}

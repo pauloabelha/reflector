@@ -1,0 +1,6 @@
+{
+  "event_hash": "8376119ab797e21248da35baf1a882d55bb69d5b69eca8053fa6f32d5676017a",
+  "event_id": "qwen-reply:ar25--parallel_qwen:5c6c630ebb4f131e9df99d15c1dcb4b6f723906d6596406932abffc2b4b77e82:qwen-17150cf96d694e43916067cd1d681e00:ed4f8e89ea0c447784921b1483e0b18bbc3d36b33dab7b35505204520db34fd6",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 32
+}

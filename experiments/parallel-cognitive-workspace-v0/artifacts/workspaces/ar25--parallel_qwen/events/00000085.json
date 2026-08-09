@@ -1,0 +1,22 @@
+{
+  "actor": "environment",
+  "basis": {
+    "head_hash": "4ac6730cfac9ef35ea902cbec46739064550084fa8c0448d205fb1ca5a520e69",
+    "observation_digest": "310221e1ae7c928b544c189ed12a2413b44ca54fa2ac53b13b2510d23cf03036",
+    "observation_version": 22
+  },
+  "event_hash": "6195764a682f065a0a91131191d4a274c9a854523795ef1fa84c732f804a7891",
+  "event_id": "dd606133f7b3466ada4b3d9bf58a88a365f7d52c6e6be6401b48b8d9984caefa",
+  "payload": {
+    "action_id": 5,
+    "before_digest": "310221e1ae7c928b544c189ed12a2413b44ca54fa2ac53b13b2510d23cf03036",
+    "before_version": 22,
+    "data": {},
+    "decision_event_id": "20fc6385d557cc4c17ae43a95fa4f41b92db185ffb9bcbf3858194937fe0ad2d"
+  },
+  "prev_event_hash": "4ac6730cfac9ef35ea902cbec46739064550084fa8c0448d205fb1ca5a520e69",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 85,
+  "type": "ActionPending",
+  "workspace_id": "ar25--parallel_qwen"
+}

@@ -1,0 +1,40 @@
+{
+  "development_game": "ar25",
+  "frozen_injection": {
+    "actions": 17,
+    "first_level_completed": true,
+    "replay_verified": true,
+    "result": "artifacts/results/ar25--frozen_injection.json"
+  },
+  "gates_passed": false,
+  "held_out_games_opened": false,
+  "live_parallel": {
+    "actions": 32,
+    "first_level_completed": false,
+    "post_initial_qwen_requests": 3,
+    "qwen_changed_decisions": 0,
+    "qwen_task_count": 4,
+    "replay_verified": true,
+    "result": "artifacts/results/ar25--parallel_qwen.json",
+    "schema_activation_statuses": [
+      "ambiguous",
+      "ambiguous",
+      "unbound",
+      "ambiguous"
+    ]
+  },
+  "offline_gate": {
+    "all_prefix_resumes_identical": true,
+    "byte_identical_replays": true,
+    "passed": true,
+    "result": "artifacts/gates/offline-result.json",
+    "transition_count": 17
+  },
+  "verdict": "GATE_FAILED_WITH_SCHEMA_PROGRESSION",
+  "workspace_no_qwen": {
+    "actions": 32,
+    "first_level_completed": false,
+    "replay_verified": true,
+    "result": "artifacts/results/ar25--workspace_no_qwen.json"
+  }
+}

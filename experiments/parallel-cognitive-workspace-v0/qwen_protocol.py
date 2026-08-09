@@ -38,6 +38,18 @@ MAX_TRANSITIONS = 4
 MAX_WRITES = 2
 MAX_BASIS_EVENTS = 8
 MAX_CONDITIONS = 6
+SCHEMA_EXPLANATION_PHASE = "schema_explanation"
+COUNTERFACTUAL_PHASE = "counterfactual"
+DISCRIMINATION_PHASE = "discrimination"
+_TERMINAL_OBJECT_STATUSES = frozenset({"rejected", "refuted", "expired", "superseded"})
+_EXPLICIT_BOUND_EXTERNAL_STATUSES = frozenset(
+    {
+        "active-zero-evidence",
+        "externally-proposed-and-locally-confirmed",
+        "active-locally-confirmed",
+    }
+)
+_GENERIC_BOUND_STATUSES = frozenset({"bound", "active", "locally-confirmed", "duplicate-active"})
 
 ALLOWED_VARIABLES = ("?a", "?b", "?c", "?d")
 ALLOWED_PREDICATES = (
@@ -385,55 +397,81 @@ def _public_snapshot(snapshot: Mapping[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in snapshot.items() if not str(key).startswith("_")}
 
 
-def _impossible_string_schema() -> dict[str, Any]:
-    # Constrained-decoding servers do not uniformly implement JSON Schema's
-    # boolean/``not`` forms.  This sentinel keeps the grammar representable;
-    # the semantic compiler still rejects it because it is not a supplied ref.
-    return {"type": "string", "enum": ["__no_reference_available__"]}
+def _live_objects(snapshot: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    return [
+        item
+        for item in snapshot.get("cognitive_objects", ())
+        if str(item.get("status", "live")).lower() not in _TERMINAL_OBJECT_STATUSES
+    ]
+
+
+def _is_bound_external_schema(item: Mapping[str, Any]) -> bool:
+    if str(item.get("kind", "")).lower() != "schema":
+        return False
+    status = str(item.get("status", "")).lower()
+    summary = item.get("summary", {})
+    summary = summary if isinstance(summary, Mapping) else {}
+    effect_pair = item.get("effect_pair", summary.get("effect_pair"))
+    if (
+        not isinstance(effect_pair, (list, tuple))
+        or len(effect_pair) != 2
+        or str(effect_pair[0]) == str(effect_pair[1])
+    ):
+        return False
+    if status in _EXPLICIT_BOUND_EXTERNAL_STATUSES:
+        return True
+    origin = str(item.get("origin", summary.get("origin", summary.get("author", "")))).lower()
+    external = "external" in origin or "qwen" in origin
+    return external and status in _GENERIC_BOUND_STATUSES
+
+
+def write_phase(snapshot: Mapping[str, Any]) -> str:
+    """Keep revising until an external schema has one executable grounding."""
+
+    objects = _live_objects(snapshot)
+    bound_external = any(_is_bound_external_schema(item) for item in objects)
+    counterfactuals = [item for item in objects if str(item.get("kind", "")).lower() == "counterfactual"]
+    explanations = [item for item in objects if str(item.get("kind", "")).lower() == "explanation"]
+    if bound_external and explanations and len(counterfactuals) >= 2:
+        return DISCRIMINATION_PHASE
+    if bound_external and explanations:
+        return COUNTERFACTUAL_PHASE
+    return SCHEMA_EXPLANATION_PHASE
+
+
+def _choice_schema(variants: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    if not variants:
+        raise ValueError("response phase has no valid reference variant")
+    if len(variants) == 1:
+        return variants[0]
+    return {"oneOf": list(variants)}
 
 
 def response_schema(snapshot: Mapping[str, Any]) -> dict[str, Any]:
-    """Build the exact strict JSON schema for one immutable request basis."""
+    """Build the smallest strict grammar justified by persisted references."""
 
+    phase = write_phase(snapshot)
     entity_ids = sorted({str(item["id"]) for item in snapshot.get("entities", ())})
-    object_refs = sorted({str(item["ref"]) for item in snapshot.get("cognitive_objects", ())})
+    live_objects = _live_objects(snapshot)
+    object_refs = sorted({str(item["ref"]) for item in live_objects})
     schema_refs = sorted(
-        {
-            str(item["ref"])
-            for item in snapshot.get("cognitive_objects", ())
-            if str(item.get("kind", "")).lower() == "schema"
-        }
+        {str(item["ref"]) for item in live_objects if str(item.get("kind", "")).lower() == "schema"}
     )
     explanation_refs = sorted(
         {
             str(item["ref"])
-            for item in snapshot.get("cognitive_objects", ())
+            for item in live_objects
             if str(item.get("kind", "")).lower() == "explanation"
         }
     )
     counterfactual_refs = sorted(
         {
             str(item["ref"])
-            for item in snapshot.get("cognitive_objects", ())
+            for item in live_objects
             if str(item.get("kind", "")).lower() == "counterfactual"
         }
     )
     basis_events = sorted({int(item) for item in snapshot.get("basis_events", ())})
-    entity_id_schema = {"type": "string", "enum": entity_ids} if entity_ids else _impossible_string_schema()
-    object_ref_schema = {"type": "string", "enum": object_refs} if object_refs else _impossible_string_schema()
-    schema_object_ref_schema = (
-        {"type": "string", "enum": schema_refs} if schema_refs else _impossible_string_schema()
-    )
-    explanation_object_ref_schema = (
-        {"type": "string", "enum": explanation_refs}
-        if explanation_refs
-        else _impossible_string_schema()
-    )
-    counterfactual_ref_schema = (
-        {"type": "string", "enum": counterfactual_refs}
-        if counterfactual_refs
-        else _impossible_string_schema()
-    )
     basis_schema = {
         "type": "array",
         "minItems": 1,
@@ -441,12 +479,18 @@ def response_schema(snapshot: Mapping[str, Any]) -> dict[str, Any]:
         "uniqueItems": True,
         "items": {"type": "integer", "enum": basis_events},
     }
-    supersedes_schema = {
-        "type": "array",
-        "maxItems": 2,
-        "uniqueItems": True,
-        "items": object_ref_schema,
-    }
+    supersedes_schema = (
+        {
+            "type": "array",
+            "maxItems": 2,
+            "uniqueItems": True,
+            "items": {"type": "string", "enum": object_refs},
+        }
+        if object_refs
+        else None
+    )
+    supersedes_required = ["supersedes"] if supersedes_schema is not None else []
+    supersedes_property = {"supersedes": supersedes_schema} if supersedes_schema is not None else {}
     condition_schema = {
         "type": "object",
         "additionalProperties": False,
@@ -476,57 +520,10 @@ def response_schema(snapshot: Mapping[str, Any]) -> dict[str, Any]:
             },
         },
     }
-    entity_ref_schema = {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["id", "generation"],
-        "properties": {
-            "id": entity_id_schema,
-            "generation": {"type": "integer", "minimum": 0},
-        },
-    }
-    schema_ref_schema = {
-        "oneOf": [
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["source", "object_ref"],
-                "properties": {"source": {"const": "workspace"}, "object_ref": schema_object_ref_schema},
-            },
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["source", "schema_write_index"],
-                "properties": {
-                    "source": {"const": "response"},
-                    "schema_write_index": {"type": "integer", "minimum": 0, "maximum": 1},
-                },
-            },
-        ]
-    }
-    explanation_ref_schema = {
-        "oneOf": [
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["source", "object_ref"],
-                "properties": {"source": {"const": "workspace"}, "object_ref": explanation_object_ref_schema},
-            },
-            {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["source", "explanation_write_index"],
-                "properties": {
-                    "source": {"const": "response"},
-                    "explanation_write_index": {"type": "integer", "minimum": 0, "maximum": 1},
-                },
-            },
-        ]
-    }
     schema_write = {
         "type": "object",
         "additionalProperties": False,
-        "required": ["conditions", "preferred_consequence", "basis_events", "supersedes"],
+        "required": ["conditions", "preferred_consequence", "basis_events", *supersedes_required],
         "properties": {
             "conditions": {
                 "type": "array",
@@ -536,15 +533,51 @@ def response_schema(snapshot: Mapping[str, Any]) -> dict[str, Any]:
             },
             "preferred_consequence": consequence_schema,
             "basis_events": basis_schema,
-            "supersedes": supersedes_schema,
+            **supersedes_property,
         },
     }
+    schema_reference_variants = [
+        {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["source", "schema_write_index"],
+            "properties": {
+                "source": {"const": "response"},
+                "schema_write_index": {"const": 0},
+            },
+        }
+    ]
+    if schema_refs:
+        schema_reference_variants.append(
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["source", "object_ref"],
+                "properties": {
+                    "source": {"const": "workspace"},
+                    "object_ref": {"type": "string", "enum": schema_refs},
+                },
+            }
+        )
+    entity_ref_schema = (
+        {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["id", "generation"],
+            "properties": {
+                "id": {"type": "string", "enum": entity_ids},
+                "generation": {"type": "integer", "minimum": 0},
+            },
+        }
+        if entity_ids
+        else None
+    )
     explanation_write = {
         "type": "object",
         "additionalProperties": False,
-        "required": ["schema_ref", "bindings", "basis_events", "supersedes"],
+        "required": ["schema_ref", "bindings", "basis_events", *supersedes_required],
         "properties": {
-            "schema_ref": schema_ref_schema,
+            "schema_ref": _choice_schema(schema_reference_variants),
             "bindings": {
                 "type": "array",
                 "minItems": 2,
@@ -560,83 +593,123 @@ def response_schema(snapshot: Mapping[str, Any]) -> dict[str, Any]:
                 },
             },
             "basis_events": basis_schema,
-            "supersedes": supersedes_schema,
+            **supersedes_property,
         },
     }
-    counterfactual_write = {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["explanation_ref", "intervention_effect", "prediction", "horizon", "basis_events", "supersedes"],
-        "properties": {
-            "explanation_ref": explanation_ref_schema,
-            "intervention_effect": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["kind", "entity", "delta_centroid2"],
-                "properties": {
-                    "kind": {"const": "HypotheticalDisplacement"},
-                    "entity": entity_ref_schema,
-                    "delta_centroid2": {
-                        "type": "array",
-                        "minItems": 2,
-                        "maxItems": 2,
-                        "items": {"type": "integer", "minimum": -128, "maximum": 128},
+    counterfactual_array: dict[str, Any] | None = None
+    if phase == COUNTERFACTUAL_PHASE and explanation_refs and entity_ref_schema is not None:
+        counterfactual_write = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "explanation_ref",
+                "intervention_effect",
+                "prediction",
+                "horizon",
+                "basis_events",
+                *supersedes_required,
+            ],
+            "properties": {
+                "explanation_ref": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["source", "object_ref"],
+                    "properties": {
+                        "source": {"const": "workspace"},
+                        "object_ref": {"type": "string", "enum": explanation_refs},
                     },
                 },
-            },
-            "prediction": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["operator", "measure", "arguments"],
-                "properties": {
-                    "operator": {"type": "string", "enum": list(PREDICTION_OPERATORS)},
-                    "measure": {"const": MEASURE},
-                    "arguments": {
-                        "type": "array",
-                        "minItems": 2,
-                        "maxItems": 2,
-                        "items": entity_ref_schema,
+                "intervention_effect": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["kind", "entity", "delta_centroid2"],
+                    "properties": {
+                        "kind": {"const": "HypotheticalDisplacement"},
+                        "entity": entity_ref_schema,
+                        "delta_centroid2": {
+                            "type": "array",
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "items": {"type": "integer", "minimum": -128, "maximum": 128},
+                        },
                     },
                 },
+                "prediction": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["operator", "measure", "arguments"],
+                    "properties": {
+                        "operator": {"type": "string", "enum": list(PREDICTION_OPERATORS)},
+                        "measure": {"const": MEASURE},
+                        "arguments": {
+                            "type": "array",
+                            "minItems": 2,
+                            "maxItems": 2,
+                            "items": entity_ref_schema,
+                        },
+                    },
+                },
+                "horizon": {"const": 1},
+                "basis_events": basis_schema,
+                **supersedes_property,
             },
-            "horizon": {"const": 1},
-            "basis_events": basis_schema,
-            "supersedes": supersedes_schema,
-        },
-    }
-    experiment_write = {
-        "type": "object",
-        "additionalProperties": False,
-        "required": ["counterfactual_refs", "basis_events", "supersedes"],
-        "properties": {
-            "counterfactual_refs": {
-                "type": "array",
-                "minItems": 2,
-                "maxItems": 2,
-                "uniqueItems": True,
-                "items": counterfactual_ref_schema,
+        }
+        counterfactual_array = {"type": "array", "maxItems": 1, "items": counterfactual_write}
+
+    experiment_array: dict[str, Any] | None = None
+    if phase == DISCRIMINATION_PHASE and len(counterfactual_refs) >= 2:
+        experiment_write = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["counterfactual_refs", "basis_events", *supersedes_required],
+            "properties": {
+                "counterfactual_refs": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "uniqueItems": True,
+                    "items": {"type": "string", "enum": counterfactual_refs},
+                },
+                "basis_events": basis_schema,
+                **supersedes_property,
             },
-            "basis_events": basis_schema,
-            "supersedes": supersedes_schema,
-        },
+        }
+        experiment_array = {"type": "array", "maxItems": 1, "items": experiment_write}
+
+    if phase == SCHEMA_EXPLANATION_PHASE:
+        schema_array = {"type": "array", "maxItems": 1, "items": schema_write}
+        explanation_array = (
+            {"type": "array", "maxItems": 1, "items": explanation_write}
+            if entity_ref_schema is not None
+            else {"type": "array", "maxItems": 1, "items": explanation_write}
+        )
+        write_properties = {
+            "schema_writes": schema_array,
+            "explanation_writes": explanation_array,
+        }
+        active_write_keys = ("schema_writes", "explanation_writes")
+    elif phase == COUNTERFACTUAL_PHASE:
+        if counterfactual_array is None:
+            raise ValueError("counterfactual phase lacks persisted explanation/entity references")
+        write_properties = {"counterfactual_writes": counterfactual_array}
+        active_write_keys = ("counterfactual_writes",)
+    else:
+        if experiment_array is None:
+            raise ValueError("discrimination phase lacks two persisted counterfactual references")
+        write_properties = {"discriminating_experiment_writes": experiment_array}
+        active_write_keys = ("discriminating_experiment_writes",)
+    properties = {
+        "protocol": {"const": RESPONSE_PROTOCOL},
+        "request_id": {"const": str(snapshot["request_id"])},
+        "basis_revision": {"const": int(snapshot["basis_revision"])},
+        "write_phase": {"const": phase},
+        **write_properties,
     }
     return {
         "type": "object",
         "additionalProperties": False,
-        "required": ["protocol", "request_id", "basis_revision", *WRITE_KEYS],
-        "properties": {
-            "protocol": {"const": RESPONSE_PROTOCOL},
-            "request_id": {"const": str(snapshot["request_id"])},
-            "basis_revision": {"const": int(snapshot["basis_revision"])},
-            "schema_writes": {"type": "array", "maxItems": MAX_WRITES, "items": schema_write},
-            "explanation_writes": {"type": "array", "maxItems": MAX_WRITES, "items": explanation_write},
-            "counterfactual_writes": {"type": "array", "maxItems": MAX_WRITES, "items": counterfactual_write},
-            "discriminating_experiment_writes": {
-                "type": "array",
-                "maxItems": MAX_WRITES,
-                "items": experiment_write,
-            },
-        },
+        "required": ["protocol", "request_id", "basis_revision", "write_phase", *active_write_keys],
+        "properties": properties,
     }
 
 
@@ -649,7 +722,9 @@ def build_request_payload(
     """Build, but never send, one deterministic strict-schema Qwen request."""
 
     instruction = (prompt_path or HERE / "PROMPT.txt").read_text(encoding="utf-8")
-    prompt = instruction + stable_json(_public_snapshot(snapshot))
+    public_snapshot = _public_snapshot(snapshot)
+    public_snapshot["requested_write_phase"] = write_phase(snapshot)
+    prompt = instruction + stable_json(public_snapshot)
     qwen = config["qwen"]
     payload: dict[str, Any] = {
         "model": qwen["model"],
@@ -662,7 +737,7 @@ def build_request_payload(
         "response_format": {
             "type": "json_schema",
             "json_schema": {
-                "name": "parallel_cognitive_workspace_v0_1",
+                "name": f"parallel_cognitive_workspace_{write_phase(snapshot)}_v0_1",
                 "strict": True,
                 "schema": response_schema(snapshot),
             },
@@ -760,13 +835,26 @@ def _forbidden_reason(value: Any, snapshot: Mapping[str, Any]) -> str | None:
 
 
 def _supersedes_reason(write: Mapping[str, Any], snapshot: Mapping[str, Any]) -> str | None:
+    allowed = {
+        str(item["ref"])
+        for item in snapshot.get("cognitive_objects", ())
+        if str(item.get("status", "live")).lower()
+        not in {"rejected", "refuted", "expired", "superseded"}
+    }
+    if not allowed:
+        return None if "supersedes" not in write else "supersedes-without-persisted-reference"
     values = write.get("supersedes")
     if not isinstance(values, list) or len(values) > 2 or len(set(map(str, values))) != len(values):
         return "supersedes-contract"
-    allowed = {str(item["ref"]) for item in snapshot.get("cognitive_objects", ())}
     if any(not isinstance(value, str) or value not in allowed for value in values):
         return "unknown-superseded-object"
     return None
+
+
+def _normalized_supersedes(write: Mapping[str, Any]) -> dict[str, Any]:
+    value = dict(write)
+    value.setdefault("supersedes", [])
+    return value
 
 
 def _schema_template(raw: Mapping[str, Any]) -> Any:
@@ -845,6 +933,7 @@ def _audit_other_write(
     reason = _forbidden_reason(raw, snapshot) or _basis_reason(raw, snapshot) or _supersedes_reason(raw, snapshot)
     if reason:
         return {**record, "status": "rejected", "reason": reason}
+    raw = _normalized_supersedes(raw)
     try:
         if kind == "explanation_writes":
             if set(raw) != {"schema_ref", "bindings", "basis_events", "supersedes"}:
@@ -940,13 +1029,63 @@ def _audit_other_write(
     return record
 
 
+def _phase_limits(phase: str) -> dict[str, int]:
+    if phase == SCHEMA_EXPLANATION_PHASE:
+        return {
+            "schema_writes": 1,
+            "explanation_writes": 1,
+            "counterfactual_writes": 0,
+            "discriminating_experiment_writes": 0,
+        }
+    if phase == COUNTERFACTUAL_PHASE:
+        return {
+            "schema_writes": 0,
+            "explanation_writes": 0,
+            "counterfactual_writes": 1,
+            "discriminating_experiment_writes": 0,
+        }
+    if phase == DISCRIMINATION_PHASE:
+        return {
+            "schema_writes": 0,
+            "explanation_writes": 0,
+            "counterfactual_writes": 0,
+            "discriminating_experiment_writes": 1,
+        }
+    raise ValueError(f"unknown write phase: {phase}")
+
+
+def active_write_keys(phase: str) -> tuple[str, ...]:
+    return tuple(key for key, limit in _phase_limits(phase).items() if limit > 0)
+
+
+def _persisted_template_hashes(snapshot: Mapping[str, Any]) -> set[str]:
+    hashes: set[str] = set()
+    for item in snapshot.get("cognitive_objects", ()):
+        if str(item.get("kind", "")).lower() != "schema":
+            continue
+        summary = item.get("summary", {})
+        if not isinstance(summary, Mapping):
+            continue
+        candidates = [summary]
+        if isinstance(summary.get("template"), Mapping):
+            candidates.append(summary["template"])
+        for candidate in candidates:
+            for key in ("canonical_hash", "template_hash"):
+                value = candidate.get(key)
+                if isinstance(value, str) and len(value) == 64:
+                    hashes.add(value)
+    return hashes
+
+
 def compile_response(response: Mapping[str, Any], snapshot: Mapping[str, Any]) -> dict[str, Any]:
     """Semantically compile a strict response without granting it evidence."""
 
     parsed: Any = response.get("parsed", response)
     rejected: list[dict[str, Any]] = []
     empty_audit = {key: [] for key in WRITE_KEYS if key != "schema_writes"}
-    expected = {"protocol", "request_id", "basis_revision", *WRITE_KEYS}
+    phase = write_phase(snapshot)
+    active_keys = active_write_keys(phase)
+    expected = {"protocol", "request_id", "basis_revision", "write_phase", *active_keys}
     if not isinstance(parsed, Mapping) or set(parsed) != expected:
         return {
             "valid_json_contract": False,
@@ -959,14 +1098,33 @@ def compile_response(response: Mapping[str, Any], snapshot: Mapping[str, Any]) -
         parsed["protocol"] != RESPONSE_PROTOCOL
         or parsed["request_id"] != snapshot["request_id"]
         or parsed["basis_revision"] != snapshot["basis_revision"]
-        or any(not isinstance(parsed[key], list) for key in WRITE_KEYS)
+        or parsed["write_phase"] != phase
+        or any(not isinstance(parsed[key], list) for key in active_keys)
     ):
         return {
             "valid_json_contract": False,
             "accepted": [],
             "accepted_schema_writes": [],
             "audited_writes": empty_audit,
-            "rejected": [{"reason": "request-or-basis-contract"}],
+            "rejected": [{"reason": "request-basis-or-phase-contract"}],
+        }
+    normalized = dict(parsed)
+    for key in WRITE_KEYS:
+        normalized.setdefault(key, [])
+    parsed = normalized
+    limits = _phase_limits(phase)
+    violations = {
+        key: len(parsed[key])
+        for key, limit in limits.items()
+        if len(parsed[key]) > limit
+    }
+    if violations:
+        return {
+            "valid_json_contract": False,
+            "accepted": [],
+            "accepted_schema_writes": [],
+            "audited_writes": empty_audit,
+            "rejected": [{"reason": "phase-write-cap", "phase": phase, "observed": violations}],
         }
     total_writes = sum(len(parsed[key]) for key in WRITE_KEYS)
     if total_writes > MAX_WRITES:
@@ -981,7 +1139,7 @@ def compile_response(response: Mapping[str, Any], snapshot: Mapping[str, Any]) -
     accepted_templates = []
     accepted_schema_writes = []
     accepted_schema_indices: set[int] = set()
-    seen: set[str] = set()
+    seen: set[str] = _persisted_template_hashes(snapshot)
     for index, raw in enumerate(parsed["schema_writes"]):
         reason = None
         try:
@@ -990,9 +1148,9 @@ def compile_response(response: Mapping[str, Any], snapshot: Mapping[str, Any]) -
             reason = _forbidden_reason(raw, snapshot) or _basis_reason(raw, snapshot) or _supersedes_reason(raw, snapshot)
             if reason:
                 raise ValueError(reason)
-            template = _schema_template(raw)
+            template = _schema_template(_normalized_supersedes(raw))
             if template.canonical_hash in seen:
-                raise ValueError("duplicate-alpha-template")
+                raise ValueError("duplicate-existing-or-alpha-template")
             seen.add(template.canonical_hash)
             accepted_schema_indices.add(index)
             encoded = asdict(template)

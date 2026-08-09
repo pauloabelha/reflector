@@ -1,0 +1,18 @@
+{
+  "actor": "environment",
+  "basis": {
+    "head_hash": "c380281927dd0fcdb3b8b1e9fc95d0a5f8ac17cf9c4db73750a61ca66caf96b5",
+    "observation_digest": "4ad4b6de038e67c5d80092f092b63c359fcfbd517671a659e5e838fe1b41bba9",
+    "observation_version": 32
+  },
+  "event_hash": "c9759753a3e6153cd274b8195c7f230279cf584c32e1f274936a94fc55d8ff6a",
+  "event_id": "c3082f49e04cc3196e4c12ee831c63456d4eca1de37b48e48b0849d004113e61",
+  "payload": {
+    "reason": "action-budget"
+  },
+  "prev_event_hash": "c380281927dd0fcdb3b8b1e9fc95d0a5f8ac17cf9c4db73750a61ca66caf96b5",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 114,
+  "type": "WorkspaceStopped",
+  "workspace_id": "ar25--parallel_qwen"
+}

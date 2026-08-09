@@ -8,9 +8,9 @@
   "qwen": {
     "endpoint": "http://127.0.0.1:8081/v1/chat/completions",
     "max_calls_per_episode": 4,
-    "max_tokens": 360,
+    "max_tokens": 900,
     "model": "qwen3-vl-4b-thinking-q4_k_m",
-    "reasoning_budget_tokens": 64,
+    "thinking_budget_tokens": 256,
     "seed": 314159,
     "temperature": 0,
     "top_p": 1,

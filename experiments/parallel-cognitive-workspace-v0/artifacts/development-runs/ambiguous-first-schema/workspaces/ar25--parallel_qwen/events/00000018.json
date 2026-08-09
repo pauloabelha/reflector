@@ -1,0 +1,22 @@
+{
+  "actor": "environment",
+  "basis": {
+    "head_hash": "8e8123b44ec42e40786627f098a9e917b2029c815fedd057f63d4487971d8b4c",
+    "observation_digest": "b576e3dd65da36b9379d12a748d1b2fc55a8b89044c6920d0ff737f7f4f3c16e",
+    "observation_version": 4
+  },
+  "event_hash": "eb69f7a93ac7c5a48ead778624ff7e932a833dac2912c9c367c08fcb958dd8af",
+  "event_id": "361e674c3c275be4bb0de9ddbb58009f4a2b4b1689eef263fb452abc89910a55",
+  "payload": {
+    "basis_observation_digest": "b576e3dd65da36b9379d12a748d1b2fc55a8b89044c6920d0ff737f7f4f3c16e",
+    "basis_observation_version": 4,
+    "projection_blob": "74f3975214e2711357a0b507f2576a82d9171e3742e91d453a856f9e428f567e",
+    "request_blob": "7bb15c4d9b43cc83a517802b590278a12814bffdf4281dcec3593521c16ba7d9",
+    "task_id": "5c6c630ebb4f131e9df99d15c1dcb4b6f723906d6596406932abffc2b4b77e82"
+  },
+  "prev_event_hash": "8e8123b44ec42e40786627f098a9e917b2029c815fedd057f63d4487971d8b4c",
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 18,
+  "type": "QwenTaskQueued",
+  "workspace_id": "ar25--parallel_qwen"
+}

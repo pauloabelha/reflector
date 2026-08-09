@@ -1,0 +1,186 @@
+{
+  "action_sequence": [
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    3
+  ],
+  "actions": 17,
+  "arm": "frozen_injection",
+  "controller": {
+    "abstentions": 3,
+    "action_uses": {
+      "1": 1,
+      "2": 11,
+      "3": 5
+    },
+    "activations": [
+      {
+        "activated_at_action": 0,
+        "effect_pair": [
+          "f01",
+          "f02"
+        ],
+        "operator": "Decrease",
+        "source_task": "05ef9790f789b9fb96f6eb5456e7273c8dc447e8a076c9cc407d6bdde7015475",
+        "status": "active-zero-evidence",
+        "template_hash": "25a911f8811b23cc76439eaff4e71892b9a56f755d2fb0e866592bdd23837029"
+      },
+      {
+        "activated_at_action": 0,
+        "effect_pair": [
+          "f00",
+          "f01"
+        ],
+        "operator": "Increase",
+        "source_task": "05ef9790f789b9fb96f6eb5456e7273c8dc447e8a076c9cc407d6bdde7015475",
+        "status": "active-zero-evidence",
+        "template_hash": "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0"
+      },
+      {
+        "activated_at_action": 0,
+        "effect_pair": null,
+        "operator": "Decrease",
+        "source_task": "05ef9790f789b9fb96f6eb5456e7273c8dc447e8a076c9cc407d6bdde7015475",
+        "status": "ambiguous",
+        "template_hash": "e3c48a5bf73a43b3dc1beae372104d40a7baa15e2d6871642b96cafc6c0dfd4c"
+      },
+      {
+        "activated_at_action": 0,
+        "effect_pair": null,
+        "operator": "Decrease",
+        "source_task": "05ef9790f789b9fb96f6eb5456e7273c8dc447e8a076c9cc407d6bdde7015475",
+        "status": "unbound",
+        "template_hash": "9396330995485d899145dc3cf5d6bbe7b914177be3d13b2b4b98441728f505ef"
+      }
+    ],
+    "bindings": [
+      {
+        "action_deltas": {
+          "1": [
+            [
+              0,
+              -6
+            ]
+          ],
+          "2": [
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ],
+            [
+              0,
+              6
+            ]
+          ],
+          "3": [
+            [
+              6,
+              0
+            ]
+          ]
+        },
+        "confirmations": 13,
+        "latent_steps": 4,
+        "operator": "Decrease",
+        "residual": 0,
+        "template_hash": "25a911f8811b23cc76439eaff4e71892b9a56f755d2fb0e866592bdd23837029"
+      },
+      {
+        "action_deltas": {
+          "3": [
+            [
+              -12,
+              0
+            ]
+          ]
+        },
+        "confirmations": 1,
+        "latent_steps": 4,
+        "operator": "Increase",
+        "residual": 92,
+        "template_hash": "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0"
+      }
+    ],
+    "bound_pairs": 2,
+    "increase_lease": {
+      "d0465a4542358ffab20f4aa08e2189955e452e27e9554747d93ca08ceae2f8a0": 1
+    },
+    "latent_projections": 8,
+    "local_confirmations": 14,
+    "overrides": 14,
+    "prior_decisions": 14,
+    "provenance": "externally-proposed",
+    "provenance_states": [
+      "externally-proposed",
+      "externally-proposed-and-locally-confirmed"
+    ]
+  },
+  "elapsed_s": 12.18634299599944,
+  "final_digest": "5fcedd77e98b48bdd9d1d78ccf1d6f65898a2e21c466f71a9822fec9b405f8b0",
+  "first_level_completed": true,
+  "game": "ar25",
+  "job_key": "f9e0d1795ba5d635dc895eed136b84c40dab0d9b421e273b9e9f330e4dbb39b5",
+  "levels_completed": 1,
+  "post_initial_qwen_requests": 0,
+  "prior_decisions": 14,
+  "qwen_changed_decisions": 14,
+  "qwen_task_count": 1,
+  "qwen_task_statuses": {
+    "adjudicated": 1
+  },
+  "replay_verified": true,
+  "stop_reason": "first-level-completed",
+  "workspace_hash": "73e3ca60cbf1fd072644c34e3e36d3d1ab55b5e7e40d58547c03e5dca93f90f5",
+  "workspace_head": 57,
+  "workspace_rebuild_hash": "e168bd75e31b40de7b11cb16a8ba0594dd4a0ee36da3aa222fd4dfb8f9165f7e"
+}

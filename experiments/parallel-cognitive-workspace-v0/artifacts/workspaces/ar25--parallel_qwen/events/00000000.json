@@ -1,0 +1,14 @@
+{
+  "actor": "coordinator",
+  "basis": {},
+  "event_hash": "faefc7c155d344e4433822bf74f36378542f6ad58f75c78c0ccbe85728fae883",
+  "event_id": "2082b0bd4d148c8f98187bddcc48442d4a85db1cc7424c59dc495f5063af4d95",
+  "payload": {
+    "job_key": "645637c11af7484c8e1a5bffb0bcd61694c7dbfbb6c7990dbc706e81121d14f9"
+  },
+  "prev_event_hash": null,
+  "protocol": "parallel-cognitive-workspace-v0",
+  "seq": 0,
+  "type": "WorkspaceStarted",
+  "workspace_id": "ar25--parallel_qwen"
+}
