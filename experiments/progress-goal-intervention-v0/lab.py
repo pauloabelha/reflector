@@ -19,7 +19,7 @@ from typing import Any, Mapping, Sequence
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-ARTIFACTS = HERE / "artifacts"
+ARTIFACTS = HERE / "artifacts" / "attempt-2"
 ENVIRONMENTS = ROOT / "environment_files"
 
 
