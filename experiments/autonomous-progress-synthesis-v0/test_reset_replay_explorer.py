@@ -31,3 +31,21 @@ def test_budget_stops_before_unfunded_replay_branch():
 def test_depth_bound_is_a_valid_negative_not_completion():
     result=M.search(Toy(),action_budget=20,max_depth=1)
     assert not result.solved and result.stop_reason=="frontier-exhausted"
+
+
+class HiddenMode:
+    def __init__(self):self.count=0
+    def reset(self):self.count=0;return self.count
+    def step(self,a):
+        if a==1:self.count+=1
+        return self.count
+    def key(self,o):return "same-pixels" if o<2 else "win"
+    def legal_actions(self,o):return (1,)
+    def completed(self,o):return o>=2
+    def terminal(self,o):return o>=2
+
+
+def test_causal_suffix_preserves_latent_state_hidden_by_identical_pixels():
+    assert not M.search(HiddenMode(),action_budget=10,max_depth=3,history_order=0).solved
+    result=M.search(HiddenMode(),action_budget=10,max_depth=3,history_order=2)
+    assert result.solved and result.solution==(1,1)
