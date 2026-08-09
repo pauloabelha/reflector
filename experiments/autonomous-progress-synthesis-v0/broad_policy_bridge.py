@@ -206,13 +206,20 @@ class SharedBroadPolicy:
         *,
         stagnation_threshold: int = 8,
         max_option_probes: int = 8,
+        max_divergent_probes: int | None = None,
     ) -> None:
         if stagnation_threshold < 0 or max_option_probes < 0:
             raise BridgeError("budgets must be nonnegative")
         self.baseline = baseline
         self.stagnation_threshold = int(stagnation_threshold)
         self.max_option_probes = int(max_option_probes)
+        self.max_divergent_probes = int(
+            max_option_probes if max_divergent_probes is None else max_divergent_probes
+        )
+        if self.max_divergent_probes < 0:
+            raise BridgeError("budgets must be nonnegative")
         self.probes_used = 0
+        self.divergent_probes_used = 0
         self.leases: dict[str, Lease] = {}
         self.proposals: dict[str, OptionProposal] = {}
         self.probe_counts: dict[str, int] = {}
@@ -259,7 +266,14 @@ class SharedBroadPolicy:
         state = event.get("operative_state", {})
         return int(state.get("consecutive_without_progress", 0)) if isinstance(state, Mapping) else 0
 
-    def choose_action(self, observation: Any, proposal: OptionProposal | None = None) -> HybridDecision:
+    def _finalize(self, observation: Any, decision: HybridDecision) -> HybridDecision:
+        commit = getattr(self.baseline, "commit_decision", None)
+        if callable(commit):commit(observation, decision)
+        return decision
+
+    def _begin_choice(
+        self, observation: Any, *, allow_committed_fallback: bool
+    ) -> tuple[DecisionLike, tuple[tuple[str, int], ...], Mapping[str, Any], bool]:
         serialize = getattr(observation, "to_dict", None)
         if callable(serialize):
             raw_observation = serialize()
@@ -273,12 +287,27 @@ class SharedBroadPolicy:
                 "creator": "environment",
                 "payload": payload,
             })
-        fallback = self.baseline.choose_action(observation)
+        direct = getattr(self.baseline, "choose_action_committed", None)
+        precommitted = allow_committed_fallback and callable(direct)
+        fallback = direct(observation) if precommitted else self.baseline.choose_action(observation)
         fallback_data = self._decision_data(fallback)
         cognitive = dict(self.baseline.cognitive_event(observation, fallback))
         self.events.append({"kind": "broad_cognitive_event", "payload": cognitive})
+        return fallback, fallback_data, cognitive, precommitted
+
+    def _finish_choice(
+        self,
+        observation: Any,
+        fallback: DecisionLike,
+        fallback_data: tuple[tuple[str, int], ...],
+        cognitive: Mapping[str, Any],
+        proposal: OptionProposal | None,
+        *,
+        precommitted: bool = False,
+    ) -> HybridDecision:
         if proposal is None:
-            return HybridDecision(fallback.action_id, fallback_data, "fallback", fallback.action_id, fallback_data, None, "no-live-option")
+            decision=HybridDecision(fallback.action_id, fallback_data, "fallback", fallback.action_id, fallback_data, None, "no-live-option")
+            return decision if precommitted else self._finalize(observation,decision)
 
         self.proposals[proposal.candidate_id] = proposal
         self.leases.setdefault(proposal.candidate_id, Lease())
@@ -292,18 +321,28 @@ class SharedBroadPolicy:
         })
         improving = proposal.predicted_after < proposal.potential_before
         lease = self.leases[proposal.candidate_id]
+        matches_fallback = (
+            proposal.action_id == fallback.action_id and proposal.data == fallback_data
+        )
         if proposal.mode == "control" and improving and lease.control_eligible:
             mode, reason = "control", "environment-confirmed-option"
+        elif proposal.mode == "probe" and improving and matches_fallback:
+            # This is a real prospective test: the prediction existed before
+            # the transition, but R2 independently selected the same action.
+            # It changes no behavior and spends no divergent-probe budget.
+            mode, reason = "passive_probe", "baseline-selected-prospective-test"
         elif (
             proposal.mode == "probe"
             and improving
             and self.probes_used < self.max_option_probes
+            and self.divergent_probes_used < self.max_divergent_probes
             and self._stagnation(cognitive) >= self.stagnation_threshold
         ):
             self.probes_used += 1
+            self.divergent_probes_used += 1
             mode, reason = "probe", "stagnation-triggered-falsification"
         else:
-            return HybridDecision(fallback.action_id, fallback_data, "fallback", fallback.action_id, fallback_data, proposal.candidate_id, "option-not-licensed")
+            return self._finalize(observation,HybridDecision(fallback.action_id, fallback_data, "fallback", fallback.action_id, fallback_data, proposal.candidate_id, "option-not-licensed"))
         chosen = HybridDecision(proposal.action_id, proposal.data, mode, fallback.action_id, fallback_data, proposal.candidate_id, reason)
         self.events.append({
             "kind": "hybrid_decision",
@@ -312,7 +351,20 @@ class SharedBroadPolicy:
             "same_state_fallback": {"action_id": fallback.action_id, "data": dict(fallback_data)},
             "chosen": {"action_id": proposal.action_id, "data": dict(proposal.data)},
         })
-        return chosen
+        return self._finalize(observation,chosen)
+
+    def choose_action(self, observation: Any, proposal: OptionProposal | None = None) -> HybridDecision:
+        fallback, fallback_data, cognitive, precommitted = self._begin_choice(
+            observation, allow_committed_fallback=proposal is None
+        )
+        return self._finish_choice(
+            observation,
+            fallback,
+            fallback_data,
+            cognitive,
+            proposal,
+            precommitted=precommitted,
+        )
 
     def choose_from_frontier(
         self,
@@ -338,23 +390,44 @@ class SharedBroadPolicy:
         ]
         if controls:
             selected = min(controls, key=lambda row: (-row.attention, row.candidate_id))
-        else:
-            probes = [
+            return self.choose_action(observation, selected)
+
+        probes = [
                 row for row in unique.values()
                 if row.mode == "probe"
                 and row.predicted_after < row.potential_before
                 and self.leases[row.candidate_id].refutations == 0
-            ]
-            selected = min(
-                probes,
-                key=lambda row: (
-                    self.probe_counts.get(row.candidate_id, 0),
-                    -row.attention,
-                    row.candidate_id,
-                ),
-            ) if probes else None
-        decision = self.choose_action(observation, selected)
-        if selected is not None and decision.mode == "probe":
+        ]
+        if not probes:
+            return self.choose_action(observation, None)
+
+        # Preview R2 exactly once, then prefer a prediction for the action R2
+        # already chose.  Such evidence is free of behavioral intervention.
+        fallback, fallback_data, cognitive, _ = self._begin_choice(
+            observation, allow_committed_fallback=False
+        )
+        matching = [
+            row for row in probes
+            if row.action_id == fallback.action_id and row.data == fallback_data
+        ]
+        pool = matching or (
+            probes
+            if self.probes_used < self.max_option_probes
+            and self.divergent_probes_used < self.max_divergent_probes
+            else []
+        )
+        selected = min(
+            pool,
+            key=lambda row: (
+                self.probe_counts.get(row.candidate_id, 0),
+                -row.attention,
+                row.candidate_id,
+            ),
+        ) if pool else None
+        decision = self._finish_choice(
+            observation, fallback, fallback_data, cognitive, selected
+        )
+        if selected is not None and decision.mode in {"probe", "passive_probe"}:
             self.probe_counts[selected.candidate_id] = self.probe_counts.get(selected.candidate_id, 0) + 1
         return decision
 
@@ -390,7 +463,7 @@ class SharedBroadPolicy:
             opaque_action=decision.action_id,
             after=after,
             transition_id=transition_id,
-            executed_candidate_id=decision.candidate_id,
+            executed_candidate_id=(decision.candidate_id if decision.mode in {"probe","passive_probe","control"} else None),
             direct=direct,
         )
         return None if outcome is None else self.adjudicate(outcome)
@@ -429,6 +502,10 @@ class SharedBroadPolicy:
             "protocol": "shared-broad-policy-v0",
             "authority": "environment-evidence-only",
             "probe_budget": {"used": self.probes_used, "limit": self.max_option_probes},
+            "divergent_probe_budget": {
+                "used": self.divergent_probes_used,
+                "limit": self.max_divergent_probes,
+            },
             "probe_counts": dict(sorted(self.probe_counts.items())),
             "frame_blobs": dict(sorted(self.frame_blobs.items())),
             "leases": {

@@ -26,6 +26,20 @@ def alternate():
     return OptionProposal.create(schema_id="schema:alternate",action_id=3,mode="probe",potential_before=5,predicted_after=4,basis_ids=("frame:0",),proposer="r2",attention=70)
 
 
+def matching_fallback():
+    return OptionProposal.create(
+        schema_id="schema:passive",
+        action_id=1,
+        data={"x":2},
+        mode="probe",
+        potential_before=4,
+        predicted_after=3,
+        basis_ids=("frame:0",),
+        proposer="r2",
+        attention=1,
+    )
+
+
 def test_no_option_is_exact_fallback_and_cognition_is_shared():
     policy=SharedBroadPolicy(Baseline())
     decision=policy.choose_action(Observation())
@@ -97,6 +111,30 @@ def test_frontier_rotates_across_unresolved_goal_families():
     d1=policy.choose_from_frontier(object(),(first,second))
     assert d1.candidate_id==second.candidate_id
     assert policy.workspace_document()["probe_counts"]=={first.candidate_id:1,second.candidate_id:1}
+
+
+def test_matching_fallback_is_a_zero_cost_prospective_test():
+    policy=SharedBroadPolicy(Baseline(stagnation=0),max_option_probes=0,max_divergent_probes=0)
+    option=matching_fallback()
+    decision=policy.choose_from_frontier(object(),(proposal(),option))
+    assert decision.mode=="passive_probe"
+    assert decision.action_id==decision.fallback_action_id==1
+    assert policy.probes_used==policy.divergent_probes_used==0
+    assert policy.adjudicate(EnvironmentOutcome(option.candidate_id,"transition:passive",4,3,True))=="supports"
+
+
+def test_divergent_probe_has_its_own_hard_budget():
+    policy=SharedBroadPolicy(Baseline(stagnation=99),max_option_probes=8,max_divergent_probes=0)
+    decision=policy.choose_from_frontier(object(),(proposal(),alternate()))
+    assert decision.mode=="fallback"
+    assert decision.action_id==decision.fallback_action_id==1
+    assert policy.workspace_document()["divergent_probe_budget"]=={"used":0,"limit":0}
+
+
+def test_exhausted_probe_frontier_returns_to_clone_free_fallback():
+    baseline=Baseline(stagnation=99);policy=SharedBroadPolicy(baseline,max_option_probes=0)
+    decision=policy.choose_from_frontier(object(),(proposal(),alternate()))
+    assert decision.mode=="fallback" and decision.candidate_id is None
 
 
 def test_frames_use_lossless_sparse_deltas_and_periodic_checkpoints():

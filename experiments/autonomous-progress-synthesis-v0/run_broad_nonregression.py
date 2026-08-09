@@ -7,6 +7,7 @@ ROOT=HERE.parents[1]
 V164=pathlib.Path("/home/pauloabelha/reflector-v164-pivot-goal")
 sys.path.insert(0,str(HERE));sys.path.insert(0,str(V164))
 from broad_policy_bridge import SharedBroadPolicy
+from transactional_broad_policy import TransactionalBroadPolicy
 from reflector import MindConfig,Observation,SymbolicPolicy
 
 def load(name,path):
@@ -21,14 +22,14 @@ def symbolic(obs):
  return Observation.create(state=state,available_actions=[int(getattr(x,"value",x)) for x in obs.available_actions],frame=BASE.observation_grid(obs),levels_completed=int(obs.levels_completed))
 
 def run(game,wrapped):
- policy=SymbolicPolicy(MindConfig.from_dict(CANDIDATE["config"]));controller=SharedBroadPolicy(policy) if wrapped else policy
+ policy=SymbolicPolicy(MindConfig.from_dict(CANDIDATE["config"]));controller=SharedBroadPolicy(TransactionalBroadPolicy(policy)) if wrapped else policy
  root=HERE/"artifacts/broad-nonregression"/("wrapped" if wrapped else "direct")
  arcade,env=BASE.open_environment(ROOT/"environment_files",root,game);obs=env.observation_space or env.reset();rows=[]
  try:
   while int(obs.levels_completed)<1 and len(rows)<64:
    before=BASE.observation_record(obs);decision=controller.choose_action(symbolic(obs));data=dict(decision.data if wrapped else decision.data_dict());action=int(decision.action_id)
    obs=BASE.execute_action(env,game,action,data,"broad-nonregression");rows.append((action,data,before["digest"],BASE.observation_record(obs)["digest"]))
-  policy.observe(symbolic(obs))
+  (controller.baseline if wrapped else policy).observe(symbolic(obs))
   return {"actions":rows,"levels_completed":int(obs.levels_completed),"final_digest":BASE.observation_record(obs)["digest"],"workspace_event_count":len(controller.events) if wrapped else None}
  finally:arcade.close_scorecard()
 

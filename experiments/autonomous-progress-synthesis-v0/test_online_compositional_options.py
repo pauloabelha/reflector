@@ -179,6 +179,16 @@ def test_broad_bridge_consumes_frontier_and_adjudicates_evaluator_state():
     assert verdict == "supports"
 
 
+def test_unlicensed_fallback_does_not_adjudicate_selected_option():
+    initial=frame();inducer=online.OnlineCompositionalOptionInducer(initial,legal_actions=(61,),candidates=(candidate(initial),))
+    inducer.observe_option_transition(opaque_action=61,after=frame((2,2)),transition_id="transition:learn")
+    policy=bridge.SharedBroadPolicy(Baseline(),stagnation_threshold=99)
+    decision=policy.choose_from_inducer(object(),inducer)
+    assert decision.mode=="fallback" and decision.candidate_id is not None
+    verdict=policy.observe_inducer_transition(inducer,decision,after=frame((2,2)),transition_id="transition:fallback")
+    assert verdict is None and policy.leases[decision.candidate_id].confirmations==0
+
+
 def test_indirect_transition_updates_correspondence_but_not_effect_model():
     initial = frame()
     inducer = online.OnlineCompositionalOptionInducer(
