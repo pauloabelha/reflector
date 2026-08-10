@@ -7,12 +7,18 @@ bounded active workspace, constructs reusable schema compositions, learns
 before/action/after transition schemas, and tests prospective completions as
 explicit shadows.
 
-The repository includes an offline ARC-AGI-3 adapter and a minimal
-explanation-driven action experiment, but it is not a general ARC solver. The
-three available ARC control conditions are seeded random, local-schema, and
-explanation-driven. The current system has no game-specific policy, planner,
-learned goal model, neural model, embeddings, stable on-disk schema store, or
-GPU runtime.
+The primary research solver is now the proven Parallel Cognitive Workspace
+v1.16: original Reflector-II and a local Qwen visual-semantic worker operate on
+one durable epistemic graph.  In its frozen fresh paired regression, R2-only
+completed zero levels in 64 actions while the shared R2+Qwen arm completed
+level 1 in 38 actions.  The causal trace includes an ambiguous Qwen proposal,
+R2 probes, environment evidence returned to Qwen, a non-alpha revision, unique
+grounding, prospective confirmation, 13 changed control decisions, exact
+factual replay, and eight favorable same-state counterfactuals.
+
+This is one public development-game breakthrough, not evidence of broad ARC or
+Kaggle performance.  The repository also contains a newer native workspace
+port, but it remains experimental until it reproduces the complete v1.16 gate.
 
 ## What is implemented
 
@@ -32,6 +38,13 @@ GPU runtime.
 - Optional `random`, `local-schema`, and `explanation` ARC policies. The latter
   two are experimental control layers over learned transition schemas, not
   claims of task-solving ability.
+- A hash-chained shared epistemic workspace with separate support and
+  worker-specific attention, lossless replay, dependency-closed cognitive
+  cuts, direct visual Qwen turns, structured grounding criticism, prospective
+  prediction/evidence, and environment-only support authority.
+- The frozen v1.16 main solver, which is retained as one executable chain until
+  a replacement proves behavioral equivalence rather than architectural
+  similarity.
 
 ## Repository map
 
@@ -72,6 +85,7 @@ reflector2-benchmark
 reflector2-raw-frame
 reflector2-evaluate-first-frames
 reflector2-arc
+reflector2-workspace
 reflector2-explanations
 reflector2-arcade
 ```
@@ -135,6 +149,19 @@ trace per game, plus `summary.json`. See
 [the ARC harness guide](docs/ARC_HARNESS.md) and
 [the explanation guide](docs/EXPLANATIONS.md).
 
+Run the primary, causally verified shared-workspace solver. `--dry-run`
+materializes and validates its frozen two-arm manifest without opening an ARC
+environment:
+
+```bash
+.venv/bin/reflector2-workspace --dry-run
+```
+
+This command deliberately loads the exact v1.16 implementation chain that won
+the fresh ar25 regression.  `reflector2-arc --policy shared-qwen` is the newer
+native port and should be treated as a development/equivalence target, not as
+a replacement for the proven solver yet.
+
 ## Local interfaces
 
 Start the read-only visual inspector:
@@ -175,9 +202,11 @@ Both servers bind to `127.0.0.1` by default.
 - [GPU_PLAN.md](docs/GPU_PLAN.md): future acceleration plan; no GPU runtime is
   currently implemented.
 
-The documents under `experiments/` are evidence records for isolated research
-runners. They are not part of the installed `reflector2` package unless a
-mechanism has also been promoted into `src/reflector2`.
+Most documents under `experiments/` are isolated evidence records.  The one
+intentional exception is Parallel Cognitive Workspace v1.16: the installed
+`reflector2-workspace` command loads that frozen chain because it is the current
+behaviorally proven main solver.  Promotion of its components into
+`src/reflector2` is an equivalence project, not permission to replace it early.
 
 ## Experiment convention
 
@@ -189,8 +218,10 @@ outside the core package and should not be treated as runtime capabilities.
 
 ## Current boundary
 
-The core runtime is in-memory, single-coordinator, and CPU-only. Parallelism is
-used around isolated games/evaluations, not inside one mutable schema graph.
+The sparse R2 core remains in-memory and CPU-oriented.  The proven shared
+solver adds a durable event/object workspace and a serialized local Qwen GPU
+worker; parallelism remains across isolated game arms, never across mutations
+of one authoritative workspace.
 The store is represented as Python structure-of-arrays lists plus dictionaries;
 the stable CSR generation, compactor, snapshot format, and GPU kernels described
 in design documents remain future work.

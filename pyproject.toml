@@ -21,6 +21,7 @@ reflector2-benchmark = "reflector2.benchmark:main"
 reflector2-raw-frame = "reflector2.raw_frame:main"
 reflector2-evaluate-first-frames = "reflector2.evaluate_first_frames:main"
 reflector2-arc = "reflector2.arc_harness:main"
+reflector2-workspace = "reflector2.workspace_main:main"
 reflector2-explanations = "reflector2.explanation_experiment:main"
 reflector2-arcade = "arcade.server:main"
 

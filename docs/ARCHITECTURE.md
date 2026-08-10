@@ -7,9 +7,11 @@ layout decisions belong in [`GPU_PLAN.md`](GPU_PLAN.md).
 
 ## 1. System boundary
 
-Reflector-II is an in-memory symbolic research runtime with several adapters
-and evaluation tools around it. The core owns no game rules, natural-language
-ontology, goal model, or planner.
+Reflector-II is a symbolic research runtime with adapters and evaluation tools
+around it.  The sparse kernel owns no game rules or action semantics.  The
+primary solver adds a durable shared epistemic workspace, a bounded visual
+Qwen worker, and evidence-gated prospective control without adding
+game-specific branches to the kernel.
 
 ```text
 grid / DSL / ARC observation
@@ -33,13 +35,25 @@ grid / DSL / ARC observation
           |
           v
  optional ARC action controller
- random | local-schema | explanation
+ random | local-schema | explanation | shared workspace
 ```
 
-“Persistent” in this document means persistent across cycles in one Python
-process. There is no implemented schema snapshot loader, stable on-disk store,
-CSR compactor, database, or cross-process graph service. JSON/JSONL files
-persist traces and reports, not a reloadable live `SchemaGraph` generation.
+There are now two explicitly different execution lanes:
+
+1. **Proven main solver.** `reflector2-workspace` loads the exact Parallel
+   Cognitive Workspace v1.16 chain.  Its immutable ledger, materialized
+   epistemic graph, Qwen cursor/orientation, requests, responses, prospective
+   predictions, environment evidence, action commits, and replay checkpoints
+   are durable and recoverable.  This is the implementation that completed a
+   fresh paired level in 38 actions while R2-only did not complete in 64.
+2. **Native equivalence port.** `reflector2-arc --policy shared-qwen` uses the
+   newer modules directly under `src/reflector2`.  It implements the same
+   architectural boundaries but has not yet reproduced the complete v1.16
+   behavioral gate.  It is a development target, not the default winner.
+
+The in-process `SchemaGraph` itself still has no stable CSR snapshot or graph
+database.  The proven solver reconstructs its authoritative epistemic state by
+replaying the external content-addressed event ledger.
 
 ## 2. Repository components
 
@@ -55,9 +69,15 @@ persist traces and reports, not a reloadable live `SchemaGraph` generation.
 | `arc_harness.py` | offline ARC-AGI-3 transport, lifecycle, tracing, and policy boundary |
 | `explanations.py` | episode-local explanation beam, prospective commitments, action ranking |
 | `explanation_experiment.py` | matched random/local-schema/explanation experiment runner |
+| `epistemic_workspace.py` | native immutable event ledger, shared objects, support/attention separation, replay, worker cuts |
+| `shared_cognition.py` | native bridge from R2 observations and Qwen proposals to grounded shared hypotheses |
+| `qwen_worker.py` | native direct-frame Qwen contract, sparse context rendering, aliases, compilation, criticism |
+| `prospective_control.py` | native prediction/probe/evidence/confirmation/control state machine |
+| `visual_entities.py` | action-blind visual entity/correspondence and residual projection for shared control |
+| `workspace_main.py` | installed entry point that loads the exact proven v1.16 solver chain |
 | `inspect/` | loopback read-only runtime visualizer with external annotations |
 | `arcade/` | loopback human action interface and journal |
-| `experiments/` | isolated research mechanisms and evidence; not installed core architecture |
+| `experiments/` | isolated research mechanisms and evidence; v1.16 is the deliberate frozen main-solver exception |
 
 `reflector1-learnings/` is archaeological material. Nothing in it is imported
 by `src/reflector2`.
@@ -306,10 +326,61 @@ For `local-schema` and `explanation` policies, it:
 7. reifies or positively refutes those commitments from the actual learned
    successor transition.
 
-The default ARC policy remains seeded uniform random. Explanation scores are
-disposable episode state. Results in `docs/EXPLANATIONS.md` and `experiments/`
-show that the mechanism changes actions and reconciles predictions, but do not
-establish general ARC progress.
+The legacy harness default remains seeded uniform random. Explanation scores
+are disposable episode state. These controllers are retained as baselines and
+diagnostics; they are not the primary shared-workspace solver.
+
+## 8.1 Proven parallel cognitive workspace
+
+The v1.16 solver has one authoritative epistemic world rather than an R2 state
+and a Qwen state that periodically synchronize:
+
+```text
+current frame + transition
+          |                         immutable, hash-chained ledger
+          +----> R2 grounding ----> materialized epistemic object graph
+          |                                  ^             |
+          +----> Qwen visual turn ------------+             v
+                                          scored worker frontiers
+                                                   |
+                                      prospective arbiter -> environment
+```
+
+First-class durable objects include schemas, schema derivations, bindings and
+competing bindings, explanations, predictions/shadows, confirmations,
+refutations, correspondence histories, structured criticisms, open grounding
+ports, action proposals, environment evidence, and provenance.  Stable IDs
+make omitted detail addressable.  Qwen receives the current visual frame,
+recent transition imagery, a dependency-closed sparse cut, and ordered deltas
+from its durable cursor.  Causal revision turns pin the exact chain needed for
+reasoning rather than relying on a textual R2 summary.
+
+Support and attention are separate quantities:
+
+```text
+workers spend computation to change attention
+environment-authored evidence changes empirical support
+arbiter alone commits an action
+```
+
+Neither Qwen nor R2 may declare a proposal true.  Qwen can raise semantic or
+abductive salience; R2 can raise grounded, predictive, or control salience.
+The reducer accepts empirical support only from environment evidence.  Qwen's
+conversation/KV state is a cache; the object graph and ledger are authority.
+
+The proven causal loop is:
+
+```text
+Qwen proposal -> R2 competing groundings -> R2 prospective probes
+-> environment evidence -> exact evidence packet returned to Qwen
+-> non-alpha semantic revision -> unique R2 grounding
+-> prospective confirmation -> changed R2 control -> environment
+```
+
+In the fresh v1.16 ar25 pair, this loop completed level 1 in 38 actions,
+changed 13 control decisions, replayed exactly, and produced eight favorable
+same-state changed-action counterfactuals.  This establishes one causal
+development-game result, not broad generalization or a Kaggle score claim.
 
 ## 9. ARC-AGI-3 adapter
 
@@ -327,7 +398,9 @@ establish general ARC progress.
 - transport and R2 traces are written separately.
 
 The harness knows game identity for environment loading and provenance only.
-The perception/runtime/explanation ranking receives no game-specific branch.
+The perception/runtime/explanation/shared-workspace ranking receives no
+game-specific branch.  In Qwen projections, game identity and raw action IDs
+are replaced by stable opaque references; frames remain directly visible.
 
 ## 10. DSL and teacher boundary
 
@@ -342,8 +415,10 @@ compiler rejects teacher-origin evidence injection, unknown metadata, nested
 applications, undeclared variables, non-ground facts, non-finite numbers, and
 over-budget structures.
 
-There is no live LLM connector in this repository. Inspector label assignments
-are loaded only after runtime analysis and remain a one-way presentation layer.
+The primary solver and native equivalence port both have a live local Qwen
+connector.  It accepts only the bounded JSON contract and cannot inject
+evidence, support, executable code, or direct actions. Inspector label
+assignments remain a separate one-way presentation layer.
 
 ## 11. Interfaces, reports, and persistence artifacts
 
@@ -359,6 +434,11 @@ GAME.r2.jsonl     native runtime events
 summary.json      per-game and suite result
 ```
 
+The proven workspace additionally stores content-addressed request/response
+blobs, graph events/batches, Qwen task lifecycle records, orientations/cursors,
+prediction and evidence packets, action-pending/transition-committed records,
+progress checkpoints, exact replay reports, and counterfactual branches.
+
 The inspector HTTP API serves fixtures and accepts a bounded grid for analysis.
 It creates a fresh runtime per analysis with a deliberately larger diagnostic
 `Limits` profile and inspector-only nominal color-value patterns. The human
@@ -367,10 +447,12 @@ does not call `Runtime` or implement an agent policy.
 
 ## 12. Concurrency and determinism
 
-One `Runtime.observe` call is sequential because it mutates one graph. There
-are no internal worker queues, locks, async tasks, or GPU streams in the core
-runtime. Work-item names such as `TRY_BIND`, `EXPAND`, and `TRY_COMPOSE` are
-instrumentation categories, not independently scheduled worker objects.
+One `Runtime.observe` call is sequential because it mutates one graph. The
+sparse kernel has no internal GPU streams. Work-item names such as `TRY_BIND`,
+`EXPAND`, and `TRY_COMPOSE` are instrumentation categories, not independently
+scheduled worker objects.  The proven solver uses one global serialized Qwen
+request queue so concurrent environment arms cannot create competing GPU
+servers or reorder one worker's cognitive stream.
 
 Parallelism is outside the graph boundary:
 
@@ -441,12 +523,15 @@ temporary mechanisms, runners, checkpoints, null controls, or evidence
 formats. It is intentionally outside `src/reflector2` so a positive or negative
 experiment does not silently become production architecture.
 
-Current experiment families include explanation-driven control, prospective
-context specialization, a 25-game context-spinoff diagnostic, and a learned
-structural-consequence/progress relevance bridge. Their Markdown and JSON
-artifacts are scientific records. Only `explanations.py` and its harness hooks
-have been promoted into the core package; other experiment-local mechanisms
-must not be described as core runtime capabilities.
+Parallel Cognitive Workspace v1.16 is the explicit exception.  It is loaded
+unchanged by `workspace_main.py` because it is the only implementation that has
+passed the full causal level-completion gate.  Its layered v1.4-v1.16 modules
+remain frozen; a cleaner port cannot replace them until an equivalence run
+passes the same proposal/probe/evidence/revision/confirmation/control and
+counterfactual requirements.
+
+Other experiment families remain scientific records and are not runtime
+capabilities merely because their files exist.
 
 ## 16. Not implemented
 
@@ -458,8 +543,10 @@ The following are design targets or explicit omissions:
 - concurrent mutation of one schema graph or a distributed graph service;
 - unrestricted graph matching, recursion, negation-as-failure, or arbitrary
   executable teacher code;
-- learned goals, general planning, rollout/tree search, options, or a solver;
-- neural perception, embeddings, LSH, or a live LLM teacher;
+- a demonstrated general goal learner or broad ARC/Kaggle solver;
+- unrestricted rollout/tree search or unbounded planning;
+- neural perception, embeddings, or LSH inside the R2 kernel (Qwen receives
+  raster frames through the bounded external semantic-worker interface);
 - automatic semantic interpretation of actions, colors, objects, rewards, or
   game roles.
 
