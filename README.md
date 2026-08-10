@@ -19,6 +19,8 @@ factual replay, and eight favorable same-state counterfactuals.
 This is one public development-game breakthrough, not evidence of broad ARC or
 Kaggle performance.  The repository also contains a newer native workspace
 port, but it remains experimental until it reproduces the complete v1.16 gate.
+The canonical result ledger and per-game matrices live in
+[SCORES.md](SCORES.md).
 
 ## What is implemented
 
