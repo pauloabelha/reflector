@@ -1,0 +1,113 @@
+"""Workspace persistence adapters for objective, explanation, and settlement."""
+
+from __future__ import annotations
+
+from typing import Any
+
+
+def install(base: Any) -> None:
+    if getattr(base, "_one_action_integration_installed", False):
+        return
+    base._one_action_integration_installed = True
+    original_persist = base.persist_prospective_plan
+    original_ingest = base.ingest_transition_graph
+    original_apply_qwen = base.apply_qwen_compilation
+
+    def apply_qwen(root: Any, workspace_id: str, state: Any, task_id: str, turn: Any, compilation: Any, profile: Any, *, action_count: int) -> Any:
+        """Persist memory without manufacturing a semantic derivation chain."""
+        notes = [item for item in compilation.get("accepted", ()) if item.get("kind") == "working_note"]
+        semantic = {
+            **dict(compilation),
+            "accepted": [item for item in compilation.get("accepted", ()) if item.get("kind") != "working_note"],
+        }
+        state = original_apply_qwen(
+            root, workspace_id, state, task_id, turn, semantic, profile,
+            action_count=action_count,
+        )
+        for note in notes:
+            state, _note_id = base.ensure_graph_object(
+                root, workspace_id, state,
+                kind="working_note", created_by="qwen",
+                identity=note["identity"], payload=note["payload"],
+                dependency_ids=tuple(note.get("dependency_ids", ())),
+                event_key=f"qwen-working-note:{task_id}",
+            )
+        return state
+
+    def persist(root: Any, workspace_id: str, state: Any, controller: Any, plan: Any) -> tuple[Any, dict[str, Any]]:
+        if not base.EG.find_objects(state, kind="explanation", created_by="qwen"):
+            raise RuntimeError(
+                "action gate: no Qwen-authored explanation is durable in the workspace"
+            )
+        state, refs = original_persist(root, workspace_id, state, controller, plan)
+        contract = controller.last_contract or {}
+        latest_frame = max(
+            base.EG.find_objects(state, kind="frame"),
+            key=lambda item: (item.created_revision, item.object_id),
+            default=None,
+        )
+        frame_dependencies = () if latest_frame is None else (latest_frame.object_id,)
+        state, objective_id = base.ensure_graph_object(
+            root, workspace_id, state,
+            kind="objective", created_by="r2",
+            identity={"workspace_id": workspace_id, "plan_id": plan.plan_id},
+            payload={**dict(contract.get("objective", {})), "basis_revision": plan.basis_revision},
+            dependency_ids=frame_dependencies,
+            event_key=f"one-action-objective:{plan.plan_id}",
+        )
+        explanation_ids: list[str] = []
+        for index, explanation in enumerate(contract.get("explanations", ())):
+            binding_id = explanation.get("binding_object_id")
+            dependencies = tuple(sorted(set((objective_id, *frame_dependencies, *((binding_id,) if binding_id else ())))))
+            state, explanation_id = base.ensure_graph_object(
+                root, workspace_id, state,
+                kind="control_explanation", created_by="r2",
+                identity={
+                    "objective_id": objective_id,
+                    "schema_object_id": explanation.get("schema_object_id"),
+                    "binding_object_id": binding_id,
+                    "plan_id": plan.plan_id,
+                },
+                payload={key: value for key, value in explanation.items() if key != "binding_object_id"},
+                dependency_ids=dependencies,
+                event_key=f"one-action-explanation:{plan.plan_id}:{index}",
+            )
+            explanation_ids.append(explanation_id)
+        state, rationale_id = base.ensure_graph_object(
+            root, workspace_id, state,
+            kind="decision_rationale", created_by="r2",
+            identity={"plan_id": plan.plan_id, "protocol": "one-action-decision-v0"},
+            payload={
+                "selection_role": contract.get("selection_role"),
+                "selection_rule": contract.get("selection_rule"),
+                "candidate_count": contract.get("candidate_count"),
+                # The semantic graph deliberately quarantines control-token
+                # vocabulary.  This is the invariant, but not action data.
+                "single_external_intervention": True,
+                "repeated_identical_no_change_excluded": contract.get("repeated_identical_no_change_excluded", False),
+            },
+            dependency_ids=tuple(sorted({objective_id, *explanation_ids, refs["proposal_object_id"]})),
+            event_key=f"one-action-rationale:{plan.plan_id}",
+        )
+        controller.last_contract = {
+            **contract,
+            "objective_object_id": objective_id,
+            "explanation_object_ids": explanation_ids,
+            "rationale_object_id": rationale_id,
+        }
+        return state, {
+            **refs,
+            "objective_object_id": objective_id,
+            "explanation_object_ids": explanation_ids,
+            "rationale_object_id": rationale_id,
+        }
+
+    def ingest(*args: Any, **kwargs: Any) -> Any:
+        # Environment ingestion is already the durable successor evidence.
+        # Keep all control wording and transient settlement detail outside the
+        # semantic graph; otherwise a later semantic projection must reject it.
+        return original_ingest(*args, **kwargs)
+
+    base.persist_prospective_plan = persist
+    base.ingest_transition_graph = ingest
+    base.apply_qwen_compilation = apply_qwen

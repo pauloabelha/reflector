@@ -1,0 +1,26 @@
+{
+  "experiment": "explanation-guided-one-action-control-v0",
+  "protocol": "explanation-guided-one-action-v0",
+  "workspace_protocol": "explanation-guided-one-action-v0",
+  "games": ["ar25"],
+  "arms": ["shared_live_qwen"],
+  "action_budget": 48,
+  "qwen": {
+    "max_tokens": 640,
+    "thinking_budget_tokens": 192
+  },
+  "scratchpad": {
+    "max_tokens": 1024,
+    "verified": false,
+    "action_language_forbidden": true,
+    "rewrite_each_semantic_turn": true
+  },
+  "control": {
+    "external_actions_per_cycle": 1,
+    "require_explanation_before_first_action": true,
+    "winning_explanation_set_nonempty_from_frame_zero": true,
+    "reobserve_after_every_action": true,
+    "selection_objectives": ["goal-progress", "decision-relevant-information"],
+    "retain_no_visible_change": true
+  }
+}
