@@ -179,6 +179,54 @@ class NativeSharedCognition:
             ordinal: terms.value(term_id) for ordinal, term_id in binding.assignments
         }
 
+    def grounding_diagnostics(self) -> dict[str, object]:
+        """Describe the complete current binary-relation grounding field.
+
+        This is a lossless semantic projection of the current native R2
+        observation, not a heuristic recommendation.  It lets a semantic
+        worker see which predicates retain zero, one, or several unordered
+        effect pairs without guessing from a bounded candidate sample.
+        """
+
+        self._require_observation()
+        observation = self.epistemic.object(str(self.observation_object_id))
+        by_predicate: dict[str, set[tuple[str, str]]] = {}
+        for raw in observation.payload.get("facts", ()):
+            if not isinstance(raw, list) or len(raw) != 2:
+                continue
+            predicate, arguments = raw
+            if not isinstance(arguments, list) or len(arguments) != 2:
+                continue
+            left, right = (str(value) for value in arguments)
+            if left == right:
+                continue
+            pair = tuple(sorted((left, right)))
+            by_predicate.setdefault(str(predicate), set()).add(pair)
+        rows = []
+        for predicate, values in sorted(by_predicate.items()):
+            pairs = [list(value) for value in sorted(values)]
+            rows.append(
+                {
+                    "predicate": predicate,
+                    "retained_effect_pairs": pairs,
+                    "retained_pair_count": len(pairs),
+                    "classification": (
+                        "empty" if not pairs else "unique" if len(pairs) == 1 else "ambiguous"
+                    ),
+                    "unique_pair": pairs[0] if len(pairs) == 1 else None,
+                }
+            )
+        return {
+            "protocol": "native-r2-complete-grounding-diagnostics-v1",
+            "observation_id": self.observation_object_id,
+            "population_complete": True,
+            "relations_truncated": False,
+            "predicate_rows": rows,
+            "unique_predicates": [
+                row["predicate"] for row in rows if row["classification"] == "unique"
+            ],
+        }
+
     @staticmethod
     def _effect_pairs(
         result: GroundingResult, effect_variables: tuple[int, int], values: Sequence[dict[int, object]]
@@ -319,6 +367,7 @@ class NativeSharedCognition:
 
         criticism_object_id: str | None = None
         if status != "bound":
+            diagnostics = self.grounding_diagnostics()
             criticism = self.epistemic.add_object(
                 kind="structured-criticism",
                 semantic_key={
@@ -334,6 +383,12 @@ class NativeSharedCognition:
                     "grounding_count": len(values),
                     "effect_pairs": effect_pairs,
                     "population_complete": grounding.complete,
+                    "grounding_diagnostics": diagnostics,
+                    "instruction": (
+                        "Revise the exact target with alpha-novel relational conditions. "
+                        "A control revision is mechanically admissible only when the "
+                        "complete current grounding retains exactly one unordered effect pair."
+                    ),
                 },
                 creator="r2",
                 dependency_ids=tuple(
@@ -476,22 +531,51 @@ class NativeSharedCognition:
             },
             dependency_ids=(evidence_object.object_id, commitment.proposal_id),
         )
+        binding = self.epistemic.object(commitment.binding_id)
+        hypothesis_id = next(
+            dependency
+            for dependency in binding.dependency_ids
+            if self.epistemic.object(dependency).kind == "semantic-schema"
+        )
+        derivation_id = max(
+            (
+                item.object_id
+                for item in self.epistemic.objects
+                if item.kind == "derivation"
+                and hypothesis_id in item.dependency_ids
+            ),
+            key=lambda value: self.epistemic.object(value).created_revision,
+        )
         criticism = self.epistemic.add_object(
             kind="structured-criticism",
             semantic_key={
-                "target": commitment.prediction_id,
+                "target": hypothesis_id,
+                "derivation": derivation_id,
+                "prediction": commitment.prediction_id,
                 "transition_id": transition_id,
                 "verdict": verdict,
             },
             payload={
-                "target": commitment.prediction_id,
+                "target": hypothesis_id,
+                "derivation": derivation_id,
                 "status": "prospective-evidence-return",
                 "verdict": verdict,
+                "prediction_id": commitment.prediction_id,
+                "binding_id": commitment.binding_id,
+                "evidence_id": evidence_object.object_id,
                 "predicted_delta": commitment.predicted_delta,
                 "observed_delta": observed_delta,
+                "grounding_diagnostics": self.grounding_diagnostics(),
+                "instruction": (
+                    "Revise the exact tested schema using the returned prospective outcome "
+                    "and complete current grounding. Prediction support is local mechanism "
+                    "evidence, not task success."
+                ),
             },
             creator="r2",
             dependency_ids=(
+                derivation_id,
+                hypothesis_id,
                 commitment.prediction_id,
                 commitment.binding_id,
                 evidence_object.object_id,

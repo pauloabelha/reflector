@@ -51,6 +51,15 @@ def test_native_true_r2_causal_loop_revises_and_changes_control() -> None:
     assert initial.status == "ambiguous"
     assert len(initial.effect_pairs) == 2
     assert initial.criticism_id is not None
+    criticism = cognition.epistemic.object(initial.criticism_id)
+    diagnostics = criticism.payload["grounding_diagnostics"]
+    rows = {
+        row["predicate"]: row
+        for row in diagnostics["predicate_rows"]
+    }
+    assert rows["Related"]["classification"] == "ambiguous"
+    assert rows["Distinguishes"]["classification"] == "unique"
+    assert rows["Distinguishes"]["unique_pair"] == ["entity:a", "entity:b"]
 
     probe = cognition.predict(
         binding_id=initial.binding_ids[0],
@@ -67,6 +76,11 @@ def test_native_true_r2_causal_loop_revises_and_changes_control() -> None:
     )
     assert returned.verdict == "supports"
     assert cognition.epistemic.support(probe.prediction_id) == 1
+    evidence_criticism = cognition.epistemic.object(returned.criticism_id)
+    assert evidence_criticism.payload["target"] == initial.hypothesis_id
+    assert evidence_criticism.payload["derivation"] == initial.derivation_id
+    assert returned.evidence_object_id in evidence_criticism.dependency_ids
+    assert initial.hypothesis_id in evidence_criticism.dependency_ids
 
     revision = cognition.propose(
         SemanticSchemaProposal(

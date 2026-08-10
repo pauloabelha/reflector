@@ -27,10 +27,6 @@ FORBIDDEN_PROMPT_KEYS = frozenset({"game", "game_id", "action", "action_id"})
 MAX_CONDITIONS = 4
 EXECUTABLE_MEASURES = (
     "TranslationAlignmentResidual",
-    "OutsideCount",
-    "OverlapDeficit",
-    "TopologyMismatchCount",
-    "RelationalResidual",
 )
 _ARC_CONTEXT = re.compile(
     r"arc:[^:]+:episode:[0-9]+:observation:[0-9]+:support:[0-9]+"
@@ -186,6 +182,7 @@ def _response_schema(
     predicates: Sequence[str],
     revision_target_alias: str | None,
     criticism_alias: str | None,
+    revision_mode: bool,
 ) -> dict[str, Any]:
     # Grammar-level repetition of a dynamic visible-ID enum is surprisingly
     # expensive (the same 67-byte IDs occur in several branches).  Stable-ID
@@ -263,22 +260,33 @@ def _response_schema(
             ),
         },
     }
+    write_key = "revision" if revision_mode else "proposal"
+    write_branch = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["protocol", "request_id", write_key],
+        "properties": {
+            "protocol": {"type": "string", "const": PROTOCOL},
+            "request_id": {"type": "string"},
+            write_key: proposal,
+        },
+    }
+    abstain_branch = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["protocol", "request_id", "abstain"],
+        "properties": {
+            "protocol": {"type": "string", "const": PROTOCOL},
+            "request_id": {"type": "string"},
+            "abstain": {"type": "boolean", "const": True},
+        },
+    }
     return {
         "type": "json_schema",
         "json_schema": {
             "name": "native_r2_semantic_write",
             "strict": True,
-            "schema": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["protocol", "request_id", "proposal", "abstain"],
-                "properties": {
-                    "protocol": {"type": "string", "const": PROTOCOL},
-                    "request_id": {"type": "string"},
-                    "proposal": {"anyOf": [{"type": "null"}, proposal]},
-                    "abstain": {"type": "boolean"},
-                },
-            },
+            "schema": {"oneOf": [write_branch, abstain_branch]},
         },
     }
 
@@ -525,7 +533,10 @@ class QwenSemanticWorker:
             "You are Qwen, the semantic worker inside one shared Reflector-II epistemic world. "
             "The images are direct environment observations; workspace objects are addressable claims, not reality. "
             "Propose relational conditions that R2 can ground in the current observation. Use variables beginning with ?. "
+            "TranslationAlignmentResidual is the Manhattan magnitude of the relative centroid displacement of the two effect entities; Decrease means bringing that displacement toward zero. "
             "If structured criticism or environment evidence is visible, revise its exact semantic target rather than repeating it. "
+            "Read complete grounding_diagnostics mechanically: a control revision must retain exactly one unordered effect pair across the full current population. "
+            "When unique predicates exist, prefer a condition whose unique pair also has observed relative-motion leverage; do not treat this attention guidance as empirical support. "
             "Cite visible observation/relation/evidence IDs. You may increase attention by proposing, but you cannot assert support. "
             "Only emit a Decrease/Increase consequence over a named measure and exactly two effect variables. "
             "Condition arguments must be abstract variables such as ?a and ?b, never situated object names. "
@@ -571,6 +582,7 @@ class QwenSemanticWorker:
                 criticism_alias=(
                     None if criticism is None else alias_by_id[criticism.object_id]
                 ),
+                revision_mode=criticism is not None,
             ),
         }
         return QwenTurn(
@@ -623,9 +635,11 @@ class QwenSemanticWorker:
             return QwenCompilation(
                 False, False, None, None, None, response_id, "contract-mismatch"
             )
-        proposal_body = body.get("proposal")
+        revision_mode = turn.document.get("revision_task") is not None
+        write_key = "revision" if revision_mode else "proposal"
+        proposal_body = body.get(write_key)
         abstain = body.get("abstain") is True
-        if abstain == (proposal_body is not None):
+        if abstain and proposal_body is not None:
             return QwenCompilation(
                 False,
                 abstain,
@@ -637,6 +651,16 @@ class QwenSemanticWorker:
             )
         if abstain:
             return QwenCompilation(True, True, None, None, None, response_id)
+        if proposal_body is None:
+            return QwenCompilation(
+                False,
+                False,
+                None,
+                None,
+                None,
+                response_id,
+                f"choose-{write_key}-or-abstain",
+            )
         if not isinstance(proposal_body, dict):
             return QwenCompilation(
                 False, False, None, None, None, response_id, "proposal-not-object"
