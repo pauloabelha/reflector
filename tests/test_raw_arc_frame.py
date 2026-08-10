@@ -80,8 +80,11 @@ def test_ar25_oracle_discovers_pair_schemas_above_two_l_subschemas() -> None:
         and pair_heads & {head for head, _arguments in runtime.graph.source_atoms(schema_id)}
     ]
 
-    assert len(pair_schemas) == 2
-    assert sorted(runtime.graph.use_count[schema_id] for schema_id in pair_schemas) == [1, 2]
+    # The native visual vocabulary now relates every bounded figure pair,
+    # rather than emitting interior comparisons only inside an outline class.
+    assert len(pair_schemas) >= 2
+    uses = sorted(runtime.graph.use_count[schema_id] for schema_id in pair_schemas)
+    assert uses[:2] == [1, 2]
     assert all(
         sum(
             runtime.graph.depth[child] == 1

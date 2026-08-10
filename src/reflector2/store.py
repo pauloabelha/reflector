@@ -214,6 +214,13 @@ def _canonical_source_atoms(
     return _canonicalize_source_atoms(atoms)[0]
 
 
+def canonical_variable_ordinals(atoms: Sequence[SourceAtom]) -> dict[str, int]:
+    """Return native alpha-normalized ordinals for source variable names."""
+
+    _canonical, mapping = _canonicalize_source_atoms(atoms)
+    return dict(mapping)
+
+
 class SchemaGraph:
     """Uniform schema rows, local evidence arrays, links, and retrieval indices."""
 

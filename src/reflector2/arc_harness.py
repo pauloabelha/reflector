@@ -24,7 +24,10 @@ from .explanations import (
     bound_schema_ids,
 )
 from .perception import Grid, PerceptionBatch, perceive_grid
+from .prospective_control import NativeControlPlan, NativeProspectiveController
+from .qwen_worker import QwenOrientation, QwenSemanticWorker
 from .runtime import Runtime
+from .shared_cognition import NativeSharedCognition
 
 
 class EnvironmentTransport(Protocol):
@@ -334,8 +337,11 @@ class ArcGameSession:
         include_grids: bool = True,
         policy: str = "random",
         explanation_config: ExplanationConfig | None = None,
+        qwen_worker: QwenSemanticWorker | None = None,
+        qwen_call_interval: int = 8,
+        qwen_max_calls: int = 6,
     ) -> None:
-        if policy not in {"random", "local-schema", "explanation"}:
+        if policy not in {"random", "local-schema", "explanation", "shared-qwen"}:
             raise ValueError(f"unsupported ARC policy: {policy}")
         self.environment = environment
         self.requested_game_id = requested_game_id
@@ -351,9 +357,25 @@ class ArcGameSession:
         self.episode = 0
         self.explanations = (
             None
-            if policy == "random"
+            if policy in {"random", "shared-qwen"}
             else ExplanationEngine(runtime, explanation_config)
         )
+        self.shared = (
+            NativeSharedCognition(runtime) if policy == "shared-qwen" else None
+        )
+        self.qwen = (
+            (qwen_worker or QwenSemanticWorker()) if self.shared is not None else None
+        )
+        self.qwen_orientation = QwenOrientation()
+        self.qwen_call_interval = int(qwen_call_interval)
+        self.qwen_max_calls = int(qwen_max_calls)
+        self.qwen_calls = 0
+        self.prospective = (
+            NativeProspectiveController(self.shared) if self.shared is not None else None
+        )
+        self.last_shared_plan: NativeControlPlan | None = None
+        self.previous_frame: Grid | None = None
+        self.last_transition_projection: dict[str, object] | None = None
 
     def _observe(self, raw: object, observation_id: int) -> ArcObservation:
         observation = normalize_observation(
@@ -363,8 +385,54 @@ class ArcGameSession:
             episode=self.episode,
         )
         self.runtime.observe(observation.final_support.batch)
+        if self.shared is not None:
+            self.shared.observe(observation.final_support.batch, already_observed=True)
         self.trace.emit(observation.to_dict(include_grid=self.include_grids))
         return observation
+
+    def _maybe_qwen(self, observation: ArcObservation, action_count: int) -> None:
+        if (
+            self.shared is None
+            or self.qwen is None
+            or self.prospective is None
+            or self.prospective.has_confirmed_control
+            or self.qwen_calls >= self.qwen_max_calls
+            or action_count % self.qwen_call_interval != 0
+        ):
+            return
+        request_id = f"qwen-turn:{self.qwen_calls}"
+        integrated = self.qwen.think(
+            self.shared,
+            orientation=self.qwen_orientation,
+            request_id=request_id,
+            current_frame=observation.final_support.grid,
+            previous_frame=self.previous_frame,
+            transition=self.last_transition_projection,
+        )
+        self.qwen_orientation = integrated.orientation
+        self.qwen_calls += 1
+        grounded = integrated.grounded
+        activated = ()
+        hypothesis_payload: dict[str, object] | None = None
+        if grounded is not None:
+            activated = self.prospective.activate(
+                grounded, observation.final_support.grid
+            )
+            hypothesis_payload = self.shared.epistemic.object(
+                grounded.hypothesis_id
+            ).payload
+        self.trace.emit(
+            {
+                "event": "shared-qwen-turn",
+                "request_id": request_id,
+                "basis_revision": self.shared.epistemic.revision,
+                "abstained": integrated.compilation.abstained,
+                "proposal_valid": integrated.compilation.valid,
+                "grounding_status": None if grounded is None else grounded.status,
+                "grounded_alternatives": len(activated),
+                "hypothesis": hypothesis_payload,
+            }
+        )
 
     def _legal_transport_actions(
         self, observation: ArcObservation
@@ -433,6 +501,42 @@ class ArcGameSession:
                 for item in legal
                 if item[0].action_id == decision.selected_action_id
             )
+        elif self.prospective is not None:
+            simple = [
+                item
+                for item in legal
+                if not callable(getattr(item[1], "is_complex", None))
+                or not bool(item[1].is_complex())
+            ]
+            if simple:
+                plan = self.prospective.plan(
+                    [item[0].action_id for item in simple],
+                    fallback_action_id=(
+                        baseline_opaque.action_id
+                        if any(
+                            item[0].action_id == baseline_opaque.action_id
+                            for item in simple
+                        )
+                        else simple[0][0].action_id
+                    ),
+                )
+                self.last_shared_plan = plan
+                opaque, transport = next(
+                    item for item in simple if item[0].action_id == plan.action_id
+                )
+                self.trace.emit(
+                    {
+                        "event": "prospective-decision",
+                        "mode": plan.mode,
+                        "reason": plan.reason,
+                        "selected": plan.action_id,
+                        "same_state_fallback": plan.fallback_action_id,
+                        "changed": plan.action_id != plan.fallback_action_id,
+                        "prediction_ids": [
+                            item.prediction_id for item in plan.commitments
+                        ],
+                    }
+                )
         return (
             opaque,
             transport,
@@ -456,6 +560,7 @@ class ArcGameSession:
         transitions = 0
 
         while transitions < self.max_transitions and not current.complete:
+            self._maybe_qwen(current, transitions)
             r2_start = len(self.runtime.trace)
             predecessor_bindings = tuple(
                 self.runtime.workspace.bindings if self.runtime.workspace else ()
@@ -487,6 +592,10 @@ class ArcGameSession:
                 opaque.token,
                 predecessor_schema_ids=bound_schema_ids(predecessor_bindings),
             )
+            if self.shared is not None:
+                self.shared.observe(
+                    successor.final_support.batch, already_observed=True
+                )
             transitions += 1
             progress_delta = successor.levels_completed - current.levels_completed
             resolution = None
@@ -501,6 +610,13 @@ class ArcGameSession:
                 )
                 if forced_reset:
                     self.explanations.reset_episode()
+            if self.prospective is not None and not forced_reset:
+                self.prospective.observe(
+                    opaque.action_id,
+                    current.final_support.grid,
+                    successor.final_support.grid,
+                    transition_id=f"transition:{transitions - 1}:{successor.digest[:16]}",
+                )
             peak_levels = max(peak_levels, successor.levels_completed)
             self.trace.emit(
                 {
@@ -525,6 +641,19 @@ class ArcGameSession:
             if resolution is not None:
                 self.trace.emit(resolution)
             self.trace.emit(successor.to_dict(include_grid=self.include_grids))
+            self.previous_frame = current.final_support.grid
+            self.last_transition_projection = {
+                "intervention_ref": (
+                    None
+                    if self.prospective is None
+                    else self.prospective.intervention_ref(opaque.action_id)
+                ),
+                "before_digest": current.final_support.digest,
+                "after_digest": successor.final_support.digest,
+                "changed": current.final_support.digest
+                != successor.final_support.digest,
+                "progress_delta": progress_delta,
+            }
             current = successor
 
         deterministic_metrics = self.runtime.metrics.deterministic()
@@ -542,6 +671,13 @@ class ArcGameSession:
         }
         if self.explanations is not None:
             runtime_report["explanations"] = self.explanations.report()
+        if self.shared is not None and self.prospective is not None:
+            runtime_report["shared_cognition"] = {
+                "qwen_calls": self.qwen_calls,
+                "epistemic_revision": self.shared.epistemic.revision,
+                "epistemic_head": self.shared.epistemic.head_hash,
+                "prospective": self.prospective.report(),
+            }
         return GameRunResult(
             requested_game_id=self.requested_game_id,
             game_id=current.game_id,
@@ -738,7 +874,7 @@ def main() -> None:
     parser.add_argument("--max-transitions", type=int, default=80)
     parser.add_argument(
         "--policy",
-        choices=("random", "local-schema", "explanation"),
+        choices=("random", "local-schema", "explanation", "shared-qwen"),
         default="random",
     )
     parser.add_argument("--max-explanations", type=int, default=8)

@@ -116,6 +116,16 @@ class Binding:
         yield self.as_dict()
 
 
+@dataclass(frozen=True, slots=True)
+class GroundingResult:
+    """A bounded, non-mutating grounding of one native schema."""
+
+    schema_id: int
+    carrier: str
+    bindings: tuple[Binding, ...]
+    complete: bool
+
+
 SHADOW = "SHADOW"
 REIFIED = "REIFIED"
 REFUTED = "REFUTED"
@@ -461,6 +471,44 @@ class Runtime:
             truncated = True
             partials = partials[: self.limits.max_bindings_per_schema]
         return partials, truncated
+
+    def ground_schema(
+        self,
+        schema_id: int,
+        observed: PerceptionBatch,
+        *,
+        provenance: str = "shared-cognition",
+    ) -> GroundingResult:
+        """Ground one schema against an observation without advancing a cycle.
+
+        Cognitive workers may propose a schema after the ordinary observation
+        cycle has already been constructed.  Re-observing the frame would
+        incorrectly advance native time and duplicate unrelated construction.
+        This bounded public seam uses the same indexed verifier as
+        :meth:`observe` and reports whether enumeration was complete.
+        """
+
+        if not 0 <= schema_id < self.graph.schema_count:
+            raise ValueError(f"unknown schema id: {schema_id}")
+        fact_index, fact_slot_index = self._fact_indices(observed)
+        assignments, truncated = self._verify(
+            self.graph.patterns[schema_id], fact_index, fact_slot_index
+        )
+        bindings = tuple(
+            Binding(
+                schema_id=schema_id,
+                assignments=tuple(sorted(item.items())),
+                carrier=observed.context,
+                provenance=provenance,
+            )
+            for item in assignments
+        )
+        return GroundingResult(
+            schema_id=schema_id,
+            carrier=observed.context,
+            bindings=bindings,
+            complete=not truncated,
+        )
 
     @staticmethod
     def _fact_indices(batch: PerceptionBatch) -> tuple[FactIndex, FactSlotIndex]:

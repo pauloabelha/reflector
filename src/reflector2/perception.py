@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from .store import GroundAtom, TermStore
+from .visual_entities import extract_visual_figures, pair_relations
 
 Grid = tuple[tuple[int, ...], ...]
 
@@ -181,54 +182,53 @@ def perceive_grid(
     # A figure is a color-agnostic connected foreground component. It preserves
     # a common outline across recoloring or internally contrasting cells, while
     # color-specific regions above remain available as a finer description.
-    figure_by_outline: dict[int, list[tuple[int, int]]] = {}
-    all_foreground = {
-        (x, y)
-        for y, row in enumerate(grid)
-        for x, value in enumerate(row)
-        if value != background_value
-    }
-    for figure_index, component in enumerate(_components(all_foreground)):
+    visual_figures = extract_visual_figures(grid, background=background_value)
+    figure_terms: dict[str, int] = {}
+    for figure_index, visual in enumerate(visual_figures):
+        component = set(visual.absolute_cells)
         figure = store.intern_symbol(f"figure:{context}:{figure_index}")
-        outline = store.intern_symbol(_outline_fingerprint(component))
+        figure_terms[visual.local_ref] = figure
+        outline = store.intern_symbol(visual.outline)
         outline_terms.append(outline)
-        values = Counter(grid[y][x] for x, y in component)
-        primary_value = max(values, key=lambda value: (values[value], -value))
-        contrast_count = len(component) - values[primary_value]
         facts.extend(
             [
                 (store.intern_symbol("Kind"), (figure, store.intern_symbol("Figure"))),
                 (store.intern_symbol("OutlineForm"), (figure, outline)),
                 (
                     store.intern_symbol("InteriorContrastCount"),
-                    (figure, store.intern_symbol(contrast_count)),
+                    (figure, store.intern_symbol(len(visual.interior_pattern))),
+                ),
+                (store.intern_symbol("Area"), (figure, store.intern_symbol(visual.area))),
+                (
+                    store.intern_symbol("Centroid2"),
+                    (
+                        figure,
+                        store.intern_symbol(visual.centroid2[0]),
+                        store.intern_symbol(visual.centroid2[1]),
+                    ),
+                ),
+                (
+                    store.intern_symbol("Anchor"),
+                    (
+                        figure,
+                        store.intern_symbol(visual.anchor[0]),
+                        store.intern_symbol(visual.anchor[1]),
+                    ),
                 ),
             ]
         )
         for _ordinal, region, _value, region_component in all_regions:
             if region_component <= component:
                 facts.append((store.intern_symbol("Contains"), (figure, region)))
-        figure_by_outline.setdefault(outline, []).append((figure, contrast_count))
-
-    pair_count = 0
-    for outline in sorted(figure_by_outline):
-        figures = sorted(figure_by_outline[outline])
-        for left_index, (left, left_contrast) in enumerate(figures):
-            for right, right_contrast in figures[left_index + 1 :]:
-                if pair_count >= MAX_SAME_OUTLINE_PAIRS:
-                    break
-                facts.append((store.intern_symbol("SameOutline"), (left, right)))
-                relation = (
-                    "SameInteriorContrast"
-                    if left_contrast == right_contrast
-                    else "DifferentInteriorContrast"
-                )
-                facts.append((store.intern_symbol(relation), (left, right)))
-                pair_count += 1
-            if pair_count >= MAX_SAME_OUTLINE_PAIRS:
-                break
-        if pair_count >= MAX_SAME_OUTLINE_PAIRS:
-            break
+    for predicate, left_ref, right_ref in pair_relations(
+        visual_figures, maximum_pairs=MAX_SAME_OUTLINE_PAIRS
+    ):
+        facts.append(
+            (
+                store.intern_symbol(predicate),
+                (figure_terms[left_ref], figure_terms[right_ref]),
+            )
+        )
 
     return PerceptionBatch(
         context, tuple(facts), tuple(form_terms), tuple(region_terms), tuple(outline_terms)
