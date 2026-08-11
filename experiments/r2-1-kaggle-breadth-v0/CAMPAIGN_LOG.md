@@ -925,7 +925,7 @@ zero in the short run.
 The final immutable source completed a full first pass over all 25 games plus
 two brief level-2 diagnostics within the 2,200-second global deadline.
 
-First-pass closure results:
+First-pass closure results (excluding the two later level-2 diagnostics):
 
 - 25/25 games attempted; 114 committed actions; zero worker errors, authority
   violations, or replay failures.
@@ -939,15 +939,18 @@ First-pass closure results:
 - 139 observation envelopes preserved 274 ordered supports, including 21
   multi-frame packets; all hashes, ordering, settled ordinals, and final grids
   recomputed exactly.
-- 66/66 Qwen frontiers were nonempty (4–16 objects). 51 completed calls had
-  clean transport, valid JSON, and two accepted objects each: zero compiler or
-  safety rejects, zero admission failures, and zero false semantic demands.
+- All 64 pass-one Qwen queues were claimed and had nonempty frontiers (4–16
+  objects). 50 completed calls had clean transport, valid JSON, and two
+  accepted objects each: zero compiler or safety rejects, zero recorded
+  admission failures, and zero false semantic demands. Fourteen claimed calls
+  remained incomplete at their forced episode cutoff.
 
 The closure pass is mechanically clean but scoreless; it does not supersede the
 earlier five-minute score cohort. The authoritative campaign score result
-remains AR25's exact 17-action level clear and same-state recovery. The closure
-pass demonstrates that the final generic fixes transfer across every public
-mechanic without reopening the discovered execution and telemetry defects.
+remains AR25's exact 17-action level clear; the same-state recovery is separate
+diagnostic evidence. The closure pass demonstrates that the final generic
+fixes ran across all 25 public games without reopening the discovered execution
+and telemetry defects.
 
 ## Final campaign theory of the boundary
 
@@ -958,9 +961,10 @@ The evidence now separates prerequisites from competence:
 2. Runtime overhead was materially reduced: exact graph batching removed the
    cumulative replay slope and safe frontier recovery eliminated nearly every
    empty Qwen context.
-3. Correct causal identity can move score: repairing stale command attribution
-   restored AR25's exact historical 17-action clearing trajectory from an
-   identical state prefix.
+3. Correct causal identity can move score in the observed AR25 contrast:
+   repairing stale command attribution removed the exact action-13 divergence,
+   after which three repaired long-budget traces reproduced the same action-17
+   clear. This is necessary-at-that-pivot evidence, not a general guarantee.
 4. The dominant remaining score boundary is situated causal attribution and
    plan quality, especially for clicks. Broad access produced many changed
    successors but almost no prospective click judgments; the shadow census
@@ -987,8 +991,9 @@ timeouts, zero errors or authority/replay failures.
 AR25 independently reproduced the exact score boundary under all final changes:
 action 17 completed the same `1, 2×11, 3×5` learned trajectory, committed the
 known successor digest, and incremented levels to one. Actions 18–19 continued
-in level 2. No route was encoded; the trajectory emerged through the repaired
-command identity and environment-confirmed mechanics.
+in level 2. No route was encoded. The repair removed the previously observed
+stale-command pivot, and the resulting environment-confirmed trajectory was
+then reproduced under the final source.
 
 The other five games matched or modestly exceeded primary action depth without
 scoring. Completed Qwen calls remained transport-clean and accepted, and
@@ -997,8 +1002,9 @@ also confirming that one generic control repair has not yet converted broad
 mechanic access into broad score.
 
 On the same six games, the primary build used 33 queued / 31 completed Qwen
-calls and accepted 23; the final build used 27 / 25 and accepted all 25. It
-therefore queued 18.2% fewer calls while producing 8.7% more accepted objects.
+calls and accepted 23 calls (46 objects); the final build used 27 / 25 and
+accepted all 25 calls (50 objects). It therefore queued 18.2% fewer calls while
+producing 8.7% more accepted objects.
 The primary slice had seven retrospective-language false positives, one stale
 proposal rejection, two empty frontiers, and three projection-induced semantic
 failure demands. The final slice had none of those failures. This is strong
@@ -1007,27 +1013,24 @@ evidence that it broadly improves score.
 
 ## Checkpoint 31 — AR25 level-boundary transfer audit
 
-A shadow comparison used the same stored AR25 level-2 start with carried
-level-1 state and with a fresh state. Exact situated effect keys remained
-fail-closed: level-1 and level-2 region value/area/shape identities differed,
-so none of 30 learned level-1 role effects was silently applied in level 2.
-Both traces correctly began with uninitialized identities and unsupported
-current mechanisms.
+The authoritative carried level-2 boundary is AR25 digest `5fcedd77...` after
+the action-17 clear. `advance_level()` resets situated bindings and role
+trajectories while retaining only action effects, action-use counts, and
+explanation confirmation/refutation history. At the next carried decision,
+correspondence was unique but both role identities were UNINITIALIZED,
+`control_eligible` was false, and the mechanism was UNKNOWN with no supported
+model. Action 4 therefore had only PROBE_ELIGIBLE authority and null predicted
+progress; historical evidence did not silently become progress control.
 
-Carried action-use counts skipped three already-used commands, but neither
-trace cleared level 2. More importantly, effects were regime-dependent:
-level-1 action 3 moved in the opposite direction and at half the magnitude of
-the observed level-2 action-3 effect, while actions 1 and 2 sometimes had no
-effect in the initial level-2 regime and moved only later. Schema-level
-confirmation counters also did not cross the mechanism gate.
-
-The existing exact-key transfer is therefore safe, but structural backoff is
-not promoted. Any future cross-level hypothesis must remain a single bounded
-discriminating probe, require directional consensus and current-regime
-compatibility, and never inherit PROGRESS_ELIGIBLE authority from a prior
-level. This audit found no evidence that such backoff would yet increase score.
+The available stored fresh level-2 episode starts from digest `2b21f363...`, a
+different layout, so it is not a matched fresh-state comparator. No claim about
+relative action savings or cross-level effect conflicts is promoted from that
+unmatched trace. The defensible result is narrower: situated role identity did
+not transfer at the observed successful boundary, and any structural backoff
+must remain probe-only until tested on an exact matched start.
 
 Final verification reran the dynamically loaded suites in isolated processes:
-68 v1.4 tests, 3 v1.9 tests, 14 v1.12 tests, 92 leaf contracts, 15 command and
-observation-envelope tests, 2 stored request-budget tests, and 18 breadth
-analyzer/click-shadow tests. All 212 passed; `git diff --check` was clean.
+68 v1.4 tests, 3 selected v1.9 passthrough tests, 14 v1.12 tests, 92 leaf
+contracts, 15 command and observation-envelope tests, 2 stored request-budget
+tests, and 18 breadth analyzer/click-shadow tests. All 212 passed; `git diff
+--check` was clean.

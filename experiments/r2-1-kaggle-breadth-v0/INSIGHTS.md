@@ -765,18 +765,17 @@ unverified structural averaging will not cross that boundary by itself.
 The command-identity repair first restored AR25's exact clearing trajectory in
 a targeted same-state run, then scored in the primary 25-game breadth pass, and
 finally reproduced the action-17 clear after every later generic intervention.
-That sequence—diagnosis, exact causal repair, breadth observation, final-source
+That sequence—diagnosis, paired repair evidence, breadth observation, final-source
 replication—is the standard a score-moving change should meet. It remains one
 game of evidence and must not be generalized into a hidden-game claim.
 
 ## I40 — Cross-level similarity is a hypothesis, not inherited authority
 
-AR25's exact situated keys prevented level-1 effects from aliasing different
-level-2 objects, which is the correct safe default. A shadow fresh-versus-carried
-comparison then found genuine cross-level conflicts: one command reversed
-direction and doubled magnitude, while two others depended on the current
-state regime. Historical action-use counts can reduce redundant probing, but
-they can also skip necessary re-identification. Structural transfer should
-therefore enter a new level only as a bounded discriminating hypothesis after
-cross-context consensus and explicit regime checks—not as an averaged effect,
-role-label match, or progress-authorized command.
+At AR25's successful boundary, situated bindings and role trajectories reset;
+the carried next decision had uninitialized identities, no supported mechanism,
+and probe-only authority despite retained action/evidence history. This is a
+safe default: prior-level success did not become current-level control. The
+available fresh level-2 artifact begins from a different layout, so it cannot
+support a matched transfer claim. Structural reuse should remain a bounded
+discriminating hypothesis until an exact same-start comparison establishes
+benefit without unsupported authority.
