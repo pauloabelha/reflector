@@ -85,6 +85,60 @@ def test_guided_misses_fall_back_to_exact_mandatory_closure() -> None:
     assert result == ("turn", {"max_tokens": 2_048}, "admitted", 300, 4)
 
 
+def test_dynamic_sibling_frontier_error_reaches_mandatory_closure() -> None:
+    """Installed module aliases preserve the error contract, not class identity."""
+
+    class SiblingFrontierBudgetError(Exception):
+        def __init__(self, *, budget: int, required: int):
+            self.budget = budget
+            self.required = required
+            super().__init__(
+                f"frontier budget {budget} is below mandatory closure cost {required}"
+            )
+
+    SiblingFrontierBudgetError.__name__ = "FrontierBudgetError"
+    calls = []
+
+    def candidate(budget: int):
+        calls.append(budget)
+        if budget == 6_400:
+            raise admission_error(excess=19)
+        if budget == 1:
+            raise SiblingFrontierBudgetError(budget=budget, required=59)
+        assert budget == 59
+        return "turn", {"max_tokens": 2_048}, "admitted"
+
+    result = BASE.admitted_qwen_request(
+        candidate,
+        maximum_budget=6_400,
+        qwen={"max_context_budget_rebuilds": 0},
+    )
+
+    assert calls == [6_400, 1, 59]
+    assert result == ("turn", {"max_tokens": 2_048}, "admitted", 59, 2)
+
+
+def test_dynamic_error_recognition_does_not_swallow_near_matches() -> None:
+    class FrontierBudgetError(Exception):
+        pass
+
+    class OtherError(Exception):
+        def __init__(self):
+            self.budget = 1
+            self.required = 59
+
+    for error in (FrontierBudgetError("missing contract"), OtherError()):
+        def candidate(_budget: int, *, raised: Exception = error):
+            raise raised
+
+        with pytest.raises(type(error)):
+            BASE.admitted_qwen_request(
+                candidate,
+                maximum_budget=6_400,
+                qwen={"max_context_budget_rebuilds": 0},
+            )
+
+
 def test_exact_plateau_breakpoint_preserves_the_largest_cheaper_frontier() -> None:
     calls = []
 

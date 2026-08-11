@@ -789,3 +789,40 @@ cross-level claim requires the same initial observation, frozen controller and
 model inputs, and a single carried-versus-fresh state intervention; otherwise
 layout and regime differences dominate the comparison. Negative audit results
 should remove the claim, not be softened into a suggestive average.
+
+## I42 — Consolidation should transfer a typed question, not an answer
+
+The first accepted live boundary consolidation shows the useful middle ground
+between full reset and route memory. Qwen compressed a completed context into a
+generic fit/alignment diagram; R2 immediately projected that diagram into the
+new context, but revoked its bindings, identities, empirical support, action
+meaning, and progress authority. The result was not “repeat the old solution.”
+It was “try to fresh-bind this relational explanation and discriminate its
+mechanism.” That is strong semantic continuity with weak control authority—the
+right anti-overfitting shape for cross-level transfer.
+
+Fields fixed by the epistemic contract should not be model outputs. Asking
+Qwen to restate mandatory nuisance dimensions and unresolved ports created
+avoidable typing failures. Once R2 owned those invariants, Qwen was left with
+the genuinely abductive choices: applicability, preserved structure, causal
+shape, reuse prediction, and counterconditions. Robust semantic interfaces get
+smaller when authority ownership is explicit.
+
+## I43 — Explanations begin where fitted structure risks a successor
+
+A schema can organize the current frame without explaining beyond it. The
+useful boundary is generativity: an explanation must cast at least one bounded,
+falsifiable shadow onto a future empirical support. This exposes a current
+telemetry overclaim—`grounded-open-mechanism` records with null predictions and
+only unconstrained questions are descriptive or proto-explanatory until R2
+constructs diagnostic alternatives. Renaming is not enough; probe eligibility
+must eventually depend on the projected alternatives actually distinguishing
+live mechanisms.
+
+The same projection operation should cover temporal prediction and transfer.
+Inside a context it constrains the next ordered support; after consolidation it
+constrains what should become freshly bindable or measurable. Both remain
+ordinary partial bindings and shadows, receive no support before settlement,
+and use the environment as their only adjudicator. This keeps prediction,
+information seeking, accommodation, and cross-context learning inside one R2
+schema language.

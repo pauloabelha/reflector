@@ -1050,3 +1050,41 @@ runtime intervention; they do not imply score improvement.
 A final added-line audit found public game identifiers only in regression
 fixtures and stored-trace paths, not in the promoted controller/runtime logic.
 No game route, action meaning, or score condition was added to production code.
+
+## Checkpoint 32 — deep explanation consolidation works live
+
+AR25 live run `run-1786471943209771871` reproduced the authoritative level-1
+clear on committed action 17. R2 then blocked successor control, built a
+deterministic evidence-preserving digest of the completed context, and queued
+one dedicated Qwen consolidation call at ledger sequence 421. The request used
+the consolidation-only 5,120-token generation envelope and 1,024-token thinking
+budget. It completed in 35.47 seconds with `finish_reason=stop`, no transport
+error, a valid JSON contract, three accepted workspace objects, and zero
+compiler rejections. Integration finished at sequence 427; the first level-2
+decision did not appear until sequence 436.
+
+The accepted artifact is one generic `fit/align(actor,target)` schema with
+suggested same-outline/same-interior applicability, decreasing `fit_residual`
+toward contact, preserved contact state, `changes_contact` as a causal
+hypothesis, and `mechanism_conflict` as a countercondition. R2—not Qwen—applied
+the authority reset: empirical support zero, actor and target unresolved,
+situated identity/binding/potential/intervention authority reset, and
+`fresh-binding-probe-only` scope.
+
+The first level-2 decision demonstrates actual projection rather than mere
+storage. R2 freshly bound the new actor/target pair and carried the abstract
+goal diagram, but both identities were UNINITIALIZED, the mechanism was
+UNKNOWN, model support was false, and predicted progress was null. Action 4 was
+therefore only PROBE_ELIGIBLE. This is the intended result: semantic reuse
+reduced explanation rediscovery without converting prior-level support into
+current-level control authority. It is not yet evidence of a level-2 clear or
+score gain.
+
+The fail-closed path was exercised twice before this success. An uncompressed
+retrospective exceeded the context window; the first digest response exhausted
+its smaller generation envelope; and the next complete response exposed
+redundant Qwen ownership of authority-reset fields. Each failure blocked level
+2. The final contract defaults to one minimal abstraction, rejects duplicate
+abstraction bodies, deterministically quotients exact duplicate set items, and
+derives nuisance reset and unresolved ports inside R2. The 99 leaf contracts
+pass and `git diff --check` is clean.

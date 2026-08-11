@@ -8,6 +8,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import operator
 import os
 import sys
 import threading
@@ -1323,6 +1324,24 @@ def visual_evidence_for_turn(root: Path, workspace_id: str) -> list[dict[str, st
     ]
 
 
+def _frontier_budget_requirement(
+    error: BaseException,
+    known_types: Sequence[type[BaseException]] = (),
+) -> int | None:
+    """Read the fail-closed frontier contract across isolated module aliases."""
+
+    if not isinstance(error, tuple(known_types)) and type(error).__name__ != "FrontierBudgetError":
+        return None
+    try:
+        budget = operator.index(getattr(error, "budget"))
+        required = operator.index(getattr(error, "required"))
+    except (AttributeError, TypeError):
+        return None
+    if budget < 0 or required < 1:
+        return None
+    return required
+
+
 def admitted_qwen_request(
     candidate: Any,
     *,
@@ -1342,6 +1361,18 @@ def admitted_qwen_request(
         )
     )
 
+    def frontier_budget_required(error: BaseException) -> int | None:
+        """Recognize the same graph error across isolated module loaders.
+
+        The installed experiment chain can load the graph module under more
+        than one name.  Those sibling ``FrontierBudgetError`` classes are not
+        related by ``isinstance`` even though they carry the same fail-closed
+        contract.  Accept only that exact exception name and its two integer
+        contract fields; unrelated exceptions still propagate unchanged.
+        """
+
+        return _frontier_budget_requirement(error, frontier_budget_errors)
+
     def mandatory_closure_fallback() -> tuple[Any, dict[str, Any], Any, int, int]:
         """Try the exact minimum dependency-closed frontier before giving up.
 
@@ -1356,8 +1387,10 @@ def admitted_qwen_request(
         fallback_rebuilds = rebuilds + 1
         try:
             mandatory = (*candidate(1), 1, fallback_rebuilds)
-        except frontier_budget_errors as error:
-            required = int(error.required)
+        except Exception as error:
+            required = frontier_budget_required(error)
+            if required is None:
+                raise
             if required < 1 or required > maximum_budget:
                 raise
             mandatory = (*candidate(required), required, fallback_rebuilds + 1)
@@ -1407,8 +1440,12 @@ def admitted_qwen_request(
                         rescued_turn, rescued_request, rescued_admission = candidate(
                             rescue_budget
                         )
-                    except (*frontier_budget_errors, QC.ContextAdmissionError):
-                        pass
+                    except Exception as error:
+                        if (
+                            not isinstance(error, QC.ContextAdmissionError)
+                            and frontier_budget_required(error) is None
+                        ):
+                            raise
                     else:
                         mandatory_cut = getattr(turn, "document", {}).get(
                             "sparse_cut", {}
@@ -1437,14 +1474,6 @@ def admitted_qwen_request(
         try:
             turn, request, admission = candidate(token_budget)
             return turn, request, admission, token_budget, rebuilds
-        except frontier_budget_errors as error:
-            if rebuilds >= maximum_rebuilds:
-                return mandatory_closure_fallback()
-            required = int(error.required)
-            if required >= token_budget or required > maximum_budget:
-                raise
-            token_budget = required
-            rebuilds += 1
         except QC.ContextAdmissionError as error:
             last_admission_error = error
             last_rejected_budget = token_budget
@@ -1475,6 +1504,16 @@ def admitted_qwen_request(
             if proposed >= token_budget:
                 raise
             token_budget = proposed
+            rebuilds += 1
+        except Exception as error:
+            required = frontier_budget_required(error)
+            if required is None:
+                raise
+            if rebuilds >= maximum_rebuilds:
+                return mandatory_closure_fallback()
+            if required >= token_budget or required > maximum_budget:
+                raise
+            token_budget = required
             rebuilds += 1
 
 
@@ -1523,11 +1562,23 @@ def queue_qwen(
             raise
         return turn, request, admission
 
-    turn, request, _admission, _token_budget, _rebuilds = admitted_qwen_request(
-        candidate,
-        maximum_budget=maximum_budget,
-        qwen=config["qwen"],
-    )
+    try:
+        turn, request, _admission, _token_budget, _rebuilds = admitted_qwen_request(
+            candidate,
+            maximum_budget=maximum_budget,
+            qwen=config["qwen"],
+        )
+    except Exception as error:
+        # Installed experiment chains may hold a third module-local identity
+        # for the graph exception.  The inner search normally handles it; this
+        # final seam makes the queue itself fail-safe.  The exact mandatory
+        # candidate still passes ordinary context admission in ``candidate``.
+        required = _frontier_budget_requirement(error)
+        if required is None or required > maximum_budget:
+            raise
+        turn, request, _admission = candidate(required)
+        _token_budget = required
+        _rebuilds = int(config["qwen"].get("max_context_budget_rebuilds", 2)) + 2
     request_blob = LEDGER.put_blob(root, request)
     turn_blob = LEDGER.put_blob(root, asdict(turn))
     task_id = LEDGER.stable_hash({"request": request_blob, "turn": turn_blob, "workspace": workspace_id})
@@ -1960,13 +2011,21 @@ def activate_then_maybe_queue_qwen(
             activated,
             len(history),
         )
+    consolidation_due = getattr(QC, "explanation_consolidation_due", None)
+    mandatory_boundary_call = bool(
+        callable(consolidation_due)
+        and consolidation_due(state, workspace_id)
+    )
     if (
         live_qwen
         and pending_qwen is None
         and qwen_revision_due(
             state, workspace_id, config=config, task_count=task_count
         )
-        and task_count < int(config["qwen"]["max_calls_per_episode"])
+        and (
+            mandatory_boundary_call
+            or task_count < int(config["qwen"]["max_calls_per_episode"])
+        )
     ):
         # Re-read only after activation returns: binding, structured criticism,
         # and grounded-pickup events are fsync-durable before this turn's basis.
@@ -2844,6 +2903,30 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 qwen_compilations.append(compilation)
                 pending_qwen = None
 
+            consolidation_due = getattr(
+                QC, "explanation_consolidation_due", None,
+            )
+            if (
+                callable(consolidation_due)
+                and consolidation_due(state, workspace_id)
+                and pending_qwen is not None
+                and not isinstance(
+                    getattr(pending_qwen[1], "document", {}).get(
+                        "explanation_consolidation_task"
+                    ),
+                    Mapping,
+                )
+            ):
+                # A level boundary outranks nonblocking semantic overlap.  Finish
+                # the prior ordinary turn, then queue the one synchronous
+                # completed-context reflection before successor control.
+                state, compilation = integrate_qwen(
+                    root, workspace_id, state, *pending_qwen, profile,
+                    action_count=len(history),
+                )
+                qwen_compilations.append(compilation)
+                pending_qwen = None
+
             state, graph_events, pending_qwen, task_count, records = (
                 activate_then_maybe_queue_qwen(
                     root,
@@ -2878,18 +2961,43 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 config["qwen"].get("eager_semantic_integration", False)
                 or boundary_consolidation
             ):
+                integrated_turn = pending_qwen[1]
                 state, compilation = integrate_qwen(
                     root, workspace_id, state, *pending_qwen, profile,
                     action_count=len(history),
                 )
                 qwen_compilations.append(compilation)
                 pending_qwen = None
+                if boundary_consolidation:
+                    accepted_boundary = getattr(
+                        QC, "boundary_consolidation_accepted", None,
+                    )
+                    if (
+                        not callable(accepted_boundary)
+                        or not accepted_boundary(compilation, integrated_turn)
+                    ):
+                        raise RuntimeError(
+                            "level-boundary explanation consolidation produced "
+                            "neither a valid reusable abstraction nor explicit abstention"
+                        )
                 state, records = activate_visible_qwen(
                     root, workspace_id, state, controller, grid, legal, history,
                     profile, activated, len(history),
                 )
                 grounding_records.extend(records)
                 state, graph_events = graph_state(root)
+
+            consolidation_due = getattr(
+                QC, "explanation_consolidation_due", None,
+            )
+            if (
+                callable(consolidation_due)
+                and consolidation_due(state, workspace_id)
+            ):
+                raise RuntimeError(
+                    "level-boundary explanation consolidation is unresolved; "
+                    "successor control remains blocked"
+                )
 
             decision, prospective_plan = controller.plan(
                 legal,

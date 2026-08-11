@@ -5,6 +5,7 @@ import importlib.util
 from pathlib import Path
 import sys
 from types import SimpleNamespace
+import copy
 import hashlib
 import inspect
 import json
@@ -810,6 +811,8 @@ def test_multilevel_run_is_enabled_with_a_per_level_budget_and_boundary_hooks():
     assert "level_transition=level_transition" in base_source
     assert "boundary_consolidation" in base_source
     assert '"explanation_consolidation_task"' in base_source
+    assert "mandatory_boundary_call" in base_source
+    assert "successor control remains blocked" in base_source
     bridge_source = (HERE.parent / "parallel-cognitive-workspace-v1-9" / "experiment.py").read_text()
     assert "level_transition: bool = False" in bridge_source
     assert "level_transition=level_transition" in bridge_source
@@ -1639,9 +1642,7 @@ def consolidation_response(task):
                 "modality": "suggested",
             }],
             "preserved_structure": ["topology", "intrinsic_geometry"],
-            "nuisance_dimensions": ["absolute_coordinates"],
             "causal_structure": ["changes_relative_position"],
-            "unresolved_ports": ["actor", "target"],
             "predicted_reuse": ["faster_role_binding", "mechanism_discrimination"],
             "counterconditions": ["role_identity_ambiguous", "mechanism_conflict"],
         }],
@@ -1659,7 +1660,9 @@ def test_explanation_consolidation_is_generic_bounded_and_deduplicated():
     turn = qc.build_turn(state, (), None)
     task = turn.document["explanation_consolidation_task"]
     assert task["operation"] == "reflective-abstraction"
+    assert task["reflection_mode"] == "deep-synchronous-level-boundary"
     assert task["projection_mode"] == "abstract-explanation-projection"
+    assert task["reuse_scope"] == "game"
     assert task["source_context_index"] == 1
     assert task["source_boundary_ref"] == "eo:level-boundary"
     assert task["transfer_contract"] == {
@@ -1676,6 +1679,10 @@ def test_explanation_consolidation_is_generic_bounded_and_deduplicated():
     assert "new-context-explanation" not in serialized
     assert "successor-context claim" not in serialized
     assert "eo:settled-explanation" in task["source_evidence_refs"]
+    assert len(task["reflection_questions"]) == 5
+    assert task["retrospective_scope"]["selection"] == (
+        "complete-evidence-preserving-semantic-quotient"
+    )
 
     schema = qc.response_schema(turn)["properties"]["workspace_write"]
     assert "explanation_consolidation" in schema["required"]
@@ -1688,13 +1695,37 @@ def test_explanation_consolidation_is_generic_bounded_and_deduplicated():
         "sparse_cut": {"successor_only": "NEW_CONTEXT_MUST_NOT_BE_TRANSPORTED"},
         "ordered_lossy_deltas": ["NEW_CONTEXT_DELTA"],
     })
-    request = qc.request_payload(transport_turn, {})
+    request = qc.request_payload(transport_turn, {
+        "consolidation_max_tokens": 5120,
+        "consolidation_thinking_budget_tokens": 1024,
+    })
     transported = request["messages"][0]["content"]
     assert "NEW_CONTEXT_MUST_NOT_BE_TRANSPORTED" not in transported
     assert "NEW_CONTEXT_DELTA" not in transported
     assert "completed-context-only" in transported
+    assert "R2 explanation consolidation" in transported
+    assert "TWO SEPARATE OUTPUT CHANNELS" not in transported
     assert "eo:settled-explanation" in transported
-    compiled = qc.compile_response(consolidation_response(task), turn)
+    assert request["max_tokens"] == 5120
+    assert request["thinking_budget_tokens"] == 1024
+    consolidation_schema = schema["properties"]["explanation_consolidation"]
+    assert "oneOf" not in consolidation_schema
+    assert consolidation_schema["properties"]["decision"] == {
+        "enum": ["propose", "abstain"]
+    }
+    response = consolidation_response(task)
+    raw_abstraction = response["parsed"]["workspace_write"][
+        "explanation_consolidation"
+    ]["abstractions"][0]
+    # Constrained decoders can repeat a set-valued token sequence even when
+    # the transport schema says uniqueItems. Exact repeats carry no semantic
+    # information and are deterministically quotiented before authority checks.
+    for field in (
+        "applicability_relations", "preserved_structure", "causal_structure",
+        "predicted_reuse", "counterconditions",
+    ):
+        raw_abstraction[field].append(copy.deepcopy(raw_abstraction[field][0]))
+    compiled = qc.compile_response(response, turn)
     assert not compiled["rejected"]
     consolidation = next(
         item for item in compiled["accepted"]
@@ -1710,12 +1741,34 @@ def test_explanation_consolidation_is_generic_bounded_and_deduplicated():
     assert abstraction["schema_definition"]["projection_mode"] == (
         "abstract-explanation-projection"
     )
+    assert abstraction["unresolved_ports"] == ["actor", "target"]
+    assert len(abstraction["causal_structure"]) == 1
+    assert abstraction["schema_definition"]["reuse_scope"] == "game"
     assert consolidation["payload"]["projection_mode"] == (
         "abstract-explanation-projection"
     )
     assert compiled["working_note"]["goal_proposals"][0]["authority_scope"] == "fresh-binding-probe-only"
     assert compiled["working_note"]["action_aliases"] == []
     assert compiled["working_note"]["abductive_compositions"] == []
+    assert qc.boundary_consolidation_accepted(compiled, turn) is True
+    assert qc.boundary_consolidation_accepted(
+        {**compiled, "accepted": []}, turn,
+    ) is False
+
+    spoof = SimpleNamespace(
+        kind="explanation_consolidation", created_by="qwen", created_revision=19,
+        object_id="eo:spoof-consolidation", dependency_ids=(), payload={
+            "protocol": "explanation-consolidation-v1",
+            "workspace_ref": scratchpad._workspace_ref(qc, "w"),
+            "source_boundary_ref": task["source_boundary_ref"],
+            "source_refs": [task["source_boundary_ref"]],
+            "decision": "abstain", "abstractions": [],
+            "authority_reset": {"progress_authority": "inherited"},
+        },
+    )
+    state.objects.append(spoof)
+    assert qc.explanation_consolidation_due(state, "w") is True
+    state.objects.pop()
 
     state.objects.append(SimpleNamespace(
         kind="explanation_consolidation", created_by="qwen", created_revision=20,
@@ -1757,6 +1810,160 @@ def test_explanation_consolidation_abstention_has_no_reusable_schema_authority()
     )
     assert consolidation["payload"]["decision"] == "abstain"
     assert consolidation["payload"]["abstractions"] == []
+    assert qc.boundary_consolidation_accepted(compiled, turn) is True
+
+
+def test_explanation_consolidation_accepts_one_to_three_distinct_abstractions():
+    scratchpad = load("scratchpad_consolidation_three") if (HERE / "scratchpad_consolidation_three.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    state = consolidation_state(scratchpad, qc)
+    turn = qc.build_turn(state, (), None)
+    task = turn.document["explanation_consolidation_task"]
+    response = consolidation_response(task)
+    note = response["parsed"]["workspace_write"]
+    base_goal = note["goal_proposals"][0]
+    base_abstraction = note["explanation_consolidation"]["abstractions"][0]
+    second_goal = {
+        **base_goal,
+        "verb": "fit",
+        "schema_name": "Boundary completion",
+        "observable": "boundary_gap",
+    }
+    third_goal = {
+        **base_goal,
+        "verb": "contact",
+        "schema_name": "Contact completion",
+        "goal_family": "contact",
+        "observable": "boundary_gap",
+    }
+    note["goal_proposals"] = [base_goal, second_goal, third_goal]
+    note["explanation_consolidation"]["abstractions"] = [
+        base_abstraction,
+        {
+            **base_abstraction,
+            "local_ref": "abstraction_1",
+            "goal_proposal_index": 1,
+            "causal_structure": ["preserves_intrinsic_structure"],
+            "predicted_reuse": ["potential_prediction"],
+        },
+        {
+            **base_abstraction,
+            "local_ref": "abstraction_2",
+            "goal_proposal_index": 2,
+            "causal_structure": ["changes_contact"],
+            "predicted_reuse": ["milestone_detection"],
+        },
+    ]
+    compiled = qc.compile_response(response, turn)
+    assert not compiled["rejected"]
+    consolidation = next(
+        item for item in compiled["accepted"]
+        if item["kind"] == "explanation_consolidation"
+    )
+    assert len(consolidation["payload"]["abstractions"]) == 3
+    assert all(
+        item["empirical_support"] == 0
+        and item["epistemic_status"] == "ungrounded-reusable-hypothesis"
+        for item in consolidation["payload"]["abstractions"]
+    )
+
+    duplicate = consolidation_response(task)
+    duplicate_note = duplicate["parsed"]["workspace_write"]
+    duplicate_note["goal_proposals"] = [base_goal, second_goal]
+    duplicate_note["explanation_consolidation"]["abstractions"] = [
+        base_abstraction,
+        {**base_abstraction, "local_ref": "abstraction_1", "goal_proposal_index": 1},
+    ]
+    rejected = qc.compile_response(duplicate, turn)
+    assert rejected["rejected"][-1]["reason"] == (
+        "explanation-consolidation-duplicate"
+    )
+
+    fourth = consolidation_response(task)
+    fourth_note = fourth["parsed"]["workspace_write"]
+    fourth_note["explanation_consolidation"]["abstractions"] *= 4
+    rejected = qc.compile_response(fourth, turn)
+    assert rejected["rejected"][-1]["reason"] == (
+        "explanation-consolidation-authority"
+    )
+
+
+def test_explanation_consolidation_packet_covers_only_the_whole_completed_context():
+    scratchpad = load("scratchpad_consolidation_scope") if (HERE / "scratchpad_consolidation_scope.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    state = consolidation_state(scratchpad, qc)
+    for index in range(9):
+        state.objects.append(SimpleNamespace(
+            kind="explanation", created_by="r2", created_revision=index + 1,
+            object_id=f"eo:context-explanation-{index}", dependency_ids=(),
+            payload={
+                "claim": "repeated relational family",
+                "goal": {
+                    "family": "alignment", "measure": "centroid_distance",
+                    "direction": "decrease", "terminal": "centroid_distance=0",
+                    "current": 9 - index,
+                },
+                "epistemic_evaluation": {
+                    "confirmations": index, "refutations": int(index == 5),
+                    "mechanism_confidence": index / 8,
+                },
+            },
+        ))
+    for index in range(11):
+        state.edges.append(SimpleNamespace(
+            kind="supports" if index % 2 == 0 else "refutes",
+            source_id="eo:prior-support",
+            target_id="eo:prior-prediction",
+            created_revision=index % 9 + 1,
+        ))
+    task = scratchpad._consolidation_task(state, "w", qc)
+    assert task["retrospective_scope"]["explanations_total"] == 10
+    assert task["retrospective_scope"]["explanations_selected"] == 10
+    assert task["retrospective_scope"]["explanation_families"] == 2
+    assert task["retrospective_scope"]["judgments_total"] == 12
+    assert task["retrospective_scope"]["judgments_selected"] == 12
+    repeated = next(
+        item for item in task["settled_explanations"]
+        if item["occurrence_count"] == 9
+    )
+    assert repeated["confirmation_range"] == {"min": 0, "max": 8}
+    assert repeated["refutation_range"] == {"min": 0, "max": 1}
+    assert repeated["potential_summary"] == {
+        "observed_count": 9, "first": 9.0, "last": 1.0,
+        "min": 1.0, "max": 9.0, "distinct_count": 9,
+        "step_counts": {"decrease": 8},
+        "ordered_value_digest": qc.stable_hash(
+            [float(value) for value in range(9, 0, -1)]
+        ),
+    }
+    assert task == scratchpad._consolidation_task(
+        SimpleNamespace(
+            objects=list(reversed(state.objects)),
+            edges=list(reversed(state.edges)),
+        ),
+        "w", qc,
+    )
+
+    prior_context = SimpleNamespace(
+        kind="explanation", created_by="r2", created_revision=1,
+        object_id="eo:older-context", dependency_ids=(),
+        payload={"claim": "must be excluded"},
+    )
+    previous_boundary = SimpleNamespace(
+        kind="transition", created_by="environment", created_revision=2,
+        object_id="eo:previous-boundary", dependency_ids=(), payload={
+            "level_transition": True, "boundary_kind": "level-advance",
+        },
+    )
+    scoped_state = consolidation_state(scratchpad, qc)
+    scoped_state.objects.extend([prior_context, previous_boundary])
+    scoped = scratchpad._consolidation_task(scoped_state, "w", qc)
+    serialized = json.dumps(scoped, sort_keys=True)
+    assert scoped["retrospective_scope"]["prior_boundary_ref"] == (
+        "eo:previous-boundary"
+    )
+    assert "eo:older-context" not in serialized
+    assert "new-context-explanation" not in serialized
 
 
 def test_explanation_consolidation_rejects_routes_and_situated_schema_details():
@@ -2012,6 +2219,8 @@ def test_alias_runtime_configuration_is_nonblocking_and_matches_qwen_context():
     assert qwen["logical_release_delay_actions"] == 0
     assert qwen["context_window_tokens"] == 16384
     assert qwen["max_tokens"] == 2048
+    assert qwen["consolidation_max_tokens"] == 5120
+    assert qwen["consolidation_thinking_budget_tokens"] == 1024
     service = Path("/home/pauloabelha/.config/systemd/user/reflector-qwen.service").read_text()
     assert "--ctx-size 16384" in service
 

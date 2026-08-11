@@ -48,6 +48,8 @@ ROLE_IDENTITY_MAX_RESIDUAL = 0.2
 ROLE_IDENTITY_MIN_MARGIN = 0.15
 ROLE_GROUNDING_TOP_K = 4
 ROLE_TUPLE_ENUMERATION_BUDGET = 4096
+SUCCESSOR_SHADOW_MAX_ALTERNATIVES = 4
+SUCCESSOR_SHADOW_TOLERANCE = 0.01
 
 
 class DefeasibleRoleGrounder:
@@ -1518,6 +1520,255 @@ class FrameSchemaObserver:
             "confidence": confidence,
         }
 
+    @staticmethod
+    def _potential_orientation(direction: str, progress: float | None) -> str | None:
+        if progress is None:
+            return None
+        if abs(float(progress)) <= SUCCESSOR_SHADOW_TOLERANCE:
+            return "invariant"
+        return "preferred" if float(progress) > 0.0 else "anti-preferred"
+
+    @staticmethod
+    def _delta_matches(expected: Any, observed: Any) -> bool | None:
+        if expected is None or observed is None:
+            return None
+        if len(expected) != len(observed):
+            return False
+        return all(
+            abs(float(left) - float(right)) <= SUCCESSOR_SHADOW_TOLERANCE
+            for left, right in zip(expected, observed, strict=True)
+        )
+
+    def _successor_projection(
+        self, *, action: Any, explanation_binding_id: str, observable: str,
+        direction: str, residual: float, predicted: float | None,
+        progress: float | None, actor_delta: Any, target_delta: Any,
+        models_supported: bool, simulation_status: str,
+    ) -> dict[str, Any]:
+        """Project a bounded, ordinary horizon-1 explanatory frontier.
+
+        Open mechanisms project mutually discriminable observable completions,
+        rather than receiving epistemic value merely for being unknown.  A
+        supported mechanism projects its quantitative completion and an exact
+        deviation alternative.  Neither form carries execution authority.
+        """
+        command_id = self._command_id(action)
+        effect_scope_id = self._command_scope(action)
+        basis = {
+            "frame": self.last_digest,
+            "explanation": explanation_binding_id,
+            "command": command_id,
+            "observable": observable,
+            "direction": direction,
+            "residual": residual,
+        }
+        projection_id = E.stable_id("successor-projection", basis)
+
+        def alternative(
+            name: str, predicate: dict[str, Any], completion: dict[str, Any],
+        ) -> dict[str, Any]:
+            return {
+                "shadow_id": E.stable_id("successor-shadow", {
+                    **basis, "name": name, "predicate": predicate,
+                }),
+                "name": name,
+                "state": "OPEN",
+                "settlement_predicate": predicate,
+                "observable_completion": completion,
+                "authority": "r2-projection-no-action-authority",
+            }
+
+        alternatives: list[dict[str, Any]] = []
+        if models_supported and predicted is not None and progress is not None:
+            alternatives.extend((
+                alternative(
+                    "quantitative-completion-reifies",
+                    {
+                        "kind": "quantitative-expected",
+                        "identity": "UNIQUE",
+                        "residual_after": float(predicted),
+                        "actor_delta": list(actor_delta) if actor_delta is not None else None,
+                        "target_delta": list(target_delta) if target_delta is not None else None,
+                    },
+                    {
+                        "identity": "UNIQUE", "measure": observable,
+                        "residual_after": float(predicted),
+                        "potential_orientation": self._potential_orientation(direction, progress),
+                    },
+                ),
+                alternative(
+                    "quantitative-completion-refutes",
+                    {
+                        "kind": "quantitative-deviation",
+                        "identity": "UNIQUE",
+                        "residual_after_not": float(predicted),
+                        "actor_delta_not_or": list(actor_delta) if actor_delta is not None else None,
+                        "target_delta_not_or": list(target_delta) if target_delta is not None else None,
+                    },
+                    {
+                        "identity": "UNIQUE", "measure": observable,
+                        "predicted_completion": "violated",
+                    },
+                ),
+                alternative(
+                    "correspondence-or-applicability-breaks",
+                    {"kind": "identity-discontinuity", "identity": "NOT_UNIQUE"},
+                    {"identity": "NOT_UNIQUE", "measure": observable},
+                ),
+            ))
+        else:
+            for orientation in ("preferred", "anti-preferred", "invariant"):
+                alternatives.append(alternative(
+                    f"potential-{orientation}",
+                    {
+                        "kind": "potential-orientation",
+                        "identity": "UNIQUE",
+                        "orientation": orientation,
+                    },
+                    {
+                        "identity": "UNIQUE", "measure": observable,
+                        "potential_orientation": orientation,
+                        "actor_response": "OPEN", "target_response": "OPEN",
+                    },
+                ))
+            alternatives.append(alternative(
+                "correspondence-or-applicability-breaks",
+                {"kind": "identity-discontinuity", "identity": "NOT_UNIQUE"},
+                {"identity": "NOT_UNIQUE", "measure": observable},
+            ))
+        alternatives = alternatives[:SUCCESSOR_SHADOW_MAX_ALTERNATIVES]
+        signatures = {
+            json.dumps(item["observable_completion"], sort_keys=True, separators=(",", ":"))
+            for item in alternatives
+        }
+        probe_eligible = (
+            not models_supported
+            and len(alternatives) >= 2
+            and len(signatures) >= 2
+        )
+        return {
+            "protocol": "r2.1-successor-projection-v1",
+            "projection_id": projection_id,
+            "horizon": 1,
+            "basis_frame_digest": self.last_digest,
+            "explanation_binding_id": explanation_binding_id,
+            "intervention": {
+                "action": self._command_action(action),
+                "command_id": command_id,
+                "effect_scope_id": effect_scope_id,
+            },
+            "open_causal_port": {
+                "kind": "command-conditioned-role-transition",
+                "simulation_status": simulation_status,
+            },
+            "alternatives": alternatives,
+            "discrimination": {
+                "status": "DECLARED" if len(signatures) >= 2 else "VACUOUS",
+                "alternative_ids": [item["shadow_id"] for item in alternatives],
+                "distinct_observable_completions": len(signatures),
+                "observable_ports": [
+                    "identity.actor", "identity.target", f"potential.{observable}",
+                ],
+                "probe_eligible": probe_eligible,
+                "information_value": round(
+                    (len(signatures) - 1) / len(signatures), 3,
+                ) if signatures else 0.0,
+            },
+            "epistemic_status": "OPEN",
+        }
+
+    def _settle_successor_projection(
+        self, prediction: dict[str, Any], *, identity_status: str,
+        before_value: float | None, after_value: float | None,
+        actual_progress: float | None, actor_delta: Any, target_delta: Any,
+        factorization: Any = None,
+    ) -> dict[str, Any]:
+        projection = prediction.get("successor_projection")
+        if not isinstance(projection, dict):
+            return {
+                "status": "UNSETTLED", "projection_id": None,
+                "reason": "no-successor-projection",
+                "reified_shadow_ids": [], "refuted_shadow_ids": [],
+                "unresolved_shadow_ids": [], "violated_interfaces": [],
+                "reopen": [],
+            }
+        direction = str(prediction.get("goal", {}).get("direction", ""))
+        orientation = self._potential_orientation(direction, actual_progress)
+        observed = {
+            "identity": identity_status,
+            "measure": prediction.get("goal", {}).get("measure"),
+            "residual_before": before_value,
+            "residual_after": after_value,
+            "potential_orientation": orientation,
+            "actor_delta": list(actor_delta) if actor_delta is not None else None,
+            "target_delta": list(target_delta) if target_delta is not None else None,
+        }
+
+        def matches(item: dict[str, Any]) -> bool | None:
+            predicate = item.get("settlement_predicate", {})
+            kind = predicate.get("kind")
+            if kind == "identity-discontinuity":
+                return identity_status != "UNIQUE"
+            if identity_status != "UNIQUE":
+                return False
+            if kind == "potential-orientation":
+                return None if orientation is None else orientation == predicate.get("orientation")
+            if kind in {"quantitative-expected", "quantitative-deviation"}:
+                expected_residual = (
+                    predicate.get("residual_after") if kind == "quantitative-expected"
+                    else predicate.get("residual_after_not")
+                )
+                if after_value is None or expected_residual is None:
+                    return None
+                residual_match = abs(float(after_value) - float(expected_residual)) <= SUCCESSOR_SHADOW_TOLERANCE
+                actor_match = self._delta_matches(
+                    predicate.get("actor_delta") if kind == "quantitative-expected" else predicate.get("actor_delta_not_or"),
+                    actor_delta,
+                )
+                target_match = self._delta_matches(
+                    predicate.get("target_delta") if kind == "quantitative-expected" else predicate.get("target_delta_not_or"),
+                    target_delta,
+                )
+                exact = residual_match and actor_match is not False and target_match is not False
+                return exact if kind == "quantitative-expected" else not exact
+            return None
+
+        reified: list[str] = []
+        refuted: list[str] = []
+        unresolved: list[str] = []
+        for alternative in projection.get("alternatives", ()):
+            if not isinstance(alternative, dict) or not alternative.get("shadow_id"):
+                continue
+            result = matches(alternative)
+            bucket = reified if result is True else refuted if result is False else unresolved
+            bucket.append(str(alternative["shadow_id"]))
+
+        violated: list[str] = []
+        if not reified:
+            if identity_status != "UNIQUE":
+                violated.append("identity")
+            if factorization and isinstance(factorization, dict) and factorization.get("status") != "INSTALLED":
+                violated.append("factorization")
+            if before_value is None or after_value is None or orientation is None:
+                violated.append("potential")
+            else:
+                violated.append("mechanism")
+            if not violated:
+                violated.append("mechanism")
+        return {
+            "status": "REIFIED" if reified else "PROJECTION_FAILURE",
+            "projection_id": projection.get("projection_id"),
+            "observed_completion": observed,
+            "reified_shadow_ids": reified,
+            "refuted_shadow_ids": refuted,
+            "unresolved_shadow_ids": unresolved,
+            "violated_interfaces": violated,
+            "reopen": [
+                {"interface": name, "reason": "no projected successor completion reified"}
+                for name in violated
+            ],
+        }
+
     def _schema0_atom(self, *, support_id: str, support_type: str, output_type: str, evidence_id: str) -> Any:
         assert self.last_store is not None and self.last_workspace is not None
         schema = self.last_store.add(E.Schema.create(
@@ -1751,6 +2002,19 @@ class FrameSchemaObserver:
             or chain.get("causal_effect_binding_id")
             or situated["preferred_completion_binding_id"]
         )
+        successor_projection = self._successor_projection(
+            action=action,
+            explanation_binding_id=binding_id,
+            observable=observable,
+            direction=direction,
+            residual=residual,
+            predicted=None if predicted is None else float(predicted),
+            progress=None if progress is None else float(progress),
+            actor_delta=delta,
+            target_delta=target_delta,
+            models_supported=models_supported,
+            simulation_status=simulation_status,
+        )
         identities_unique = actor_identity["status"] == "UNIQUE" and target_identity["status"] == "UNIQUE"
         active = (
             identities_unique and models_supported and simulation_status == "computed"
@@ -1837,6 +2101,7 @@ class FrameSchemaObserver:
                     E.stable_id("predicted-occupancy", projected_target["cells"]) if projected_target is not None else None
                 ),
             },
+            "successor_projection": successor_projection,
             "epistemic_evaluation": {
                 "mechanism_confidence": round(min(float(actor_model["confidence"]), float(target_model["confidence"])), 3),
                 "confirmations": self.explanation_confirmations[schema_id],
@@ -1933,6 +2198,9 @@ class FrameSchemaObserver:
                 item for item in candidates
                 if not repeated_same_state
                 and not item["mechanism"]["models_supported"]
+                and item.get("successor_projection", {}).get(
+                    "discrimination", {},
+                ).get("probe_eligible") is True
                 and all(
                     value.get("status") != "BROKEN"
                     for key, value in item["identity"].items()
@@ -1970,7 +2238,15 @@ class FrameSchemaObserver:
                 )
             raw_progress = None if best is None else best["prediction"]["expected_progress"]
             progress = None if raw_progress is None else float(raw_progress)
-            information = 1.0 / (1.0 + self.action_uses[self._command_scope(action)])
+            declared_information = (
+                float(best.get("successor_projection", {}).get(
+                    "discrimination", {},
+                ).get("information_value", 0.0))
+                if best is not None else 0.0
+            )
+            information = declared_information / (
+                1.0 + self.action_uses[self._command_scope(action)]
+            )
             eligibility = (
                 "PROGRESS_ELIGIBLE" if progress_candidates else
                 "PROBE_ELIGIBLE" if probe_candidates else
@@ -2014,6 +2290,10 @@ class FrameSchemaObserver:
             "expected_progress": item["expected_progress"],
             "information_value": item["information_value"], "risk": item["risk"],
             "explanation_binding_id": item["explanation"]["binding_id"] if item["explanation"] else None,
+            "successor_discrimination": (
+                dict(item["explanation"].get("successor_projection", {}).get("discrimination", {}))
+                if item["explanation"] else None
+            ),
         } for index, item in enumerate(ranked[:3], start=1)]
 
         role_hypotheses = []
@@ -2052,6 +2332,7 @@ class FrameSchemaObserver:
                 "command": self._command_document(selected["command"]),
                 "mechanism": dict(current["mechanism"]),
                 "prediction": dict(current["prediction"]),
+                "successor_projection": deepcopy(current["successor_projection"]),
                 "observable_checkpoint": dict(current["observable_checkpoint"]),
                 "invalidation_conditions": [
                     "actor correspondence is not UNIQUE",
@@ -2075,7 +2356,7 @@ class FrameSchemaObserver:
             "rejected_goal_proposals": list(self.last_rejected_goals),
             "grounded_abductions": list(self.last_abductive_bindings),
             "rejected_abductions": list(self.last_rejected_abductions),
-            "selection_rule": "hard gates: PROGRESS_ELIGIBLE > PROBE_ELIGIBLE > INELIGIBLE; then desired delta, least-used probe, no-change risk, stable action",
+            "selection_rule": "hard gates: PROGRESS_ELIGIBLE > projection-discriminating PROBE_ELIGIBLE > INELIGIBLE; then desired delta, declared successor discrimination, no-change risk, stable action",
         }
 
     def rank_authorized_policy(

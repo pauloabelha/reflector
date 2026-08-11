@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from collections import Counter
 import copy
 import hashlib
 import json
@@ -14,6 +15,24 @@ MAX_SCRATCHPAD_TOKENS = 1024
 MAX_R2_SEMANTIC_PROJECTION_BYTES = 12000
 EXPLANATION_CONSOLIDATION_PROTOCOL = "explanation-consolidation-v1"
 FRESH_BINDING_AUTHORITY = "fresh-binding-probe-only"
+DEEP_CONSOLIDATION_MAX_TOKENS = 5120
+DEEP_CONSOLIDATION_THINKING_TOKENS = 1024
+MAX_CONSOLIDATION_PROPOSALS = 3
+CONSOLIDATION_PROMPT = """You are Qwen performing R2 explanation consolidation.
+The packet is a deterministic digest of a completed context. Compare
+its explanation families, potential summaries, change points, confirmations,
+refutations, and terminal evidence. Propose the smallest reusable action-free R2
+schemas whose failure in a future context would be informative, or explicitly
+abstain. Do not prescribe an action, route, coordinate, palette value, situated
+identity, prior binding, or intervention meaning. A proposal receives zero
+empirical authority: R2 alone may freshly bind, test, specialize, or discard it,
+and the environment alone settles it. Prefer exactly one minimal abstraction.
+Return a second or third only for causally independent structures with distinct
+reuse predictions; never repeat a schema or an array item. Keep every prose
+field terse. Return only the required JSON contract.
+
+CONSOLIDATION DIGEST:
+"""
 MANDATORY_NUISANCE_DIMENSIONS = (
     "absolute_coordinates",
     "palette_values",
@@ -201,7 +220,7 @@ def _latest_level_boundary(state: Any) -> Any | None:
 
 
 def _consolidation_task(state: Any, workspace_id: str, qc: Any) -> dict[str, Any] | None:
-    """Build one bounded, action-free abstraction task over a settled context.
+    """Build one deep, bounded reflection task over one completed context.
 
     Only graph objects created before the level boundary are eligible semantic
     sources.  The boundary and its environment evidence are included solely to
@@ -213,16 +232,55 @@ def _consolidation_task(state: Any, workspace_id: str, qc: Any) -> dict[str, Any
     if boundary is None:
         return None
     workspace_ref = _workspace_ref(qc, workspace_id)
+    objects = tuple(getattr(state, "objects", ()))
+    authority_reset = {
+        "schema_definition": "project-and-fresh-bind",
+        "empirical_support": "reset",
+        "bindings": "reset",
+        "role_identities": "reset",
+        "potentials": "reset",
+        "intervention_applicability": "reset",
+        "progress_authority": "reset",
+    }
     if any(
         item.kind == "explanation_consolidation"
         and item.created_by == "qwen"
+        and item.payload.get("protocol") == EXPLANATION_CONSOLIDATION_PROTOCOL
         and item.payload.get("workspace_ref") == workspace_ref
         and item.payload.get("source_boundary_ref") == boundary.object_id
-        for item in getattr(state, "objects", ())
+        and item.payload.get("source_boundary_ref") in item.payload.get("source_refs", ())
+        and item.payload.get("decision") in {"propose", "abstain"}
+        and item.payload.get("authority_reset") == authority_reset
+        and isinstance(item.payload.get("abstractions"), list)
+        and (
+            (item.payload.get("decision") == "abstain" and not item.payload["abstractions"])
+            or (
+                item.payload.get("decision") == "propose"
+                and 1 <= len(item.payload["abstractions"]) <= MAX_CONSOLIDATION_PROPOSALS
+            )
+        )
+        for item in objects
     ):
         return None
+    prior_boundaries = sorted(
+        (
+            item for item in objects
+            if item.kind == "transition"
+            and item.created_by == "environment"
+            and item.payload.get("level_transition") is True
+            and item.payload.get("boundary_kind") == "level-advance"
+            and item.created_revision < boundary.created_revision
+        ),
+        key=lambda item: (item.created_revision, item.object_id),
+    )
+    prior_boundary = prior_boundaries[-1] if prior_boundaries else None
+    source_start_revision = (
+        prior_boundary.created_revision if prior_boundary is not None else 0
+    )
 
-    objects = tuple(getattr(state, "objects", ()))
+    def within_completed_context(item: Any) -> bool:
+        return source_start_revision < item.created_revision < boundary.created_revision
+
     evidence = [
         item for item in objects
         if item.kind == "environment_evidence"
@@ -235,7 +293,7 @@ def _consolidation_task(state: Any, workspace_id: str, qc: Any) -> dict[str, Any
         item for item in objects
         if item.kind == "working_note"
         and item.created_by == "qwen"
-        and item.created_revision < boundary.created_revision
+        and within_completed_context(item)
         and item.payload.get("workspace_ref") == workspace_ref
     ]
     prior_note = max(
@@ -245,41 +303,202 @@ def _consolidation_task(state: Any, workspace_id: str, qc: Any) -> dict[str, Any
     )
     explanations = [
         item for item in objects
-        if item.created_revision < boundary.created_revision
+        if within_completed_context(item)
         and item.kind in {"control_explanation", "explanation"}
     ]
     explanations.sort(key=lambda item: (item.created_revision, item.object_id))
-    explanations = explanations[-6:]
-    explanation_projection = []
+    explanation_count = len(explanations)
+
+    # Consolidation receives epistemic structure, not a transcript dump.  A
+    # completed level can contain dozens of byte-near-identical situated
+    # explanations.  Quotient them by their action-free semantic definition,
+    # then preserve multiplicity, status/evidence change points, potential
+    # movement, and a digest back to every source object.
+    family_members: dict[str, list[Any]] = {}
+    family_cores: dict[str, dict[str, Any]] = {}
+    unstructured_explanation_count = 0
     for item in explanations:
         payload = item.payload
-        explanation_projection.append({
-            "source_ref": item.object_id,
+        raw_goal = payload.get("goal")
+        goal = dict(raw_goal) if isinstance(raw_goal, Mapping) else {}
+        goal_template = {
+            key: copy.deepcopy(goal[key])
+            for key in (
+                "family", "measure", "observable", "direction", "terminal",
+                "terminal_class", "terminal_condition", "role_constraints",
+                "roles", "potential_roles",
+            )
+            if key in goal
+        }
+        claim = payload.get("claim")
+        claim_text = str(claim) if isinstance(claim, str) else ""
+        semantic_label = (
+            claim_text
+            if re.fullmatch(r"[A-Za-z][A-Za-z _-]{0,47}", claim_text)
+            and re.search(r"\bf[0-9]{2}\b|\bACTION_[0-9]+\b", claim_text) is None
+            else None
+        )
+        core = {
             "kind": item.kind,
-            "epistemic_status": payload.get("epistemic_status") or payload.get("status"),
-            "claim": payload.get("claim"),
-            "goal": copy.deepcopy(payload.get("goal")),
+            "semantic_label": semantic_label,
+            "claim_digest": hashlib.sha256(
+                claim_text.encode("utf-8")
+            ).hexdigest()[:20] if claim_text else None,
+            "goal_template": goal_template or None,
             "goal_proposals": copy.deepcopy(payload.get("goal_proposals", ())),
-            "epistemic_evaluation": copy.deepcopy(payload.get("epistemic_evaluation")),
+        }
+        if (
+            core["semantic_label"] is None
+            and core["goal_template"] is None
+            and not core["goal_proposals"]
+        ):
+            unstructured_explanation_count += 1
+            continue
+        family_key = qc.stable_hash(core)
+        family_cores[family_key] = core
+        family_members.setdefault(family_key, []).append(item)
+
+    explanation_projection = []
+    representative_explanation_refs: set[str] = set()
+    for family_key in sorted(family_members):
+        members = family_members[family_key]
+        statuses: Counter[str] = Counter()
+        control_statuses: Counter[str] = Counter()
+        confirmations: list[int] = []
+        refutations: list[int] = []
+        confidences: list[float] = []
+        potential_values: list[float] = []
+        point_reasons: dict[str, set[str]] = {
+            members[0].object_id: {"initial"},
+            members[-1].object_id: {"latest"},
+        }
+        seen_statuses: set[tuple[str, str]] = set()
+        first_confirmation = first_repeated = first_refutation = False
+        for member in members:
+            payload = member.payload
+            status = str(
+                payload.get("epistemic_status") or payload.get("status") or "unknown"
+            )
+            control_status = str(payload.get("control_status") or "unknown")
+            statuses[status] += 1
+            control_statuses[control_status] += 1
+            status_pair = (status, control_status)
+            if status_pair not in seen_statuses:
+                point_reasons.setdefault(member.object_id, set()).add("status-change")
+                seen_statuses.add(status_pair)
+            evaluation = payload.get("epistemic_evaluation")
+            evaluation = evaluation if isinstance(evaluation, Mapping) else {}
+            confirmation = int(
+                evaluation.get("confirmations") or payload.get("confirmations") or 0
+            )
+            refutation = int(
+                evaluation.get("refutations") or payload.get("refutations") or 0
+            )
+            confidence = evaluation.get("mechanism_confidence")
+            confirmations.append(confirmation)
+            refutations.append(refutation)
+            if isinstance(confidence, (int, float)) and not isinstance(confidence, bool):
+                confidences.append(float(confidence))
+            if confirmation > 0 and not first_confirmation:
+                point_reasons.setdefault(member.object_id, set()).add("first-confirmation")
+                first_confirmation = True
+            if confirmation > 1 and not first_repeated:
+                point_reasons.setdefault(member.object_id, set()).add("repeated-confirmation")
+                first_repeated = True
+            if refutation > 0 and not first_refutation:
+                point_reasons.setdefault(member.object_id, set()).add("first-refutation")
+                first_refutation = True
+            goal = payload.get("goal")
+            current = goal.get("current") if isinstance(goal, Mapping) else None
+            if isinstance(current, (int, float)) and not isinstance(current, bool):
+                potential_values.append(float(current))
+                if float(current) == 0.0:
+                    point_reasons.setdefault(member.object_id, set()).add("terminal-potential")
+
+        def numeric_range(values: Sequence[float | int]) -> dict[str, Any] | None:
+            return None if not values else {"min": min(values), "max": max(values)}
+
+        steps = Counter()
+        for left, right in zip(potential_values, potential_values[1:]):
+            steps["decrease" if right < left else "increase" if right > left else "equal"] += 1
+        change_points = []
+        by_id = {item.object_id: item for item in members}
+        for source_ref in sorted(
+            point_reasons,
+            key=lambda ref: (by_id[ref].created_revision, ref),
+        ):
+            member = by_id[source_ref]
+            payload = member.payload
+            evaluation = payload.get("epistemic_evaluation")
+            evaluation = evaluation if isinstance(evaluation, Mapping) else {}
+            goal = payload.get("goal")
+            current = goal.get("current") if isinstance(goal, Mapping) else None
+            change_points.append({
+                "source_ref": source_ref,
+                "reasons": sorted(point_reasons[source_ref]),
+            })
+            representative_explanation_refs.add(source_ref)
+        explanation_projection.append({
+            "family_digest": family_key,
+            "semantic_core": family_cores[family_key],
+            "occurrence_count": len(members),
+            "ordered_source_ref_digest": qc.stable_hash(
+                [item.object_id for item in members]
+            ),
+            "epistemic_status_counts": dict(sorted(statuses.items())),
+            "control_status_counts": dict(sorted(control_statuses.items())),
+            "confirmation_range": numeric_range(confirmations),
+            "refutation_range": numeric_range(refutations),
+            "mechanism_confidence_range": numeric_range(confidences),
+            "potential_summary": None if not potential_values else {
+                "observed_count": len(potential_values),
+                "first": potential_values[0],
+                "last": potential_values[-1],
+                "min": min(potential_values),
+                "max": max(potential_values),
+                "distinct_count": len(set(potential_values)),
+                "step_counts": dict(sorted(steps.items())),
+                "ordered_value_digest": qc.stable_hash(potential_values),
+            },
+            "change_points": change_points,
         })
 
     eligible_edges = [
         edge for edge in getattr(state, "edges", ())
         if edge.kind in {"supports", "refutes"}
-        and edge.created_revision < boundary.created_revision
+        and source_start_revision < edge.created_revision < boundary.created_revision
     ]
     eligible_edges.sort(
         key=lambda edge: (
             edge.created_revision, edge.kind, edge.source_id, edge.target_id,
         )
     )
-    eligible_edges = eligible_edges[-8:]
-    settlements = [{
-        "kind": edge.kind,
-        "evidence_ref": edge.source_id,
-        "target_ref": edge.target_id,
-    } for edge in eligible_edges]
-    source_refs = {
+    judgment_count = len(eligible_edges)
+    settlements = []
+    representative_judgment_refs: set[str] = set()
+    for kind in ("supports", "refutes"):
+        members = [edge for edge in eligible_edges if edge.kind == kind]
+        if not members:
+            continue
+        representatives = [members[0]]
+        if members[-1] is not members[0]:
+            representatives.append(members[-1])
+        pairs = [[edge.source_id, edge.target_id] for edge in members]
+        settlements.append({
+            "kind": kind,
+            "count": len(members),
+            "distinct_evidence_count": len({edge.source_id for edge in members}),
+            "distinct_target_count": len({edge.target_id for edge in members}),
+            "ordered_pair_digest": qc.stable_hash(pairs),
+            "representatives": [
+                {"evidence_ref": edge.source_id, "target_ref": edge.target_id}
+                for edge in representatives
+            ],
+        })
+        representative_judgment_refs.update(
+            ref for pair in pairs[:1] + pairs[-1:] for ref in pair
+        )
+    all_source_refs = {
         boundary.object_id,
         *(item.object_id for item in evidence),
         *(item.object_id for item in explanations),
@@ -288,34 +507,107 @@ def _consolidation_task(state: Any, workspace_id: str, qc: Any) -> dict[str, Any
         *(edge.target_id for edge in eligible_edges),
     }
     existing_ids = {item.object_id for item in objects}
-    source_refs = sorted(source_refs & existing_ids)
+    all_source_refs = sorted(all_source_refs & existing_ids)
+    citation_candidates = [
+        boundary.object_id,
+        *(item.object_id for item in evidence),
+        *sorted(representative_explanation_refs),
+        *sorted(representative_judgment_refs),
+        *((prior_note.object_id,) if prior_note is not None else ()),
+    ]
+    source_refs = []
+    for source_ref in citation_candidates:
+        if source_ref in existing_ids and source_ref not in source_refs:
+            source_refs.append(source_ref)
+        if len(source_refs) == 12:
+            break
     context_index = sum(
         item.kind == "transition"
         and item.created_by == "environment"
         and item.payload.get("level_transition") is True
         for item in objects
     )
+    completed_context_objects = [
+        item for item in objects if within_completed_context(item)
+    ]
+    complete_evidence_census = {
+        kind: sum(item.kind == kind for item in completed_context_objects)
+        for kind in sorted({item.kind for item in completed_context_objects})
+    }
+    evidence_census = {
+        kind: complete_evidence_census.get(kind, 0)
+        for kind in (
+            "explanation", "control_explanation", "prediction", "transition",
+            "environment_evidence", "schema", "working_note",
+        )
+        if complete_evidence_census.get(kind, 0)
+    }
     return {
         "protocol": EXPLANATION_CONSOLIDATION_PROTOCOL,
         "operation": "reflective-abstraction",
+        "reflection_mode": "deep-synchronous-level-boundary",
         "projection_mode": "abstract-explanation-projection",
+        "reuse_scope": "game",
         "source_context_index": context_index,
         "source_boundary_ref": boundary.object_id,
         "source_evidence_refs": source_refs,
+        "retrospective_scope": {
+            "prior_boundary_ref": (
+                prior_boundary.object_id if prior_boundary is not None else None
+            ),
+            "start_revision_exclusive": source_start_revision,
+            "end_revision_exclusive": boundary.created_revision,
+            "object_census": evidence_census,
+            "complete_object_census_digest": qc.stable_hash(
+                complete_evidence_census
+            ),
+            "explanations_total": explanation_count,
+            "explanations_selected": explanation_count,
+            "explanation_families": len(explanation_projection),
+            "unstructured_explanations_digest_only": unstructured_explanation_count,
+            "judgments_total": judgment_count,
+            "judgments_selected": judgment_count,
+            "judgment_classes": len(settlements),
+            "selection": "complete-evidence-preserving-semantic-quotient",
+            "all_source_ref_count": len(all_source_refs),
+            "ordered_source_ref_digest": qc.stable_hash(all_source_refs),
+            "qwen_citation_ref_count": len(source_refs),
+        },
         "prior_semantic_note": None if prior_note is None else {
             "source_ref": prior_note.object_id,
-            "goal_proposals": copy.deepcopy(prior_note.payload.get("goal_proposals", ())),
-            "abductive_compositions": copy.deepcopy(prior_note.payload.get("abductive_compositions", ())),
+            "goal_proposal_count": len(prior_note.payload.get("goal_proposals", ())),
+            "goal_proposal_digest": qc.stable_hash(
+                prior_note.payload.get("goal_proposals", ())
+            ),
+            "abductive_composition_count": len(
+                prior_note.payload.get("abductive_compositions", ())
+            ),
+            "abductive_composition_digest": qc.stable_hash(
+                prior_note.payload.get("abductive_compositions", ())
+            ),
         },
         "settled_explanations": explanation_projection,
         "settled_judgments": settlements,
+        "reflection_questions": [
+            "What structures persisted across the completed context?",
+            "What causal regularities survived intervention and settlement?",
+            "What explanation fragments contributed to the preferred completion?",
+            "What apparent regularities were refuted or remained context-dependent?",
+            "Which details can be quotiented away without losing falsifiable predictions?",
+        ],
         "abstraction_question": (
-            "What is the smallest useful R2 schema fragment that could generate "
-            "the settled structure after nuisance details are quotiented out?"
+            "What are the smallest useful R2 schema fragments that could generate "
+            "the settled structure after nuisance details are quotiented out? "
+            "Prefer an abstraction whose future failure would teach R2 the most, "
+            "not one that merely describes the completed context."
         ),
         "response_instruction": (
-            "Return decision=propose with exactly one abstraction and exactly "
-            "one referenced goal_proposal, or decision=abstain with both "
+            "Reason broadly over the complete retrospective packet, compare and "
+            "reject weak abstractions internally, then return a compact artifact. "
+            "Return decision=propose with one minimal abstraction by default, "
+            "and at most three only when they capture causally independent "
+            "structures with distinct reuse predictions. Return exactly "
+            "one referenced goal_proposal per abstraction, or decision=abstain with both "
             "abstractions=[] and goal_proposals=[]; never repeat an array item. "
             "Project the abstract explanation into a future context: preserve "
             "its relational goal, typed roles, potential, terminal condition, "
@@ -330,15 +622,7 @@ def _consolidation_task(state: Any, workspace_id: str, qc: Any) -> dict[str, Any
             "r2": "fresh-bind-specialize-test-or-discard",
             "environment": "sole-empirical-settlement-authority",
         },
-        "transfer_contract": {
-            "schema_definition": "project-and-fresh-bind",
-            "empirical_support": "reset",
-            "bindings": "reset",
-            "role_identities": "reset",
-            "potentials": "reset",
-            "intervention_applicability": "reset",
-            "progress_authority": "reset",
-        },
+        "transfer_contract": authority_reset,
     }
 
 
@@ -346,6 +630,26 @@ def explanation_consolidation_due(state: Any, workspace_id: str, qc: Any) -> boo
     """Demand exactly one accepted consolidation per completed context."""
 
     return _consolidation_task(state, workspace_id, qc) is not None
+
+
+def boundary_consolidation_accepted(
+    compilation: Mapping[str, Any], turn: Any,
+) -> bool:
+    """Authorize crossing a context boundary only after proposal or abstention."""
+
+    task = getattr(turn, "document", {}).get("explanation_consolidation_task")
+    if not isinstance(task, Mapping):
+        return True
+    writes = [
+        item for item in compilation.get("accepted", ())
+        if item.get("kind") == "explanation_consolidation"
+    ]
+    return bool(
+        len(writes) == 1
+        and writes[0].get("payload", {}).get("source_boundary_ref")
+        == task.get("source_boundary_ref")
+        and writes[0].get("payload", {}).get("decision") in {"propose", "abstain"}
+    )
 
 
 def _semantic_failure_signals(document: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
@@ -1071,22 +1375,21 @@ CAUSAL VISUAL UNIT:
                     "protocol": {"const": EXPLANATION_CONSOLIDATION_PROTOCOL},
                     "source_boundary_ref": {"const": consolidation_task["source_boundary_ref"]},
                     "source_refs": {
-                        "type": "array", "minItems": 1, "maxItems": min(8, len(source_refs)),
+                        "type": "array", "minItems": 1, "maxItems": min(6, len(source_refs)),
                         "uniqueItems": True, "items": {"enum": source_refs},
                     },
                     "abstractions": {
-                        "type": "array", "uniqueItems": True, "maxItems": 1,
+                        "type": "array", "uniqueItems": True,
+                        "maxItems": MAX_CONSOLIDATION_PROPOSALS,
                         "items": {
                             "type": "object", "additionalProperties": False,
-                            "required": ["local_ref", "goal_proposal_index", "applicability_relations", "preserved_structure", "nuisance_dimensions", "causal_structure", "unresolved_ports", "predicted_reuse", "counterconditions"],
+                            "required": ["local_ref", "goal_proposal_index", "applicability_relations", "preserved_structure", "causal_structure", "predicted_reuse", "counterconditions"],
                             "properties": {
                                 "local_ref": {"type": "string", "pattern": "^abstraction_[0-9]{1,2}$"},
                                 "goal_proposal_index": {"type": "integer", "minimum": 0, "maximum": 2},
                                 "applicability_relations": {"type": "array", "maxItems": 6, "items": role_relation},
                                 "preserved_structure": {"type": "array", "uniqueItems": True, "maxItems": 5, "items": {"enum": ["topology", "intrinsic_geometry", "component_count", "relative_order", "contact_state", "containment_state"]}},
-                                "nuisance_dimensions": {"type": "array", "uniqueItems": True, "maxItems": 8, "items": {"enum": list(MANDATORY_NUISANCE_DIMENSIONS)}},
                                 "causal_structure": {"type": "array", "uniqueItems": True, "maxItems": 4, "items": {"enum": ["preserves_intrinsic_structure", "changes_relative_position", "changes_contact", "changes_containment", "changes_component_count", "unknown"]}},
-                                "unresolved_ports": {"type": "array", "uniqueItems": True, "maxItems": 4, "items": {"enum": abstract_roles}},
                                 "predicted_reuse": {"type": "array", "minItems": 1, "maxItems": 4, "uniqueItems": True, "items": {"enum": ["faster_role_binding", "constrained_shadow_generation", "potential_prediction", "mechanism_discrimination", "milestone_detection"]}},
                                 "counterconditions": {"type": "array", "maxItems": 5, "uniqueItems": True, "items": {"enum": ["applicability_relation_absent", "role_identity_ambiguous", "mechanism_conflict", "potential_not_measurable", "predicted_reuse_refuted"]}},
                             },
@@ -1097,33 +1400,16 @@ CAUSAL VISUAL UNIT:
                 "protocol", "decision", "source_boundary_ref", "source_refs",
                 "abstractions",
             ]
+            # Keep the transport schema compact.  The compiler below enforces
+            # the dependent invariant: propose means 1..3 abstractions and
+            # abstain means zero.  JSON validation alone never opens the gate.
             properties["explanation_consolidation"] = {
-                "oneOf": [
-                    {
-                        "type": "object", "additionalProperties": False,
-                        "required": consolidation_required,
-                        "properties": {
-                            **copy.deepcopy(consolidation_properties),
-                            "decision": {"const": "propose"},
-                            "abstractions": {
-                                **copy.deepcopy(consolidation_properties["abstractions"]),
-                                "minItems": 1,
-                            },
-                        },
-                    },
-                    {
-                        "type": "object", "additionalProperties": False,
-                        "required": consolidation_required,
-                        "properties": {
-                            **copy.deepcopy(consolidation_properties),
-                            "decision": {"const": "abstain"},
-                            "abstractions": {
-                                **copy.deepcopy(consolidation_properties["abstractions"]),
-                                "maxItems": 0,
-                            },
-                        },
-                    },
-                ],
+                "type": "object", "additionalProperties": False,
+                "required": consolidation_required,
+                "properties": {
+                    **consolidation_properties,
+                    "decision": {"enum": ["propose", "abstain"]},
+                },
             }
             # Consolidation is a semantic projection operation, not an
             # ordinary scratchpad refresh.  Do not make Qwen re-emit action
@@ -1140,7 +1426,14 @@ CAUSAL VISUAL UNIT:
                 if key in required
             }
             properties["goal_proposals"] = {
-                **properties["goal_proposals"], "minItems": 0, "maxItems": 1,
+                **properties["goal_proposals"], "minItems": 0,
+                "maxItems": MAX_CONSOLIDATION_PROPOSALS,
+            }
+            properties["summary"] = {
+                **properties["summary"], "maxLength": 240,
+            }
+            properties["objective_hypothesis"] = {
+                **properties["objective_hypothesis"], "maxLength": 160,
             }
         return {
             "type": "object",
@@ -1162,6 +1455,9 @@ CAUSAL VISUAL UNIT:
         return output
 
     def response_schema(turn: Any) -> dict[str, Any]:
+        is_consolidation = isinstance(
+            turn.document.get("explanation_consolidation_task"), Mapping,
+        )
         return {
             "type": "object",
             "additionalProperties": False,
@@ -1169,7 +1465,9 @@ CAUSAL VISUAL UNIT:
             "properties": {
                 "protocol": {"const": turn.document["protocol"]},
                 "request_id": {"const": turn.request_id},
-                "natural_language_scratchpad": {"type": "string", "maxLength": 900},
+                "natural_language_scratchpad": {
+                    "type": "string", "maxLength": 320 if is_consolidation else 900,
+                },
                 "workspace_write": note_schema(turn),
             },
         }
@@ -1218,7 +1516,12 @@ CAUSAL VISUAL UNIT:
                 "authority": "canonical-turn-retained-for-response-validation",
                 "semantic_view": "bounded-sparse-cut",
             }
-        compact_text = qc.PROMPT + json.dumps(
+        prompt = (
+            CONSOLIDATION_PROMPT
+            if isinstance(consolidation_task, Mapping)
+            else qc.PROMPT
+        )
+        compact_text = prompt + json.dumps(
             compact_document, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
         )
         messages = request.get("messages", ())
@@ -1230,6 +1533,14 @@ CAUSAL VISUAL UNIT:
                 content[0]["text"] = compact_text
                 if isinstance(consolidation_task, Mapping):
                     messages[0]["content"] = [content[0]]
+        if isinstance(consolidation_task, Mapping):
+            request["max_tokens"] = int(qwen.get(
+                "consolidation_max_tokens", DEEP_CONSOLIDATION_MAX_TOKENS,
+            ))
+            request["thinking_budget_tokens"] = int(qwen.get(
+                "consolidation_thinking_budget_tokens",
+                DEEP_CONSOLIDATION_THINKING_TOKENS,
+            ))
         return request
 
     def compile_response(response: Mapping[str, Any], turn: Any) -> dict[str, Any]:
@@ -1368,10 +1679,11 @@ CAUSAL VISUAL UNIT:
                 or decision not in {"propose", "abstain"}
                 or source_boundary_ref != consolidation_task.get("source_boundary_ref")
                 or not isinstance(source_refs, list) or not source_refs
-                or len(source_refs) > 8 or len(set(source_refs)) != len(source_refs)
+                or len(source_refs) > 6 or len(set(source_refs)) != len(source_refs)
                 or source_boundary_ref not in source_refs
                 or not set(source_refs).issubset(allowed_source_refs)
-                or not isinstance(abstractions, list) or len(abstractions) > 1
+                or not isinstance(abstractions, list)
+                or len(abstractions) > MAX_CONSOLIDATION_PROPOSALS
                 or (decision == "propose" and not abstractions)
                 or (decision == "abstain" and abstractions)
                 or (decision == "abstain" and unique_proposals)
@@ -1380,6 +1692,8 @@ CAUSAL VISUAL UNIT:
                 return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-authority"}]}
             normalized_abstractions = []
             used_indices = set()
+            used_local_refs = set()
+            used_abstraction_cores = set()
             allowed_predicates = {
                 "same_outline", "different_outline", "same_interior",
                 "different_interior", "same_area", "different_area",
@@ -1407,26 +1721,50 @@ CAUSAL VISUAL UNIT:
             }
             abstraction_fields = {
                 "local_ref", "goal_proposal_index", "applicability_relations",
-                "preserved_structure", "nuisance_dimensions", "causal_structure",
-                "unresolved_ports", "predicted_reuse", "counterconditions",
+                "preserved_structure", "causal_structure", "predicted_reuse",
+                "counterconditions",
             }
             for abstraction in abstractions:
                 if not isinstance(abstraction, Mapping) or set(abstraction) != abstraction_fields:
                     return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-abstraction"}]}
+                abstraction = dict(abstraction)
+                for field in (
+                    "applicability_relations", "preserved_structure",
+                    "causal_structure", "predicted_reuse", "counterconditions",
+                ):
+                    values = abstraction.get(field)
+                    if not isinstance(values, list):
+                        return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-port-typing"}]}
+                    seen_values = set()
+                    unique_values = []
+                    for value in values:
+                        value_hash = qc.stable_hash(value)
+                        if value_hash not in seen_values:
+                            seen_values.add(value_hash)
+                            unique_values.append(value)
+                    abstraction[field] = unique_values
                 index = abstraction.get("goal_proposal_index")
                 if (
                     not isinstance(index, int) or isinstance(index, bool)
                     or index < 0 or index >= len(unique_proposals)
                     or index in used_indices
+                    or abstraction.get("local_ref") in used_local_refs
                 ):
                     return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-schema-reference"}]}
                 used_indices.add(index)
+                used_local_refs.add(abstraction.get("local_ref"))
+                abstraction_core = {
+                    key: value for key, value in abstraction.items()
+                    if key not in {"local_ref", "goal_proposal_index"}
+                }
+                abstraction_core_hash = qc.stable_hash(abstraction_core)
+                if abstraction_core_hash in used_abstraction_cores:
+                    return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-duplicate"}]}
+                used_abstraction_cores.add(abstraction_core_hash)
                 roles = set(unique_proposals[index].get("roles", ()))
                 relations = abstraction.get("applicability_relations")
                 preserved = abstraction.get("preserved_structure")
-                nuisances = abstraction.get("nuisance_dimensions")
                 causal = abstraction.get("causal_structure")
-                unresolved = abstraction.get("unresolved_ports")
                 predicted_reuse = abstraction.get("predicted_reuse")
                 counterconditions = abstraction.get("counterconditions")
                 if not isinstance(relations, list) or any(
@@ -1442,14 +1780,11 @@ CAUSAL VISUAL UNIT:
                     not isinstance(value, list)
                     or len(value) != len(set(value))
                     for value in (
-                        preserved, nuisances, causal, unresolved,
-                        predicted_reuse, counterconditions,
+                        preserved, causal, predicted_reuse, counterconditions,
                     )
                 ) or (
                     not set(preserved).issubset(allowed_preserved)
-                    or not set(nuisances).issubset(MANDATORY_NUISANCE_DIMENSIONS)
                     or not set(causal).issubset(allowed_causal)
-                    or not set(unresolved).issubset(roles)
                     or not predicted_reuse
                     or not set(predicted_reuse).issubset(allowed_reuse)
                     or not set(counterconditions).issubset(allowed_counterconditions)
@@ -1462,16 +1797,16 @@ CAUSAL VISUAL UNIT:
                     **unique_proposals[index],
                     "authority_scope": FRESH_BINDING_AUTHORITY,
                     "projection_mode": "abstract-explanation-projection",
+                    "reuse_scope": "game",
                     "consolidation_source_boundary_ref": source_boundary_ref,
                 }
                 unique_proposals[index] = schema_definition
                 normalized_abstractions.append({
                     **dict(abstraction),
                     "schema_definition": schema_definition,
-                    "nuisance_dimensions": sorted(set((
-                        *MANDATORY_NUISANCE_DIMENSIONS,
-                        *abstraction.get("nuisance_dimensions", ()),
-                    ))),
+                    # These are R2 authority-reset facts, not Qwen choices.
+                    "nuisance_dimensions": list(MANDATORY_NUISANCE_DIMENSIONS),
+                    "unresolved_ports": sorted(roles),
                     "empirical_support": 0,
                     "epistemic_status": "ungrounded-reusable-hypothesis",
                 })
@@ -1481,6 +1816,8 @@ CAUSAL VISUAL UNIT:
                 "protocol": EXPLANATION_CONSOLIDATION_PROTOCOL,
                 "operation": "reflective-abstraction",
                 "projection_mode": "abstract-explanation-projection",
+                "reflection_mode": "deep-synchronous-level-boundary",
+                "reuse_scope": "game",
                 "decision": decision,
                 "source_context_index": int(consolidation_task["source_context_index"]),
                 "source_boundary_ref": source_boundary_ref,
@@ -1632,3 +1969,4 @@ CAUSAL VISUAL UNIT:
             state, workspace_id, qc
         )
     )
+    qc.boundary_consolidation_accepted = boundary_consolidation_accepted
