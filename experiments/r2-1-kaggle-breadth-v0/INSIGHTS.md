@@ -311,6 +311,17 @@ Falsification:
 Status: revised contract-verified candidate; clean serial breadth evidence
 pending.
 
+Live evidence:
+
+- Through corrected G50T action 22, every one of eleven queues had a durable
+  demand and ten post-action calls used ten distinct transition evidence refs.
+  Cadence-only actions 8 and 20 queued nothing.
+- Scheduler starvation is resolved. The restored calls failed downstream due
+  to deterministic context exhaustion.
+
+Status: promoted as a causally clean scheduling change; model request capacity
+is now the limiting layer.
+
 ## I10 — Intervention identity includes payload
 
 Observed:
@@ -412,3 +423,85 @@ Inference:
   semantic evidence quality and destroys build comparability.
 
 Status: scored campaign policy changed to serial workers on the shared endpoint.
+
+## I15 — Declared token reserve is not an actual request reserve
+
+Observed:
+
+- Evidence-driven G50T requests received HTTP 400 with 16,779–17,658 prompt
+  tokens against a 16,384-token server context, or generated truncated JSON
+  ending at exactly 16,384 total tokens.
+- The one barely fitting request used 14,594 prompt tokens and 1,471 completion
+  tokens, then failed the structured compiler. The configured 2,048-token
+  reserve was therefore not preserved in the serialized request.
+
+Inference:
+
+- Request budgeting accounts inadequately for system prompt, output schema, or
+  chat serialization overhead. Retrying a distinct evidence demand is correct,
+  but transporting an over-context request is wasted work.
+- The repair must budget the full serialized request and reduce only explicitly
+  lossy frontier material. Required causal/evidence packets and canonical
+  fields cannot be truncated to make a request fit.
+
+Status: interface defect causally identified; isolated implementation in
+progress.
+
+## I16 — Exact batching removes superlinear graph reduction without forgetting
+
+Observed:
+
+- Complete graph replay was performed three times per due Qwen queue and grew
+  to 53.5–83.2 seconds before transport. Hundreds of object additions per
+  observation also copied/sorted the full tuple individually.
+- Historical bindings are distinct situated objects, not deletable duplicates;
+  83–95% share structural signatures only after erasing carrier/term grounding.
+
+Intervention:
+
+- Validate each `ObjectAdded` in canonical sequence, retain identical event
+  hashes/revisions/dependency chronology, and freeze the canonical sorted state
+  once per contiguous run. Do not coalesce or prune any object.
+
+Evidence:
+
+- Real G50T/LP85 event regeneration, every batch prefix, corrupt-trace failure,
+  final state hash, and Qwen turn are exact.
+- Full replay improves 58–86× and exact Qwen turn construction 33–38×.
+
+Inference:
+
+- This is an epistemically neutral optimization: it changes reduction strategy
+  but no evidence, identity, ancestry, attention, or controller decision.
+
+Status: pushed in `762f28d`; live breadth throughput pending.
+
+## I17 — Context admission is part of epistemic integrity
+
+Observed:
+
+- Distinct evidence demands were scheduled correctly but were transported in
+  requests that could not leave enough context for a structured answer. The
+  resulting HTTP and truncated-JSON failures were interface failures, not
+  evidence that the semantic hypothesis was unproductive.
+
+Intervention:
+
+- Budget the fully serialized request against the actual local tokenizer and
+  reserve completion capacity before queueing. Reduce only material already
+  declared lossy; never remove the current successor evidence or mandatory
+  causal content to force admission.
+
+Evidence:
+
+- All four stored over-context cases now fit with at least 2,048 completion
+  tokens after one guided rebuild, while every mandatory evidence identity is
+  equal to the original turn.
+
+Inference:
+
+- A model call is epistemically meaningful only if the transport can carry both
+  the evidence and a valid response. Local fail-closed admission prevents wasted
+  calls without suppressing distinct semantic demands.
+
+Status: contract- and stored-trace-verified in `942122e`; live breadth pending.

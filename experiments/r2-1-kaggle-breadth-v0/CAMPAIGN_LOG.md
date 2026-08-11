@@ -418,6 +418,90 @@ sensory envelopes, exact Pareto indexing, truthful native prediction edges,
 GAME_OVER retry semantics, exact intervention analysis, and demand-triggered
 semantic scheduling without the falsified global failure cap.
 
+Corrected scheduler live audit through G50T action 22:
+
+- Eleven queues: initial, nine unique alias-evidence demands, and one explicit
+  refutation overlapping alias evidence. No cadence-only call occurred at
+  action 8 or 20, and no evidence key repeated.
+- Fresh evidence demands remained eligible after prior failures, validating
+  the global-cap rollback.
+- The seven restored post-cap calls produced no accepted write because every
+  request exhausted model context, not because the scheduler was noisy.
+- HTTP 400 responses report 16,779–17,658 prompt tokens against `n_ctx=16,384`.
+  JSON decode failures end at exactly 16,384 total tokens with truncated or
+  empty JSON. The request builder is not preserving its declared response
+  reserve once system prompt/schema overhead is included.
+
+Status: semantic scheduling promoted as causally clean; request budgeting is
+the new blocking interface defect and is being repaired in an isolated
+worktree.
+
+## Checkpoint 9 — exact batched graph reduction and replay
+
+Observed hot path:
+
+- Each Qwen queue reduced the complete graph three times: controller refresh,
+  orientation read, and Qwen history validation. At the frozen endpoints this
+  cost approximately 53.5s on G50T and 83.2s on LP85 before model transport.
+- Workspace ingestion also applied and re-sorted 393–827 `ObjectAdded` events
+  one at a time although the outer ledger already persisted them atomically.
+
+Intervention:
+
+- Contiguous `ObjectAdded` runs validate sequentially against an evolving
+  prefix, then perform one canonical final object/pickup sort. Edge and
+  attention events remain on the original sequential path.
+- Live R2 workspace ingestion stages its unchanged semantic order and commits
+  the byte-identical returned graph events in the same outer batch.
+
+Exactness evidence:
+
+- All 16,694 G50T and 20,507 LP85 workspace object events regenerated
+  event-for-event exactly. Every stored batch prefix, final state, object order,
+  pickup, revision/head, state hash, and Qwen turn matches the sequential
+  reducer.
+- Randomized valid and corrupt traces match full state or exact exception
+  class/message at every prefix.
+- G50T full replay improved 14.86s→0.254s (58.4×), LP85
+  22.97s→0.266s (86.3×); exact `build_turn` improved 37.9×/32.8×.
+- Actual-scale live ingestion improved 47.8× in the isolated benchmark.
+
+Status: pushed in `762f28d`; requires live cross-game throughput evidence.
+
+## Checkpoint 10 — exact request admission
+
+Reproduced defect:
+
+- Four stored evidence-driven requests exceeded the 16,384-token model context
+  or left too little space to complete valid JSON, despite a declared 2,048-token
+  response reserve.
+
+Intervention:
+
+- Admission now tokenizes the complete serialized request with the same local
+  GGUF tokenizer, conservatively accounts for images and template overhead, and
+  preserves at least 2,048 tokens for the response.
+- When necessary it performs one overflow-guided rebuild that reduces only the
+  explicitly lossy ordered history frontier. Current transition evidence, live
+  bindings, pinned causal units, and causal packets remain mandatory. If those
+  cannot fit, the request fails locally before queue or transport.
+
+Exact stored differential:
+
+- The four former failures now occupy 16,265, 15,737, 16,099, and 15,551 tokens
+  including the completion reserve. Each required exactly one rebuild.
+- Mandatory bindings, causal packets, pinned units, and exact transition
+  evidence references are unchanged.
+- Integrated controller/graph/retry suite, full v1.4 suite, v1.12 suite, and
+  stored regression all pass after combination with batched graph replay.
+
+Portability boundary: the current configuration names this host's exact
+`llama-tokenize` executable and GGUF. Missing paths fail closed and must be
+reconfigured on another installation.
+
+Status: pushed candidate in `942122e`; next frozen serial breadth cohort will
+test real transport success, latency, and cross-game behavior.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:
