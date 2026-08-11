@@ -172,6 +172,10 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8"><meta name="viewport
 # Action ranking remains in runtime state and replay metadata, but the live
 # arcade focuses on the explanation that actually organized the decision.
 PAGE = PAGE.replace(
+    "MODEL SCRATCHPAD · UNVERIFIED",
+    "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED",
+)
+PAGE = PAGE.replace(
     '<article class=panel style="flex:0 0 auto"><h2>TOP-3 NEXT ACTIONS</h2><div id=decision></div></article>',
     '<div id=decision hidden></div>',
 )

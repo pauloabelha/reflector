@@ -96,6 +96,11 @@ def install(runtime: Any | None = None) -> None:
         original_qwen_revision_due = BASE.qwen_revision_due
 
         def qwen_revision_due(state: Any, workspace_id: str, **kwargs: Any) -> bool:
+            scratchpad_due = getattr(
+                BASE.QC, "epistemic_scratchpad_revision_due", None,
+            )
+            if callable(scratchpad_due) and scratchpad_due(state, workspace_id):
+                return True
             due = getattr(BASE.QC, "explanation_consolidation_due", None)
             if callable(due) and due(state, workspace_id):
                 return True

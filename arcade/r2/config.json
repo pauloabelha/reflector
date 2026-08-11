@@ -65,10 +65,10 @@
     "thinking_budget_tokens": 192,
     "consolidation_max_tokens": 5120,
     "consolidation_thinking_budget_tokens": 1024,
-    "max_calls_per_episode": 16,
+    "max_calls_per_episode": 64,
     "trigger_on_new_action_evidence": true,
-    "eager_semantic_integration": false,
-    "nonblocking_semantic_integration": true,
+    "eager_semantic_integration": true,
+    "nonblocking_semantic_integration": false,
     "logical_release_delay_actions": 0
   },
   "scratchpad": {

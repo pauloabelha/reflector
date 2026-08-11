@@ -4,6 +4,7 @@ import argparse
 import io
 import json
 from pathlib import Path
+from types import SimpleNamespace
 import urllib.error
 
 import pytest
@@ -316,7 +317,7 @@ def test_r22_openai_profile_changes_model_and_all_budget_dimensions(monkeypatch)
 def test_agent_arcade_uses_provider_neutral_visible_labels():
     from arcade.r2.arcade import PAGE
 
-    assert "MODEL SCRATCHPAD · UNVERIFIED" in PAGE
+    assert "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED" in PAGE
     assert "Waiting for the configured model." in PAGE
     assert "ACTION ALIASES · MODEL GLOSS, NOT CONTROL" in PAGE
     assert "R2 FEEDBACK · READ BY NEXT SEMANTIC MODEL" in PAGE
@@ -400,6 +401,56 @@ def test_game_semantics_do_not_trigger_transport_metadata_guard():
     })
 
 
+def test_every_new_settlement_makes_scratchpad_revision_due_until_consumed():
+    from arcade.r2 import scratchpad
+
+    qc = SimpleNamespace(stable_hash=lambda _value: "a" * 64)
+    empty = SimpleNamespace(objects=[])
+    scratchpad.reset_episode_context()
+    assert not scratchpad.epistemic_scratchpad_revision_due(empty, "w", qc)
+    scratchpad.record_r2_transition_observation(
+        action=2, observation_changed=True, outcome="changed", trace="moved",
+        settlement={"adjudication": "confirmed"},
+    )
+    assert scratchpad.epistemic_scratchpad_revision_due(empty, "w", qc)
+    evidence_ref = scratchpad.current_transition_evidence_ref()
+    consumed = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", created_revision=2,
+        object_id="note", payload={
+            "workspace_ref": "ws:" + "a" * 16,
+            "transition_evidence_ref": evidence_ref,
+        },
+    )])
+    assert not scratchpad.epistemic_scratchpad_revision_due(consumed, "w", qc)
+    scratchpad.reset_episode_context()
+
+
+def test_stale_scratchpad_basis_is_detected_against_latest_settlement():
+    from arcade.r2 import scratchpad
+
+    scratchpad.reset_episode_context()
+    assert scratchpad.scratchpad_basis_is_current(None)
+    scratchpad.record_r2_transition_observation(
+        action=1, observation_changed=False, outcome="unchanged", trace="stable",
+        settlement={},
+    )
+    latest = scratchpad.current_transition_evidence_ref()
+    assert latest and scratchpad.scratchpad_basis_is_current(latest)
+    assert not scratchpad.scratchpad_basis_is_current(None)
+    assert not scratchpad.scratchpad_basis_is_current("r2-transition:stale")
+    scratchpad.reset_episode_context()
+
+
+def test_production_config_enforces_a_tight_semantic_loop():
+    config = json.loads((Path(__file__).parents[1] / "arcade/r2/config.json").read_text())
+    model = config["qwen"]
+    assert model["trigger_on_new_action_evidence"] is True
+    assert model["eager_semantic_integration"] is True
+    assert model["nonblocking_semantic_integration"] is False
+    assert model["logical_release_delay_actions"] == 0
+    assert model["max_calls_per_episode"] >= config["action_budget"] + 1
+
+
 def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
     from arcade.r2 import scratchpad
 
@@ -411,6 +462,8 @@ def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
     assert "notes to what was preserved, discarded, refuted, or left open" in source
     assert "explanation_consolidation_due" in source
     assert "transport-metadata-semantic-leak" in source
+    assert "stale-epistemic-scratchpad-basis" in source
+    assert 'vocabulary.pop("delta_codec", None)' in source
 
 
 def test_arcade_picker_validates_custom_budgets_and_restores_environment(monkeypatch):

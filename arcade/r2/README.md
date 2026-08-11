@@ -28,6 +28,13 @@ model must rewrite the same exact four-field shape. Compatibility prose used by
 the inherited compiler is derived only from `notes`; it is not a second model
 scratchpad.
 
+Every settled observation makes a semantic revision due. R2 waits for that
+revision before the next external action, so the model always receives the
+latest epistemic delta and exact prior scratchpad. The resulting object is
+accepted only for the evidence basis it read; a stale reply cannot replace the
+workspace scratchpad. Representation metadata such as compressed ledger rows
+is removed from semantic vocabulary and rejected if copied into model state.
+
 ## Local Qwen
 
 The default profile preserves the resident OpenAI-compatible Qwen service:
