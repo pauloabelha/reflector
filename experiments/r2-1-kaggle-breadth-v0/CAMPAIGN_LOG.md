@@ -945,12 +945,12 @@ First-pass closure results (excluding the two later level-2 diagnostics):
   admission failures, and zero false semantic demands. Fourteen claimed calls
   remained incomplete at their forced episode cutoff.
 
-The closure pass is mechanically clean but scoreless; it does not supersede the
-earlier five-minute-per-game score cohort. The authoritative campaign score result
-remains AR25's exact 17-action level clear; the same-state recovery is separate
-diagnostic evidence. The closure pass demonstrates that the final generic
-fixes ran across all 25 public games without reopening the discovered execution
-and telemetry defects.
+The closure pass is mechanically clean but scoreless; it does not supersede
+the earlier five-minute-per-game score cohort. The authoritative campaign
+score result remains AR25's exact 17-action level clear; the same-state recovery
+is separate diagnostic evidence. The closure pass demonstrates that the final
+generic fixes ran across all 25 public games without reopening the discovered
+execution and telemetry defects.
 
 ## Final campaign theory of the boundary
 
@@ -1004,12 +1004,18 @@ mechanic access into broad score.
 On the same six games, the primary build used 33 queued / 31 completed Qwen
 calls and accepted 23 calls (46 objects); the final build used 27 / 25 and
 accepted all 25 calls (50 objects). It therefore queued 18.2% fewer calls while
-producing 8.7% more accepted objects.
-The primary slice had seven retrospective-language false positives, one stale
+producing 8.7% more accepted objects. The primary slice had seven
+retrospective-language false positives, one stale
 proposal rejection, two empty frontiers, and three projection-induced semantic
 failure demands. The final slice had none of those failures. This is strong
 evidence that the final cognition path delivers denser usable evidence, not
 evidence that it broadly improves score.
+
+The shadow click analyzer classified all 38 committed parameterized successors
+in this partial cohort: 30 settled unchanged and therefore abstained, while 8
+had multiple disconnected change footprints; none had a unique footprint.
+Click execution remained exact, but this cohort supplied no promotable click
+causal attribution.
 
 ## Checkpoint 31 — AR25 level-boundary transfer audit
 
@@ -1034,3 +1040,9 @@ Final verification reran the dynamically loaded suites in isolated processes:
 15 command and observation-envelope tests, 2 stored request-budget tests, and
 18 breadth analyzer/click-shadow tests. All 225 passed; `git diff --check` was
 clean.
+
+A final frozen G50T oracle regenerated 12,511 object events across 26 workspace
+batches byte-for-byte, matched state after every batch, and retained exact Qwen
+turn equality. On this host it reduced full replay from 7.59s to 0.18s (42.25x)
+and build-turn time from 7.78s to 0.31s (25.32x). These timings confirm the
+runtime intervention; they do not imply score improvement.
