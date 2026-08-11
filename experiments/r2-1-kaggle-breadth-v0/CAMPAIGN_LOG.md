@@ -1046,3 +1046,7 @@ batches byte-for-byte, matched state after every batch, and retained exact Qwen
 turn equality. On this host it reduced full replay from 7.59s to 0.18s (42.25x)
 and build-turn time from 7.78s to 0.31s (25.32x). These timings confirm the
 runtime intervention; they do not imply score improvement.
+
+A final added-line audit found public game identifiers only in regression
+fixtures and stored-trace paths, not in the promoted controller/runtime logic.
+No game route, action meaning, or score condition was added to production code.

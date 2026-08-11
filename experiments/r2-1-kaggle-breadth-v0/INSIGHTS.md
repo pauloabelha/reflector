@@ -779,3 +779,13 @@ available fresh level-2 artifact begins from a different layout, so it cannot
 support a matched transfer claim. Structural reuse should remain a bounded
 discriminating hypothesis until an exact same-start comparison establishes
 benefit without unsupported authority.
+
+## I41 — A same game and level is not a matched transfer control
+
+The carried AR25 boundary and the available fresh level-2 artifact had
+different observation digests and layouts. Their later action effects may be
+interesting exploratory evidence, but they cannot isolate transfer. A credible
+cross-level claim requires the same initial observation, frozen controller and
+model inputs, and a single carried-versus-fresh state intervention; otherwise
+layout and regime differences dominate the comparison. Negative audit results
+should remove the claim, not be softened into a suggestive average.
