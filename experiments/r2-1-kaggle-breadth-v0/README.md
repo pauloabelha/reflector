@@ -21,6 +21,16 @@ episode records the exact R2.1 experiment and configuration hashes so results
 from different builds remain separable. Any promoted change still requires a
 paired causal check and a later frozen mechanic-diverse evaluation.
 
+Durable observations, inferences, interventions, and build hashes are recorded
+in `CAMPAIGN_LOG.md`. Generate a compact control-trace audit at any checkpoint
+with:
+
+```bash
+.venv/bin/python experiments/r2-1-kaggle-breadth-v0/analyze.py \
+  experiments/r2-1-kaggle-breadth-v0/artifacts/<run-id> \
+  --output experiments/r2-1-kaggle-breadth-v0/artifacts/<run-id>/analysis.json
+```
+
 Run from the repository root:
 
 ```bash
