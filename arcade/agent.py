@@ -11,7 +11,7 @@ from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
 
-ARCADE_UI_VERSION = "workspace-panel-v18"
+ARCADE_UI_VERSION = "inline-model-picker-v19"
 
 
 def resolve_model_choice(
@@ -230,7 +230,7 @@ PAGE = PAGE.replace(
 PAGE = PAGE.replace(
     "</body>",
     """<script>
-const expectedArcadeUiVersion='workspace-panel-v18';
+const expectedArcadeUiVersion='inline-model-picker-v19';
 const versionedApiBase=api;
 api=async function(path,body){
   const value=await versionedApiBase(path,body);
@@ -404,12 +404,16 @@ PAGE = PAGE.replace(
     "$('#start').onclick=async()=>{replay=null;await api('/api/start',{game:$('#game').value,level:+$('#level').value,model_choice:$('#model-choice').value})};$('#reset').onclick=async()=>{replay=null;clearInterval(timer);data=await api('/api/reset',{});render()};",
 )
 PAGE = PAGE.replace(
-    '<h2>PLAYBACK</h2>',
-    '''<div class=model-picker><label>MODEL <select id=model-choice></select></label><small id=model-note>Safe defaults are frozen for this run.</small></div><h2>PLAYBACK</h2>''',
+    '<label>GAME <select id=game></select></label>',
+    '<label>GAME <select id=game></select></label><label>MODEL <select id=model-choice></select></label><small id=model-note>Safe defaults are frozen for this run.</small>',
+)
+PAGE = PAGE.replace(
+    '<h2>PLAYBACK</h2><div class=bar><select id=runs><option>No stored runs</option></select><button id=load>LOAD</button></div>',
+    '<select id=runs hidden><option>No stored runs</option></select><button id=load hidden></button>',
 )
 PAGE = PAGE.replace(
     "</head>",
-    """<style>.model-picker{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0 14px;padding:9px;border:1px solid var(--line);border-radius:7px}.model-picker label{color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.1em}.model-picker select{margin-left:5px;min-width:180px}</style></head>""",
+    """<style>#model-choice{margin-left:5px;min-width:180px}#model-note{max-width:230px}</style></head>""",
 )
 PAGE = PAGE.replace(
     "</body>",
