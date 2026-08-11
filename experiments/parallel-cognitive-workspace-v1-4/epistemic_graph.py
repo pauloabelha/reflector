@@ -735,10 +735,130 @@ def apply_event(
     )
 
 
+def apply_object_events_batch(
+    state: GraphState,
+    events: Sequence[GraphEvent],
+) -> GraphState:
+    """Apply ordered ObjectAdded events with one canonical tuple merge.
+
+    This is an exact reducer, not a relaxed ingestion path.  Every event is
+    validated against the evolving prefix using the same contracts as
+    :func:`apply_event`; only the derived in-call indexes are mutable.
+    """
+    ordered_events = tuple(events)
+    if not ordered_events:
+        return state
+
+    objects = dict(_objects(state))
+    new_objects: list[EpistemicObject] = []
+    pickups = list(state.pickups)
+    pickup_ids = {item.pickup_id for item in pickups}
+    event_ids = set(state.event_ids)
+    appended_event_ids: list[str] = []
+    revision = state.revision
+    head_hash = state.head_hash
+
+    for event in ordered_events:
+        if event.seq != revision + 1 or event.prev_hash != head_hash:
+            raise EpistemicGraphError("graph event is not the next hash-chain member")
+        envelope = {
+            "seq": event.seq,
+            "prev_hash": event.prev_hash,
+            "event_type": event.event_type,
+            "actor": event.actor,
+            "event_id": event.event_id,
+            "payload_json": event.payload_json,
+        }
+        if stable_hash(envelope) != event.event_hash:
+            raise EpistemicGraphError("graph event hash mismatch")
+        if event.event_id in event_ids:
+            raise EpistemicGraphError("duplicate graph event")
+        if event.event_type != "ObjectAdded":
+            raise EpistemicGraphError("object batch contains a non-ObjectAdded event")
+        payload = event.payload
+        if set(payload) != {"item"} or not isinstance(payload["item"], dict):
+            raise EpistemicGraphError("graph event payload contract mismatch")
+        item = _object_from_document(payload["item"])
+        if event.actor != item.created_by or item.created_revision != event.seq:
+            raise EpistemicGraphError("object creator/revision does not match event")
+        if item.kind == "environment_evidence" and item.created_by != "environment":
+            raise EpistemicGraphError("only environment may add evidence")
+        if item.created_by in WORKERS and FORBIDDEN_WORKER_PAYLOAD_KEYS.intersection(item.payload):
+            raise EpistemicGraphError("worker object attempts to assert support")
+        if any(dependency not in objects for dependency in item.dependency_ids):
+            raise EpistemicGraphError("object dependency is missing")
+        existing = objects.get(item.object_id)
+        if existing is not None:
+            if existing != item:
+                raise EpistemicGraphError("stable object id collision")
+            raise EpistemicGraphError("duplicate object event")
+
+        for dependency in item.dependency_ids:
+            source = objects[dependency]
+            if (
+                item.created_by not in WORKERS
+                or source.created_by not in WORKERS
+                or source.created_by == item.created_by
+            ):
+                continue
+            identity = {
+                "from": source.created_by,
+                "to": item.created_by,
+                "object": dependency,
+            }
+            pickup_id = f"ep:{stable_hash(identity)}"
+            if pickup_id in pickup_ids:
+                continue
+            pickups.append(
+                PickupEvent(
+                    pickup_id=pickup_id,
+                    direction=f"{source.created_by}->{item.created_by}",
+                    from_worker=source.created_by,
+                    to_worker=item.created_by,
+                    object_id=dependency,
+                    trigger_id=item.object_id,
+                    trigger_kind="dependency",
+                    created_revision=event.seq,
+                )
+            )
+            pickup_ids.add(pickup_id)
+
+        objects[item.object_id] = item
+        new_objects.append(item)
+        event_ids.add(event.event_id)
+        appended_event_ids.append(event.event_id)
+        revision = event.seq
+        head_hash = event.event_hash
+
+    return replace(
+        state,
+        revision=revision,
+        head_hash=head_hash,
+        event_ids=(*state.event_ids, *appended_event_ids),
+        objects=tuple(
+            sorted((*state.objects, *new_objects), key=lambda value: value.object_id)
+        ),
+        pickups=tuple(sorted(pickups, key=lambda value: value.pickup_id)),
+    )
+
+
 def replay(events: Iterable[GraphEvent]) -> GraphState:
     state = GraphState()
+    object_run: list[GraphEvent] = []
+
+    def flush_objects() -> None:
+        nonlocal state
+        if object_run:
+            state = apply_object_events_batch(state, object_run)
+            object_run.clear()
+
     for event in events:
+        if event.event_type == "ObjectAdded":
+            object_run.append(event)
+            continue
+        flush_objects()
         state = apply_event(state, event)
+    flush_objects()
     return state
 
 
@@ -1140,6 +1260,64 @@ def _same_object_content(left: EpistemicObject, right: EpistemicObject) -> bool:
         and left.payload_json == right.payload_json
         and left.dependency_ids == right.dependency_ids
     )
+
+
+def ingest_object_batch(
+    state: GraphState,
+    specs: Sequence[Mapping[str, Any]],
+) -> IngestResult:
+    """Deduplicate and add an ordered object-spec batch exactly.
+
+    A spec has the same keyword fields as ``object_event``.  Existing stable
+    objects produce no event, matching ``_ingest_object``.  New event documents
+    are generated in prefix order and then reduced by one canonical merge.
+    """
+    objects = dict(_objects(state))
+    events: list[GraphEvent] = []
+    object_ids: list[str] = []
+    revision = state.revision
+    head_hash = state.head_hash
+
+    for raw in specs:
+        required = {
+            "kind", "created_by", "identity", "payload",
+            "dependency_ids", "event_key",
+        }
+        if set(raw) != required:
+            raise EpistemicGraphError("object batch spec contract mismatch")
+        candidate = make_object(
+            kind=str(raw["kind"]),
+            created_by=str(raw["created_by"]),
+            created_revision=revision + 1,
+            identity=raw["identity"],
+            payload=raw["payload"],
+            dependency_ids=raw["dependency_ids"],
+        )
+        existing = objects.get(candidate.object_id)
+        if existing is not None:
+            if not _same_object_content(existing, candidate):
+                raise EpistemicGraphError(
+                    "stable object identity was reused with different content"
+                )
+            object_ids.append(existing.object_id)
+            continue
+
+        cursor = GraphState(revision=revision, head_hash=head_hash)
+        event = make_event(
+            cursor,
+            event_type="ObjectAdded",
+            actor=candidate.created_by,
+            item=candidate,
+            event_key=str(raw["event_key"]),
+        )
+        events.append(event)
+        object_ids.append(candidate.object_id)
+        objects[candidate.object_id] = candidate
+        revision = event.seq
+        head_hash = event.event_hash
+
+    next_state = apply_object_events_batch(state, events)
+    return IngestResult(next_state, tuple(events), tuple(object_ids))
 
 
 def _ingest_object(

@@ -864,50 +864,63 @@ def ingest_r2_workspace_objects(
 
     document = sanitize_r2_value(r2_workspace_document(cognition, legal))
     blob = LEDGER.put_blob(root, document)
-    object_lookup = {item.object_id: item for item in state.objects}
-    pending_events: list[Any] = []
+    specs: list[dict[str, Any]] = []
     schema_ids: dict[str, str] = {}
     current_ids: list[str] = []
     schema_activation: dict[str, int] = {}
+
+    def stage_object(
+        *,
+        kind: str,
+        identity: Mapping[str, Any],
+        payload: Mapping[str, Any],
+        dependency_ids: Sequence[str] = (),
+        event_key: str,
+    ) -> str:
+        spec = {
+            "kind": kind,
+            "created_by": "r2",
+            "identity": dict(identity),
+            "payload": dict(payload),
+            "dependency_ids": tuple(dependency_ids),
+            "event_key": event_key,
+        }
+        specs.append(spec)
+        return EG.make_object(
+            kind=kind,
+            created_by="r2",
+            created_revision=0,
+            identity=identity,
+            payload=payload,
+            dependency_ids=dependency_ids,
+        ).object_id
+
     for item in document["schemas"]:
         semantic_payload = {
             "atoms": item["atoms"],
         }
-        state, object_id = ensure_graph_object(
-            root,
-            workspace_id,
-            state,
+        object_id = stage_object(
             kind="schema",
-            created_by="r2",
             identity={"r2_schema_hash": item["id"]},
             payload=semantic_payload,
             event_key=f"r2-schema:{item['id']}",
-            object_lookup=object_lookup,
-            pending_events=pending_events,
         )
         schema_ids[str(item["id"])] = object_id
         schema_activation[object_id] = int(item["activation_milli"])
         current_ids.append(object_id)
 
     def materialize_many(kind: str, values: Sequence[Mapping[str, Any]]) -> None:
-        nonlocal state
         for index, item in enumerate(values):
             schema_hashes = [str(item["schema"])] if item.get("schema") else [str(value) for value in item.get("schemas", ())]
             dependencies = [schema_ids[value] for value in schema_hashes if value in schema_ids]
             semantic_payload = {key: value for key, value in item.items() if key != "activation_milli"}
             semantic = LEDGER.stable_hash({"kind": kind, "value": semantic_payload})
-            state, object_id = ensure_graph_object(
-                root,
-                workspace_id,
-                state,
+            object_id = stage_object(
                 kind=kind,
-                created_by="r2",
                 identity={"semantic_hash": semantic},
                 payload=semantic_payload,
                 dependency_ids=dependencies,
                 event_key=f"r2-{kind}:{semantic}",
-                object_lookup=object_lookup,
-                pending_events=pending_events,
             )
             current_ids.append(object_id)
 
@@ -930,15 +943,19 @@ def ingest_r2_workspace_objects(
         },
         "expansion": "all listed objects are directly addressable; workspace_blob is exact recovery data",
     }
-    result = EG.ingest_r2_runtime_summary(
-        state,
-        snapshot_payload,
-        observation_key=observation_key,
-        basis_ids=tuple(sorted(set((*basis_ids, *current_ids)))),
+    stage_object(
+        kind="runtime_summary",
+        identity={
+            "observation_key": observation_key,
+            "summary_hash": EG.stable_hash(snapshot_payload),
+        },
+        payload=snapshot_payload,
+        dependency_ids=tuple(sorted(set((*basis_ids, *current_ids)))),
+        event_key=f"r2-runtime:{observation_key}",
     )
-    pending_events.extend(result.events)
+    result = EG.ingest_object_batch(state, specs)
     state = result.state
-    commit_graph_events(root, workspace_id, pending_events)
+    commit_graph_events(root, workspace_id, result.events)
     return state
 
 
