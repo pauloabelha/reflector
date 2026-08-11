@@ -400,6 +400,24 @@ Falsified cap variant:
 Status: revised contract-verified candidate; requires a clean serial breadth
 cohort to measure cadence savings without semantic starvation.
 
+## Checkpoint 8 — corrected final serial cohort
+
+- Pushed revision: `8beebf8`.
+- Run root: `artifacts/run-20260811-final-serial-8beebf8`.
+- Transitive frozen-source digest:
+  `3f3e73dc9a4c87eaa6d862bc6b6b1d9e3097c21728192b6a82d7e75ff82b0a03`.
+- Preregistered order: all 25 local games, modality-interleaved, one scored
+  worker at a time on the shared Qwen endpoint.
+- Remaining global allocation: 23,950 seconds with a 900-second finalization
+  reserve and 900-second per-game deadline.
+- Source drift before any later worker stops and finalizes the cohort rather
+  than mixing controller builds.
+
+This is the first cohort combining grounded parameterized actions, ordered
+sensory envelopes, exact Pareto indexing, truthful native prediction edges,
+GAME_OVER retry semantics, exact intervention analysis, and demand-triggered
+semantic scheduling without the falsified global failure cap.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:
