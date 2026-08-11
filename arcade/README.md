@@ -3,10 +3,12 @@
 This package contains two loopback-only surfaces:
 
 - `python -m arcade` starts the human controller.
-- `python -m arcade.r2 --arcade` starts the independent R2.2 Agent Arcade.
+- `python -m reflector2.r2 --arcade` starts the Agent Arcade view of the
+  current canonical R2 runtime.
 
-R2.2 model profiles, OpenAI setup, budgets, and Kaggle usage are documented in
-[`r2/README.md`](r2/README.md).
+`arcade/` contains presentation and replay code, not the model backend or agent
+policy. R2 model profiles, OpenAI setup, budgets, and Kaggle usage are
+documented in [`src/reflector2/r2/README.md`](../src/reflector2/r2/README.md).
 
 ## Human controller
 

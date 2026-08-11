@@ -15,7 +15,7 @@ from typing import Any, Mapping, Sequence
 HERE = Path(__file__).resolve().parent
 RUNTIME_ROOT = HERE / "_runtime"
 V116 = RUNTIME_ROOT / "parallel-cognitive-workspace-v1-16" / "experiment.py"
-PROJECT_ROOT = HERE.parents[1]
+PROJECT_ROOT = HERE.parents[2]
 ARTIFACTS = PROJECT_ROOT / "artifacts" / "r2"
 
 
@@ -41,7 +41,6 @@ OBSERVATION_ENVELOPE = _local("observation_envelope")
 CONTROLLER = _local("controller")
 INTEGRATION = _local("integration")
 RUNTIME = _local("runtime")
-ARCADE = _local("arcade")
 FIRST_FRAME = _local("first_frame")
 R2_1 = _local("r2_1_adapter")
 MODEL_BACKEND = _local("model_backend")
@@ -74,7 +73,7 @@ def build_manifest(config: Mapping[str, Any]) -> dict[str, Any]:
         "experiment": config["experiment"],
         "protocol": config["protocol"],
         "base_protocol": "prospective-control-v1.16",
-        "runtime_ownership": "arcade.r2-independent-of-experiments",
+        "runtime_ownership": "reflector2.r2-canonical-runtime",
         "sources": sources,
         "config": dict(config),
         "authority": {
@@ -336,6 +335,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(build_manifest(config), indent=2, sort_keys=True))
         return 0
     if args.arcade:
+        # Arcade owns presentation only. Import it lazily so the canonical R2
+        # runtime and headless/Kaggle execution do not depend on the viewer.
+        from arcade import agent as arcade_view
+
         runtime = active_runtime()
 
         arcade_config = load_config()
@@ -357,7 +360,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             for path in Path(BASE.CENSUS.DEFAULT_ENVIRONMENTS).iterdir()
             if path.is_dir()
         )
-        ARCADE.serve(
+        arcade_view.serve(
             runtime,
             start,
             games=games,

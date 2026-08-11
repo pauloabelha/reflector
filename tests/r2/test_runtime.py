@@ -9,7 +9,7 @@ import urllib.error
 
 import pytest
 
-from arcade.r2 import model_backend as backend
+from reflector2.r2 import model_backend as backend
 
 
 def base_config() -> dict:
@@ -281,12 +281,12 @@ def test_shared_cli_surface_applies_worker_inherited_environment():
 def test_r22_runtime_manifest_is_independent_of_experiments(monkeypatch):
     monkeypatch.delenv("R2_MODEL_PROFILE", raising=False)
     monkeypatch.delenv("R2_MODEL_NAME", raising=False)
-    from arcade.r2 import experiment
+    from reflector2.r2 import experiment
 
     config = experiment.load_config()
     manifest = experiment.build_manifest(config)
     assert manifest["experiment"] == "r2.2-agent-arcade"
-    assert manifest["runtime_ownership"] == "arcade.r2-independent-of-experiments"
+    assert manifest["runtime_ownership"] == "reflector2.r2-canonical-runtime"
     assert manifest["semantic_model"]["profile"] == "local-qwen"
     assert manifest["sources"]
     assert all(not path.startswith("experiments/") for path in manifest["sources"])
@@ -296,8 +296,20 @@ def test_r22_runtime_manifest_is_independent_of_experiments(monkeypatch):
         assert 'REPO / "experiments"' not in source.read_text(encoding="utf-8")
 
 
+def test_canonical_r2_owns_model_code_and_arcade_owns_only_the_view():
+    root = Path(__file__).parents[2]
+    package = root / "src/reflector2/r2"
+    viewer = root / "arcade"
+    assert (package / "model_backend.py").is_file()
+    assert (package / "scratchpad.py").is_file()
+    assert (package / "experiment.py").is_file()
+    assert (viewer / "agent.py").is_file()
+    assert not (viewer / "r2").exists()
+    assert not any(viewer.glob("*model_backend*.py"))
+
+
 def test_r22_openai_profile_changes_model_and_all_budget_dimensions(monkeypatch):
-    from arcade.r2 import experiment
+    from reflector2.r2 import experiment
 
     monkeypatch.setenv("R2_MODEL_PROFILE", "openai-gpt-5.6")
     monkeypatch.setenv("R2_MODEL_NAME", "gpt-5.6-terra")
@@ -314,33 +326,21 @@ def test_r22_openai_profile_changes_model_and_all_budget_dimensions(monkeypatch)
     assert config["profiles"][config["primary_profile"]]["frontier_token_budget"] == 12000
 
 
-def test_agent_arcade_uses_provider_neutral_visible_labels():
-    from arcade.r2.arcade import PAGE
-
-    assert "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED" in PAGE
-    assert "Waiting for the configured model." in PAGE
-    assert "ACTION ALIASES · MODEL GLOSS, NOT CONTROL" in PAGE
-    assert "R2 FEEDBACK · READ BY NEXT SEMANTIC MODEL" in PAGE
-    assert '<select id=model-choice>' in PAGE
-    assert "model_choice:$('#model-choice').value" in PAGE
-    assert "model-context" not in PAGE
-    for heading in ("Explanation", "Goal", "Expectation", "Notes"):
-        assert f"scratchField('{heading}'" in PAGE
-    assert "const exact=s.model_scratchpad" in PAGE
-    assert "QWEN SCRATCHPAD · UNVERIFIED" not in PAGE
-
-
-def test_model_scratchpad_is_one_exact_four_field_object():
-    from arcade.r2 import scratchpad
+def test_model_scratchpad_is_one_exact_five_field_object():
+    from reflector2.r2 import scratchpad
 
     source = {
+        "game_objective": "  complete the arrangement  ",
         "notes": "  observed successor  ",
         "expectation": "residual decreases",
         "goal": "fit the compatible structures",
         "explanation": "the structures instantiate fit",
     }
     canonical = scratchpad.canonical_model_scratchpad(source)
-    assert list(canonical) == ["explanation", "goal", "expectation", "notes"]
+    assert list(canonical) == [
+        "game_objective", "explanation", "goal", "expectation", "notes",
+    ]
+    assert canonical["game_objective"] == "complete the arrangement"
     assert canonical["notes"] == "observed successor"
     canonical["goal"] = "changed copy"
     assert source["goal"] == "fit the compatible structures"
@@ -351,24 +351,24 @@ def test_model_scratchpad_is_one_exact_four_field_object():
     [
         None,
         {},
-        {"explanation": "x", "goal": "g", "expectation": "e"},
-        {"explanation": "x", "goal": "g", "expectation": "e", "notes": "n", "extra": "no"},
-        {"explanation": "x", "goal": "g", "expectation": "e", "notes": 3},
-        {"explanation": "x", "goal": " ", "expectation": "e", "notes": "n"},
+        {"explanation": "x", "goal": "g", "expectation": "e", "notes": "n"},
+        {"game_objective": "o", "explanation": "x", "goal": "g", "expectation": "e", "notes": "n", "extra": "no"},
+        {"game_objective": "o", "explanation": "x", "goal": "g", "expectation": "e", "notes": 3},
+        {"game_objective": "o", "explanation": "x", "goal": " ", "expectation": "e", "notes": "n"},
     ],
 )
 def test_model_scratchpad_rejects_shape_drift(invalid):
-    from arcade.r2 import scratchpad
+    from reflector2.r2 import scratchpad
 
     with pytest.raises(ValueError, match="model scratchpad"):
         scratchpad.canonical_model_scratchpad(invalid)
 
 
 def test_model_scratchpad_serialization_is_stable_and_wysiwyg():
-    from arcade.r2 import scratchpad
+    from reflector2.r2 import scratchpad
 
-    first = {"explanation": "x", "goal": "g", "expectation": "e", "notes": "n"}
-    reordered = {"notes": "n", "goal": "g", "explanation": "x", "expectation": "e"}
+    first = {"game_objective": "o", "explanation": "x", "goal": "g", "expectation": "e", "notes": "n"}
+    reordered = {"notes": "n", "goal": "g", "explanation": "x", "game_objective": "o", "expectation": "e"}
     assert scratchpad.model_scratchpad_text(first) == scratchpad.model_scratchpad_text(reordered)
     assert json.loads(scratchpad.model_scratchpad_text(first)) == first
 
@@ -385,15 +385,16 @@ def test_model_scratchpad_serialization_is_stable_and_wysiwyg():
     ],
 )
 def test_transport_metadata_cannot_become_scratchpad_semantics(leak):
-    from arcade.r2 import scratchpad
+    from reflector2.r2 import scratchpad
 
     assert scratchpad.has_transport_metadata_leak({"goal": leak})
 
 
 def test_game_semantics_do_not_trigger_transport_metadata_guard():
-    from arcade.r2 import scratchpad
+    from reflector2.r2 import scratchpad
 
     assert not scratchpad.has_transport_metadata_leak({
+        "game_objective": "complete a compatible arrangement",
         "explanation": "three figures preserve their outline",
         "goal": "align compatible figures",
         "expectation": "fit residual decreases",
@@ -402,7 +403,7 @@ def test_game_semantics_do_not_trigger_transport_metadata_guard():
 
 
 def test_every_new_settlement_makes_scratchpad_revision_due_until_consumed():
-    from arcade.r2 import scratchpad
+    from reflector2.r2 import scratchpad
 
     qc = SimpleNamespace(stable_hash=lambda _value: "a" * 64)
     empty = SimpleNamespace(objects=[])
@@ -426,7 +427,7 @@ def test_every_new_settlement_makes_scratchpad_revision_due_until_consumed():
 
 
 def test_stale_scratchpad_basis_is_detected_against_latest_settlement():
-    from arcade.r2 import scratchpad
+    from reflector2.r2 import scratchpad
 
     scratchpad.reset_episode_context()
     assert scratchpad.scratchpad_basis_is_current(None)
@@ -442,7 +443,7 @@ def test_stale_scratchpad_basis_is_detected_against_latest_settlement():
 
 
 def test_frame_zero_null_transition_is_a_current_scratchpad_basis():
-    from arcade.r2 import scratchpad
+    from reflector2.r2 import scratchpad
 
     scratchpad.reset_episode_context()
     context = {"r2_transition_observation": None}
@@ -452,7 +453,7 @@ def test_frame_zero_null_transition_is_a_current_scratchpad_basis():
 
 
 def test_production_config_enforces_a_tight_semantic_loop():
-    config = json.loads((Path(__file__).parents[1] / "arcade/r2/config.json").read_text())
+    config = json.loads((Path(__file__).parents[2] / "src/reflector2/r2/config.json").read_text())
     model = config["qwen"]
     assert model["trigger_on_new_action_evidence"] is True
     assert model["eager_semantic_integration"] is True
@@ -462,12 +463,14 @@ def test_production_config_enforces_a_tight_semantic_loop():
 
 
 def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
-    from arcade.r2 import scratchpad
+    from reflector2.r2 import scratchpad
 
     source = Path(scratchpad.__file__).read_text(encoding="utf-8")
     assert 'document["model_scratchpad"] = copy.deepcopy(projection["scratchpad"])' in source
     assert '"allowed_vocabulary", "model_scratchpad",' in source
     assert '"model_scratchpad": dict(scratchpad)' in source
+    assert '"game_objective", "explanation", "goal", "expectation", "notes"' in source
+    assert "game_objective to the current inferred condition" in source
     assert '"required": ["protocol", "request_id", "scratchpad", "workspace_write"]' in source
     assert "notes to what was preserved, discarded, refuted, or left open" in source
     assert "explanation_consolidation_due" in source
@@ -507,7 +510,7 @@ def test_arcade_picker_validates_custom_budgets_and_restores_environment(monkeyp
 
 
 def test_arcade_picker_options_are_public_and_profile_budgeted():
-    from arcade.r2 import experiment
+    from reflector2.r2 import experiment
 
     options = backend.browser_options(experiment.load_config())
     assert [(item["id"], item["label"]) for item in options["choices"]] == [
@@ -622,34 +625,14 @@ def test_browser_model_environment_restores_all_values_even_on_exception(monkeyp
     assert backend.os.environ["R2_MODEL_NAME"] == "before"
 
 
-def test_arcade_resolves_only_one_exact_server_allowlisted_choice():
-    from arcade.r2.arcade import resolve_model_choice
-
-    options = {
-        "choices": [
-            {"id": "qwen", "selection": {"profile": "local-qwen"}},
-            {"id": "luna", "selection": {"profile": "openai", "model": "luna"}},
-        ]
-    }
-    selected = resolve_model_choice(options, "luna")
-    selected["model"] = "client-mutation"
-    assert options["choices"][1]["selection"]["model"] == "luna"
-    for rejected in ("", None, "terra", {"profile": "openai"}):
-        with pytest.raises(ValueError, match="unknown model choice"):
-            resolve_model_choice(options, rejected)
-    duplicate = {"choices": [options["choices"][0], options["choices"][0]]}
-    with pytest.raises(ValueError, match="unknown model choice"):
-        resolve_model_choice(duplicate, "qwen")
-
-
 def test_kaggle_freezes_and_loads_the_same_production_runtime(monkeypatch):
     monkeypatch.delenv("R2_MODEL_PROFILE", raising=False)
-    from arcade.r2 import experiment, kaggle
+    from reflector2.r2 import experiment, kaggle
 
     sources = kaggle.r2_source_hashes()
     assert "R2_2.md" in sources
-    assert "arcade/r2/experiment.py" in sources
-    assert "arcade/r2/model_backend.py" in sources
+    assert "src/reflector2/r2/experiment.py" in sources
+    assert "src/reflector2/r2/model_backend.py" in sources
     assert any("parallel-generative-schema-fitting-v0/schema_engine.py" in path for path in sources)
     assert all(not path.startswith("experiments/") for path in sources)
     loaded = kaggle.load_r2()

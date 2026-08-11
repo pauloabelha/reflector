@@ -1,8 +1,9 @@
 # Reflector II 2.2 Agent Arcade
 
 R2.2 is the production, model-neutral successor to the frozen R2.1 experiment.
-Its controller, Agent Arcade, model transport, and frozen runtime closure live
-under `arcade/r2`; no production import resolves through `experiments/`.
+Its controller, model transport, and frozen runtime closure live under
+`src/reflector2/r2`; no production import resolves through `arcade/` or
+`experiments/`. The optional Agent Arcade viewer lives in `arcade/agent.py`.
 
 The semantic model proposes bounded schemas and explanations. R2 still owns
 grounding, action selection, authority, evidence, settlement, and reusable
@@ -14,6 +15,7 @@ The workspace carries one canonical `model_scratchpad` object:
 
 ```json
 {
+  "game_objective": "...",
   "explanation": "...",
   "goal": "...",
   "expectation": "...",
@@ -24,7 +26,9 @@ The workspace carries one canonical `model_scratchpad` object:
 The object is stored in the durable working note, shown directly by Agent
 Arcade, and passed without field renaming or presentation-derived reconstruction
 to both ordinary semantic calls and deep explanation-consolidation calls. The
-model must rewrite the same exact four-field shape. Compatibility prose used by
+model must rewrite the same exact five-field shape. `game_objective` holds the
+current inferred condition for winning or completing the game; `goal` holds
+the current action-free subgoal serving it. Compatibility prose used by
 the inherited compiler is derived only from `notes`; it is not a second model
 scratchpad.
 
@@ -40,7 +44,7 @@ is removed from semantic vocabulary and rejected if copied into model state.
 The default profile preserves the resident OpenAI-compatible Qwen service:
 
 ```bash
-python -m arcade.r2 --arcade --game ar25
+python -m reflector2.r2 --arcade --game ar25
 ```
 
 ## OpenAI models
@@ -53,7 +57,7 @@ set -a
 source ~/inhambu/.env
 set +a
 
-python -m arcade.r2 --arcade --game ar25 \
+python -m reflector2.r2 --arcade --game ar25 \
   --model-profile openai-gpt-5.6 \
   --model gpt-5.6-terra
 ```
@@ -76,7 +80,7 @@ Use `openai-custom` for another Responses model. Unknown limits are never
 guessed; all four budget dimensions are required:
 
 ```bash
-python -m arcade.r2 --arcade --game ar25 \
+python -m reflector2.r2 --arcade --game ar25 \
   --model-profile openai-custom \
   --model MODEL_ID \
   --model-context-window-tokens CONTEXT \
@@ -102,7 +106,7 @@ permanent API and schema failures fail closed without model authority.
 Kaggle uses the same R2.2 runtime and the same model flags:
 
 ```bash
-python -m arcade.r2.kaggle \
+python -m reflector2.r2.kaggle \
   --global-seconds 27300 \
   --per-run-seconds 900 \
   --model-profile openai-gpt-5.6 \
@@ -111,7 +115,7 @@ python -m arcade.r2.kaggle \
 
 Each worker inherits the resolved environment, then records the same public
 model metadata in its result. The breadth manifest freezes the entire
-production `arcade/r2` source closure before launching the first game.
+production `src/reflector2/r2` source closure before launching the first game.
 
 ## Entrypoints
 

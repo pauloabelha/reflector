@@ -18,16 +18,20 @@ FRESH_BINDING_AUTHORITY = "fresh-binding-probe-only"
 DEEP_CONSOLIDATION_MAX_TOKENS = 5120
 DEEP_CONSOLIDATION_THINKING_TOKENS = 1024
 MAX_CONSOLIDATION_PROPOSALS = 3
-MODEL_SCRATCHPAD_FIELDS = ("explanation", "goal", "expectation", "notes")
+MODEL_SCRATCHPAD_FIELDS = (
+    "game_objective", "explanation", "goal", "expectation", "notes",
+)
 CONSOLIDATION_PROMPT = """You are the configured semantic model performing R2 explanation consolidation.
 Read model_scratchpad as the exact current shared workspace scratchpad used by
-ordinary semantic turns and Agent Arcade. Rewrite the same four-field object in
+ordinary semantic turns and Agent Arcade. Rewrite the same five-field object in
 your response; do not rename, omit, or add fields. During consolidation set:
+- game_objective to the current inferred condition for winning or completing
+  the game, explicitly marked open when the evidence does not determine it;
 - explanation to the smallest reusable explanation that survived settlement;
-- goal to its action-free transferable objective;
+- goal to the current action-free subgoal that advances the game objective;
 - expectation to a falsifiable prediction for a fresh future binding;
 - notes to what was preserved, discarded, refuted, or left open by consolidation.
-At least one field must change from the input object; prefer revising all four
+At least one field must change from the input object; prefer revising all five
 when the completed context changes their meaning.
 The packet is a deterministic digest of a completed context. Compare
 its explanation families, potential summaries, change points, confirmations,
@@ -85,7 +89,7 @@ def canonical_model_scratchpad(value: Any) -> dict[str, str]:
     """Validate and copy the exact model/UI/workspace scratchpad contract."""
 
     if not isinstance(value, Mapping) or set(value) != set(MODEL_SCRATCHPAD_FIELDS):
-        raise ValueError("model scratchpad must contain exactly four canonical fields")
+        raise ValueError("model scratchpad must contain exactly five canonical fields")
     output: dict[str, str] = {}
     for field in MODEL_SCRATCHPAD_FIELDS:
         item = value.get(field)
@@ -1109,8 +1113,10 @@ def install(qc: Any) -> None:
     qc.PROMPT += """
 
 TWO SEPARATE OUTPUT CHANNELS:
-1. scratchpad is one bounded object with exactly four string fields:
-explanation, goal, expectation, and notes. This exact object is stored, shown
+1. scratchpad is one bounded object with exactly five string fields:
+game_objective, explanation, goal, expectation, and notes. game_objective is
+the current inferred condition for winning or completing the game; goal is the
+current action-free subgoal serving it. Keep uncertainty explicit. This exact object is stored, shown
 in Agent Arcade, and passed back to your next semantic turn without renaming or
 reformatting. Rewrite the four fields rather than appending a transcript. The
 object is unverified, is not evidence, and is never compiled as a workspace
@@ -1258,6 +1264,7 @@ CAUSAL VISUAL UNIT:
                     ) if value
                 ]
                 stored_scratchpad = {
+                    "game_objective": "Open; infer the completion condition from evidence.",
                     "explanation": str(prior.payload.get("summary") or "Open."),
                     "goal": str(prior.payload.get("objective_hypothesis") or "Open."),
                     "expectation": " · ".join(expectation_parts) or "Open.",
@@ -1585,8 +1592,11 @@ CAUSAL VISUAL UNIT:
                 "request_id": {"const": turn.request_id},
                 "scratchpad": {
                     "type": "object", "additionalProperties": False,
-                    "required": ["explanation", "goal", "expectation", "notes"],
+                    "required": list(MODEL_SCRATCHPAD_FIELDS),
                     "properties": {
+                        "game_objective": {
+                            "type": "string", "minLength": 1, "maxLength": 280,
+                        },
                         "explanation": {"type": "string", "minLength": 1, "maxLength": 360},
                         "goal": {"type": "string", "minLength": 1, "maxLength": 240},
                         "expectation": {"type": "string", "minLength": 1, "maxLength": 240},

@@ -11,7 +11,7 @@ from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
 
-ARCADE_UI_VERSION = "generic-fast-path-v15"
+ARCADE_UI_VERSION = "canonical-r2-view-v16"
 
 
 def resolve_model_choice(
@@ -215,7 +215,7 @@ PAGE = PAGE.replace(
 PAGE = PAGE.replace(
     "</body>",
     """<script>
-const expectedArcadeUiVersion='generic-fast-path-v15';
+const expectedArcadeUiVersion='canonical-r2-view-v16';
 const versionedApiBase=api;
 api=async function(path,body){
   const value=await versionedApiBase(path,body);
@@ -365,7 +365,7 @@ function renderModelScratchpad(s){
   if(typeof s==='string')return scratchField('Notes',s);
   const exact=s.model_scratchpad;
   const modelView=exact&&typeof exact==='object'?exact:{explanation:data.current_explanation?.claim||data.current_explanation?.summary||s.summary,goal:s.objective_hypothesis,expectation:modelExpectation(s),notes:s.natural_language};
-  let html=scratchField('Explanation',modelView.explanation)+scratchField('Goal',modelView.goal)+scratchField('Expectation',modelView.expectation)+scratchField('Notes',modelView.notes);
+  let html=scratchField('Game Objective',modelView.game_objective)+scratchField('Explanation',modelView.explanation)+scratchField('Goal',modelView.goal)+scratchField('Expectation',modelView.expectation)+scratchField('Notes',modelView.notes);
   if((s.action_aliases||[]).length)html+='<div class=entry><small>ACTION ALIASES · MODEL GLOSS, NOT CONTROL</small>'+s.action_aliases.map(a=>'<div class=action-alias style="--action-color:'+actionColor(a.action_id)+'"><span class=action-token>'+esc(a.action_id)+'</span><span class=action-gloss>["'+esc(a.alias)+'"]</span><small>'+esc(a.status)+'</small></div>').join('')+'</div>';
   if((s.r2_action_traces||[]).length)html+='<div class=entry><small>R2 OBSERVATION TRACE</small><br>'+s.r2_action_traces.map(esc).join('<br>')+'</div>';
   return html;
