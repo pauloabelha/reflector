@@ -1703,11 +1703,12 @@ CAUSAL VISUAL UNIT:
         except ValueError:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "model-scratchpad-contract"}]}
         scratchpad_text = model_scratchpad_text(scratchpad)
-        turn_evidence_ref = (
+        transition_basis = (
             turn.document.get("scratchpad_context", {})
-            .get("r2_transition_observation", {})
-            .get("evidence_ref")
+            .get("r2_transition_observation")
+            or {}
         )
+        turn_evidence_ref = transition_basis.get("evidence_ref")
         latest_evidence_ref = current_transition_evidence_ref()
         if not scratchpad_basis_is_current(turn_evidence_ref):
             return {

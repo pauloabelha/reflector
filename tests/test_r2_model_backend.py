@@ -441,6 +441,16 @@ def test_stale_scratchpad_basis_is_detected_against_latest_settlement():
     scratchpad.reset_episode_context()
 
 
+def test_frame_zero_null_transition_is_a_current_scratchpad_basis():
+    from arcade.r2 import scratchpad
+
+    scratchpad.reset_episode_context()
+    context = {"r2_transition_observation": None}
+    transition = context.get("r2_transition_observation") or {}
+    assert transition.get("evidence_ref") is None
+    assert scratchpad.scratchpad_basis_is_current(None)
+
+
 def test_production_config_enforces_a_tight_semantic_loop():
     config = json.loads((Path(__file__).parents[1] / "arcade/r2/config.json").read_text())
     model = config["qwen"]
