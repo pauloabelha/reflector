@@ -1026,3 +1026,8 @@ not promoted. Any future cross-level hypothesis must remain a single bounded
 discriminating probe, require directional consensus and current-regime
 compatibility, and never inherit PROGRESS_ELIGIBLE authority from a prior
 level. This audit found no evidence that such backoff would yet increase score.
+
+Final verification reran the dynamically loaded suites in isolated processes:
+68 v1.4 tests, 3 v1.9 tests, 14 v1.12 tests, 92 leaf contracts, 15 command and
+observation-envelope tests, 2 stored request-budget tests, and 18 breadth
+analyzer/click-shadow tests. All 212 passed; `git diff --check` was clean.
