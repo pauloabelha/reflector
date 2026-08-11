@@ -341,7 +341,7 @@ def initial_semantics_due(state: Any, workspace_id: str, qc: Any) -> bool:
     )
 
 
-def semantic_failure_revision_due(state: Any, workspace_id: str, qc: Any) -> bool:
+def semantic_failure_revision_due() -> bool:
     """Request Qwen only for explicit, unsupported R2 semantic failure.
 
     The same failure classifier enforces the compile-time stagnation contract,
@@ -355,14 +355,7 @@ def semantic_failure_revision_due(state: Any, workspace_id: str, qc: Any) -> boo
             "r2_transition_observation": _R2_TRANSITION_OBSERVATION,
         }
     }
-    evidence_ref = _transition_evidence_ref(document)
-    if not evidence_ref or not _semantic_failure_signals(document):
-        return False
-    prior = _latest_note(state, workspace_id, qc)
-    return bool(
-        prior is not None
-        and prior.payload.get("transition_evidence_ref") != evidence_ref
-    )
+    return bool(_semantic_failure_signals(document))
 
 
 def semantic_control_projection(kind: str, payload: Mapping[str, Any], digest: str) -> tuple[dict[str, Any], list[str]] | None:
@@ -603,49 +596,6 @@ CAUSAL VISUAL UNIT:
                 _canonical_goal_proposal_key(item)
                 for item in prior.payload.get("goal_proposals", ())
             })
-            feedback = scratchpad_context.get("r2_semantic_projection") or {}
-            transition = scratchpad_context.get("r2_transition_observation") or {}
-            settlement = feedback.get("latest_settlement") or transition.get("prediction_settlement") or {}
-            address_fields = {
-                "explanation_binding_id": settlement.get("explanation_binding_id"),
-            }
-            rejected_addresses = []
-            for item in feedback.get("rejected_semantic_proposals", ()):
-                if not isinstance(item, Mapping):
-                    continue
-                address = {
-                    key: item[key]
-                    for key in ("object_id", "proposal_id", "schema_id", "binding_id")
-                    if isinstance(item.get(key), str) and item[key]
-                }
-                if address:
-                    rejected_addresses.append(address)
-            failure_task = {
-                "protocol": "evidence-addressed-semantic-failure-revision-v1",
-                "current_transition_evidence_ref": current_evidence_ref,
-                "prior_transition_evidence_ref": prior_evidence_ref,
-                "failure_signals": [dict(item) for item in failure_signals],
-                "prior_goal_proposal_digests": [
-                    hashlib.sha256(item.encode("utf-8")).hexdigest()[:20]
-                    for item in prior_keys
-                ],
-                "failure_addresses": {
-                    **{
-                        key: value for key, value in address_fields.items()
-                        if isinstance(value, str) and value
-                    },
-                    "rejected_semantic_proposals": rejected_addresses,
-                },
-                "authority": {
-                    "semantic_revision_or_abstention": "qwen",
-                    "grounding_and_control": "r2",
-                    "settlement_evidence": "environment",
-                },
-                "response_contract": {
-                    "revise": "emit a nonempty canonically changed goal_proposals set",
-                    "abstain": "emit empty goal_proposals and no abductive composition",
-                },
-            }
             scratchpad_context["semantic_stagnation"] = {
                 "protocol": "evidence-stale-exact-proposal-guard-v1",
                 "new_transition_evidence_ref": current_evidence_ref,
@@ -661,15 +611,7 @@ CAUSAL VISUAL UNIT:
                 ),
                 "authority": "qwen-must-revise-or-replace; r2-still-grounds-and-controls",
             }
-        else:
-            failure_task = None
-        document = {
-            **turn.document,
-            "prior_working_note": projection,
-            "scratchpad_context": scratchpad_context,
-        }
-        if failure_task is not None:
-            document["semantic_failure_revision_task"] = failure_task
+        document = {**turn.document, "prior_working_note": projection, "scratchpad_context": scratchpad_context}
         vocabulary = dict(document.get("allowed_vocabulary", {}))
         if vocabulary:
             vocabulary["control_gate"] = {
@@ -779,7 +721,7 @@ CAUSAL VISUAL UNIT:
                 {"type": "object", "additionalProperties": False, "maxProperties": 0}
             ),
         }
-        schema = {
+        return {
             "type": "object",
             "additionalProperties": False,
             "required": ["summary", "objective_hypothesis", "goal_proposals", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"],
@@ -808,26 +750,6 @@ CAUSAL VISUAL UNIT:
                 },
             },
         }
-        task = turn.document.get("semantic_failure_revision_task")
-        if not isinstance(task, Mapping):
-            return schema
-        evidence_ref = task.get("current_transition_evidence_ref")
-        if not isinstance(evidence_ref, str) or not evidence_ref:
-            raise RuntimeError("semantic failure revision task has no evidence address")
-        acknowledgment = {
-            "type": "object",
-            "additionalProperties": False,
-            "required": ["decision", "evidence_ref"],
-            "properties": {
-                "decision": {"enum": ["revise", "abstain"]},
-                "evidence_ref": {"const": evidence_ref},
-            },
-        }
-        schema["required"].append("semantic_failure_acknowledgment")
-        schema["properties"]["semantic_failure_acknowledgment"] = acknowledgment
-        schema["properties"]["goal_proposals"]["minItems"] = 0
-        schema["properties"]["abductive_compositions"]["minItems"] = 0
-        return schema
 
     def add_note_to_schema(schema: dict[str, Any], turn: Any) -> dict[str, Any]:
         output = copy.deepcopy(schema)
@@ -931,28 +853,9 @@ CAUSAL VISUAL UNIT:
             }
         if note is None:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "workspace-write-missing"}]}
-        task = turn.document.get("semantic_failure_revision_task")
         required = {"summary", "objective_hypothesis", "goal_proposals", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"}
-        if isinstance(task, Mapping):
-            required.add("semantic_failure_acknowledgment")
         if not isinstance(note, Mapping) or set(note) != required:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "working-note-contract"}]}
-        if isinstance(task, Mapping):
-            evidence_ref = task.get("current_transition_evidence_ref")
-            acknowledgment = note.get("semantic_failure_acknowledgment")
-            if (
-                not isinstance(evidence_ref, str) or not evidence_ref
-                or not isinstance(acknowledgment, Mapping)
-                or set(acknowledgment) != {"decision", "evidence_ref"}
-                or acknowledgment.get("decision") not in {"revise", "abstain"}
-                or acknowledgment.get("evidence_ref") != evidence_ref
-            ):
-                return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "semantic-failure-evidence-acknowledgment"}]}
-            abstained = acknowledgment["decision"] == "abstain"
-            if abstained != (not note["goal_proposals"]):
-                return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "semantic-failure-revision-decision"}]}
-            if abstained and note["abductive_compositions"]:
-                return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "semantic-failure-abstention-has-abduction"}]}
         scratch_tokens = qc.GRAPH.estimate_tokens(prose)
         action_free_note = {key: value for key, value in note.items() if key != "action_aliases"}
         if _has_action_proposal(prose) or _has_action_proposal(action_free_note) or scratch_tokens > MAX_SCRATCHPAD_TOKENS:
@@ -1112,6 +1015,6 @@ CAUSAL VISUAL UNIT:
     qc.initial_semantics_due = lambda state, workspace_id: initial_semantics_due(
         state, workspace_id, qc
     )
-    qc.semantic_failure_revision_due = lambda state, workspace_id: semantic_failure_revision_due(
-        state, workspace_id, qc,
+    qc.semantic_failure_revision_due = (
+        lambda state, workspace_id: semantic_failure_revision_due()
     )
