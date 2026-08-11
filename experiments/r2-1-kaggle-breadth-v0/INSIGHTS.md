@@ -741,3 +741,21 @@ held commands, transitions, and evidence constant but Qwen changed the wording
 from one retrospective form to another. Both support the classifier, but at
 different strengths. Reporting that distinction prevents ordinary model
 variation from being mistaken for an exact causal replay.
+
+## I37 — Closure evidence and score evidence answer different questions
+
+The five-minute cohort produced the campaign's one real clear; the 80-second
+closure cohort produced none. Yet the latter is valuable because every game
+ran under one final source with zero structural, compiler, authority, or replay
+failure. A short broad freeze tests whether an intervention generalizes
+mechanically. A longer same-state or score cohort tests whether it improves
+competence. Neither metric should stand in for the other.
+
+## I38 — The next score boundary is causal conversion, not mechanic access
+
+The campaign moved from six guaranteed complex-action abstentions to 132
+committed clicks in the primary breadth run and 44 grounded parameterized
+decisions in final closure. Score did not follow. The remaining work is to turn
+exact interventions and ordered successors into trustworthy situated effects,
+then into milestones and plans. More raw action breadth, generic fit prose, or
+unverified structural averaging will not cross that boundary by itself.

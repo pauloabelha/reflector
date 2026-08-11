@@ -919,3 +919,59 @@ exact old LP85 `despite action 6` clause is covered by the closed-corpus
 compiler regression. Status: promoted safety classification with exact
 execution/provenance control and an explicit model-output caveat; score remains
 zero in the short run.
+
+## Checkpoint 29 — uninterrupted closure freeze at `5235c1b`
+
+The final immutable source completed a full first pass over all 25 games plus
+two brief level-2 diagnostics within the 2,200-second global deadline.
+
+First-pass closure results:
+
+- 25/25 games attempted; 114 committed actions; zero worker errors, authority
+  violations, or replay failures.
+- All games hit the deliberately short 80-second deadline and none cleared a
+  level. Four games committed zero actions, exposing remaining runtime/perception
+  coverage cost rather than an interface exception.
+- 137 exact decisions/pending actions and 114 exact commits; 44 grounded
+  parameterized decisions, with every settled payload preserved exactly.
+- 373 executable ranking rows and 132 advisory rows retained the explicit
+  authority separation.
+- 139 observation envelopes preserved 274 ordered supports, including 21
+  multi-frame packets; all hashes, ordering, settled ordinals, and final grids
+  recomputed exactly.
+- 66/66 Qwen frontiers were nonempty (4–16 objects). 51 completed calls had
+  clean transport, valid JSON, and two accepted objects each: zero compiler or
+  safety rejects, zero admission failures, and zero false semantic demands.
+
+The closure pass is mechanically clean but scoreless; it does not supersede the
+earlier five-minute score cohort. The authoritative campaign score result
+remains AR25's exact 17-action level clear and same-state recovery. The closure
+pass demonstrates that the final generic fixes transfer across every public
+mechanic without reopening the discovered execution and telemetry defects.
+
+## Final campaign theory of the boundary
+
+The evidence now separates prerequisites from competence:
+
+1. Mechanics can be observed and executed: clicks, ordered animation, retry
+   RESET, command identity, deadlines, and replay are no longer hard-excluded.
+2. Runtime overhead was materially reduced: exact graph batching removed the
+   cumulative replay slope and safe frontier recovery eliminated nearly every
+   empty Qwen context.
+3. Correct causal identity can move score: repairing stale command attribution
+   restored AR25's exact historical 17-action clearing trajectory from an
+   identical state prefix.
+4. The dominant remaining score boundary is situated causal attribution and
+   plan quality, especially for clicks. Broad access produced many changed
+   successors but almost no prospective click judgments; the shadow census
+   showed most apparent unique effects were distant global boundary carriers.
+5. Semantic repetition is real, but the campaign's five supposed explicit
+   semantic failures were projection artifacts. R2 should not churn a useful
+   goal because one horizon prediction refuted.
+
+The smallest next experiment is therefore shadow-first causal correspondence
+for clicks, requiring replicated structural source/effect relations, negative
+command controls, and held-out prospective confirmation before probe-only
+promotion. Structural cross-level transfer remains high eventual leverage but
+has only one authoritative level-2 boundary and must remain probe-only until
+more local confirmations exist.
