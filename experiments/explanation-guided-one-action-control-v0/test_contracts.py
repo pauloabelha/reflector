@@ -100,6 +100,9 @@ def test_arcade_exposes_required_live_surfaces():
     assert "/^[a-z][a-z0-9_]{0,39}$/" in page
     assert page.index("EXPLANATION · CURRENT") < page.index("CONTROL V0 · CURRENT PROPOSAL") < page.index("SALIENT VERBS") < page.index("R2.1 SCHEMA LEVELS · CURRENT FRAME") < page.index("CATEGORICAL DIAGRAMS · ABDUCTIONS") < page.index("METADATA")
     assert page.index("</main>") < page.index("DETAILED EVENT LOG")
+    assert page.index("if(prior&&now.turn>prior.turn)") < page.index(
+        "if(prior&&now.decision!==prior.decision"
+    )
 
 
 def test_r2_1_fits_current_frame_at_multiple_recursive_levels():
@@ -482,17 +485,48 @@ def test_consolidated_schema_cannot_inherit_intervention_authority():
 def test_consolidated_explanation_projects_semantics_before_mechanism_accommodation():
     adapter = load("r2_1_explanation_projection") if (HERE / "r2_1_explanation_projection.py").exists() else load("r2_1_adapter")
     observer = adapter.FrameSchemaObserver()
-    before, _middle, _after = _three_alignment_frames()
+    prior_l_context = [
+        [0, 2, 0, 0, 0, 3, 0],
+        [0, 2, 0, 0, 0, 3, 0],
+        [0, 2, 2, 0, 0, 3, 3],
+        [0, 0, 0, 0, 0, 0, 0],
+    ]
+    new_z_context = [
+        [0, 4, 4, 4, 0, 5, 5, 5, 0],
+        [0, 0, 0, 4, 0, 0, 0, 5, 0],
+        [0, 4, 4, 4, 0, 5, 5, 5, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]
     goal = {
-        **_alignment_goal(),
+        "verb": "fit",
+        "schema_name": "Fit same-structure roles",
+        "goal_family": "alignment",
+        "roles": ["actor", "target"],
+        "potential_roles": ["actor", "target"],
+        "observable": "boundary_gap",
+        "direction": "decrease",
+        "terminal_class": "minimum",
+        "terminal_condition": "boundary_gap=0",
+        "role_constraints": [
+            {
+                "predicate": "same_outline",
+                "arguments": ["actor", "target"],
+                "modality": "required",
+            },
+            {
+                "predicate": "different_value",
+                "arguments": ["actor", "target"],
+                "modality": "suggested",
+            },
+        ],
         "authority_scope": "fresh-binding-probe-only",
         "projection_mode": "abstract-explanation-projection",
         "consolidation_source_boundary_ref": "eo:prior-level-boundary",
     }
 
-    # A matching old effect remains auditable in the game-wide table.
-    observer.fit_frame(before, turn=0)
-    old = observer.rank_actions((4,), fallback_action=4, semantic_goal=_alignment_goal())
+    # Learn in one situated geometry: two differently valued L shapes.
+    observer.fit_frame(prior_l_context, turn=0)
+    old = observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
     old_regions = {item["binding_id"]: item for item in observer.last_regions}
     old_actor = old_regions[old["current_explanation"]["ports"]["actor"]]
     old_target = old_regions[old["current_explanation"]["ports"]["target"]]
@@ -502,7 +536,9 @@ def test_consolidated_explanation_projects_semantics_before_mechanism_accommodat
     observer.level_action_effects[(4, observer._region_key(old_target))][(0.0, 0.0)] += 2
 
     observer.advance_level()
-    observer.fit_frame(before, turn=0)
+    # Project into a new geometry and palette: two differently valued Z
+    # shapes. No L coordinate, color, binding, or action route is reused.
+    observer.fit_frame(new_z_context, turn=0)
     projected = observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
     explanation = projected["current_explanation"]
 
@@ -516,6 +552,9 @@ def test_consolidated_explanation_projects_semantics_before_mechanism_accommodat
     }
     assert explanation["ports"]["actor"]
     assert explanation["ports"]["target"]
+    descriptors = explanation["ports"]["situated_role_descriptors"]
+    assert {descriptors["actor"]["value"], descriptors["target"]["value"]} == {4, 5}
+    assert descriptors["actor"]["area"] == descriptors["target"]["area"] == 7
     assert explanation["goal"]["measure"] == goal["observable"]
     assert explanation["goal"]["direction"] == goal["direction"]
     assert explanation["goal"]["terminal"]

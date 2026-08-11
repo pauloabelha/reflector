@@ -475,14 +475,9 @@ function captureArcadeEvents(value){
     const old=previousAliases[id];
     if(!old||old.alias!==item.alias||old.status!==item.status)appendArcadeEvent('alias',`${id} ["${item.alias}"]`,`${old?'revised':'added'} · ${item.status} · ${(item.evidence_refs||[]).join(', ')}`,actionColor(id));
   }
-  if(prior&&now.decision!==prior.decision&&value.decision){
-    const d=value.decision, action=d.selected_action;
-    appendArcadeEvent('decision',action==null?'decision open':`${String(action).startsWith('ACTION_')?action:'ACTION_'+action}${actionAlias(action)?' ["'+actionAlias(action).alias+'"]':''}`,`${d.selection_role||'unclassified'} · ${d.selection_rule||'no selection rule'} · basis r${d.basis_revision??'?'}`,action==null?null:actionColor(action));
-  }
-  if(prior&&now.fastPath!==prior.fastPath){
-    const fast=value.decision?.fast_path||value.fast_path||{};
-    appendArcadeEvent('fast',fast.status==='AUTHORIZED'?'POLICY AUTHORIZED':'POLICY REVOKED',fast.status==='AUTHORIZED'?`${fast.remaining}/${fast.max_actions} actions · ${fast.confirmations} confirmations · confidence ${fast.confidence}`:(fast.last_revocation||'inactive'));
-  }
+  // A poll can observe the previous action's settlement and the following
+  // decision in one snapshot. Emit the settled transition first so the UI
+  // cannot visually pair the new decision with the old executed action.
   if(prior&&now.turn>prior.turn){
     const s=value.settlement||{}, r2=s.r2_1_explanation_adjudication||{}, action=s.action;
     appendArcadeEvent('action',action==null?`turn ${now.turn}`:`ACTION_${action}${actionAlias(action)?' ["'+actionAlias(action).alias+'"]':''}`,`${s.outcome||'observed'} · frame ${s.observation_changed?'changed':'unchanged'} · cumulative turn ${now.turn}`,action==null?null:actionColor(action));
@@ -490,6 +485,14 @@ function captureArcadeEvents(value){
   }
   if(prior&&now.schemaTurn!==prior.schemaTurn&&value.r2_1_schema_stats){
     const totals=value.r2_1_schema_stats.totals||{};appendArcadeEvent('schema',`frame ${now.schemaTurn} fitted`,`${totals.situated_bindings||0} bindings · ${totals.unique_schemas_bound||0} schemas · max level ${value.r2_1_schema_stats.maximum_level??'?'}`);
+  }
+  if(prior&&now.decision!==prior.decision&&value.decision){
+    const d=value.decision, action=d.selected_action;
+    appendArcadeEvent('decision',action==null?'decision open':`${String(action).startsWith('ACTION_')?action:'ACTION_'+action}${actionAlias(action)?' ["'+actionAlias(action).alias+'"]':''}`,`${d.selection_role||'unclassified'} · ${d.selection_rule||'no selection rule'} · basis r${d.basis_revision??'?'}`,action==null?null:actionColor(action));
+  }
+  if(prior&&now.fastPath!==prior.fastPath){
+    const fast=value.decision?.fast_path||value.fast_path||{};
+    appendArcadeEvent('fast',fast.status==='AUTHORIZED'?'POLICY AUTHORIZED':'POLICY REVOKED',fast.status==='AUTHORIZED'?`${fast.remaining}/${fast.max_actions} actions · ${fast.confirmations} confirmations · confidence ${fast.confidence}`:(fast.last_revocation||'inactive'));
   }
   arcadeLogPrior=now;
 }
