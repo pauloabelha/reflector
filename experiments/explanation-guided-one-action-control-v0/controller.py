@@ -210,14 +210,31 @@ def controller_class(
                 action: tuple(item for item in commands if int(item.action_id) == action)
                 for action in legal
             }
+            def command_rank(item: Any) -> tuple[int, int, str]:
+                return (
+                    self.command_no_change.get(
+                        (str(observation_digest), item.command_id), 0,
+                    ),
+                    self.command_uses.get(item.command_id, 0),
+                    item.command_id,
+                )
+
+            def resolve_current_frame_command(action: int) -> Any | None:
+                candidates = by_action.get(int(action), ())
+                if candidates:
+                    return min(candidates, key=command_rank)
+                if (
+                    action_commands is not None
+                    and not action_commands.requires_payload(int(action))
+                ):
+                    return action_commands.ActionCommand.create(int(action))
+                return None
+
             default_commands = by_action.get(int(decision.action_id), ())
             if not default_commands and commands:
                 replacement_command = min(
                     commands,
-                    key=lambda item: (
-                        self.command_no_change.get((str(observation_digest), item.command_id), 0),
-                        self.command_uses.get(item.command_id, 0), item.command_id,
-                    ),
+                    key=command_rank,
                 )
                 decision = type(decision)(
                     action_id=int(replacement_command.action_id),
@@ -230,21 +247,7 @@ def controller_class(
                     plan, action_id=int(replacement_command.action_id), reason=decision.reason,
                 )
                 self.last_plan = plan
-                default_commands = (replacement_command,)
-            self.last_command = (
-                min(
-                    default_commands,
-                    key=lambda item: (
-                        self.command_no_change.get((str(observation_digest), item.command_id), 0),
-                        self.command_uses.get(item.command_id, 0), item.command_id,
-                    ),
-                )
-                if default_commands else
-                action_commands.ActionCommand.create(int(decision.action_id))
-                if action_commands is not None
-                and not action_commands.requires_payload(int(decision.action_id))
-                else None
-            )
+            self.last_command = resolve_current_frame_command(int(decision.action_id))
             repeated_no_change = self.no_change_attempts.get((str(observation_digest), int(decision.action_id)), 0)
             if repeated_no_change:
                 alternatives = [
@@ -264,6 +267,11 @@ def controller_class(
                     )
                     plan = live_controller.PC.fallback_plan(plan, action_id=replacement, reason="same-state-no-change-excluded")
                     self.last_plan = plan
+                    # The no-change branch mutates the intervention after the
+                    # initial command was resolved.  Rebind atomically to an
+                    # exact command grounded in this same frame; in particular,
+                    # never carry the excluded action's payload or scope.
+                    self.last_command = resolve_current_frame_command(replacement)
 
             r2_1 = None
             rank_actions = getattr(schema_observer, "rank_actions", None)
@@ -361,10 +369,28 @@ def controller_class(
                         # fallback command as the pending intervention.
                         self.last_command = action_commands.ActionCommand.create(r2_action)
                     else:
-                        # A parameterized action is executable only when the
-                        # evaluator selected one of this frame's grounded exact
-                        # commands.  The commit seam below will fail closed.
+                        # Let the generic post-mutation seam below resolve an
+                        # exact current-frame candidate.  If none exists, the
+                        # payload-required action remains fail-closed.
                         self.last_command = None
+
+            # Every internal policy branch is allowed to replace action_id,
+            # but the durable command must describe that final intervention.
+            # If a branch did not carry an exact command along, deterministically
+            # rebind from this frame's evidence-bounded candidates.  Complex
+            # actions with no such candidate remain unresolved and fail closed
+            # at the commit seam; no empty payload is synthesized.
+            final_action = int(decision.action_id)
+            if (
+                self.last_command is None
+                or int(self.last_command.action_id) != final_action
+            ):
+                self.last_command = resolve_current_frame_command(final_action)
+            if (
+                self.last_command is not None
+                and int(self.last_command.action_id) != final_action
+            ):
+                raise RuntimeError("selected command does not match final decision")
 
             selected = [
                 prediction for prediction in plan.predictions

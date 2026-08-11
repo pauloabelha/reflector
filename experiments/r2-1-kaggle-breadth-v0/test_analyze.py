@@ -180,7 +180,9 @@ def test_timeout_partial_outcome_counts_only_committed_successors(tmp_path):
     write_event(tmp_path, 2, "TransitionCommitted", {"levels_completed": 0})
     write_event(tmp_path, 3, "ActionPending", {"action_id": 2})
     write_event(tmp_path, 4, "TransitionCommitted", {"levels_completed": 1})
-    write_event(tmp_path, 5, "ActionPending", {"action_id": 3})
+    write_event(tmp_path, 5, "ActionPending", {
+        "action_id": 3, "levels_completed": 99,
+    })
     # A malformed or half-written artifact must not manufacture an action.
     broken = tmp_path / "workspaces" / "w" / "events" / "00000006.json"
     broken.write_text("{", encoding="utf-8")
@@ -193,7 +195,7 @@ def test_timeout_partial_outcome_counts_only_committed_successors(tmp_path):
     }
 
 
-def test_aggregate_counts_recovered_commits_but_scores_only_completed_runs():
+def test_aggregate_counts_committed_actions_and_levels_across_runtime_outcomes():
     runner = load_runner()
     rows = [
         {
@@ -208,7 +210,7 @@ def test_aggregate_counts_recovered_commits_but_scores_only_completed_runs():
         },
         {
             "game": "timeout-game", "status": "timeout",
-            "actions": 0, "levels_completed": 3,
+            "actions": 2, "levels_completed": 3,
             "uncommitted_pending_actions": 2,
             "partial_ledger_recovered": True,
         },
@@ -221,13 +223,64 @@ def test_aggregate_counts_recovered_commits_but_scores_only_completed_runs():
 
     # All three externally committed transitions count, including the one
     # recovered after error. Pending actions do not.
-    assert summary["total_actions"] == 3
-    # Campaign score remains based on completed outcomes, not partial recovery.
-    assert summary["total_levels_completed"] == 1
-    assert summary["games_clearing_a_level"] == ["complete-game"]
+    assert summary["total_actions"] == 5
+    # Runtime status does not erase externally committed score. Pending
+    # actions remain separate row telemetry and affect neither total.
+    assert summary["total_levels_completed"] == 6
+    assert summary["games_clearing_a_level"] == [
+        "complete-game", "error-game", "timeout-game",
+    ]
     assert summary["runs_completed"] == 1
     assert summary["runs_errored"] == 1
     assert summary["runs_timed_out"] == 1
+
+
+def test_analyzer_recovers_committed_score_without_or_with_stale_result_metadata(
+    tmp_path, monkeypatch,
+):
+    analyzer = load_analyzer()
+    episode_name = "pass-01--x--level-01"
+    episode = tmp_path / "episodes" / episode_name
+    episode.mkdir(parents=True)
+    outcomes = tmp_path / "outcomes"
+    outcomes.mkdir()
+    (outcomes / f"{episode_name}.json").write_text(json.dumps({
+        "game": "x", "start_level": 1, "status": "timeout",
+    }), encoding="utf-8")
+    committed = traced_turn(1, changed=True)
+    committed["levels_completed"] = 1
+    committed["settlement"]["levels_completed"] = 1
+
+    class FakeStore:
+        metadata_level = None
+
+        def __init__(self, _root):
+            pass
+
+        def replay(self, _run_id):
+            return {
+                "metadata": {
+                    "game": "x", "start_level": 1,
+                    "levels_completed": self.metadata_level,
+                },
+                "timeline": [committed],
+            }
+
+    monkeypatch.setattr(
+        analyzer, "load_arcade",
+        lambda: SimpleNamespace(ReplayStore=FakeStore),
+    )
+
+    for metadata_level in (None, 0):
+        # None is the absent-result surface; zero models stale result metadata.
+        FakeStore.metadata_level = metadata_level
+        report = analyzer.analyze(tmp_path)
+
+        assert report["episodes_failed_to_analyze"] == []
+        assert report["episodes"][0]["levels_completed"] == 1
+        assert report["level_clears"] == 1
+        success = report["episodes"][0]["observable_failure_layers"]["layers"]["success"]
+        assert success["assessment"] == "success-observed"
 
 
 def test_controller_source_inventory_covers_loaded_chain_and_excludes_tests():

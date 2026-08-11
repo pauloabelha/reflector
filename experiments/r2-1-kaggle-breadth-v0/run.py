@@ -209,6 +209,7 @@ def worker(game: str, level: int, artifact_root: Path, result_path: Path) -> int
 
 def aggregate(rows: list[dict[str, Any]], *, run_id: str, started_at: str, deadline_s: int) -> dict[str, Any]:
     completed = [row for row in rows if row.get("status") == "complete"]
+    scoring = [row for row in rows if int(row.get("levels_completed") or 0) > 0]
     return {
         "protocol": "r2.1-kaggle-breadth-v0",
         "run_id": run_id,
@@ -221,13 +222,13 @@ def aggregate(rows: list[dict[str, Any]], *, run_id: str, started_at: str, deadl
         "runs_errored": sum(row.get("status") == "error" for row in rows),
         "games_attempted": sorted({str(row["game"]) for row in rows}),
         "games_clearing_a_level": sorted({
-            str(row["game"]) for row in completed if int(row.get("levels_completed") or 0) > 0
+            str(row["game"]) for row in scoring
         }),
-        "total_levels_completed": sum(int(row.get("levels_completed") or 0) for row in completed),
-        # Error and timeout rows recover ``actions`` from TransitionCommitted
-        # events.  Those actions happened even when the run did not produce a
-        # scored completion; uncommitted ActionPending events are reported in a
-        # separate row field and must not be added here.
+        # Error and timeout rows recover ``actions`` and ``levels_completed``
+        # from TransitionCommitted events. Those actions and clears happened
+        # even when the worker did not return cleanly. Uncommitted
+        # ActionPending events are reported separately and must not be added.
+        "total_levels_completed": sum(int(row.get("levels_completed") or 0) for row in rows),
         "total_actions": sum(int(row.get("actions") or 0) for row in rows),
         "replay_failures": sum(row.get("replay_verified") is False for row in completed),
         "authority_violations": sum(int(row.get("support_authority_violations") or 0) for row in completed),

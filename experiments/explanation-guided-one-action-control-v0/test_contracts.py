@@ -469,6 +469,41 @@ def test_r2_1_retry_boundary_retains_mechanics_but_clears_pending_state():
     assert observer.fast_policy_state is None
 
 
+def test_leaf_integration_preserves_retry_boundary_through_ingest_wrapper():
+    integration = load("integration")
+    calls = []
+    sentinel = object()
+
+    def inherited(*args, **kwargs):
+        calls.append((args, kwargs))
+        return sentinel
+
+    base = SimpleNamespace(
+        persist_prospective_plan=lambda *args, **kwargs: None,
+        ingest_transition_graph=inherited,
+        apply_qwen_compilation=lambda *args, **kwargs: None,
+    )
+    integration.install(base)
+
+    result = base.ingest_transition_graph(
+        "root",
+        "workspace",
+        "state",
+        "cognition",
+        transition_id="transition",
+        before_grid=((0,),),
+        after_grid=((1,),),
+        before_record={"digest": "before"},
+        after_record={"digest": "after"},
+        legal=(1,),
+        intervention_ref="intervention",
+        boundary_kind="game-over-retry",
+    )
+
+    assert result is sentinel
+    assert calls[0][1]["boundary_kind"] == "game-over-retry"
+
+
 def test_controller_retry_does_not_learn_action_zero_and_clears_situated_control():
     module = load("controller_retry_boundary") if (HERE / "controller_retry_boundary.py").exists() else load("controller")
     pair = lambda *_args: SimpleNamespace(uses={})

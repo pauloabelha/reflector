@@ -206,6 +206,52 @@ def test_controller_commits_a_grounded_click_and_excludes_only_that_dead_coordin
     assert selected_inputs[-1]["same_frame_no_change"][second_command.command_id] == 0
 
 
+def test_no_change_action_mutation_rebinds_to_a_current_frame_grounded_click():
+    controller_module = load("controller")
+    observer = SimpleNamespace(
+        last_regions=[region("r:su15", 4, ((3, 5),))],
+        frame_shape=(8, 8),
+        last_digest="su15-frame",
+    )
+    runtime = SimpleNamespace(schema_observer=observer, snapshot={})
+
+    class FallbackOneBase(FallbackThreeBase):
+        def __init__(self, **_kwargs):
+            super().__init__()
+            self.action_uses = {1: 1, 6: 0}
+            self.last_plan = replace(
+                self.last_plan, action_id=1, fallback_action_id=1,
+            )
+
+        def plan(self, _legal, **_kwargs):
+            return Decision(1, 1, "fallback"), self.last_plan
+
+    live = SimpleNamespace(
+        ProspectiveWorkspaceController=FallbackOneBase,
+        PC=SimpleNamespace(fallback_plan=lambda plan, action_id, reason: replace(
+            plan, action_id=action_id, fallback_action_id=action_id,
+            probe_basis=reason,
+        )),
+    )
+    controller = controller_module.controller_class(
+        live, runtime, action_commands=COMMAND,
+    )()
+    controller.no_change_attempts[("same", 1)] = 1
+
+    decision, _plan = controller.plan(
+        (1, 6), observation_digest="same", basis_revision=1,
+    )
+    command = controller.selected_action_command(decision)
+
+    assert decision.action_id == 6
+    assert decision.reason == "information-after-no-change"
+    assert command.action_id == 6
+    assert command.data == {"x": 5, "y": 3}
+    assert command.payload_grounding["region_binding_id"] == "r:su15"
+    assert controller.last_contract["selected_action"] == 6
+    assert controller.last_contract["selected_command"] == command.document()
+
+
 def test_fast_path_override_replaces_fallback_command_before_settlement_attribution():
     controller_module = load("controller")
     observer = ADAPTER.FrameSchemaObserver()

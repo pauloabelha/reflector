@@ -345,6 +345,7 @@ def analyze_episode(
     previous_frame_digest = None
     previous_command = None
     previous_no_change = False
+    committed_levels_completed = 0
     for turn in replay["timeline"]:
         decision = turn.get("executed_decision") or turn.get("decision") or {}
         settlement = turn.get("settlement") or {}
@@ -379,9 +380,21 @@ def analyze_episode(
         previous_command = command_identity
         previous_frame_digest = frame_digest
         previous_no_change = settlement.get("observation_changed") is False
+        committed_levels_completed = max(
+            committed_levels_completed,
+            int(turn.get("levels_completed") or settlement.get("levels_completed") or 0),
+        )
+    levels_completed = max(
+        int(replay["metadata"].get("levels_completed") or 0),
+        committed_levels_completed,
+    )
     return {
         **replay["metadata"],
         "episode": episode.name,
+        # Replay turns are materialized only from TransitionCommitted events,
+        # so interrupted runs retain their committed score without admitting a
+        # pending action or relying on a result file.
+        "levels_completed": levels_completed,
         "timeline_actions": len(replay["timeline"]) - 1,
         "control_status_counts": dict(counts),
         "claim_counts": dict(claims),
