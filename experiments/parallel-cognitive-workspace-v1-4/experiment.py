@@ -1700,6 +1700,87 @@ def activate_visible_qwen(
     return state, records
 
 
+def qwen_revision_due(
+    state: Any,
+    workspace_id: str,
+    *,
+    config: Mapping[str, Any],
+    task_count: int,
+) -> bool:
+    """Return only explicit semantic demands, never positive-count cadence."""
+
+    initial_due = getattr(QC, "initial_semantics_due", None)
+    if callable(initial_due):
+        if initial_due(state, workspace_id):
+            return True
+    elif task_count == 0:
+        return True
+    causal_due = getattr(QC, "causal_revision_due", None)
+    if callable(causal_due) and causal_due(state, workspace_id):
+        return True
+    alias_due = getattr(QC, "alias_revision_due", None)
+    if (
+        config["qwen"].get("trigger_on_new_action_evidence", False)
+        and callable(alias_due)
+        and alias_due(state, workspace_id)
+    ):
+        return True
+    semantic_failure_due = getattr(QC, "semantic_failure_revision_due", None)
+    return bool(
+        callable(semantic_failure_due)
+        and semantic_failure_due(state, workspace_id)
+    )
+
+
+def qwen_compilation_rejected_or_abstained(compilation: Mapping[str, Any]) -> bool:
+    """Classify a whole Qwen call without misclassifying valid revisions."""
+
+    if compilation.get("revision_decision") == "abstain":
+        return True
+    if not bool(compilation.get("valid_json_contract")):
+        return True
+    # A valid legacy response with no accepted write is its abstention form.
+    # Mixed compilations made at least one valid contribution and therefore
+    # reset the whole-call failure streak.
+    return not bool(compilation.get("accepted"))
+
+
+def qwen_retry_cap_reached(
+    root: Path,
+    workspace_id: str,
+    config: Mapping[str, Any],
+) -> bool:
+    """Enforce the configured consecutive failure cap from durable results."""
+
+    limit = int(
+        config.get("prospective_control", {}).get(
+            "stop_qwen_after_consecutive_rejected_or_abstained_calls", 0
+        )
+    )
+    if limit <= 0:
+        return False
+    completed = sorted(
+        (
+            item for item in LEDGER.list_events(root)
+            if item["event_type"] == "QwenTaskCompleted"
+            and item.get("workspace_id") == workspace_id
+        ),
+        key=lambda item: int(item["seq"]),
+        reverse=True,
+    )
+    consecutive = 0
+    for item in completed:
+        compilation = LEDGER.read_blob(
+            root, str(item["payload"]["compilation_blob"])
+        )
+        if not qwen_compilation_rejected_or_abstained(compilation):
+            break
+        consecutive += 1
+        if consecutive >= limit:
+            return True
+    return False
+
+
 def activate_then_maybe_queue_qwen(
     root: Path,
     workspace_id: str,
@@ -1734,17 +1815,13 @@ def activate_then_maybe_queue_qwen(
             activated,
             len(history),
         )
-    triggers = {int(item) for item in config["qwen"]["trigger_action_counts"]}
-    alias_due = getattr(QC, "alias_revision_due", None)
-    evidence_trigger = bool(
-        config["qwen"].get("trigger_on_new_action_evidence", False)
-        and callable(alias_due)
-        and alias_due(state, workspace_id)
-    )
     if (
         live_qwen
         and pending_qwen is None
-        and (len(history) in triggers or evidence_trigger)
+        and not qwen_retry_cap_reached(root, workspace_id, config)
+        and qwen_revision_due(
+            state, workspace_id, config=config, task_count=task_count
+        )
         and task_count < int(config["qwen"]["max_calls_per_episode"])
     ):
         # Re-read only after activation returns: binding, structured criticism,

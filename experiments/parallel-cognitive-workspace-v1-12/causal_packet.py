@@ -63,6 +63,18 @@ def _eligible_unit(qc: Any, state: Any) -> Mapping[str, Any] | None:
     return None
 
 
+def causal_revision_due(qc: Any, state: Any) -> bool:
+    """Whether the canonical packet builder has an evidence-return unit.
+
+    This deliberately shares ``_eligible_unit`` with ``build_causal_packet``.
+    The scheduler must not approximate packet eligibility: once this returns
+    true, packet construction remains authoritative and any malformed eligible
+    chain raises its normal ``CausalPacketError`` rather than being skipped.
+    """
+
+    return _eligible_unit(qc, state) is not None
+
+
 def _witness(qc: Any, item: Any) -> Mapping[str, Any]:
     value = qc._criticism_witness(item.payload)
     if not isinstance(value, Mapping):
@@ -667,6 +679,9 @@ def install(qc: Any) -> Any:
         return qc
     qc._CAUSAL_PACKET_V112_BASE_BUILD_TURN = qc.build_turn
     qc.build_turn = wrap_build_turn(qc, qc.build_turn)
+    qc.causal_revision_due = lambda state, workspace_id=None: causal_revision_due(
+        qc, state
+    )
     qc._CAUSAL_PACKET_V112_INSTALLED = True
     return qc
 
@@ -677,6 +692,7 @@ __all__ = [
     "PROTOCOL",
     "STATUS",
     "build_causal_packet",
+    "causal_revision_due",
     "build_revision_turn",
     "decode_probe_judgments",
     "install",

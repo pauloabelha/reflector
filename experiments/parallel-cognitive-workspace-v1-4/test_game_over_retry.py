@@ -37,6 +37,109 @@ def history(count: int, level: int = 0):
     ]
 
 
+def test_qwen_scheduler_uses_demands_not_positive_action_cadence(monkeypatch) -> None:
+    config = {
+        "qwen": {
+            "trigger_action_counts": [0, 8, 16, 24],
+            "trigger_on_new_action_evidence": True,
+        }
+    }
+    state = SimpleNamespace()
+    for name in (
+        "initial_semantics_due", "causal_revision_due", "alias_revision_due",
+        "semantic_failure_revision_due",
+    ):
+        monkeypatch.delattr(BASE.QC, name, raising=False)
+
+    assert BASE.qwen_revision_due(
+        state, "ws", config=config, task_count=0
+    ) is True
+    # Positive-count cadence is no longer a scheduling input.
+    assert BASE.qwen_revision_due(
+        state, "ws", config=config, task_count=1
+    ) is False
+
+    monkeypatch.setattr(
+        BASE.QC, "initial_semantics_due", lambda state, workspace_id: True,
+        raising=False,
+    )
+    # A rejected first call has task_count > 0 but no valid semantic note.
+    assert BASE.qwen_revision_due(
+        state, "ws", config=config, task_count=1
+    ) is True
+    monkeypatch.setattr(
+        BASE.QC, "initial_semantics_due", lambda state, workspace_id: False
+    )
+
+    monkeypatch.setattr(
+        BASE.QC, "causal_revision_due", lambda state, workspace_id: True,
+        raising=False,
+    )
+    assert BASE.qwen_revision_due(
+        state, "ws", config=config, task_count=1
+    ) is True
+    monkeypatch.setattr(
+        BASE.QC, "causal_revision_due", lambda state, workspace_id: False
+    )
+    monkeypatch.setattr(
+        BASE.QC, "alias_revision_due", lambda state, workspace_id: True,
+        raising=False,
+    )
+    assert BASE.qwen_revision_due(
+        state, "ws", config=config, task_count=1
+    ) is True
+    monkeypatch.setattr(
+        BASE.QC, "alias_revision_due", lambda state, workspace_id: False
+    )
+    monkeypatch.setattr(
+        BASE.QC, "semantic_failure_revision_due",
+        lambda state, workspace_id: True,
+        raising=False,
+    )
+    assert BASE.qwen_revision_due(
+        state, "ws", config=config, task_count=1
+    ) is True
+
+
+def test_qwen_consecutive_failure_cap_is_derived_from_durable_compilations(
+    monkeypatch,
+) -> None:
+    config = {"prospective_control": {
+        "stop_qwen_after_consecutive_rejected_or_abstained_calls": 2,
+    }}
+    events = [
+        {"seq": 1, "event_type": "QwenTaskCompleted", "workspace_id": "ws",
+         "payload": {"compilation_blob": "first"}},
+        {"seq": 2, "event_type": "QwenTaskCompleted", "workspace_id": "ws",
+         "payload": {"compilation_blob": "second"}},
+    ]
+    blobs = {
+        "first": {"valid_json_contract": False, "accepted": [], "rejected": [{}]},
+        "second": {"valid_json_contract": True, "accepted": [], "rejected": [],
+                   "revision_decision": "abstain"},
+        "legacy-abstain": {"valid_json_contract": True, "accepted": [],
+                           "rejected": []},
+        "valid": {"valid_json_contract": True, "accepted": [{"kind": "working_note"}],
+                  "rejected": []},
+    }
+    monkeypatch.setattr(BASE.LEDGER, "list_events", lambda root: list(events))
+    monkeypatch.setattr(BASE.LEDGER, "read_blob", lambda root, digest: blobs[digest])
+    assert BASE.qwen_retry_cap_reached(Path("unused"), "ws", config) is True
+
+    events[1]["payload"]["compilation_blob"] = "legacy-abstain"
+    assert BASE.qwen_retry_cap_reached(Path("unused"), "ws", config) is True
+
+    events.append({
+        "seq": 3, "event_type": "QwenTaskCompleted", "workspace_id": "ws",
+        "payload": {"compilation_blob": "valid"},
+    })
+    assert BASE.qwen_retry_cap_reached(Path("unused"), "ws", config) is False
+
+    # Another workspace cannot consume this workspace's retry allowance.
+    events[-1]["workspace_id"] = "other"
+    assert BASE.qwen_retry_cap_reached(Path("unused"), "ws", config) is True
+
+
 def test_retry_never_authorizes_win_and_consumes_the_same_level_budget() -> None:
     assert not BASE.game_over_retry_allowed(
         "WIN", history(1), action_budget=48, per_level=True, enabled=True

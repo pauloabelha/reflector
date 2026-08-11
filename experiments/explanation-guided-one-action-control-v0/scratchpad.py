@@ -299,6 +299,41 @@ def alias_revision_due(state: Any, workspace_id: str, qc: Any) -> bool:
     return action_id not in named
 
 
+def initial_semantics_due(state: Any, workspace_id: str, qc: Any) -> bool:
+    """Keep initial Qwen semantics due until one valid note is canonical."""
+
+    workspace_ref = _workspace_ref(qc, workspace_id)
+    invalidated: set[str] = set()
+    graph = getattr(qc, "GRAPH", None)
+    invalidated_ids = getattr(graph, "invalidated_ids", None)
+    if callable(invalidated_ids):
+        invalidated = {str(value) for value in invalidated_ids(state)}
+    return not any(
+        item.kind == "working_note"
+        and item.created_by == "qwen"
+        and item.object_id not in invalidated
+        and item.payload.get("workspace_ref") == workspace_ref
+        for item in state.objects
+    )
+
+
+def semantic_failure_revision_due() -> bool:
+    """Request Qwen only for explicit, unsupported R2 semantic failure.
+
+    The same failure classifier enforces the compile-time stagnation contract,
+    so scheduling cannot reinterpret open, mechanism-observed, confirmed, or
+    progress-eligible evidence as a semantic rejection.
+    """
+
+    document = {
+        "scratchpad_context": {
+            "r2_semantic_projection": _R2_SEMANTIC_PROJECTION,
+            "r2_transition_observation": _R2_TRANSITION_OBSERVATION,
+        }
+    }
+    return bool(_semantic_failure_signals(document))
+
+
 def semantic_control_projection(kind: str, payload: Mapping[str, Any], digest: str) -> tuple[dict[str, Any], list[str]] | None:
     """Project control artifacts without exposing intervention tokens to Qwen.
 
@@ -949,4 +984,10 @@ CAUSAL VISUAL UNIT:
     qc.compile_response = compile_response
     qc.alias_revision_due = lambda state, workspace_id: alias_revision_due(
         state, workspace_id, qc
+    )
+    qc.initial_semantics_due = lambda state, workspace_id: initial_semantics_due(
+        state, workspace_id, qc
+    )
+    qc.semantic_failure_revision_due = (
+        lambda state, workspace_id: semantic_failure_revision_due()
     )

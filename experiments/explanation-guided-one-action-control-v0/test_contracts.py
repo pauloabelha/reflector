@@ -1420,6 +1420,57 @@ def test_newly_evidenced_action_immediately_requests_one_alias_revision():
     assert qc.alias_revision_due(state, "ws") is False
 
 
+def test_rejected_first_call_keeps_initial_semantics_due_until_valid_note():
+    scratchpad = load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    state = SimpleNamespace(objects=[])
+
+    # A rejected compilation commits no working note, so task count alone must
+    # not starve frame-zero semantics.
+    assert qc.initial_semantics_due(state, "ws") is True
+    state.objects.append(SimpleNamespace(
+        kind="working_note", created_by="qwen", created_revision=1,
+        object_id="eo:valid-note", payload={
+            "workspace_ref": scratchpad._workspace_ref(qc, "ws"),
+        },
+    ))
+    assert qc.initial_semantics_due(state, "ws") is False
+
+
+def test_semantic_failure_revision_due_only_for_explicit_unsupported_failure():
+    scratchpad = load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    state = SimpleNamespace(objects=[])
+
+    scratchpad.record_r2_semantic_projection({
+        "active_explanation": {
+            "epistemic_status": "grounded-open-mechanism",
+            "confirmations": 0,
+        },
+        "latest_settlement": {"adjudication": "mechanism-observed"},
+    })
+    assert qc.semantic_failure_revision_due(state, "ws") is False
+
+    scratchpad.record_r2_semantic_projection({
+        "active_explanation": {"confirmations": 0},
+        "latest_settlement": {"adjudication": "refuted"},
+    })
+    assert qc.semantic_failure_revision_due(state, "ws") is True
+
+    scratchpad.record_r2_semantic_projection({
+        "active_explanation": {"control_status": "PROGRESS_ELIGIBLE"},
+        "rejected_semantic_proposals": [{"reason": "grounding-rejected"}],
+        "latest_settlement": {"adjudication": "refuted"},
+    })
+    assert qc.semantic_failure_revision_due(state, "ws") is False
+
+    scratchpad.record_r2_semantic_projection({
+        "active_explanation": {"confirmations": 0},
+        "rejected_semantic_proposals": [{"reason": "grounding-rejected"}],
+    })
+    assert qc.semantic_failure_revision_due(state, "ws") is True
+
+
 def test_alias_runtime_configuration_is_nonblocking_and_matches_qwen_context():
     config = json.loads((HERE / "config.json").read_text())
     qwen = config["qwen"]

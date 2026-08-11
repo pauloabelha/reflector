@@ -291,8 +291,15 @@ Safe hypothesis:
   not demand Qwen. The scheduler requests semantics but never repairs or
   invents them.
 
-Status: audited design; implementation waits for the reset-boundary seam to
-avoid concurrent changes to inherited scheduling code.
+Intervention:
+
+- Positive action-count cadence is removed. Initial semantics remain due until
+  a canonical valid note exists; exact causal packets, alias evidence, and
+  unsupported semantic failures remain demand triggers.
+- The configured consecutive rejection/abstention cap is enforced durably and
+  per workspace, with valid acceptance resetting the count.
+
+Status: contract-verified candidate; clean serial breadth evidence pending.
 
 ## I10 — Intervention identity includes payload
 
@@ -357,3 +364,41 @@ Inference:
   grounding or information selection without importing click semantics.
 
 Status: frozen diagnostic evidence; no new control intervention promoted.
+
+## I13 — Cumulative epistemic state, not initial fitting, dominates late runtime
+
+Observed:
+
+- G50T mean action latency grew 9.34→40.15 seconds and LP85 grew
+  11.32→29.78. Their selected role-candidate populations stabilized early.
+- Non-Qwen residual grew 0.96→27.50 seconds/action on G50T and 3.75→24.65 on
+  LP85 while graph revisions, objects, and binding populations accumulated.
+- Final graphs contained 17,281 objects/11,636 R2 bindings on G50T and 20,853/
+  17,345 on LP85.
+
+Inference:
+
+- Exact Pareto indexing improves the early grounding kernel but does not stop
+  cumulative schema, graph-scan, or ledger-persistence growth. Those components
+  are now the leading generic runtime target.
+- Current artifacts cannot distinguish the three precisely. Promotion of a
+  pruning/indexing change requires function-level profiling and exact graph/
+  decision equivalence, not an object-count heuristic.
+
+Status: bottleneck localized to a component family; no pruning promoted.
+
+## I14 — Parallelism is invalid when it corrupts semantic transport
+
+Observed:
+
+- Two simultaneous episode workers shared one Qwen endpoint. Current G50T had
+  12 HTTP/JSON failures among 15 completed calls; the prior serial trace had
+  zero among twelve.
+
+Inference:
+
+- Parallel code work and read-only analysis remain safe, but parallel scored
+  episodes require isolated model capacity. Otherwise model contention changes
+  semantic evidence quality and destroys build comparability.
+
+Status: scored campaign policy changed to serial workers on the shared endpoint.

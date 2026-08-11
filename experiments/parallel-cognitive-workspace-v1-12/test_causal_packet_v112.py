@@ -4,6 +4,9 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
 
 
 HERE = Path(__file__).resolve().parent
@@ -30,6 +33,33 @@ BASE = V111_MODULE.BASE
 
 def fixture_state():
     return BASE.graph_state(FIXTURE)[0]
+
+
+def test_due_predicate_is_exactly_packet_eligible_unit() -> None:
+    state = fixture_state()
+    assert PACKET.causal_revision_due(BASE.QC, state) is (
+        PACKET.build_causal_packet(BASE.QC, state) is not None
+    )
+
+    empty_qc = SimpleNamespace(exact_causal_chains=lambda state: ())
+    empty = SimpleNamespace(objects=[])
+    assert PACKET.causal_revision_due(empty_qc, empty) is False
+    assert PACKET.build_causal_packet(empty_qc, empty) is None
+
+
+def test_malformed_eligible_packet_is_due_and_raises_in_builder() -> None:
+    qc = SimpleNamespace(
+        exact_causal_chains=lambda state: ({
+            "criticism_status": PACKET.STATUS,
+            "derivation_id": "missing-derivation",
+            "semantic_target_id": "missing-target",
+            "criticism_id": "missing-criticism",
+        },)
+    )
+    state = SimpleNamespace(objects=[])
+    assert PACKET.causal_revision_due(qc, state) is True
+    with pytest.raises(PACKET.CausalPacketError, match="missing object"):
+        PACKET.build_causal_packet(qc, state)
 
 
 def test_packet_preserves_exact_fixture_semantics_and_flat_ancestry() -> None:

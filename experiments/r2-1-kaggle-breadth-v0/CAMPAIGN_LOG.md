@@ -343,6 +343,56 @@ Parallel frozen LP85 diagnostic (`4b2932d`, ten-minute cap):
   insufficient: situated identity/mechanism grounding and selective click
   exploration now dominate this trace.
 
+Late-run throughput audit:
+
+- Frozen G50T action time rose from 9.34s/action in the early third to 40.15s
+  in the late third; LP85 rose from 11.32s to 29.78s.
+- Selected role-candidate counts stabilized early, while graph revisions and
+  accumulated R2 bindings continued growing. G50T ended with 17,281 objects
+  (11,636 R2 bindings); LP85 reached 20,853 (17,345 bindings).
+- The non-Qwen residual rose from 0.96s to 27.50s/action on G50T and from 3.75s
+  to 24.65s on LP85. Artifact timing localizes the bottleneck only to the
+  cumulative schema/graph/ledger family, not yet to one function.
+- The current G50T worker committed 34 actions in 900s, recorded 34 native
+  predictions and five environment edges, and cleared no level.
+
+Parallel transport caveat:
+
+- G50T and LP85 shared one Qwen endpoint. Current G50T had 12 HTTP/JSON errors
+  in 15 completed calls, versus 0/12 in the prior serial G50T trace.
+- Parallel game workers are therefore not comparable score evidence and are
+  discontinued on the shared endpoint. Implementation, testing, and read-only
+  analysis remain parallel; scored workers remain serial unless model capacity
+  is isolated.
+
+## Checkpoint 7 — demand-triggered semantic scheduling
+
+Intervention candidate:
+
+- Positive action-count cadence no longer schedules Qwen.
+- A call is due only while initial semantics lack a canonical valid note, when
+  the exact v1.12 causal-packet predicate has an eligible unit, when new
+  unaliased-action evidence exists, or after explicit unsupported R2 semantic
+  rejection/refutation.
+- The scheduler reuses the causal packet builder's canonical eligibility
+  function. A malformed eligible unit remains due and raises the normal packet
+  error rather than disappearing behind an approximate predicate.
+- A rejected first compilation remains due until a valid note exists. The
+  previously declared two-consecutive rejected/abstained-call cap is now
+  enforced from durable, workspace-scoped completion blobs and resets after a
+  valid accepted compilation.
+- Overlapping reasons feed one boolean queue gate; existing pending, replay,
+  and maximum-call invariants are unchanged.
+
+Verification before freeze:
+
+- Leaf, v1.4, v1.12, campaign and selected repository suites pass in isolated
+  processes, including initial reject→valid, exact causal eligibility,
+  malformed packet, failure-cap, alias, overlap, and positive-cadence tests.
+
+Status: contract-verified candidate; requires a clean serial breadth cohort to
+measure call savings and ensure required semantic revisions are not starved.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:
