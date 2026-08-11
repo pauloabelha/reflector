@@ -714,3 +714,40 @@ semantic-delta task that preserves Qwen's authority and R2's exact-repeat
 rejection. Separately, admission should recover the richest safe frontier when
 capacity remains, without weakening the reserved completion budget. Neither
 change should invent goals or infer action semantics from game IDs.
+## Checkpoint 18 — live recovery of both breadth errors
+
+Fresh focused runs on `0ad9caf` crossed the exact two pass-1 failure seams:
+
+- SU15 reproduced the first five command/predecessor pairs byte-for-byte. On
+  decision six, repeated-no-change control changed fallback action 7 to action
+  6 and rebound a current-frame observed cell `(x=20,y=43)`. Decision contract,
+  pending action, committed transition, command ID, effect scope, and payload
+  grounding agree. The successor was playable, visibly changed, preserved a
+  valid ordered five-frame envelope, and was graph-materialized. The old build
+  raised before this action.
+- SP80 naturally repeated the action-5 `NOT_FINISHED -> GAME_OVER` transition.
+  The action-0 retry restored `NOT_FINISHED` with `full_reset=false` and levels
+  unchanged. Its explicit `game-over-retry-reset` transition and environment
+  evidence were materialized in the graph, after which a grounded coordinate
+  action 6 committed and further graph/Qwen events continued. The old build
+  crashed before graph materialization.
+
+These runs promote both repairs from interface contracts to direct live causal
+evidence. Neither changes a goal, action meaning, ranking heuristic, or game
+parameter.
+
+## Checkpoint 19 — preserve support through bounded semantic projection
+
+The proposed evidence-addressed semantic-revision task exposed a prerequisite
+defect before implementation: both compact projection tiers could discard
+`control_status` and confirmation counts. In frozen AR25, KA59, and G50T
+examples, a refuted settlement could therefore look unsupported after
+truncation even while the active explanation was progress-eligible or had
+positive confirmations.
+
+The minimal repair retains only `control_status`, direct `confirmations`, and
+`epistemic_evaluation.confirmations` through both bounded tiers. It changes no
+scheduler or semantic authority. Forced-truncation contracts prove progress
+and confirmed explanations suppress false failure routing while remaining
+inside the 12KB bound. The larger semantic-revision protocol remains
+unpromoted until it can consume causally sound projections.

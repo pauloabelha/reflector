@@ -647,3 +647,12 @@ score preserved. The run still failed because one inherited graph wrapper
 dropped the boundary type. Retry competence therefore requires transport,
 budget accounting, controller re-grounding, graph provenance, replay, and
 wrapper compatibility to agree on the same explicit boundary.
+## I27 — Compression must preserve authority gates, not merely evidence IDs
+
+An exact transition reference is insufficient if context compression removes
+the fields that say whether its active explanation remains supported. The
+semantic-failure classifier deliberately suppresses churn for confirmed or
+progress-eligible explanations; dropping those gates from a compact projection
+turns bounded context into a causal misclassification. Minimal support status
+and confirmation counts are therefore part of the semantic projection
+contract, even when potentials and mechanism detail must be discarded.

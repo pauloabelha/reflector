@@ -99,6 +99,22 @@ def _semantic_failure_signals(document: Mapping[str, Any]) -> tuple[dict[str, An
     return tuple(signals)
 
 
+def _minimal_support_fields(explanation: Mapping[str, Any]) -> dict[str, Any]:
+    """Retain only the fields that prevent false semantic-failure routing."""
+
+    retained = {
+        key: explanation[key]
+        for key in ("control_status", "confirmations")
+        if key in explanation
+    }
+    evaluation = explanation.get("epistemic_evaluation")
+    if isinstance(evaluation, Mapping) and "confirmations" in evaluation:
+        retained["epistemic_evaluation"] = {
+            "confirmations": evaluation["confirmations"],
+        }
+    return retained
+
+
 def _action_evidence_refs(document: Mapping[str, Any]) -> dict[str, tuple[str, ...]]:
     """Index action-specific R2 evidence exposed in this semantic turn.
 
@@ -175,9 +191,12 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
             "authority": candidate.get("authority"),
             "frame_digest": candidate.get("frame_digest"),
             "active_explanation": {
-                key: active.get(key)
-                for key in ("binding_id", "verb", "epistemic_status", "verb_status", "potential", "mechanism")
-                if key in active
+                **{
+                    key: active.get(key)
+                    for key in ("binding_id", "verb", "epistemic_status", "verb_status", "potential", "mechanism")
+                    if key in active
+                },
+                **_minimal_support_fields(active),
             },
             "latest_settlement": {
                 key: settlement.get(key)
@@ -196,9 +215,14 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
             "projection_truncated": True,
         }
     if len(json.dumps(candidate, sort_keys=True, separators=(",", ":"))) > MAX_R2_SEMANTIC_PROJECTION_BYTES:
+        active = candidate.get("active_explanation", {})
         candidate["active_explanation"] = {
-            key: candidate.get("active_explanation", {}).get(key)
-            for key in ("binding_id", "verb", "epistemic_status")
+            **{
+                key: active.get(key)
+                for key in ("binding_id", "verb", "epistemic_status")
+                if key in active
+            },
+            **_minimal_support_fields(active),
         }
     _R2_SEMANTIC_PROJECTION = candidate
     return copy.deepcopy(candidate)

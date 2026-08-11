@@ -1506,6 +1506,67 @@ def test_semantic_failure_revision_due_only_for_explicit_unsupported_failure():
     assert qc.semantic_failure_revision_due(state, "ws") is True
 
 
+def test_compact_projection_retains_progress_gate_across_refutation():
+    scratchpad = load("scratchpad_compact_progress_support") if (HERE / "scratchpad_compact_progress_support.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    bounded = scratchpad.record_r2_semantic_projection({
+        "protocol": "r2.1-semantic-projection-v1",
+        "active_explanation": {
+            "binding_id": "binding:active-progress",
+            "verb": "fit",
+            "epistemic_status": "active-progress-explanation",
+            "control_status": "PROGRESS_ELIGIBLE",
+            "epistemic_evaluation": {"confirmations": 0, "refutations": 1},
+            "detail": "x" * (scratchpad.MAX_R2_SEMANTIC_PROJECTION_BYTES * 2),
+        },
+        "rejected_semantic_proposals": [{"reason": "competing-grounding-rejected"}],
+        "latest_settlement": {
+            "adjudication": "refuted",
+            "actual_progress": 6.0,
+            "explanation_binding_id": "binding:active-progress",
+        },
+    })
+
+    assert bounded["projection_truncated"] is True
+    assert len(json.dumps(bounded, sort_keys=True, separators=(",", ":"))) <= scratchpad.MAX_R2_SEMANTIC_PROJECTION_BYTES
+    assert bounded["active_explanation"]["control_status"] == "PROGRESS_ELIGIBLE"
+    assert bounded["active_explanation"]["epistemic_evaluation"] == {"confirmations": 0}
+    assert qc.semantic_failure_revision_due(SimpleNamespace(objects=[]), "ws") is False
+
+
+def test_minimal_projection_retains_confirmation_across_refutation():
+    scratchpad = load("scratchpad_minimal_confirmation_support") if (HERE / "scratchpad_minimal_confirmation_support.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    oversized = "y" * (scratchpad.MAX_R2_SEMANTIC_PROJECTION_BYTES * 2)
+    bounded = scratchpad.record_r2_semantic_projection({
+        "protocol": "r2.1-semantic-projection-v1",
+        "active_explanation": {
+            "binding_id": "binding:confirmed",
+            "verb": "fit",
+            "epistemic_status": "grounded-predictive",
+            "control_status": "PROBE_ELIGIBLE",
+            "confirmations": 2,
+            "epistemic_evaluation": {"confirmations": 2, "mechanism_confidence": 1.0},
+            "potential": {"detail": oversized},
+            "mechanism": {"detail": oversized},
+        },
+        "rejected_semantic_proposals": [{"reason": "competing-grounding-rejected"}],
+        "latest_settlement": {
+            "adjudication": "refuted",
+            "actual_progress": 12.0,
+            "explanation_binding_id": "binding:confirmed",
+        },
+    })
+
+    assert bounded["projection_truncated"] is True
+    assert len(json.dumps(bounded, sort_keys=True, separators=(",", ":"))) <= scratchpad.MAX_R2_SEMANTIC_PROJECTION_BYTES
+    assert "potential" not in bounded["active_explanation"]
+    assert bounded["active_explanation"]["control_status"] == "PROBE_ELIGIBLE"
+    assert bounded["active_explanation"]["confirmations"] == 2
+    assert bounded["active_explanation"]["epistemic_evaluation"] == {"confirmations": 2}
+    assert qc.semantic_failure_revision_due(SimpleNamespace(objects=[]), "ws") is False
+
+
 def test_alias_runtime_configuration_is_nonblocking_and_matches_qwen_context():
     config = json.loads((HERE / "config.json").read_text())
     qwen = config["qwen"]
