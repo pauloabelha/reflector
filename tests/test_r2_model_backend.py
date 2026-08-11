@@ -323,6 +323,8 @@ def test_agent_arcade_uses_provider_neutral_visible_labels():
     assert '<select id=model-choice>' in PAGE
     assert "model_choice:$('#model-choice').value" in PAGE
     assert "model-context" not in PAGE
+    for heading in ("Explanation", "Goal", "Expectation", "Notes"):
+        assert f"scratchField('{heading}'" in PAGE
     assert "QWEN SCRATCHPAD · UNVERIFIED" not in PAGE
 
 

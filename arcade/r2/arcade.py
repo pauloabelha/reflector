@@ -341,7 +341,31 @@ render = function(){
 )
 PAGE = PAGE.replace(
     "$('#scratch').innerHTML=s?pretty(s):",
-    "$('#scratch').innerHTML=s?(typeof s==='string'?`<pre>${esc(s)}</pre>`:s.natural_language?`<pre>${esc(s.natural_language)}</pre>${(s.action_aliases||[]).length?'<div class=entry><small>ACTION ALIASES · MODEL GLOSS, NOT CONTROL</small>'+s.action_aliases.map(a=>'<div class=action-alias style=\"--action-color:'+actionColor(a.action_id)+'\"><span class=action-token>'+esc(a.action_id)+'</span><span class=action-gloss>[\"'+esc(a.alias)+'\"]</span><small>'+esc(a.status)+'</small></div>').join('')+'</div>':''}${(s.r2_action_traces||[]).length?'<div class=entry><small>R2 OBSERVATION TRACE</small><br>'+s.r2_action_traces.map(esc).join('<br>'):''}`:pretty(s)):",
+    "$('#scratch').innerHTML=s?renderModelScratchpad(s):",
+)
+PAGE = PAGE.replace(
+    "</head>",
+    """<style>.scratch-field{padding:9px 0;border-top:1px solid var(--line)}.scratch-field:first-child{border-top:0}.scratch-field h3{margin:0 0 5px;color:var(--cyan);font-size:11px;letter-spacing:.08em}.scratch-field pre{color:var(--ink)}</style></head>""",
+)
+PAGE = PAGE.replace(
+    "</body>",
+    """<script>
+function modelExpectation(s){
+  const goal=(s.goal_proposals||[])[0]||{}, parts=[];
+  if(goal.observable)parts.push(String(goal.observable));if(goal.direction)parts.push(String(goal.direction));
+  if(goal.terminal_condition)parts.push(`until ${goal.terminal_condition}`);else if(goal.terminal_class)parts.push(`toward ${goal.terminal_class}`);
+  return parts.join(' · ')||'No explicit expectation yet.';
+}
+function scratchField(label,value){return `<section class=scratch-field><h3>${label}:</h3><pre>${esc(value||'Open.')}</pre></section>`}
+function renderModelScratchpad(s){
+  if(typeof s==='string')return scratchField('Notes',s);
+  const explanation=data.current_explanation?.claim||data.current_explanation?.summary||s.summary;
+  let html=scratchField('Explanation',explanation)+scratchField('Goal',s.objective_hypothesis)+scratchField('Expectation',modelExpectation(s))+scratchField('Notes',s.natural_language);
+  if((s.action_aliases||[]).length)html+='<div class=entry><small>ACTION ALIASES · MODEL GLOSS, NOT CONTROL</small>'+s.action_aliases.map(a=>'<div class=action-alias style="--action-color:'+actionColor(a.action_id)+'"><span class=action-token>'+esc(a.action_id)+'</span><span class=action-gloss>["'+esc(a.alias)+'"]</span><small>'+esc(a.status)+'</small></div>').join('')+'</div>';
+  if((s.r2_action_traces||[]).length)html+='<div class=entry><small>R2 OBSERVATION TRACE</small><br>'+s.r2_action_traces.map(esc).join('<br>')+'</div>';
+  return html;
+}
+</script></body>""",
 )
 PAGE = PAGE.replace(
     '<button id=start>START AGENT</button>',
