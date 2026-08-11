@@ -380,6 +380,8 @@ def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
     assert '"allowed_vocabulary", "model_scratchpad",' in source
     assert '"model_scratchpad": dict(scratchpad)' in source
     assert '"required": ["protocol", "request_id", "scratchpad", "workspace_write"]' in source
+    assert "notes to what was preserved, discarded, refuted, or left open" in source
+    assert "explanation_consolidation_due" in source
 
 
 def test_arcade_picker_validates_custom_budgets_and_restores_environment(monkeypatch):
