@@ -1,0 +1,102 @@
+{
+  "experiment": "parallel-cognitive-workspace-v1-5",
+  "protocol": "prospective-control-v1.5",
+  "workspace_protocol": "prospective-control-v1.5",
+  "support_policy": "environment-evidence-only",
+  "games": ["ar25"],
+  "level_target": 1,
+  "arms": ["r2_only", "shared_live_qwen"],
+  "action_budget": 48,
+  "max_parallel_arc_workers": 2,
+  "max_workers_per_arm": 1,
+  "fresh_environment_per_arm": true,
+  "profiles": {
+    "generic_prospective": {
+      "frontier_root_limit": 24,
+      "frontier_token_budget": 6400,
+      "proposal_attention_boost": 1.0,
+      "attention_half_life_actions": 12
+    }
+  },
+  "primary_profile": "generic_prospective",
+  "qwen": {
+    "endpoint": "http://127.0.0.1:8081/v1/chat/completions",
+    "model": "qwen3-vl-4b-thinking-q4_k_m",
+    "context_window_tokens": 16384,
+    "reserved_tokens": 2048,
+    "max_tokens": 2048,
+    "thinking_budget_tokens": 1024,
+    "max_calls_per_episode": 4,
+    "trigger_action_counts": [0, 12, 24, 36],
+    "logical_release_delay_actions": 8,
+    "request_timeout_seconds": 180,
+    "temperature": 0,
+    "top_p": 1,
+    "seed": 271828,
+    "require_every_due_call": true,
+    "forbid_game_and_action_tokens": true
+  },
+  "prospective_control": {
+    "prediction_horizon_actions": 1,
+    "max_probe_decisions": 5,
+    "max_qwen_influenced_control_decisions": 24,
+    "require_unique_binding": true,
+    "require_prediction_before_transition": true,
+    "require_environment_evidence_return": true,
+    "require_confirmation_before_control": true,
+    "reject_alpha_identical_revision": true,
+    "stop_qwen_after_consecutive_rejected_or_abstained_calls": 2,
+    "support_policy": "environment-evidence-only"
+  },
+  "counterfactual": {
+    "mode": "post-episode-same-state",
+    "feed_back_into_live_cognition": false,
+    "branch_every_qwen_changed_control_decision": true,
+    "max_decision_branches": 8,
+    "max_contiguous_suffix_branches": 1,
+    "verify_prefix_digest": true,
+    "one_step_branch": true,
+    "contiguous_influenced_suffix_branch": true,
+    "require_exact_branch_replay": true
+  },
+  "binary_gate": {
+    "shared_must_complete_level": 1,
+    "control_noncompletion_or_shared_action_savings_fraction": 0.25,
+    "require_non_alpha_revision_after_criticism_or_refutation": true,
+    "require_confirmed_qwen_schema": true,
+    "require_qwen_changed_control_decision": true,
+    "require_favorable_same_state_counterfactual": true,
+    "require_exact_factual_replay": true
+  },
+  "validity": {
+    "require_same_initial_observation_digest": true,
+    "require_fresh_empty_external_cognition": true,
+    "require_prompt_plus_reserve_within_context": true,
+    "require_all_due_qwen_transports_and_compilations": true,
+    "require_zero_support_authority_violations": true,
+    "require_stable_object_identity": true,
+    "require_ledger_hash_integrity": true,
+    "require_cross_workspace_isolation": true,
+    "require_exact_factual_and_counterfactual_replay": true,
+    "invalid_is_not_fail": true,
+    "rerun_requires_new_version": true
+  },
+  "checkpointing": {
+    "progress_every_actions": 1,
+    "checkpoint_before_and_after_qwen_call": true,
+    "checkpoint_before_and_after_environment_action": true,
+    "persist_exact_requests_responses_and_usage": true,
+    "persist_prediction_evidence_and_counterfactual_branches": true,
+    "atomic_writes": true
+  },
+  "forbidden_inputs": [
+    "frozen_qwen_proposals",
+    "external_schemas",
+    "external_explanations",
+    "user_notes",
+    "solution_traces",
+    "future_recording_outcomes",
+    "other_game_cognitive_objects",
+    "prior_run_cognitive_objects"
+  ]
+}

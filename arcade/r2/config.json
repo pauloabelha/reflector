@@ -1,0 +1,95 @@
+{
+  "experiment": "r2.2-agent-arcade",
+  "protocol": "explanation-guided-one-action-v0",
+  "workspace_protocol": "explanation-guided-one-action-v0",
+  "games": ["ar25"],
+  "arms": ["shared_live_qwen"],
+  "action_budget": 48,
+  "continue_across_levels": true,
+  "reset_action_budget_each_level": true,
+  "retry_game_over_with_reset": true,
+  "model_backend": {
+    "active_profile": "local-qwen",
+    "profiles": {
+      "local-qwen": {
+        "provider": "openai-compatible",
+        "api": "chat_completions",
+        "max_retries": 0
+      },
+      "openai-gpt-5.6": {
+        "provider": "openai",
+        "api": "responses",
+        "endpoint": "https://api.openai.com/v1/responses",
+        "token_count_endpoint": "https://api.openai.com/v1/responses/input_tokens",
+        "api_key_env": "OPENAI_API_KEY",
+        "model": "gpt-5.6",
+        "context_window_tokens": 1050000,
+        "reserved_tokens": 8192,
+        "max_tokens": 8192,
+        "consolidation_max_tokens": 16384,
+        "reasoning_effort": "medium",
+        "consolidation_reasoning_effort": "high",
+        "frontier_token_budget": 12000,
+        "max_context_budget_rebuilds": 4,
+        "request_timeout_seconds": 900,
+        "max_retries": 4,
+        "retry_base_seconds": 1,
+        "retry_max_seconds": 20
+      },
+      "openai-custom": {
+        "provider": "openai",
+        "api": "responses",
+        "endpoint": "https://api.openai.com/v1/responses",
+        "token_count_endpoint": "https://api.openai.com/v1/responses/input_tokens",
+        "api_key_env": "OPENAI_API_KEY",
+        "model": "",
+        "max_context_budget_rebuilds": 4,
+        "request_timeout_seconds": 900,
+        "max_retries": 4,
+        "retry_base_seconds": 1,
+        "retry_max_seconds": 20,
+        "requires_explicit_budgets": true
+      }
+    }
+  },
+  "qwen": {
+    "context_window_tokens": 16384,
+    "reserved_tokens": 2048,
+    "max_tokens": 2048,
+    "tokenizer_executable": "/home/pauloabelha/alienware16-llm/llama.cpp/build-cuda/bin/llama-tokenize",
+    "tokenizer_model": "/home/pauloabelha/alienware16-llm/qwen/models/Qwen3VL-4B-Thinking-Q4_K_M.gguf",
+    "tokenizer_timeout_seconds": 30,
+    "image_max_tokens": 1024,
+    "chat_template_token_margin": 256,
+    "max_context_budget_rebuilds": 2,
+    "thinking_budget_tokens": 192,
+    "consolidation_max_tokens": 5120,
+    "consolidation_thinking_budget_tokens": 1024,
+    "max_calls_per_episode": 16,
+    "trigger_on_new_action_evidence": true,
+    "eager_semantic_integration": false,
+    "nonblocking_semantic_integration": true,
+    "logical_release_delay_actions": 0
+  },
+  "scratchpad": {
+    "max_tokens": 1024,
+    "verified": false,
+    "action_language_forbidden": true,
+    "rewrite_each_semantic_turn": true
+  },
+  "control": {
+    "external_actions_per_cycle": 1,
+    "require_explanation_before_first_action": true,
+    "winning_explanation_set_nonempty_from_frame_zero": true,
+    "reobserve_after_every_action": true,
+    "selection_objectives": ["goal-progress", "decision-relevant-information"],
+    "retain_no_visible_change": true,
+    "fast_path": {
+      "enabled": true,
+      "minimum_confirmations": 2,
+      "confidence_threshold": 0.8,
+      "max_actions": 4,
+      "max_failures": 0
+    }
+  }
+}

@@ -24,13 +24,22 @@ reflector2-arc = "reflector2.arc_harness:main"
 reflector2-workspace = "reflector2.workspace_main:main"
 reflector2-explanations = "reflector2.explanation_experiment:main"
 reflector2-arcade = "arcade.server:main"
+reflector2-agent-arcade = "arcade.r2:main"
+reflector2-r2-kaggle = "arcade.r2.kaggle:main"
 
 [tool.setuptools.packages.find]
 where = ["src", "."]
 include = ["reflector2*", "arcade*"]
 
 [tool.setuptools.package-data]
-arcade = ["notes.json"]
+arcade = [
+    "notes.json",
+    "r2/config.json",
+    "r2/README.md",
+    "r2/_runtime/**/*.py",
+    "r2/_runtime/**/*.json",
+    "r2/_runtime/**/*.md",
+]
 
 [tool.pytest.ini_options]
 addopts = "-q"

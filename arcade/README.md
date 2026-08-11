@@ -1,4 +1,14 @@
-# Reflector-II human arcade
+# Reflector-II arcade
+
+This package contains two loopback-only surfaces:
+
+- `python -m arcade` starts the human controller.
+- `python -m arcade.r2 --arcade` starts the independent R2.2 Agent Arcade.
+
+R2.2 model profiles, OpenAI setup, budgets, and Kaggle usage are documented in
+[`r2/README.md`](r2/README.md).
+
+## Human controller
 
 This is the copied local ARC-AGI-3 human controller and its note journal.
 It deliberately executes only actions chosen in the browser; it is not an
