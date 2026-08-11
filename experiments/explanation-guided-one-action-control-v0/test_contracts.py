@@ -2197,6 +2197,67 @@ def test_qwen_safety_filter_allows_the_semantic_phrase_action_free():
     assert scratchpad._has_action_proposal("Choose action 2") is True
 
 
+def test_qwen_safety_filter_accepts_exact_re86_retrospective_response():
+    scratchpad = load("scratchpad_re86_retrospective") if (HERE / "scratchpad_re86_retrospective.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    turn = qc.build_turn(SimpleNamespace(objects=[]), (), None)
+    prose = (
+        "Frame 2 shows 8 Figures with identical interior layout and area, but inconsistent "
+        "horizontal alignment. Previous action (move left) adjusted positions but failed "
+        "to resolve alignment. Current state has f00-f07 entities with same_outline and "
+        "same_interior constraints, but horizontal alignment remains inconsistent. "
+        "Fit_residual is 14.0, indicating significant misalignment. Need to identify "
+        "reference entity for horizontal alignment while preserving interior structure."
+    )
+
+    assert scratchpad._has_action_proposal(prose) is False
+    compiled = qc.compile_response(semantic_response(natural_language=prose), turn)
+    assert compiled["valid_json_contract"] is True
+    assert not compiled["rejected"]
+    assert compiled["working_note"]["verified"] is False
+
+
+def test_qwen_safety_filter_requires_bounded_governor_and_past_outcome():
+    scratchpad = load("scratchpad_retrospective_bounds") if (HERE / "scratchpad_retrospective_bounds.py").exists() else load("scratchpad")
+    assert scratchpad._has_action_proposal(
+        "The previous action (Action 2) moved the visible group left."
+    ) is False
+    assert scratchpad._has_action_proposal(
+        "Prior actions (Action 2, Action 4) failed to change the frame."
+    ) is False
+    assert scratchpad._has_action_proposal("Action 2 moved the visible group.") is True
+    assert scratchpad._has_action_proposal("The previous action was Action 2.") is True
+    assert scratchpad._has_action_proposal("Move left next.") is True
+
+
+def test_qwen_safety_filter_retrospective_context_never_masks_directives():
+    scratchpad = load("scratchpad_retrospective_directives") if (HERE / "scratchpad_retrospective_directives.py").exists() else load("scratchpad")
+    directives = [
+        "Choose action 2.",
+        "Select an action.",
+        "Execute an action.",
+        "Press the button.",
+        "Click the visible control.",
+        "The previous action (Action 2) failed; choose Action 3.",
+        "Action 2 should be selected.",
+    ]
+    for text in directives:
+        assert scratchpad._has_action_proposal(text) is True, text
+
+
+def test_qwen_safety_filter_accepts_bounded_retrospective_corpus_phrases():
+    scratchpad = load("scratchpad_retrospective_corpus") if (HERE / "scratchpad_retrospective_corpus.py").exists() else load("scratchpad")
+    retrospective_phrases = [
+        "R2's last action (Action 3) moved multiple elements but failed to resolve contact.",
+        "Previous actions (Action 3, Action 6) failed to reduce the boundary gap.",
+        "Recent actions (Action 3) shifted f03 and f04, but the residual persists.",
+        "Prior actions (move left/right) failed to resolve the outline conflict.",
+        "The latest action (Action 2) moved f00 right, while the gap persisted.",
+    ]
+    for text in retrospective_phrases:
+        assert scratchpad._has_action_proposal(text) is False, text
+
+
 def test_initial_working_hypothesis_is_an_unverified_explanation():
     scratchpad = load("scratchpad_initial") if (HERE / "scratchpad_initial.py").exists() else load("scratchpad")
     qc = fake_qc(); scratchpad.install(qc)

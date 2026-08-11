@@ -810,3 +810,40 @@ and reports only the number of connected observed-change footprints.
 `unique` is deliberately shadow-only: it grants no game-rule, progress, graph,
 or control authority. It establishes a measurable substrate for the next
 held-out attribution experiment without changing an action.
+
+## Checkpoint 23 — live attention recovery on RE86
+
+RE86 was selected because all five of its frozen post-action Qwen turns had
+collapsed to 59 tokens and zero graph objects. Under `9e21e47`, all five live
+boundaries were nonempty: 11, 12, 10, 6, and 6 objects. The first two retained
+frame, eight entities, relation set, and action proposals; both transported
+cleanly and produced accepted working notes, whereas the frozen empty-frontier
+calls produced none. Later cuts became smaller and prediction-focused but never
+collapsed. Every cut remained dependency-closed with the configured 2,048-token
+reserve and no semantic-failure protocol residue.
+
+The third completed rich response was rejected by the pre-existing
+action-language safety gate, apparently due to retrospective prose containing
+“move left.” That is now a distinct compiler-classification question, not an
+admission failure. The six-action focused run scored no level; the promoted
+effect is improved usable semantic evidence, not score.
+
+## Checkpoint 24 — retrospective evidence is not an action proposal
+
+The RE86 action-2 response retained exact evidence and a valid alias but was
+rejected because its scratchpad said “Previous action (move left) adjusted
+positions.” The safety regex treated every opaque action token as a proposed
+intervention, regardless of tense or clause role.
+
+The frozen first pass contained 26 such rejections across 13 games (19.3% of
+completed calls). All 26 matched retrospective outcome descriptions; none
+recommended an executable action and none exceeded the scratchpad budget. The
+broader artifact corpus showed the same pattern in 55 responses.
+
+The compiler now exempts a bare `Action N` or directional move only when the
+same bounded clause contains both an explicit previous/prior/last/latest/recent
+action governor before it and a past-outcome predicate after it. Directive and
+control lexemes remain unconditional failures, and any ambiguous or mixed
+mention remains blocked. Exact RE86, corpus-derived history, mixed-directive,
+and choose/select/execute/press/button/click contracts pass. This expands
+evidence description, not Qwen's action authority.

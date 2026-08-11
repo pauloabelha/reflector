@@ -22,10 +22,64 @@ ACTION_PROPOSAL = re.compile(
     r"move\s+(?:up|down|left|right))\b",
     re.IGNORECASE,
 )
+RETROSPECTIVE_ACTION_GOVERNOR = re.compile(
+    r"\b(?:previous|prior|last|latest|recent)\s+actions?\b",
+    re.IGNORECASE,
+)
+PAST_ACTION_OUTCOME = re.compile(
+    r"\b(?:adjusted|altered|changed|confirmed|decreased|failed|had|increased|"
+    r"left|moved|produced|reduced|resolved|resulted|shifted|was|were)\b",
+    re.IGNORECASE,
+)
+RETROSPECTIVE_ACTION_WINDOW = 120
+
+
+def _is_bounded_retrospective_action(text: str, match: re.Match[str]) -> bool:
+    """Accept an opaque action mention only as bounded observed history.
+
+    Directive/control matches are never eligible.  A bare Action-N or move
+    direction needs both an explicit retrospective governor before it and a
+    past outcome predicate after it in the same short clause.
+    """
+
+    token = match.group(0)
+    if not re.fullmatch(
+        r"(?:action\s*#?\d+|move\s+(?:up|down|left|right))",
+        token,
+        re.IGNORECASE,
+    ):
+        return False
+    clause_start = max(
+        text.rfind(boundary, 0, match.start()) for boundary in (".", "!", "?", ";", "\n")
+    ) + 1
+    next_boundaries = [
+        position for boundary in (".", "!", "?", ";", "\n")
+        if (position := text.find(boundary, match.end())) >= 0
+    ]
+    clause_end = min(next_boundaries, default=len(text))
+    prefix = text[max(clause_start, match.start() - RETROSPECTIVE_ACTION_WINDOW):match.start()]
+    suffix = text[match.end():min(clause_end, match.end() + RETROSPECTIVE_ACTION_WINDOW)]
+    return bool(
+        RETROSPECTIVE_ACTION_GOVERNOR.search(prefix)
+        and PAST_ACTION_OUTCOME.search(suffix)
+    )
+
+
+def _text_has_action_proposal(text: str) -> bool:
+    return any(
+        not _is_bounded_retrospective_action(text, match)
+        for match in ACTION_PROPOSAL.finditer(text)
+    )
 
 
 def _has_action_proposal(value: Any) -> bool:
-    return bool(ACTION_PROPOSAL.search(json.dumps(value, ensure_ascii=True)))
+    if isinstance(value, str):
+        return _text_has_action_proposal(value)
+    if isinstance(value, Mapping):
+        return any(_has_action_proposal(item) for item in value.values())
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return any(_has_action_proposal(item) for item in value)
+    return _text_has_action_proposal(json.dumps(value, ensure_ascii=True))
 
 
 def _canonical_action_id(value: Any) -> str | None:

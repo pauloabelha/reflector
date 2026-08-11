@@ -685,3 +685,23 @@ effects: connectedness does not identify an entity, direction, goal, or rule.
 Still, this is a sharper boundary than `observation_changed`: it separates
 conservative unique spatial evidence from ambiguity and abstention while using
 the exact ordered animation packet.
+
+## I31 — Spatial uniqueness can reveal a global carrier, not a local effect
+
+Of 56 single-footprint click successors, 53 changed only one or two boundary
+cells, only two contained the clicked cell, and median click distance was 40.
+VC33 and TN36 alone contributed 32 monotone boundary sweeps. A unique footprint
+is therefore not sufficient for command attribution: repeated effects across
+varied commands may identify an action-global meter or carrier. Promotion needs
+replicated source/effect correspondence, a negative command control, and a
+held-out prospective confirmation; current shadow evidence authorizes none.
+
+## I32 — Safety filters must distinguish observation from prescription
+
+R2 asks Qwen to explain environment evidence, so historical action tokens are
+unavoidable. A context-free ban discarded 26/135 first-pass responses for
+phrases such as “previous Action 2 failed,” even though executable directives
+were absent. The correct authority boundary is grammatical and structural:
+bounded retrospective outcome clauses may describe opaque actions; directives,
+future recommendations, ambiguous mentions, and mixed clauses still fail
+closed. This recovers evidence without letting Qwen select an action.
