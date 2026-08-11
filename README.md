@@ -1,181 +1,246 @@
-# Reflector-II
+# Reflector II
 
-Reflector-II is a deterministic research runtime for building and testing
-sparse, content-addressed relational schemas. It turns grid observations into
-ground facts, retrieves matching schemas through postings indices, keeps a
-bounded active workspace, constructs reusable schema compositions, learns
-before/action/after transition schemas, and tests prospective completions as
-explicit shadows.
+Reflector II (R2) is a deterministic research agent for ARC-AGI-3. It combines
+a sparse, content-addressed schema graph with a visual-semantic model, while
+keeping grounding, action authority, evidence, and settlement inside R2.
 
-The primary research solver is now the proven Parallel Cognitive Workspace
-v1.16: original Reflector-II and a local Qwen visual-semantic worker operate on
-one durable epistemic graph.  In its frozen fresh paired regression, R2-only
-completed zero levels in 64 actions while the shared R2+Qwen arm completed
-level 1 in 38 actions.  The causal trace includes an ambiguous Qwen proposal,
-R2 probes, environment evidence returned to Qwen, a non-alpha revision, unique
-grounding, prospective confirmation, 13 changed control decisions, exact
-factual replay, and eight favorable same-state counterfactuals.
+The current production agent is **R2.2**, implemented under
+[`src/reflector2/r2`](src/reflector2/r2). It is the model-neutral successor to
+the R2.1 explanation-guided controller: the same runtime powers Agent Arcade
+and Kaggle breadth runs, and it can use either the resident local Qwen service
+or OpenAI models through `OPENAI_API_KEY`.
 
-This is one public development-game breakthrough, not evidence of broad ARC or
-Kaggle performance.  The repository also contains a newer native workspace
-port, but it remains experimental until it reproduces the complete v1.16 gate.
-The canonical result ledger and per-game matrices live in
-[SCORES.md](SCORES.md).
+> Current evidence is still limited. R2 has repeatedly cleared AR25 level 1
+> and has demonstrated grounded verbs, executable explanations, prediction
+> settlement, and explanation consolidation. It has not demonstrated broad
+> public-game competence, sealed transfer, or a competitive Kaggle score.
 
-## What is implemented
-
-- A hash-consed term store for symbols, variables, and applications.
-- One schema graph for atomic patterns, composites, explicit schema DAGs,
-  transitions, links, evidence, and provenance.
-- Indexed, bounded positive-conjunctive matching with deterministic truncation.
-- Sparse activation and bounded multi-round composition over current bindings.
-- Explicit bindings, partial bindings, and `SHADOW` / `REIFIED` / `REFUTED`
-  projection records.
-- Generic grid perception: connected regions, enclosure, cells, form hashes,
-  color-agnostic figure outlines, and pair relations.
-- Transition learning over opaque actions using `Domain`, `Codomain`,
-  `Intervention`, `Before`, `After`, `Preserve`, and `Change` atoms.
-- A loopback visual inspector, a human ARC controller, synthetic benchmarks,
-  first-frame/transfer evaluation, and an offline ARC-AGI-3 harness.
-- Optional `random`, `local-schema`, and `explanation` ARC policies. The latter
-  two are experimental control layers over learned transition schemas, not
-  claims of task-solving ability.
-- A hash-chained shared epistemic workspace with separate support and
-  worker-specific attention, lossless replay, dependency-closed cognitive
-  cuts, direct visual Qwen turns, structured grounding criticism, prospective
-  prediction/evidence, and environment-only support authority.
-- The frozen v1.16 main solver, which is retained as one executable chain until
-  a replacement proves behavioral equivalence rather than architectural
-  similarity.
-
-## Repository map
+## Current architecture
 
 ```text
-src/reflector2/       core store, perception, runtime, DSL, evaluation, ARC adapter
-tests/                executable contracts and regression tests
-docs/                 theory, language, as-built architecture, audits, results
-inspect/              loopback visual inspector and external display annotations
-arcade/               loopback human ARC controller and note journal
-environment_files/    bundled 25 public ARC-AGI-3 environments
-experiments/           isolated, preregistered research runners and artifacts
-reflector1-learnings/ archaeological source material; never imported by the runtime
+configured semantic model
+    proposes concepts, verb schemas, abductive compositions, and working state
+                         |
+                         v
+R2 recursive workspace
+    validates -> grounds -> explains -> ranks -> authorizes one action
+                         |
+                         v
+ARC environment
+    observes -> transitions -> scores -> settles predictions
+                         |
+                         +------ evidence returns to R2 and the model
 ```
 
-See [the architecture](docs/ARCHITECTURE.md) for the complete data flow,
-component boundaries, state model, concurrency model, and implemented/future
-split.
+The authority boundary is model-independent:
+
+- The model may propose bounded, action-free semantic structures.
+- R2 alone binds visible entities, measures potentials, learns mechanisms,
+  ranks actions, grants temporary control authority, and settles predictions.
+- The environment alone supplies successor facts, score, support, and
+  refutation.
+
+Durable names such as `QwenTaskCompleted` remain compatibility identifiers in
+the inherited event ledger; they do not imply that the active provider is
+Qwen.
+
+## Explanations, verbs, and goals
+
+A Verb is a reusable schema over preferred change, not an ARC action. For
+example, `FIT(actor, target)` may define progress as decreasing
+`fit_residual = boundary_gap + overlap_deficit` toward zero.
+
+An executable Explanation is a situated graph joining:
+
+```text
+grounded verb + bound roles + measurable potential
++ supported causal mechanism + predicted successor
+```
+
+R2 ranks actions through a hard epistemic gate:
+
+```text
+PROGRESS_ELIGIBLE > discriminating PROBE_ELIGIBLE > INELIGIBLE
+```
+
+Every authorized action is observed and settled before the next one. Confirmed
+explanations may enter a bounded fast path; contradiction revokes that
+authority. Deep consolidation can derive reusable schemas at a level boundary,
+but transferred schemas begin with zero empirical authority and must bind and
+earn support again.
+
+The current system connects situated verbs strongly to local predicted
+progress. Its remaining goal-level gap is explicit: the model's inferred
+`game_objective` is not yet a structured causal contract used by action
+ranking. A future evidence-cited goal contract and first-class shared
+explanation lock must connect local residual completion directly to beating a
+level. See [`R2_1.md`](R2_1.md) for the detailed implemented/prospective split
+and [`R2_2.md`](R2_2.md) for the production migration.
+
+## Shared semantic workspace
+
+Each semantic response has two separate products:
+
+- `model_scratchpad`: fluid, unverified semantic state shared by ordinary
+  model turns, deep consolidation, and Agent Arcade.
+- `workspace_write`: structured, cited proposals that R2 may compile and
+  ground.
+
+The scratchpad has exactly five nonempty string fields:
+
+```json
+{
+  "game_objective": "current evidence-bound account of winning",
+  "explanation": "current semantic explanation",
+  "goal": "current action-free subgoal",
+  "expectation": "falsifiable next expectation",
+  "notes": "uncertainty, evidence, and revisions"
+}
+```
+
+The canonical object is stored, passed back to the model without field
+renaming, and rendered directly in Arcade. It is not evidence or control
+authority. Structured `goal_proposals` and `abductive_compositions` from
+`workspace_write` are the semantic inputs that enter R2 grounding and ranking.
+
+The loop is settlement-synchronous: each environment transition requires a
+semantic revision against the latest evidence before another external action.
+A stale model response cannot overwrite newer workspace state.
 
 ## Requirements and installation
 
 - Python 3.11 or newer
-- `arc-agi==0.9.9` (installed from `pyproject.toml`)
-- `pytest` only when running the test suite
-- Node.js only for the optional inspector JavaScript syntax check
-
-From the repository root:
+- `arc-agi==0.9.9`, installed from `pyproject.toml`
+- `pytest` for tests
 
 ```bash
+git clone git@github.com:pauloabelha/reflector.git
+cd reflector
 python3 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
 .venv/bin/python -m pytest -q
 ```
 
-The editable install exposes these commands:
+Important installed commands:
 
 ```text
-reflector2-benchmark
-reflector2-raw-frame
-reflector2-evaluate-first-frames
-reflector2-arc
-reflector2-workspace
-reflector2-explanations
-reflector2-arcade
+reflector2-agent-arcade   current R2 agent and Arcade server
+reflector2-r2-kaggle      current R2 Kaggle breadth runner
+reflector2-arcade         human-controlled ARC interface
+reflector2-workspace      frozen historical shared-workspace solver
+reflector2-arc            offline ARC harness and older policies
+reflector2-benchmark      deterministic schema-runtime benchmark
 ```
 
-## Quick starts
+## Run Agent Arcade
 
-Run the deterministic four-frame vertical slice:
+### Local Qwen
+
+The default profile uses the resident OpenAI-compatible Qwen service:
 
 ```bash
-.venv/bin/reflector2-benchmark --json
+.venv/bin/python -m reflector2.r2 --arcade --game ar25 --port 8767
 ```
 
-Verify that unrelated dormant schemas do not change cognition-loop operation
-counts or structural output:
+Open <http://127.0.0.1:8767/arcade>.
+
+### GPT-5.6 Luna
+
+Load the existing OpenAI key into the parent shell without copying it into this
+repository:
 
 ```bash
-.venv/bin/reflector2-benchmark \
-  --stress 1000 10000 100000 \
-  --repetitions 5
+set -a
+source ~/inhambu/.env
+set +a
+
+.venv/bin/python -m reflector2.r2 --arcade --game ar25 --port 8767 \
+  --model-profile openai-gpt-5.6 \
+  --model gpt-5.6-luna
 ```
 
-Analyze the final layer of the first packet in one recording:
+The browser picker intentionally offers only **Qwen (local)** and **GPT-5.6
+Luna**, with server-owned safe defaults. The game, level, and model selectors
+share the run-control row. The full right-hand Workspace panel presents goal
+proposals, abductive compositions, open questions, aliases, citations, and the
+exact model scratchpad; raw JSON remains available for audit.
+
+Arbitrary supported models and explicit budget experiments remain available
+through the CLI and Kaggle runner. They are intentionally not exposed as a
+large browser configuration surface.
+
+## Model profiles and budgets
+
+The known GPT-5.6 profile currently declares:
+
+| Dimension | Default |
+|---|---:|
+| Context window | 1,050,000 tokens |
+| Ordinary output | 8,192 tokens |
+| Deep-consolidation output | 16,384 tokens |
+| Dependency-closed R2 frontier | 12,000 tokens |
+| Ordinary reasoning | medium |
+| Consolidation reasoning | high |
+
+OpenAI requests use the Responses API and its input-token counter. Admission
+counts the exact canonical multimodal payload and JSON schema, then reserves
+the configured output budget. Unknown model limits are never guessed:
+`openai-custom` requires explicit context, ordinary-output,
+consolidation-output, and frontier budgets.
+
+The API key is read only from the configured environment variable at request
+time. Requests, manifests, results, and telemetry record non-secret model and
+budget metadata but never the credential. Transient failures receive bounded,
+idempotent retries; permanent transport, schema, and compilation failures fail
+closed without model authority.
+
+Detailed configuration and examples are in
+[`src/reflector2/r2/README.md`](src/reflector2/r2/README.md).
+
+## Kaggle ARC-AGI-3 runs
+
+Kaggle uses the same source closure, model transport, budgets, and
+`run_game` implementation as Arcade:
 
 ```bash
-.venv/bin/reflector2-raw-frame /path/to/game.recording.jsonl
+set -a
+source ~/inhambu/.env
+set +a
+
+.venv/bin/python -m reflector2.r2.kaggle \
+  --global-seconds 27300 \
+  --per-run-seconds 900 \
+  --model-profile openai-gpt-5.6 \
+  --model gpt-5.6-luna
 ```
 
-Evaluate exactly one recording per game. Independent games run in separate
-processes; `--workers 0` uses the available CPU cores:
+The breadth manifest freezes the complete production
+`src/reflector2/r2` closure before launching workers. Each result records the
+resolved provider, model, budgets, reasoning settings, timeout, and retry
+policy.
 
-```bash
-.venv/bin/reflector2-evaluate-first-frames \
-  /path/to/recording-directory \
-  --expected-games 25 \
-  --workers 0
+## Repository map
+
+```text
+src/reflector2/r2/   canonical R2.2 controller, workspace, model transport,
+                    schema adapter, Arcade entrypoint, and Kaggle runner
+arcade/              presentation, playback, and human-controller surfaces;
+                    no agent policy or model backend
+src/reflector2/      core sparse schema runtime and older evaluation tools
+tests/r2/            canonical R2 runtime/model contracts
+tests/arcade/        Agent Arcade presentation contracts
+docs/                theory, language, architecture, invariants, and audits
+environment_files/   bundled public ARC-AGI-3 environments
+experiments/          isolated historical research code and evidence artifacts
+reflector1-learnings/ archaeological sources; never imported by production R2
 ```
 
-Run the directed source-game by target-game structural transfer matrix:
+Production imports and manifests do not resolve through `arcade/` or
+`experiments/`. R2 carries the frozen runtime ancestry it still requires under
+`src/reflector2/r2/_runtime/`. Experiment directories remain evidence and
+regression material, not the current agent implementation.
 
-```bash
-.venv/bin/reflector2-evaluate-first-frames \
-  /path/to/recording-directory \
-  --expected-games 25 \
-  --transfer-matrix
-```
-
-Run the bundled offline ARC-AGI-3 suite. The default policy is seeded random;
-use `--policy local-schema` or `--policy explanation` for the experimental
-controllers:
-
-```bash
-.venv/bin/reflector2-arc \
-  --expected-games 25 \
-  --seed 0 \
-  --max-transitions 80 \
-  --policy random
-```
-
-Outputs go to `arc-traces/` by default: one transport trace and one native R2
-trace per game, plus `summary.json`. See
-[the ARC harness guide](docs/ARC_HARNESS.md) and
-[the explanation guide](docs/EXPLANATIONS.md).
-
-Run the primary, causally verified shared-workspace solver. `--dry-run`
-materializes and validates its frozen two-arm manifest without opening an ARC
-environment:
-
-```bash
-.venv/bin/reflector2-workspace --dry-run
-```
-
-This command deliberately loads the exact v1.16 implementation chain that won
-the fresh ar25 regression.  `reflector2-arc --policy shared-qwen` is the newer
-native port and should be treated as a development/equivalence target, not as
-a replacement for the proven solver yet.
-
-## Local interfaces
-
-Start the read-only visual inspector:
-
-```bash
-.venv/bin/python inspect/server.py --port 8765
-```
-
-Open <http://127.0.0.1:8765/inspect/>. The inspector runs the real perception
-and runtime code in an isolated graph with a larger diagnostic budget. Its
-natural-language labels are external display annotations and never enter
-schema identity or evidence. See [inspect/README.md](inspect/README.md).
+## Other interfaces
 
 Start the human-controlled ARC interface:
 
@@ -183,47 +248,46 @@ Start the human-controlled ARC interface:
 .venv/bin/reflector2-arcade --environments-dir environment_files
 ```
 
-It executes only browser-selected actions and writes notes to
-`arcade/notes.json` unless another journal is supplied. See
-[arcade/README.md](arcade/README.md).
+It executes only browser-selected actions and is not an agent policy. See
+[`arcade/README.md`](arcade/README.md).
 
-Both servers bind to `127.0.0.1` by default.
+Start the read-only perception inspector:
 
-## Documentation guide
+```bash
+.venv/bin/python inspect/server.py --port 8765
+```
 
-- [ACTIVE_EQUILIBRATION.md](docs/ACTIVE_EQUILIBRATION.md): conceptual model and
-  longer-term research direction.
-- [THEORY.md](docs/THEORY.md): operational vocabulary and epistemic contracts.
-- [LANGUAGE.md](docs/LANGUAGE.md): S-expression DSL and schema-DAG syntax.
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md): current implementation architecture.
-- [INVARIANTS.md](docs/INVARIANTS.md): executable representation and runtime
-  constraints.
-- [BENCHMARK.md](docs/BENCHMARK.md): four-frame and dormant-store protocols.
-- [SHADOWS.md](docs/SHADOWS.md): partial-binding projection semantics.
-- [EXPLANATIONS.md](docs/EXPLANATIONS.md): bounded explanation-driven control.
-- [GPU_PLAN.md](docs/GPU_PLAN.md): future acceleration plan; no GPU runtime is
-  currently implemented.
+Both interfaces bind to `127.0.0.1` by default.
 
-Most documents under `experiments/` are isolated evidence records.  The one
-intentional exception is Parallel Cognitive Workspace v1.16: the installed
-`reflector2-workspace` command loads that frozen chain because it is the current
-behaviorally proven main solver.  Promotion of its components into
-`src/reflector2` is an equivalence project, not permission to replace it early.
+## Documentation
 
-## Experiment convention
+- [`R2_1.md`](R2_1.md): R2.1 architecture, evidence, and explicit status
+  boundaries.
+- [`R2_2.md`](R2_2.md): current production migration and model-neutral
+  transport.
+- [`src/reflector2/r2/README.md`](src/reflector2/r2/README.md): operational
+  model, budget, Arcade, and Kaggle guide.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): core runtime architecture.
+- [`docs/THEORY.md`](docs/THEORY.md): operational epistemic vocabulary.
+- [`docs/LANGUAGE.md`](docs/LANGUAGE.md): schema DSL and graph syntax.
+- [`docs/INVARIANTS.md`](docs/INVARIANTS.md): executable representation and
+  runtime constraints.
+- [`SCORES.md`](SCORES.md): canonical result ledger and per-game matrices.
 
-Each experiment belongs under `experiments/<slug>/` and keeps its proposal,
-result, configuration, code, and artifacts within that directory. At minimum,
-new experiments should preserve the initiating context, preregistered method,
-measured outcome, and an honest verdict. Large generated traces should remain
-outside the core package and should not be treated as runtime capabilities.
+## Research and evidence convention
 
-## Current boundary
+Implemented behavior, observed evidence, and prospective design must remain
+distinct. A successful transport call, valid JSON response, deep schema graph,
+or attractive explanation is not game competence. Promotion requires
+executable contracts and, where competence is claimed, matched environment
+evidence.
 
-The sparse R2 core remains in-memory and CPU-oriented.  The proven shared
-solver adds a durable event/object workspace and a serialized local Qwen GPU
-worker; parallelism remains across isolated game arms, never across mutations
-of one authoritative workspace.
-The store is represented as Python structure-of-arrays lists plus dictionaries;
-the stable CSR generation, compactor, snapshot format, and GPU kernels described
-in design documents remain future work.
+Each new experiment belongs under `experiments/<slug>/` with its initiating
+context, preregistered method, configuration, code, result, and honest verdict.
+Large traces should remain outside the production package.
+
+The next central empirical test is a matched multi-game comparison holding R2
+source, game order, action/time budgets, and profile constant while varying the
+semantic model. Report score, actions to progress, compilation rate, semantic
+pickup, explanation-lock churn, latency, token use, transport failures, and
+cost—not model fluency alone.
