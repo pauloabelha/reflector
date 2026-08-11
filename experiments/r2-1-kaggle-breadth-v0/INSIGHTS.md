@@ -656,3 +656,23 @@ progress-eligible explanations; dropping those gates from a compact projection
 turns bounded context into a causal misclassification. Minimal support status
 and confirmation counts are therefore part of the semantic projection
 contract, even when potentials and mechanism detail must be discarded.
+
+## I28 — Advice provenance must not masquerade as execution provenance
+
+Unauthorized advice is valuable counterfactual evidence, but `selected=true`
+and its selection rule cannot share the executable namespace. The controller
+may rationally choose a different action or a different coordinate for the same
+action. Preserving the raw advice while explicitly marking its lack of
+authority keeps both facts auditable and prevents graph/Qwen consumers from
+learning a false rationale.
+
+## I29 — Safe context fallback can still be scientifically wasteful
+
+The 59-token mandatory frontier is admission-safe, yet 28/28 completed calls
+at that frontier produced no working note. Server usage later showed 7.2k–8.9k
+tokens of headroom after the required reserve, because conservative multimodal
+accounting—not exact resident occupancy—forced the collapse. A safe rescue must
+count the exact richest candidate on the serving stack once, preserve the
+already-admitted mandatory fallback, and accept the richer cut only when that
+same request demonstrably fits. Raising budgets or assuming monotonicity would
+not provide the same authority.

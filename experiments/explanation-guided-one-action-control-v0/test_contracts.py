@@ -504,6 +504,73 @@ def test_leaf_integration_preserves_retry_boundary_through_ingest_wrapper():
     assert calls[0][1]["boundary_kind"] == "game-over-retry"
 
 
+def test_leaf_integration_persists_executable_not_advisory_selection_rule():
+    integration = load("integration_selection_rule") if (HERE / "integration_selection_rule.py").exists() else load("integration")
+    written = []
+    state = SimpleNamespace(
+        revision=3,
+        objects=[
+            SimpleNamespace(
+                kind="explanation", created_by="qwen", created_revision=1,
+                object_id="eo:qwen-explanation",
+            ),
+            SimpleNamespace(
+                kind="frame", created_by="environment", created_revision=2,
+                object_id="eo:frame",
+            ),
+        ],
+    )
+
+    class Graph:
+        @staticmethod
+        def find_objects(current, *, kind, created_by=None):
+            return [
+                item for item in current.objects
+                if item.kind == kind
+                and (created_by is None or item.created_by == created_by)
+            ]
+
+    def ensure_graph_object(_root, _workspace_id, current, *, kind, payload, **_kwargs):
+        written.append((kind, payload))
+        return current, f"eo:{kind}:{len(written)}"
+
+    base = SimpleNamespace(
+        EG=Graph,
+        ensure_graph_object=ensure_graph_object,
+        persist_prospective_plan=lambda _root, _workspace_id, current, _controller, _plan: (
+            current,
+            {
+                "proposal_object_id": "eo:proposal",
+                "prediction_objects": {},
+                "selected_prediction_objects": [],
+            },
+        ),
+        ingest_transition_graph=lambda *args, **kwargs: None,
+        apply_qwen_compilation=lambda *args, **kwargs: None,
+    )
+    integration.install(base)
+    controller = SimpleNamespace(last_contract={
+        "objective": {},
+        "explanations": [],
+        "current_explanation": {},
+        "selection_role": "information",
+        "selection_rule": "executed-default-rule",
+        "advisory_selection_rule": "raw-advisory-rule",
+        "candidate_count": 2,
+        "selected_action": 1,
+    })
+    plan = SimpleNamespace(
+        plan_id="plan:selection-rule", basis_revision=3,
+        observation_digest="frame", selected_prediction_ids=(), predictions=(),
+    )
+
+    base.persist_prospective_plan("root", "workspace", state, controller, plan)
+
+    rationale = next(payload for kind, payload in written if kind == "decision_rationale")
+    assert rationale["selection_rule"] == "executed-default-rule"
+    assert "raw-advisory-rule" not in rationale.values()
+
+
 def test_controller_retry_does_not_learn_action_zero_and_clears_situated_control():
     module = load("controller_retry_boundary") if (HERE / "controller_retry_boundary.py").exists() else load("controller")
     pair = lambda *_args: SimpleNamespace(uses={})
@@ -1132,6 +1199,8 @@ def test_controller_lets_r2_1_explanation_choose_the_action():
     assert decision.action_id == 2
     assert decision.reason == "r2.1-control-v0-progress"
     assert instance.last_contract["current_explanation"]["binding_id"] == "e1"
+    assert instance.last_contract["selection_rule"] == "test"
+    assert instance.last_contract["advisory_selection_rule"] is None
 
 
 def test_controller_separates_unauthorized_r2_advice_from_executed_selection():
@@ -1159,7 +1228,17 @@ def test_controller_separates_unauthorized_r2_advice_from_executed_selection():
     assert instance.last_contract["selected_action"] == 1
     assert instance.last_contract["top_actions"][0]["action"] == 1
     assert instance.last_contract["top_actions"][0]["selected"] is True
-    assert instance.last_contract["advisory_top_actions"][0]["action"] == 2
+    advisory_view = instance.last_contract["advisory_top_actions"][0]
+    assert advisory_view["action"] == 2
+    assert advisory_view["selected"] is False
+    assert advisory_view["advisory_selected"] is True
+    assert advisory_view["execution_authorized"] is False
+    assert instance.last_contract["selection_rule"] == (
+        "lexicographic(progress, decision-relevant-information, support, novelty, stable-id)"
+    )
+    assert instance.last_contract["advisory_selection_rule"] == "test-advisory"
+    assert instance.last_contract["r2_1_explanation_control"] == advisory
+    assert advisory["top_actions"][0]["selected"] is True
 
 
 def test_controller_publishes_r2_semantics_after_ranking_and_settlement(monkeypatch):
@@ -1347,6 +1426,18 @@ def semantic_response(*, action_aliases=(), natural_language="I am retaining a c
     }}
 
 
+def acknowledge_semantic_failure(response, turn, decision="revise"):
+    task = turn.document["semantic_failure_revision_task"]
+    response["parsed"]["workspace_write"]["semantic_failure_acknowledgment"] = {
+        "decision": decision,
+        "evidence_ref": task["current_transition_evidence_ref"],
+    }
+    if decision == "abstain":
+        response["parsed"]["workspace_write"]["goal_proposals"] = []
+        response["parsed"]["workspace_write"]["abductive_compositions"] = []
+    return response
+
+
 def test_qwen_scratchpad_is_bounded_unverified_and_cited():
     scratchpad = load("scratchpad")
     qc = fake_qc()
@@ -1486,6 +1577,18 @@ def test_semantic_failure_revision_due_only_for_explicit_unsupported_failure():
     })
     assert qc.semantic_failure_revision_due(state, "ws") is False
 
+    state.objects.append(SimpleNamespace(
+        kind="working_note", created_by="qwen", created_revision=1,
+        object_id="eo:prior-note", payload={
+            "workspace_ref": scratchpad._workspace_ref(qc, "ws"),
+            "transition_evidence_ref": "r2-transition:prior",
+        },
+    ))
+    scratchpad.record_r2_transition_observation(
+        action=2, observation_changed=True, outcome="changed",
+        trace="The prediction was contradicted.",
+        settlement={"adjudication": "refuted", "actual_progress": -1.0},
+    )
     scratchpad.record_r2_semantic_projection({
         "active_explanation": {"confirmations": 0},
         "latest_settlement": {"adjudication": "refuted"},
@@ -1850,9 +1953,14 @@ def test_explicit_r2_grounding_rejection_blocks_an_exact_canonical_goal_set_repe
     assert guard["explicit_failure_signals"][0]["kind"] == "r2-semantic-proposal-rejected"
     assert guard["authority"] == "qwen-must-revise-or-replace; r2-still-grounds-and-controls"
 
-    repeated = qc.compile_response(semantic_response(
+    task = revised_turn.document["semantic_failure_revision_task"]
+    assert task["current_transition_evidence_ref"] == new_evidence_ref
+    assert task["failure_signals"] == guard["explicit_failure_signals"]
+    assert task["authority"]["semantic_revision_or_abstention"] == "qwen"
+
+    repeated = qc.compile_response(acknowledge_semantic_failure(semantic_response(
         natural_language="The grounding rejection was reviewed but the structured proposal is unchanged.",
-    ), revised_turn)
+    ), revised_turn), revised_turn)
     assert repeated["accepted"] == []
     assert repeated["rejected"][-1]["reason"] == "evidence-stale-goal-proposal-repetition"
     assert repeated["rejected"][-1]["new_transition_evidence_ref"] == new_evidence_ref
@@ -1864,10 +1972,25 @@ def test_explicit_r2_grounding_rejection_blocks_an_exact_canonical_goal_set_repe
     changed_response["parsed"]["workspace_write"]["goal_proposals"][0]["terminal_condition"] = (
         "the observed residual reaches a stable minimum"
     )
+    changed_response["parsed"]["workspace_write"]["action_aliases"] = [{
+        "action_id": "ACTION_2",
+        "alias": "context-dependent effect?",
+        "status": "tentative",
+        "evidence_refs": [new_evidence_ref],
+    }]
+    acknowledge_semantic_failure(changed_response, revised_turn)
     changed = qc.compile_response(changed_response, revised_turn)
     assert not changed["rejected"]
     assert changed["working_note"]["transition_evidence_ref"] == new_evidence_ref
+    assert changed["working_note"]["action_aliases"] == changed_response[
+        "parsed"
+    ]["workspace_write"]["action_aliases"]
     assert changed["working_note"]["verified"] is False
+    changed_state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=changed["working_note"],
+        created_revision=6, object_id="eo:changed-semantic-note",
+    )])
+    assert qc.semantic_failure_revision_due(changed_state, "w") is False
 
 
 def test_unsupported_refutation_triggers_guard_but_progress_support_suppresses_it():
@@ -1889,9 +2012,9 @@ def test_unsupported_refutation_triggers_guard_but_progress_support_suppresses_i
     assert refuted_turn.document["scratchpad_context"]["semantic_stagnation"]["explicit_failure_signals"] == [
         {"kind": "environment-prediction-refuted"},
     ]
-    rejected = qc.compile_response(semantic_response(
+    rejected = qc.compile_response(acknowledge_semantic_failure(semantic_response(
         natural_language="The contradiction was reviewed without changing the structured proposal.",
-    ), refuted_turn)
+    ), refuted_turn), refuted_turn)
     assert rejected["rejected"][-1]["reason"] == "evidence-stale-goal-proposal-repetition"
 
     supported = load("scratchpad_semantic_supported_refutation") if (HERE / "scratchpad_semantic_supported_refutation.py").exists() else load("scratchpad")
@@ -1953,10 +2076,123 @@ def test_stagnation_guard_allows_preserving_one_exact_goal_when_the_proposal_set
         "terminal_condition": "the boundary gap reaches its minimum",
     })
     response["parsed"]["workspace_write"]["goal_proposals"].append(contact)
+    acknowledge_semantic_failure(response, turn)
     compiled = qc.compile_response(response, turn)
     assert not compiled["rejected"]
     assert compiled["working_note"]["goal_proposals"] == response["parsed"]["workspace_write"]["goal_proposals"]
     assert compiled["working_note"]["verified"] is False
+
+
+def test_semantic_failure_abstention_is_durable_and_deduplicates_exact_evidence():
+    scratchpad = load("scratchpad_semantic_failure_abstention") if (HERE / "scratchpad_semantic_failure_abstention.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    first = qc.compile_response(
+        semantic_response(), qc.build_turn(SimpleNamespace(objects=[]), (), None),
+    )
+    state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=first["working_note"],
+        created_revision=4, object_id="eo:prior-goal-note",
+    )])
+    scratchpad.record_r2_semantic_projection({
+        "rejected_semantic_proposals": [{
+            "reason": "role grounding rejected",
+            "schema_id": "schema:rejected",
+            "binding_id": "binding:rejected",
+        }],
+    })
+    scratchpad.record_r2_transition_observation(
+        action=2, observation_changed=True, outcome="changed",
+        trace="A new successor refuted the available grounding.", settlement=None,
+    )
+    turn = qc.build_turn(state, (), None)
+    task = turn.document["semantic_failure_revision_task"]
+    evidence_ref = task[
+        "current_transition_evidence_ref"
+    ]
+    assert task["failure_addresses"]["rejected_semantic_proposals"] == [{
+        "schema_id": "schema:rejected",
+        "binding_id": "binding:rejected",
+    }]
+    abstained = qc.compile_response(acknowledge_semantic_failure(
+        semantic_response(
+            natural_language="The cited rejection leaves no defensible goal proposal in the closed vocabulary.",
+        ),
+        turn,
+        decision="abstain",
+    ), turn)
+
+    assert not abstained["rejected"]
+    assert abstained["working_note"]["goal_proposals"] == []
+    assert abstained["working_note"]["transition_evidence_ref"] == evidence_ref
+    acknowledged_state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=abstained["working_note"],
+        created_revision=5, object_id="eo:abstained-note",
+    )])
+    assert qc.semantic_failure_revision_due(acknowledged_state, "w") is False
+    assert "semantic_failure_revision_task" not in qc.build_turn(
+        acknowledged_state, (), None,
+    ).document
+
+    scratchpad.record_r2_transition_observation(
+        action=3, observation_changed=True, outcome="changed",
+        trace="A distinct successor supplied new rejection evidence.", settlement=None,
+    )
+    assert qc.semantic_failure_revision_due(acknowledged_state, "w") is True
+
+
+def test_semantic_failure_acknowledgment_is_exact_and_malformed_values_fail_closed():
+    scratchpad = load("scratchpad_semantic_failure_ack") if (HERE / "scratchpad_semantic_failure_ack.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    first = qc.compile_response(
+        semantic_response(), qc.build_turn(SimpleNamespace(objects=[]), (), None),
+    )
+    state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=first["working_note"],
+        created_revision=4, object_id="eo:prior-note",
+    )])
+    scratchpad.record_r2_semantic_projection({
+        "rejected_semantic_proposals": [{"reason": "grounding rejected"}],
+    })
+    scratchpad.record_r2_transition_observation(
+        action=4, observation_changed=True, outcome="changed",
+        trace="New evidence rejected the grounding.", settlement=None,
+    )
+    turn = qc.build_turn(state, (), None)
+    schema = qc.response_schema(turn)["properties"]["workspace_write"]
+    assert "semantic_failure_acknowledgment" in schema["required"]
+    assert schema["properties"]["semantic_failure_acknowledgment"]["properties"][
+        "evidence_ref"
+    ]["const"] == turn.document["semantic_failure_revision_task"][
+        "current_transition_evidence_ref"
+    ]
+
+    missing = qc.compile_response(semantic_response(
+        natural_language="The new grounding rejection is being evaluated against the prior proposal.",
+    ), turn)
+    assert missing["rejected"][-1]["reason"] == "working-note-contract"
+    mismatched = acknowledge_semantic_failure(semantic_response(
+        natural_language="The new grounding rejection requires an evidence-addressed revision.",
+    ), turn)
+    mismatched["parsed"]["workspace_write"]["semantic_failure_acknowledgment"][
+        "evidence_ref"
+    ] = "r2-transition:not-current"
+    rejected = qc.compile_response(mismatched, turn)
+    assert rejected["rejected"][-1]["reason"] == (
+        "semantic-failure-evidence-acknowledgment"
+    )
+
+    malformed_turn = replace(turn, document={
+        **turn.document,
+        "semantic_failure_revision_task": {
+            "protocol": "evidence-addressed-semantic-failure-revision-v1",
+        },
+    })
+    try:
+        qc.response_schema(malformed_turn)
+    except RuntimeError as error:
+        assert "no evidence address" in str(error)
+    else:
+        raise AssertionError("malformed semantic failure task did not fail closed")
 
 
 def test_qwen_transport_omits_redundant_full_materialization_but_keeps_sparse_cut():

@@ -751,3 +751,29 @@ scheduler or semantic authority. Forced-truncation contracts prove progress
 and confirmed explanations suppress false failure routing while remaining
 inside the 12KB bound. The larger semantic-revision protocol remains
 unpromoted until it can consume causally sound projections.
+
+## Checkpoint 20 — evidence-addressed semantic revision and truthful advice
+
+The semantic failure path now gives Qwen a bounded revision task only when the
+canonical classifier sees an unsupported rejection/refutation at an exact
+current transition reference. The task carries prior/current evidence refs,
+failure signals, copied R2 binding/proposal addresses, prior proposal digests,
+and the authority split. Qwen must explicitly choose `revise` or `abstain` and
+acknowledge that exact evidence. Revision requires a nonempty canonically
+changed goal set; abstention requires no goals or abductive composition. Both
+advance the durable evidence reference, preventing repeated calls for the same
+failure while allowing a distinct later failure. Malformed or mismatched
+acknowledgment fails closed. R2 remains the sole grounding/control authority.
+
+A separate provenance repair distinguishes unauthorized R2 rankings from the
+executed decision. In first-pass telemetry, 153/207 advisory selections differed
+from the durable exact command. These labels did not affect execution, but the
+advisory selection rule was persisted as executable graph rationale. Advisory
+items now expose `advisory_selected`, `selected=false`, and
+`execution_authorized=false`; unauthorized evaluator prose is stored separately
+as `advisory_selection_rule`. Raw evaluator output remains intact and controller
+behavior is unchanged.
+
+Combined semantic, controller, integration, action-command, observation, and
+stored-request suites pass. Live semantic-revision behavior remains the next
+promotion gate.

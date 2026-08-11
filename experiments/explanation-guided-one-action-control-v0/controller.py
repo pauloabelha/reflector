@@ -459,12 +459,30 @@ def controller_class(
                     "execution_authorized", r2_1.get("control_override", False),
                 )
             )
+            default_selection_rule = "lexicographic(progress, decision-relevant-information, support, novelty, stable-id)"
+            executable_selection_rule = default_selection_rule
+            advisory_selection_rule = None
+            if r2_1 and r2_execution_authorized:
+                executable_selection_rule = r2_1.get("selection_rule") or default_selection_rule
+            elif r2_1:
+                advisory_selection_rule = r2_1.get("selection_rule")
             advisory_top_actions = []
             if r2_1 and r2_1.get("top_actions") and r2_execution_authorized:
                 top_actions = list(r2_1["top_actions"])
                 role = str(top_actions[0]["role"])
             elif r2_1 and r2_1.get("top_actions"):
-                advisory_top_actions = list(r2_1["top_actions"])
+                # This is a reporting view, not the raw evaluator response.
+                # Make its lack of execution authority explicit while keeping
+                # the original selected marker available as advisory provenance.
+                advisory_top_actions = [
+                    {
+                        **dict(item),
+                        "advisory_selected": bool(item.get("selected", False)),
+                        "selected": False,
+                        "execution_authorized": False,
+                    }
+                    for item in r2_1["top_actions"]
+                ]
             salient_schemas = [
                 {
                     "schema_object_id": item.schema_object_id,
@@ -497,7 +515,8 @@ def controller_class(
                     self.last_command.document() if self.last_command is not None else None
                 ),
                 "selection_role": role,
-                "selection_rule": r2_1.get("selection_rule") if r2_1 else "lexicographic(progress, decision-relevant-information, support, novelty, stable-id)",
+                "selection_rule": executable_selection_rule,
+                "advisory_selection_rule": advisory_selection_rule,
                 "predictions": [asdict(item) for item in selected],
                 "r2_1_explanation_control": r2_1,
                 "repeated_identical_no_change_excluded": bool(repeated_no_change),
