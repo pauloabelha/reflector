@@ -51,6 +51,19 @@ def admission_error(*, excess: int, frontier_used_tokens: int | None = None):
     return error
 
 
+def admitted_with_headroom(headroom: int):
+    window = 16_384
+    occupied = window - headroom
+    return BASE.QC.ContextAdmission(
+        prompt_tokens=occupied - 2_048,
+        reserved_output_tokens=2_048,
+        occupied_tokens=occupied,
+        context_window_tokens=window,
+        headroom_tokens=headroom,
+        occupancy_fraction=occupied / window,
+    )
+
+
 def test_guided_misses_fall_back_to_exact_mandatory_closure() -> None:
     calls = []
 
@@ -129,3 +142,91 @@ def test_mandatory_closure_above_maximum_is_not_hidden() -> None:
         )
 
     assert calls == [6_400, 1]
+
+
+def test_mandatory_headroom_gets_one_exactly_admitted_richer_probe() -> None:
+    calls = []
+
+    def candidate(budget: int):
+        calls.append(budget)
+        if budget == 6_400:
+            raise admission_error(excess=100, frontier_used_tokens=4_000)
+        if budget == 1:
+            raise BASE.EG.FrontierBudgetError(budget=budget, required=59)
+        if budget == 59:
+            return "minimum-turn", {"max_tokens": 2_048}, admitted_with_headroom(2_000)
+        assert budget == 3_812
+        return "richer-turn", {"max_tokens": 2_048}, admitted_with_headroom(17)
+
+    result = BASE.admitted_qwen_request(
+        candidate,
+        maximum_budget=6_400,
+        qwen={"max_context_budget_rebuilds": 0},
+    )
+
+    assert calls == [6_400, 1, 59, 3_812]
+    assert result[:2] == ("richer-turn", {"max_tokens": 2_048})
+    assert result[2].reserved_output_tokens == 2_048
+    assert result[2].headroom_tokens == 17
+    assert result[3:] == (3_812, 3)
+
+
+def test_failed_richer_probe_returns_built_minimum_unchanged() -> None:
+    calls = []
+    minimum_turn = object()
+    minimum_request = {"sentinel": "byte-identical-baseline", "max_tokens": 2_048}
+    minimum_admission = admitted_with_headroom(2_000)
+
+    def candidate(budget: int):
+        calls.append(budget)
+        if budget == 6_400:
+            raise admission_error(excess=100, frontier_used_tokens=4_000)
+        if budget == 1:
+            raise BASE.EG.FrontierBudgetError(budget=budget, required=59)
+        if budget == 59:
+            return minimum_turn, minimum_request, minimum_admission
+        assert budget == 3_812
+        raise admission_error(excess=1, frontier_used_tokens=3_700)
+
+    result = BASE.admitted_qwen_request(
+        candidate,
+        maximum_budget=6_400,
+        qwen={"max_context_budget_rebuilds": 0},
+    )
+
+    assert calls == [6_400, 1, 59, 3_812]
+    assert result[0] is minimum_turn
+    assert result[1] is minimum_request
+    assert result[2] is minimum_admission
+    assert result[3:] == (59, 2)
+
+
+def test_admitted_probe_without_more_objects_returns_minimum_unchanged() -> None:
+    calls = []
+    minimum_turn = SimpleNamespace(document={"sparse_cut": {"objects": []}})
+    rescued_turn = SimpleNamespace(document={"sparse_cut": {"objects": []}})
+    minimum_request = {"sentinel": "byte-identical-baseline", "max_tokens": 2_048}
+    minimum_admission = admitted_with_headroom(2_000)
+
+    def candidate(budget: int):
+        calls.append(budget)
+        if budget == 6_400:
+            raise admission_error(excess=100, frontier_used_tokens=4_000)
+        if budget == 1:
+            raise BASE.EG.FrontierBudgetError(budget=budget, required=59)
+        if budget == 59:
+            return minimum_turn, minimum_request, minimum_admission
+        assert budget == 3_812
+        return rescued_turn, {"sentinel": "not-richer"}, admitted_with_headroom(17)
+
+    result = BASE.admitted_qwen_request(
+        candidate,
+        maximum_budget=6_400,
+        qwen={"max_context_budget_rebuilds": 0},
+    )
+
+    assert calls == [6_400, 1, 59, 3_812]
+    assert result[0] is minimum_turn
+    assert result[1] is minimum_request
+    assert result[2] is minimum_admission
+    assert result[3:] == (59, 2)

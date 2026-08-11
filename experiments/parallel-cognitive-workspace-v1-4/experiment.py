@@ -1334,6 +1334,8 @@ def admitted_qwen_request(
     token_budget = int(maximum_budget)
     rebuilds = 0
     maximum_rebuilds = int(qwen.get("max_context_budget_rebuilds", 2))
+    last_admission_error: Any | None = None
+    last_rejected_budget: int | None = None
     frontier_budget_errors = tuple(
         dict.fromkeys(
             (EG.FrontierBudgetError, QC.GRAPH.FrontierBudgetError)
@@ -1353,14 +1355,83 @@ def admitted_qwen_request(
 
         fallback_rebuilds = rebuilds + 1
         try:
-            turn, request, admission = candidate(1)
-            return turn, request, admission, 1, fallback_rebuilds
+            mandatory = (*candidate(1), 1, fallback_rebuilds)
         except frontier_budget_errors as error:
             required = int(error.required)
             if required < 1 or required > maximum_budget:
                 raise
-            turn, request, admission = candidate(required)
-            return turn, request, admission, required, fallback_rebuilds + 1
+            mandatory = (*candidate(required), required, fallback_rebuilds + 1)
+
+        # The exact minimum can leave enough real model headroom for a useful
+        # dependency-closed cut even when the bounded guided search missed it.
+        # Use the accepted/rejected exact admission reports to interpolate one
+        # richer budget, then pass that candidate through the same admission
+        # gate.  A miss returns the already-built minimum byte-for-byte; there
+        # is no second probe and nothing has entered the FIFO yet.
+        turn, request, admission, mandatory_budget, mandatory_rebuilds = mandatory
+        headroom = getattr(admission, "headroom_tokens", None)
+        rejected = last_admission_error
+        rejected_budget = last_rejected_budget
+        if (
+            isinstance(headroom, int)
+            and not isinstance(headroom, bool)
+            and headroom > 0
+            and rejected is not None
+            and isinstance(rejected_budget, int)
+            and rejected_budget > mandatory_budget + 1
+        ):
+            report = getattr(rejected, "report", None)
+            occupied = getattr(report, "occupied_tokens", None)
+            window = getattr(report, "context_window_tokens", None)
+            if (
+                isinstance(occupied, int)
+                and not isinstance(occupied, bool)
+                and isinstance(window, int)
+                and not isinstance(window, bool)
+                and occupied > window
+            ):
+                upper = rejected_budget
+                used = getattr(rejected, "frontier_used_tokens", None)
+                if (
+                    isinstance(used, int)
+                    and not isinstance(used, bool)
+                    and mandatory_budget < used <= rejected_budget
+                ):
+                    upper = used
+                span = upper - mandatory_budget
+                excess = occupied - window
+                increment = (span * headroom) // (headroom + excess)
+                rescue_budget = min(upper - 1, mandatory_budget + increment)
+                if rescue_budget > mandatory_budget:
+                    try:
+                        rescued_turn, rescued_request, rescued_admission = candidate(
+                            rescue_budget
+                        )
+                    except (*frontier_budget_errors, QC.ContextAdmissionError):
+                        pass
+                    else:
+                        mandatory_cut = getattr(turn, "document", {}).get(
+                            "sparse_cut", {}
+                        )
+                        rescued_cut = getattr(rescued_turn, "document", {}).get(
+                            "sparse_cut", {}
+                        )
+                        mandatory_objects = mandatory_cut.get("objects")
+                        rescued_objects = rescued_cut.get("objects")
+                        if (
+                            isinstance(mandatory_objects, list)
+                            and isinstance(rescued_objects, list)
+                            and len(rescued_objects) <= len(mandatory_objects)
+                        ):
+                            return mandatory
+                        return (
+                            rescued_turn,
+                            rescued_request,
+                            rescued_admission,
+                            rescue_budget,
+                            mandatory_rebuilds + 1,
+                        )
+        return mandatory
 
     while True:
         try:
@@ -1375,6 +1446,8 @@ def admitted_qwen_request(
             token_budget = required
             rebuilds += 1
         except QC.ContextAdmissionError as error:
+            last_admission_error = error
+            last_rejected_budget = token_budget
             if rebuilds >= maximum_rebuilds:
                 if token_budget <= 1:
                     raise
