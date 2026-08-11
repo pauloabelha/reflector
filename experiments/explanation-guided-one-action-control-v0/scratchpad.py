@@ -12,6 +12,16 @@ from typing import Any, Mapping
 
 MAX_SCRATCHPAD_TOKENS = 1024
 MAX_R2_SEMANTIC_PROJECTION_BYTES = 12000
+EXPLANATION_CONSOLIDATION_PROTOCOL = "explanation-consolidation-v1"
+FRESH_BINDING_AUTHORITY = "fresh-binding-probe-only"
+MANDATORY_NUISANCE_DIMENSIONS = (
+    "absolute_coordinates",
+    "palette_values",
+    "situated_object_identity",
+    "prior_role_bindings",
+    "prior_empirical_support",
+    "prior_intervention_identity",
+)
 _R2_ACTION_TRACES: list[str] = []
 _R2_SEMANTIC_PROJECTION: dict[str, Any] | None = None
 _R2_TRANSITION_OBSERVATION: dict[str, Any] | None = None
@@ -34,6 +44,13 @@ FUTURE_OR_MODAL_CONTROL = re.compile(
     re.IGNORECASE,
 )
 RETROSPECTIVE_ACTION_WINDOW = 140
+CONSOLIDATION_SITUATED_DETAIL = re.compile(
+    r"(?:\b(?:black|blue|red|green|yellow|gr[ae]y|magenta|orange|cyan|"
+    r"maroon|white|purple|brown)\b|\bf[0-9]{2,}\b|\b(?:eo|binding):|"
+    r"\blevel\s*[0-9]+\b|\b(?:row|column|col|x|y)\s*[=:]\s*-?[0-9]+|"
+    r"[\[(]\s*-?[0-9]+\s*,\s*-?[0-9]+\s*[\])])",
+    re.IGNORECASE,
+)
 
 
 def _is_coordinated_historical_action_list(
@@ -134,6 +151,16 @@ def _has_action_proposal(value: Any) -> bool:
     return _text_has_action_proposal(json.dumps(value, ensure_ascii=True))
 
 
+def _has_consolidation_situated_detail(value: Any) -> bool:
+    if isinstance(value, str):
+        return bool(CONSOLIDATION_SITUATED_DETAIL.search(value))
+    if isinstance(value, Mapping):
+        return any(_has_consolidation_situated_detail(item) for item in value.values())
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return any(_has_consolidation_situated_detail(item) for item in value)
+    return False
+
+
 def _canonical_action_id(value: Any) -> str | None:
     """Render an observed opaque action without assigning it semantics."""
     if isinstance(value, bool):
@@ -154,6 +181,171 @@ def _transition_evidence_ref(document: Mapping[str, Any]) -> str | None:
     transition = document.get("scratchpad_context", {}).get("r2_transition_observation") or {}
     evidence_ref = transition.get("evidence_ref")
     return str(evidence_ref) if isinstance(evidence_ref, str) and evidence_ref else None
+
+
+def _latest_level_boundary(state: Any) -> Any | None:
+    """Return the latest completed-context boundary in the canonical graph."""
+
+    boundaries = [
+        item for item in getattr(state, "objects", ())
+        if item.kind == "transition"
+        and item.created_by == "environment"
+        and item.payload.get("level_transition") is True
+        and item.payload.get("boundary_kind") == "level-advance"
+    ]
+    return max(
+        boundaries,
+        key=lambda item: (item.created_revision, item.object_id),
+        default=None,
+    )
+
+
+def _consolidation_task(state: Any, workspace_id: str, qc: Any) -> dict[str, Any] | None:
+    """Build one bounded, action-free abstraction task over a settled context.
+
+    Only graph objects created before the level boundary are eligible semantic
+    sources.  The boundary and its environment evidence are included solely to
+    prove that the source context completed; the successor board is never
+    projected into the abstraction packet.
+    """
+
+    boundary = _latest_level_boundary(state)
+    if boundary is None:
+        return None
+    workspace_ref = _workspace_ref(qc, workspace_id)
+    if any(
+        item.kind == "explanation_consolidation"
+        and item.created_by == "qwen"
+        and item.payload.get("workspace_ref") == workspace_ref
+        and item.payload.get("source_boundary_ref") == boundary.object_id
+        for item in getattr(state, "objects", ())
+    ):
+        return None
+
+    objects = tuple(getattr(state, "objects", ()))
+    evidence = [
+        item for item in objects
+        if item.kind == "environment_evidence"
+        and item.created_by == "environment"
+        and boundary.object_id in item.dependency_ids
+        and int(item.payload.get("level_delta") or 0) > 0
+    ]
+    evidence.sort(key=lambda item: (item.created_revision, item.object_id))
+    prior_notes = [
+        item for item in objects
+        if item.kind == "working_note"
+        and item.created_by == "qwen"
+        and item.created_revision < boundary.created_revision
+        and item.payload.get("workspace_ref") == workspace_ref
+    ]
+    prior_note = max(
+        prior_notes,
+        key=lambda item: (item.created_revision, item.object_id),
+        default=None,
+    )
+    explanations = [
+        item for item in objects
+        if item.created_revision < boundary.created_revision
+        and item.kind in {"control_explanation", "explanation"}
+    ]
+    explanations.sort(key=lambda item: (item.created_revision, item.object_id))
+    explanations = explanations[-6:]
+    explanation_projection = []
+    for item in explanations:
+        payload = item.payload
+        explanation_projection.append({
+            "source_ref": item.object_id,
+            "kind": item.kind,
+            "epistemic_status": payload.get("epistemic_status") or payload.get("status"),
+            "claim": payload.get("claim"),
+            "goal": copy.deepcopy(payload.get("goal")),
+            "goal_proposals": copy.deepcopy(payload.get("goal_proposals", ())),
+            "epistemic_evaluation": copy.deepcopy(payload.get("epistemic_evaluation")),
+        })
+
+    eligible_edges = [
+        edge for edge in getattr(state, "edges", ())
+        if edge.kind in {"supports", "refutes"}
+        and edge.created_revision < boundary.created_revision
+    ]
+    eligible_edges.sort(
+        key=lambda edge: (
+            edge.created_revision, edge.kind, edge.source_id, edge.target_id,
+        )
+    )
+    eligible_edges = eligible_edges[-8:]
+    settlements = [{
+        "kind": edge.kind,
+        "evidence_ref": edge.source_id,
+        "target_ref": edge.target_id,
+    } for edge in eligible_edges]
+    source_refs = {
+        boundary.object_id,
+        *(item.object_id for item in evidence),
+        *(item.object_id for item in explanations),
+        *((prior_note.object_id,) if prior_note is not None else ()),
+        *(edge.source_id for edge in eligible_edges),
+        *(edge.target_id for edge in eligible_edges),
+    }
+    existing_ids = {item.object_id for item in objects}
+    source_refs = sorted(source_refs & existing_ids)
+    context_index = sum(
+        item.kind == "transition"
+        and item.created_by == "environment"
+        and item.payload.get("level_transition") is True
+        for item in objects
+    )
+    return {
+        "protocol": EXPLANATION_CONSOLIDATION_PROTOCOL,
+        "operation": "reflective-abstraction",
+        "projection_mode": "abstract-explanation-projection",
+        "source_context_index": context_index,
+        "source_boundary_ref": boundary.object_id,
+        "source_evidence_refs": source_refs,
+        "prior_semantic_note": None if prior_note is None else {
+            "source_ref": prior_note.object_id,
+            "goal_proposals": copy.deepcopy(prior_note.payload.get("goal_proposals", ())),
+            "abductive_compositions": copy.deepcopy(prior_note.payload.get("abductive_compositions", ())),
+        },
+        "settled_explanations": explanation_projection,
+        "settled_judgments": settlements,
+        "abstraction_question": (
+            "What is the smallest useful R2 schema fragment that could generate "
+            "the settled structure after nuisance details are quotiented out?"
+        ),
+        "response_instruction": (
+            "Return decision=propose with exactly one abstraction and exactly "
+            "one referenced goal_proposal, or decision=abstain with both "
+            "abstractions=[] and goal_proposals=[]; never repeat an array item. "
+            "Project the abstract explanation into a future context: preserve "
+            "its relational goal, typed roles, potential, terminal condition, "
+            "and applicability conditions when supported, while leaving ports "
+            "open for fresh binding and mechanism accommodation. This is not a "
+            "game lesson, route, or next-action request. Reuse only an "
+            "action-free goal proposal from this response."
+        ),
+        "mandatory_nuisance_quotient": list(MANDATORY_NUISANCE_DIMENSIONS),
+        "authority": {
+            "qwen": "propose-ungrounded-reusable-schema-or-abstain",
+            "r2": "fresh-bind-specialize-test-or-discard",
+            "environment": "sole-empirical-settlement-authority",
+        },
+        "transfer_contract": {
+            "schema_definition": "project-and-fresh-bind",
+            "empirical_support": "reset",
+            "bindings": "reset",
+            "role_identities": "reset",
+            "potentials": "reset",
+            "intervention_applicability": "reset",
+            "progress_authority": "reset",
+        },
+    }
+
+
+def explanation_consolidation_due(state: Any, workspace_id: str, qc: Any) -> bool:
+    """Demand exactly one accepted consolidation per completed context."""
+
+    return _consolidation_task(state, workspace_id, qc) is not None
 
 
 def _semantic_failure_signals(document: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
@@ -619,6 +811,7 @@ R2.1 FEEDBACK:
 - Never declare your own revision grounded, verified, or action-authoritative.
   Return revised abstract verb schemas through goal_proposals; R2 must bind and
   adjudicate them again.
+
 - When r2_semantic_projection exposes at least two stable schema IDs, use
   abductive_compositions to propose a small typed diagram over those existing
   definitions. Compose; do not duplicate their content. State directed
@@ -676,6 +869,9 @@ CAUSAL VISUAL UNIT:
                 "open_questions": list(prior.payload.get("open_questions", ())),
                 "cited_ids": list(prior.payload.get("cited_ids", ())),
                 "transition_evidence_ref": prior.payload.get("transition_evidence_ref"),
+                "explanation_consolidation": copy.deepcopy(
+                    prior.payload.get("explanation_consolidation")
+                ),
                 "verified": False,
             }
         scratchpad_context = {
@@ -684,6 +880,7 @@ CAUSAL VISUAL UNIT:
             "r2_semantic_projection": copy.deepcopy(_R2_SEMANTIC_PROJECTION),
             "r2_transition_observation": copy.deepcopy(_R2_TRANSITION_OBSERVATION),
         }
+        consolidation_task = _consolidation_task(state, turn.workspace_id, qc)
         current_evidence_ref = (_R2_TRANSITION_OBSERVATION or {}).get("evidence_ref")
         prior_evidence_ref = None if prior is None else prior.payload.get("transition_evidence_ref")
         if (
@@ -718,6 +915,8 @@ CAUSAL VISUAL UNIT:
                 "authority": "qwen-must-revise-or-replace; r2-still-grounds-and-controls",
             }
         document = {**turn.document, "prior_working_note": projection, "scratchpad_context": scratchpad_context}
+        if consolidation_task is not None:
+            document["explanation_consolidation_task"] = consolidation_task
         vocabulary = dict(document.get("allowed_vocabulary", {}))
         if vocabulary:
             vocabulary["control_gate"] = {
@@ -730,7 +929,12 @@ CAUSAL VISUAL UNIT:
 
     def note_schema(turn: Any) -> dict[str, Any]:
         _index, visible = qc._v14_visible(turn)
-        visible_ids = sorted(visible)
+        consolidation_task = turn.document.get("explanation_consolidation_task")
+        consolidation_sources = (
+            set(consolidation_task.get("source_evidence_refs", ()))
+            if isinstance(consolidation_task, Mapping) else set()
+        )
+        visible_ids = sorted(set(visible) | consolidation_sources)
         cited_item = {"enum": visible_ids} if visible_ids else {"type": "string", "maxLength": 0}
         abstract_roles = ["actor", "target", "reference", "item", "container", "hazard", "occluder", "hidden", "source", "destination"]
         feedback = turn.document.get("scratchpad_context", {}).get("r2_semantic_projection") or {}
@@ -827,11 +1031,8 @@ CAUSAL VISUAL UNIT:
                 {"type": "object", "additionalProperties": False, "maxProperties": 0}
             ),
         }
-        return {
-            "type": "object",
-            "additionalProperties": False,
-            "required": ["summary", "objective_hypothesis", "goal_proposals", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"],
-            "properties": {
+        required = ["summary", "objective_hypothesis", "goal_proposals", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"]
+        properties = {
                 "summary": {"type": "string", "maxLength": 360},
                 "objective_hypothesis": {"type": "string", "maxLength": 240},
                 "goal_proposals": {
@@ -854,7 +1055,98 @@ CAUSAL VISUAL UNIT:
                     "maxItems": 4, "uniqueItems": True,
                     "items": cited_item,
                 },
-            },
+        }
+        if isinstance(consolidation_task, Mapping):
+            source_refs = list(consolidation_task.get("source_evidence_refs", ()))
+            role_relation = {
+                "type": "object", "additionalProperties": False,
+                "required": ["predicate", "arguments", "modality"],
+                "properties": {
+                    "predicate": {"enum": ["same_outline", "different_outline", "same_interior", "different_interior", "same_area", "different_area", "same_value", "different_value"]},
+                    "arguments": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"enum": abstract_roles}},
+                    "modality": {"enum": ["required", "suggested", "anti-clue", "unknown"]},
+                },
+            }
+            consolidation_properties = {
+                    "protocol": {"const": EXPLANATION_CONSOLIDATION_PROTOCOL},
+                    "source_boundary_ref": {"const": consolidation_task["source_boundary_ref"]},
+                    "source_refs": {
+                        "type": "array", "minItems": 1, "maxItems": min(8, len(source_refs)),
+                        "uniqueItems": True, "items": {"enum": source_refs},
+                    },
+                    "abstractions": {
+                        "type": "array", "uniqueItems": True, "maxItems": 1,
+                        "items": {
+                            "type": "object", "additionalProperties": False,
+                            "required": ["local_ref", "goal_proposal_index", "applicability_relations", "preserved_structure", "nuisance_dimensions", "causal_structure", "unresolved_ports", "predicted_reuse", "counterconditions"],
+                            "properties": {
+                                "local_ref": {"type": "string", "pattern": "^abstraction_[0-9]{1,2}$"},
+                                "goal_proposal_index": {"type": "integer", "minimum": 0, "maximum": 2},
+                                "applicability_relations": {"type": "array", "maxItems": 6, "items": role_relation},
+                                "preserved_structure": {"type": "array", "uniqueItems": True, "maxItems": 5, "items": {"enum": ["topology", "intrinsic_geometry", "component_count", "relative_order", "contact_state", "containment_state"]}},
+                                "nuisance_dimensions": {"type": "array", "uniqueItems": True, "maxItems": 8, "items": {"enum": list(MANDATORY_NUISANCE_DIMENSIONS)}},
+                                "causal_structure": {"type": "array", "uniqueItems": True, "maxItems": 4, "items": {"enum": ["preserves_intrinsic_structure", "changes_relative_position", "changes_contact", "changes_containment", "changes_component_count", "unknown"]}},
+                                "unresolved_ports": {"type": "array", "uniqueItems": True, "maxItems": 4, "items": {"enum": abstract_roles}},
+                                "predicted_reuse": {"type": "array", "minItems": 1, "maxItems": 4, "uniqueItems": True, "items": {"enum": ["faster_role_binding", "constrained_shadow_generation", "potential_prediction", "mechanism_discrimination", "milestone_detection"]}},
+                                "counterconditions": {"type": "array", "maxItems": 5, "uniqueItems": True, "items": {"enum": ["applicability_relation_absent", "role_identity_ambiguous", "mechanism_conflict", "potential_not_measurable", "predicted_reuse_refuted"]}},
+                            },
+                        },
+                    },
+            }
+            consolidation_required = [
+                "protocol", "decision", "source_boundary_ref", "source_refs",
+                "abstractions",
+            ]
+            properties["explanation_consolidation"] = {
+                "oneOf": [
+                    {
+                        "type": "object", "additionalProperties": False,
+                        "required": consolidation_required,
+                        "properties": {
+                            **copy.deepcopy(consolidation_properties),
+                            "decision": {"const": "propose"},
+                            "abstractions": {
+                                **copy.deepcopy(consolidation_properties["abstractions"]),
+                                "minItems": 1,
+                            },
+                        },
+                    },
+                    {
+                        "type": "object", "additionalProperties": False,
+                        "required": consolidation_required,
+                        "properties": {
+                            **copy.deepcopy(consolidation_properties),
+                            "decision": {"const": "abstain"},
+                            "abstractions": {
+                                **copy.deepcopy(consolidation_properties["abstractions"]),
+                                "maxItems": 0,
+                            },
+                        },
+                    },
+                ],
+            }
+            # Consolidation is a semantic projection operation, not an
+            # ordinary scratchpad refresh.  Do not make Qwen re-emit action
+            # aliases, abductive compositions, or open questions that are
+            # unrelated to the reusable schema and substantially enlarge the
+            # constrained response.  The compiler materializes those absent
+            # working-note fields as empty, never as inferred content.
+            required = [
+                "summary", "objective_hypothesis", "goal_proposals",
+                "cited_ids", "explanation_consolidation",
+            ]
+            properties = {
+                key: value for key, value in properties.items()
+                if key in required
+            }
+            properties["goal_proposals"] = {
+                **properties["goal_proposals"], "minItems": 0, "maxItems": 1,
+            }
+        return {
+            "type": "object",
+            "additionalProperties": False,
+            "required": required,
+            "properties": properties,
         }
 
     def add_note_to_schema(schema: dict[str, Any], turn: Any) -> dict[str, Any]:
@@ -895,6 +1187,24 @@ CAUSAL VISUAL UNIT:
         # evidence packets are separate fields and are never projected away;
         # response validation still uses the untouched full turn.
         compact_document = dict(turn.document)
+        consolidation_task = compact_document.get("explanation_consolidation_task")
+        if isinstance(consolidation_task, Mapping):
+            # The successor level is a future test context, not evidence for
+            # the abstraction.  Transport only the completed-context packet;
+            # keep the full canonical turn locally for response validation.
+            compact_document = {
+                key: compact_document[key]
+                for key in (
+                    "protocol", "request_id", "workspace_ref",
+                    "allowed_vocabulary", "explanation_consolidation_task",
+                )
+                if key in compact_document
+            }
+            compact_document["transport_projection"] = {
+                "omitted_successor_context": True,
+                "authority": "canonical-turn-retained-for-response-validation",
+                "semantic_view": "completed-context-only",
+            }
         omitted = []
         for field in (
             "full_materialization", "object_index", "ordered_lossless_deltas",
@@ -918,6 +1228,8 @@ CAUSAL VISUAL UNIT:
                 messages[0]["content"] = compact_text
             elif isinstance(content, list) and content and content[0].get("type") == "text":
                 content[0]["text"] = compact_text
+                if isinstance(consolidation_task, Mapping):
+                    messages[0]["content"] = [content[0]]
         return request
 
     def compile_response(response: Mapping[str, Any], turn: Any) -> dict[str, Any]:
@@ -959,9 +1271,30 @@ CAUSAL VISUAL UNIT:
             }
         if note is None:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "workspace-write-missing"}]}
-        required = {"summary", "objective_hypothesis", "goal_proposals", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"}
+        consolidation_task = turn.document.get("explanation_consolidation_task")
+        ordinary_required = {
+            "summary", "objective_hypothesis", "goal_proposals",
+            "abductive_compositions", "action_aliases", "open_questions",
+            "cited_ids",
+        }
+        consolidation_required = {
+            "summary", "objective_hypothesis", "goal_proposals",
+            "cited_ids", "explanation_consolidation",
+        }
+        required = (
+            consolidation_required
+            if isinstance(consolidation_task, Mapping)
+            else ordinary_required
+        )
         if not isinstance(note, Mapping) or set(note) != required:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "working-note-contract"}]}
+        if isinstance(consolidation_task, Mapping):
+            note = {
+                **dict(note),
+                "abductive_compositions": [],
+                "action_aliases": [],
+                "open_questions": [],
+            }
         scratch_tokens = qc.GRAPH.estimate_tokens(prose)
         action_free_note = {key: value for key, value in note.items() if key != "action_aliases"}
         if _has_action_proposal(prose) or _has_action_proposal(action_free_note) or scratch_tokens > MAX_SCRATCHPAD_TOKENS:
@@ -969,7 +1302,15 @@ CAUSAL VISUAL UNIT:
         _index, visible = qc._v14_visible(turn)
         aliases = dict(turn.id_aliases)
         cited = list(note["cited_ids"])
-        if any(not isinstance(item, str) or item not in visible for item in cited):
+        source_citations = (
+            set(consolidation_task.get("source_evidence_refs", ()))
+            if isinstance(consolidation_task, Mapping) else set()
+        )
+        if any(
+            not isinstance(item, str)
+            or item not in set(visible) | source_citations
+            for item in cited
+        ):
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "working-note-citation"}]}
         if not compilation.get("valid_json_contract"):
             return compilation
@@ -1008,6 +1349,158 @@ CAUSAL VISUAL UNIT:
             key = _canonical_goal_proposal_key(proposal)
             if key not in seen_proposals:
                 seen_proposals.add(key); unique_proposals.append(dict(proposal))
+        consolidation = None
+        consolidation_write = None
+        if isinstance(consolidation_task, Mapping):
+            raw = note.get("explanation_consolidation")
+            exact_fields = {
+                "protocol", "decision", "source_boundary_ref", "source_refs", "abstractions",
+            }
+            if not isinstance(raw, Mapping) or set(raw) != exact_fields:
+                return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-contract"}]}
+            decision = raw.get("decision")
+            source_boundary_ref = raw.get("source_boundary_ref")
+            source_refs = raw.get("source_refs")
+            abstractions = raw.get("abstractions")
+            allowed_source_refs = set(consolidation_task.get("source_evidence_refs", ()))
+            if (
+                raw.get("protocol") != EXPLANATION_CONSOLIDATION_PROTOCOL
+                or decision not in {"propose", "abstain"}
+                or source_boundary_ref != consolidation_task.get("source_boundary_ref")
+                or not isinstance(source_refs, list) or not source_refs
+                or len(source_refs) > 8 or len(set(source_refs)) != len(source_refs)
+                or source_boundary_ref not in source_refs
+                or not set(source_refs).issubset(allowed_source_refs)
+                or not isinstance(abstractions, list) or len(abstractions) > 1
+                or (decision == "propose" and not abstractions)
+                or (decision == "abstain" and abstractions)
+                or (decision == "abstain" and unique_proposals)
+                or len(unique_proposals) != len(note["goal_proposals"])
+            ):
+                return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-authority"}]}
+            normalized_abstractions = []
+            used_indices = set()
+            allowed_predicates = {
+                "same_outline", "different_outline", "same_interior",
+                "different_interior", "same_area", "different_area",
+                "same_value", "different_value",
+            }
+            allowed_modalities = {"required", "suggested", "anti-clue", "unknown"}
+            allowed_preserved = {
+                "topology", "intrinsic_geometry", "component_count",
+                "relative_order", "contact_state", "containment_state",
+            }
+            allowed_causal = {
+                "preserves_intrinsic_structure", "changes_relative_position",
+                "changes_contact", "changes_containment",
+                "changes_component_count", "unknown",
+            }
+            allowed_reuse = {
+                "faster_role_binding", "constrained_shadow_generation",
+                "potential_prediction", "mechanism_discrimination",
+                "milestone_detection",
+            }
+            allowed_counterconditions = {
+                "applicability_relation_absent", "role_identity_ambiguous",
+                "mechanism_conflict", "potential_not_measurable",
+                "predicted_reuse_refuted",
+            }
+            abstraction_fields = {
+                "local_ref", "goal_proposal_index", "applicability_relations",
+                "preserved_structure", "nuisance_dimensions", "causal_structure",
+                "unresolved_ports", "predicted_reuse", "counterconditions",
+            }
+            for abstraction in abstractions:
+                if not isinstance(abstraction, Mapping) or set(abstraction) != abstraction_fields:
+                    return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-abstraction"}]}
+                index = abstraction.get("goal_proposal_index")
+                if (
+                    not isinstance(index, int) or isinstance(index, bool)
+                    or index < 0 or index >= len(unique_proposals)
+                    or index in used_indices
+                ):
+                    return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-schema-reference"}]}
+                used_indices.add(index)
+                roles = set(unique_proposals[index].get("roles", ()))
+                relations = abstraction.get("applicability_relations")
+                preserved = abstraction.get("preserved_structure")
+                nuisances = abstraction.get("nuisance_dimensions")
+                causal = abstraction.get("causal_structure")
+                unresolved = abstraction.get("unresolved_ports")
+                predicted_reuse = abstraction.get("predicted_reuse")
+                counterconditions = abstraction.get("counterconditions")
+                if not isinstance(relations, list) or any(
+                    not isinstance(item, Mapping)
+                    or set(item) != {"predicate", "arguments", "modality"}
+                    or item.get("predicate") not in allowed_predicates
+                    or item.get("modality") not in allowed_modalities
+                    or len(item.get("arguments", ())) != 2
+                    or len(set(item.get("arguments", ()))) != 2
+                    or not set(item.get("arguments", ())).issubset(roles)
+                    for item in relations
+                ) or any(
+                    not isinstance(value, list)
+                    or len(value) != len(set(value))
+                    for value in (
+                        preserved, nuisances, causal, unresolved,
+                        predicted_reuse, counterconditions,
+                    )
+                ) or (
+                    not set(preserved).issubset(allowed_preserved)
+                    or not set(nuisances).issubset(MANDATORY_NUISANCE_DIMENSIONS)
+                    or not set(causal).issubset(allowed_causal)
+                    or not set(unresolved).issubset(roles)
+                    or not predicted_reuse
+                    or not set(predicted_reuse).issubset(allowed_reuse)
+                    or not set(counterconditions).issubset(allowed_counterconditions)
+                    or re.fullmatch(r"abstraction_[0-9]{1,2}", str(abstraction.get("local_ref"))) is None
+                ):
+                    return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-port-typing"}]}
+                if _has_consolidation_situated_detail(unique_proposals[index]):
+                    return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-situated-detail"}]}
+                schema_definition = {
+                    **unique_proposals[index],
+                    "authority_scope": FRESH_BINDING_AUTHORITY,
+                    "projection_mode": "abstract-explanation-projection",
+                    "consolidation_source_boundary_ref": source_boundary_ref,
+                }
+                unique_proposals[index] = schema_definition
+                normalized_abstractions.append({
+                    **dict(abstraction),
+                    "schema_definition": schema_definition,
+                    "nuisance_dimensions": sorted(set((
+                        *MANDATORY_NUISANCE_DIMENSIONS,
+                        *abstraction.get("nuisance_dimensions", ()),
+                    ))),
+                    "empirical_support": 0,
+                    "epistemic_status": "ungrounded-reusable-hypothesis",
+                })
+            if decision == "propose" and used_indices != set(range(len(unique_proposals))):
+                return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "explanation-consolidation-schema-reference"}]}
+            consolidation = {
+                "protocol": EXPLANATION_CONSOLIDATION_PROTOCOL,
+                "operation": "reflective-abstraction",
+                "projection_mode": "abstract-explanation-projection",
+                "decision": decision,
+                "source_context_index": int(consolidation_task["source_context_index"]),
+                "source_boundary_ref": source_boundary_ref,
+                "source_refs": list(source_refs),
+                "abstractions": normalized_abstractions,
+                "authority_reset": dict(consolidation_task["transfer_contract"]),
+                "workspace_ref": _workspace_ref(qc, turn.workspace_id),
+                "basis_revision": turn.basis_revision,
+            }
+            consolidation_write = {
+                "kind": "explanation_consolidation",
+                "local_ref": "explanation_consolidation",
+                "identity": {
+                    "workspace_ref": _workspace_ref(qc, turn.workspace_id),
+                    "source_boundary_ref": source_boundary_ref,
+                    "content_hash": qc.stable_hash(consolidation),
+                },
+                "payload": consolidation,
+                "dependency_ids": list(source_refs),
+            }
         current_evidence_ref = _transition_evidence_ref(turn.document)
         prior_evidence_ref = prior_projection.get("transition_evidence_ref")
         prior_proposal_keys = {
@@ -1072,6 +1565,8 @@ CAUSAL VISUAL UNIT:
             "token_budget": MAX_SCRATCHPAD_TOKENS,
             "transition_evidence_ref": current_evidence_ref,
         }
+        if consolidation is not None:
+            payload["explanation_consolidation"] = consolidation
         write = {
             "kind": "working_note",
             "local_ref": "working_note",
@@ -1081,7 +1576,10 @@ CAUSAL VISUAL UNIT:
                 "content_hash": qc.stable_hash({"natural_language": prose, "workspace_write": note}),
             },
             "payload": payload,
-            "dependency_ids": real_citations,
+            "dependency_ids": sorted(set((
+                *real_citations,
+                *((consolidation or {}).get("source_refs", ())),
+            ))),
         }
         explanation = {
             "kind": "explanation",
@@ -1102,12 +1600,17 @@ CAUSAL VISUAL UNIT:
                 "epistemic_role": "candidate-model-for-goal-progress-or-information",
                 "basis_revision": turn.basis_revision,
             },
-            "dependency_ids": real_citations,
+            "dependency_ids": sorted(set((
+                *real_citations,
+                *((consolidation or {}).get("source_refs", ())),
+            ))),
             "evidence": [],
             "support": 0,
         }
         accepted = [*compilation.get("accepted", ())]
         accepted.append(explanation)
+        if consolidation_write is not None:
+            accepted.append(consolidation_write)
         accepted.append(write)
         return {**compilation, "accepted": accepted, "working_note": payload}
 
@@ -1123,4 +1626,9 @@ CAUSAL VISUAL UNIT:
     )
     qc.semantic_failure_revision_due = (
         lambda state, workspace_id: semantic_failure_revision_due()
+    )
+    qc.explanation_consolidation_due = (
+        lambda state, workspace_id: explanation_consolidation_due(
+            state, workspace_id, qc
+        )
     )

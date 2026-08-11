@@ -449,6 +449,84 @@ def test_r2_1_level_transition_retains_game_mechanics_but_clears_bindings():
     assert observer.role_trajectories == {}
 
 
+def test_consolidated_schema_cannot_inherit_intervention_authority():
+    adapter = load("r2_1_consolidation_authority") if (HERE / "r2_1_consolidation_authority.py").exists() else load("r2_1_adapter")
+    observer = adapter.FrameSchemaObserver()
+    region = {
+        "value": 2,
+        "area": 1,
+        "shape": ((0, 0),),
+        "outline": ((0, 0),),
+        "interior": (),
+    }
+    key = (observer._command_scope(2), observer._region_key(region))
+    observer.action_effects[key][(0.0, 1.0)] = 3
+    observer.level_action_effects[key][(0.0, 1.0)] = 3
+    assert observer._effect_model(2, region)["status"] == "SUPPORTED"
+    assert observer._effect_model(
+        2, region, current_context_only=True,
+    )["status"] == "SUPPORTED"
+
+    observer.advance_level()
+
+    assert observer._effect_model(2, region)["status"] == "SUPPORTED"
+    assert observer._effect_model(
+        2, region, current_context_only=True,
+    ) == {
+        "status": "UNKNOWN", "delta": None, "support": 0,
+        "contradictions": 0, "confidence": 0.0,
+    }
+    assert observer.level_action_effects == {}
+
+
+def test_consolidated_explanation_projects_semantics_before_mechanism_accommodation():
+    adapter = load("r2_1_explanation_projection") if (HERE / "r2_1_explanation_projection.py").exists() else load("r2_1_adapter")
+    observer = adapter.FrameSchemaObserver()
+    before, _middle, _after = _three_alignment_frames()
+    goal = {
+        **_alignment_goal(),
+        "authority_scope": "fresh-binding-probe-only",
+        "projection_mode": "abstract-explanation-projection",
+        "consolidation_source_boundary_ref": "eo:prior-level-boundary",
+    }
+
+    # A matching old effect remains auditable in the game-wide table.
+    observer.fit_frame(before, turn=0)
+    old = observer.rank_actions((4,), fallback_action=4, semantic_goal=_alignment_goal())
+    old_regions = {item["binding_id"]: item for item in observer.last_regions}
+    old_actor = old_regions[old["current_explanation"]["ports"]["actor"]]
+    old_target = old_regions[old["current_explanation"]["ports"]["target"]]
+    observer.action_effects[(4, observer._region_key(old_actor))][(0.0, 1.0)] += 2
+    observer.action_effects[(4, observer._region_key(old_target))][(0.0, 0.0)] += 2
+    observer.level_action_effects[(4, observer._region_key(old_actor))][(0.0, 1.0)] += 2
+    observer.level_action_effects[(4, observer._region_key(old_target))][(0.0, 0.0)] += 2
+
+    observer.advance_level()
+    observer.fit_frame(before, turn=0)
+    projected = observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
+    explanation = projected["current_explanation"]
+
+    # The explanation itself is active immediately: R2 fresh-binds its roles,
+    # instantiates its potential, and exposes its terminal completion.
+    assert explanation["explanation_projection"] == {
+        "mode": "abstract-explanation-projection",
+        "source_boundary_ref": "eo:prior-level-boundary",
+        "schema_authority": "fresh-binding-probe-only",
+        "accommodation": "fresh-bind-and-settle",
+    }
+    assert explanation["ports"]["actor"]
+    assert explanation["ports"]["target"]
+    assert explanation["goal"]["measure"] == goal["observable"]
+    assert explanation["goal"]["direction"] == goal["direction"]
+    assert explanation["goal"]["terminal"]
+
+    # Only the situated motor mechanism must be reaccommodated.  The matching
+    # old effect cannot silently authorize progress in the new context.
+    assert explanation["mechanism"]["models_supported"] is False
+    assert explanation["epistemic_status"] == "grounded-open-mechanism"
+    assert projected["control_proposal"]["status"] == "PROBE_ELIGIBLE"
+
+
 def test_r2_1_retry_boundary_retains_mechanics_but_clears_pending_state():
     adapter = load("r2_1_retry_scope_adapter") if (HERE / "r2_1_retry_scope_adapter.py").exists() else load("r2_1_adapter")
     observer = adapter.FrameSchemaObserver()
@@ -691,6 +769,8 @@ def test_multilevel_run_is_enabled_with_a_per_level_budget_and_boundary_hooks():
     assert "controller.observe_level_transition" in base_source
     assert "cognition.advance_level(after_grid)" in base_source
     assert "level_transition=level_transition" in base_source
+    assert "boundary_consolidation" in base_source
+    assert '"explanation_consolidation_task"' in base_source
     bridge_source = (HERE.parent / "parallel-cognitive-workspace-v1-9" / "experiment.py").read_text()
     assert "level_transition: bool = False" in bridge_source
     assert "level_transition=level_transition" in bridge_source
@@ -1424,6 +1504,244 @@ def semantic_response(*, action_aliases=(), natural_language="I am retaining a c
             "cited_ids": ["a"],
         },
     }}
+
+
+def consolidation_state(scratchpad, qc):
+    workspace_ref = scratchpad._workspace_ref(qc, "w")
+    objects = [
+        SimpleNamespace(
+            kind="working_note", created_by="qwen", created_revision=3,
+            object_id="eo:prior-note", dependency_ids=(), payload={
+                "workspace_ref": workspace_ref,
+                "goal_proposals": [_alignment_goal()],
+                "abductive_compositions": [],
+                "summary": "A relational residual organized the settled context.",
+            },
+        ),
+        SimpleNamespace(
+            kind="control_explanation", created_by="r2", created_revision=7,
+            object_id="eo:settled-explanation", dependency_ids=(), payload={
+                "epistemic_status": "active-progress-explanation",
+                "claim": "A preferred relational completion was approached.",
+                "goal": {"measure": "centroid_distance", "direction": "decrease"},
+                "epistemic_evaluation": {"confirmations": 3, "refutations": 1},
+            },
+        ),
+        SimpleNamespace(
+            kind="environment_evidence", created_by="environment", created_revision=8,
+            object_id="eo:prior-support", dependency_ids=(), payload={"level_delta": 0},
+        ),
+        SimpleNamespace(
+            kind="prediction", created_by="r2", created_revision=8,
+            object_id="eo:prior-prediction", dependency_ids=(), payload={},
+        ),
+        SimpleNamespace(
+            kind="transition", created_by="environment", created_revision=10,
+            object_id="eo:level-boundary", dependency_ids=(), payload={
+                "level_transition": True, "boundary_kind": "level-advance",
+                "before_frame": "eo:completed-context-frame",
+                "after_frame": "eo:new-context-frame",
+                "intervention_ref": "opaque-not-projected",
+            },
+        ),
+        SimpleNamespace(
+            kind="environment_evidence", created_by="environment", created_revision=11,
+            object_id="eo:boundary-evidence", dependency_ids=("eo:level-boundary",),
+            payload={"level_delta": 1},
+        ),
+        SimpleNamespace(
+            kind="control_explanation", created_by="r2", created_revision=12,
+            object_id="eo:new-context-explanation", dependency_ids=(), payload={
+                "claim": "This successor-context claim must not enter the source packet.",
+            },
+        ),
+    ]
+    edges = [SimpleNamespace(
+        kind="supports", source_id="eo:prior-support",
+        target_id="eo:prior-prediction", created_revision=9,
+    )]
+    return SimpleNamespace(objects=objects, edges=edges)
+
+
+def consolidation_response(task):
+    response = semantic_response(
+        natural_language=(
+            "The settled relational structure suggests one reusable schema, "
+            "while every situated detail remains open to fresh grounding."
+        ),
+    )
+    response["parsed"]["workspace_write"] = {
+        "summary": "A relational convergence schema may project after fresh binding.",
+        "objective_hypothesis": "Test whether the projected relational residual is measurable.",
+        "goal_proposals": [{
+        "verb": "align", "schema_name": "Relational convergence",
+        "goal_family": "alignment", "roles": ["actor", "target"],
+        "potential_roles": ["actor", "target"],
+        "observable": "centroid_distance", "direction": "decrease",
+        "terminal_class": "minimum",
+        "terminal_condition": "the relational residual reaches its minimum",
+        "role_constraints": [{
+            "predicate": "different_value", "arguments": ["actor", "target"],
+            "modality": "suggested",
+        }],
+        }],
+        "cited_ids": [task["source_boundary_ref"], "eo:boundary-evidence"],
+        "explanation_consolidation": {
+        "protocol": "explanation-consolidation-v1",
+        "decision": "propose",
+        "source_boundary_ref": task["source_boundary_ref"],
+        "source_refs": [task["source_boundary_ref"], "eo:boundary-evidence"],
+        "abstractions": [{
+            "local_ref": "abstraction_0",
+            "goal_proposal_index": 0,
+            "applicability_relations": [{
+                "predicate": "different_value",
+                "arguments": ["actor", "target"],
+                "modality": "suggested",
+            }],
+            "preserved_structure": ["topology", "intrinsic_geometry"],
+            "nuisance_dimensions": ["absolute_coordinates"],
+            "causal_structure": ["changes_relative_position"],
+            "unresolved_ports": ["actor", "target"],
+            "predicted_reuse": ["faster_role_binding", "mechanism_discrimination"],
+            "counterconditions": ["role_identity_ambiguous", "mechanism_conflict"],
+        }],
+        },
+    }
+    return response
+
+
+def test_explanation_consolidation_is_generic_bounded_and_deduplicated():
+    scratchpad = load("scratchpad_consolidation") if (HERE / "scratchpad_consolidation.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    state = consolidation_state(scratchpad, qc)
+
+    assert qc.explanation_consolidation_due(state, "w") is True
+    turn = qc.build_turn(state, (), None)
+    task = turn.document["explanation_consolidation_task"]
+    assert task["operation"] == "reflective-abstraction"
+    assert task["projection_mode"] == "abstract-explanation-projection"
+    assert task["source_context_index"] == 1
+    assert task["source_boundary_ref"] == "eo:level-boundary"
+    assert task["transfer_contract"] == {
+        "schema_definition": "project-and-fresh-bind",
+        "empirical_support": "reset",
+        "bindings": "reset",
+        "role_identities": "reset",
+        "potentials": "reset",
+        "intervention_applicability": "reset",
+        "progress_authority": "reset",
+    }
+    serialized = json.dumps(task, sort_keys=True)
+    assert "opaque-not-projected" not in serialized
+    assert "new-context-explanation" not in serialized
+    assert "successor-context claim" not in serialized
+    assert "eo:settled-explanation" in task["source_evidence_refs"]
+
+    schema = qc.response_schema(turn)["properties"]["workspace_write"]
+    assert "explanation_consolidation" in schema["required"]
+    assert "action_aliases" not in schema["properties"]
+    assert "abductive_compositions" not in schema["properties"]
+    assert "open_questions" not in schema["properties"]
+    assert "eo:level-boundary" in schema["properties"]["cited_ids"]["items"]["enum"]
+    transport_turn = replace(turn, document={
+        **turn.document,
+        "sparse_cut": {"successor_only": "NEW_CONTEXT_MUST_NOT_BE_TRANSPORTED"},
+        "ordered_lossy_deltas": ["NEW_CONTEXT_DELTA"],
+    })
+    request = qc.request_payload(transport_turn, {})
+    transported = request["messages"][0]["content"]
+    assert "NEW_CONTEXT_MUST_NOT_BE_TRANSPORTED" not in transported
+    assert "NEW_CONTEXT_DELTA" not in transported
+    assert "completed-context-only" in transported
+    assert "eo:settled-explanation" in transported
+    compiled = qc.compile_response(consolidation_response(task), turn)
+    assert not compiled["rejected"]
+    consolidation = next(
+        item for item in compiled["accepted"]
+        if item["kind"] == "explanation_consolidation"
+    )
+    abstraction = consolidation["payload"]["abstractions"][0]
+    assert abstraction["empirical_support"] == 0
+    assert abstraction["epistemic_status"] == "ungrounded-reusable-hypothesis"
+    assert set(scratchpad.MANDATORY_NUISANCE_DIMENSIONS).issubset(
+        abstraction["nuisance_dimensions"]
+    )
+    assert abstraction["schema_definition"]["authority_scope"] == "fresh-binding-probe-only"
+    assert abstraction["schema_definition"]["projection_mode"] == (
+        "abstract-explanation-projection"
+    )
+    assert consolidation["payload"]["projection_mode"] == (
+        "abstract-explanation-projection"
+    )
+    assert compiled["working_note"]["goal_proposals"][0]["authority_scope"] == "fresh-binding-probe-only"
+    assert compiled["working_note"]["action_aliases"] == []
+    assert compiled["working_note"]["abductive_compositions"] == []
+
+    state.objects.append(SimpleNamespace(
+        kind="explanation_consolidation", created_by="qwen", created_revision=20,
+        object_id="eo:accepted-consolidation", dependency_ids=tuple(
+            consolidation["dependency_ids"]
+        ), payload=consolidation["payload"],
+    ))
+    assert qc.explanation_consolidation_due(state, "w") is False
+    assert "explanation_consolidation_task" not in qc.build_turn(state, (), None).document
+
+
+def test_explanation_consolidation_abstention_has_no_reusable_schema_authority():
+    scratchpad = load("scratchpad_consolidation_abstain") if (HERE / "scratchpad_consolidation_abstain.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    state = consolidation_state(scratchpad, qc)
+    turn = qc.build_turn(state, (), None)
+    task = turn.document["explanation_consolidation_task"]
+    response = semantic_response(
+        natural_language="The settled evidence does not support a useful quotient beyond the existing open schema.",
+    )
+    response["parsed"]["workspace_write"] = {
+        "summary": "No reusable abstraction is justified.",
+        "objective_hypothesis": "Abstain pending stronger settled structure.",
+        "goal_proposals": [],
+        "cited_ids": [task["source_boundary_ref"]],
+        "explanation_consolidation": {
+        "protocol": "explanation-consolidation-v1",
+        "decision": "abstain",
+        "source_boundary_ref": task["source_boundary_ref"],
+        "source_refs": [task["source_boundary_ref"]],
+        "abstractions": [],
+        },
+    }
+    compiled = qc.compile_response(response, turn)
+    assert not compiled["rejected"]
+    consolidation = next(
+        item for item in compiled["accepted"]
+        if item["kind"] == "explanation_consolidation"
+    )
+    assert consolidation["payload"]["decision"] == "abstain"
+    assert consolidation["payload"]["abstractions"] == []
+
+
+def test_explanation_consolidation_rejects_routes_and_situated_schema_details():
+    scratchpad = load("scratchpad_consolidation_overfit") if (HERE / "scratchpad_consolidation_overfit.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    state = consolidation_state(scratchpad, qc)
+    turn = qc.build_turn(state, (), None)
+    task = turn.document["explanation_consolidation_task"]
+
+    route = consolidation_response(task)
+    route["parsed"]["natural_language_scratchpad"] = (
+        "Choose Action 2 repeatedly and then execute Action 3."
+    )
+    rejected_route = qc.compile_response(route, turn)
+    assert rejected_route["rejected"][-1]["reason"] == "working-note-safety-or-budget"
+
+    situated = consolidation_response(task)
+    situated["parsed"]["workspace_write"]["goal_proposals"][0]["schema_name"] = (
+        "Move the blue figure from row=12"
+    )
+    rejected_situated = qc.compile_response(situated, turn)
+    assert rejected_situated["rejected"][-1]["reason"] == (
+        "explanation-consolidation-situated-detail"
+    )
 
 
 def test_qwen_scratchpad_is_bounded_unverified_and_cited():

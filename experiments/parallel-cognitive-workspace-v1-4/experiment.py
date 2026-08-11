@@ -2865,7 +2865,19 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
             )
             grounding_records.extend(records)
 
-            if pending_qwen is not None and config["qwen"].get("eager_semantic_integration", False):
+            boundary_consolidation = bool(
+                pending_qwen is not None
+                and isinstance(
+                    getattr(pending_qwen[1], "document", {}).get(
+                        "explanation_consolidation_task"
+                    ),
+                    Mapping,
+                )
+            )
+            if pending_qwen is not None and (
+                config["qwen"].get("eager_semantic_integration", False)
+                or boundary_consolidation
+            ):
                 state, compilation = integrate_qwen(
                     root, workspace_id, state, *pending_qwen, profile,
                     action_count=len(history),

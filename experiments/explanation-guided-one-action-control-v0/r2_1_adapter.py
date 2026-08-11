@@ -350,6 +350,10 @@ class FrameSchemaObserver:
         self.last_region_descriptors: dict[str, dict[str, Any]] = {}
         self.last_relation_bindings: dict[tuple[str, tuple[str, ...]], str] = {}
         self.action_effects: dict[tuple[Any, tuple[Any, ...]], Counter[tuple[float, float]]] = defaultdict(Counter)
+        # Current-context effects are deliberately not retained by
+        # ``advance_level``.  Explanation-consolidation schemas may reuse a
+        # definition, but they must earn intervention applicability again.
+        self.level_action_effects: dict[tuple[Any, tuple[Any, ...]], Counter[tuple[float, float]]] = defaultdict(Counter)
         self.action_uses: Counter[Any] = Counter()
         self.explanation_confirmations: Counter[str] = Counter()
         self.explanation_refutations: Counter[str] = Counter()
@@ -1495,8 +1499,11 @@ class FrameSchemaObserver:
         model = self._effect_model(action, region)
         return model["delta"], float(model["confidence"])
 
-    def _effect_model(self, action: Any, region: dict[str, Any]) -> dict[str, Any]:
-        observations = self.action_effects.get((self._command_scope(action), self._region_key(region)))
+    def _effect_model(
+        self, action: Any, region: dict[str, Any], *, current_context_only: bool = False,
+    ) -> dict[str, Any]:
+        store = self.level_action_effects if current_context_only else self.action_effects
+        observations = store.get((self._command_scope(action), self._region_key(region)))
         if not observations:
             return {
                 "status": "UNKNOWN", "delta": None, "support": 0,
@@ -1683,8 +1690,15 @@ class FrameSchemaObserver:
         observable = str(desired["measure"])
         direction = str(desired["direction"])
         residual = float(desired["current"])
-        actor_model = self._effect_model(action, actor)
-        target_model = self._effect_model(action, target)
+        fresh_binding_only = (
+            semantic_goal.get("authority_scope") == "fresh-binding-probe-only"
+        )
+        actor_model = self._effect_model(
+            action, actor, current_context_only=fresh_binding_only,
+        )
+        target_model = self._effect_model(
+            action, target, current_context_only=fresh_binding_only,
+        )
         delta = actor_model["delta"]
         target_delta = target_model["delta"]
         predicted = None
@@ -1762,6 +1776,16 @@ class FrameSchemaObserver:
                 "progress": chain.get("progress_binding_id"),
             },
             "semantic_source": "qwen-goal-proposal",
+            **({
+                "explanation_projection": {
+                    "mode": semantic_goal["projection_mode"],
+                    "source_boundary_ref": semantic_goal.get(
+                        "consolidation_source_boundary_ref"
+                    ),
+                    "schema_authority": semantic_goal.get("authority_scope"),
+                    "accommodation": "fresh-bind-and-settle",
+                },
+            } if semantic_goal.get("projection_mode") else {}),
             "control_goal_key": goal_key,
             "role_grounding": role_grounding,
             # Settlement happens after the observer may already have fitted the
@@ -2325,6 +2349,7 @@ class FrameSchemaObserver:
                         (float(successor["center2"][1]) - float(source["center2"][1])) / 2.0,
                     )
                     self.action_effects[(effect_scope, self._region_key(source))][delta] += 1
+                    self.level_action_effects[(effect_scope, self._region_key(source))][delta] += 1
                     learned.append({
                         "trajectory_id": trajectory_id, "role": role,
                         "region_type": E.stable_id("region-type", self._region_key(source)),

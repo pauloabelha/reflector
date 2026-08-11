@@ -78,6 +78,19 @@ def build_manifest(config: Mapping[str, Any]) -> dict[str, Any]:
 
 def install(runtime: Any | None = None) -> None:
     SCRATCHPAD.install(BASE.QC)
+    if not getattr(BASE, "_one_action_explanation_consolidation_due", False):
+        BASE._one_action_explanation_consolidation_due = True
+        original_qwen_revision_due = BASE.qwen_revision_due
+
+        def qwen_revision_due(state: Any, workspace_id: str, **kwargs: Any) -> bool:
+            due = getattr(BASE.QC, "explanation_consolidation_due", None)
+            if callable(due) and due(state, workspace_id):
+                return True
+            return original_qwen_revision_due(
+                state, workspace_id, **kwargs
+            )
+
+        BASE.qwen_revision_due = qwen_revision_due
     if not getattr(BASE, "_one_action_causal_visual_evidence", False):
         BASE._one_action_causal_visual_evidence = True
         visual_evidence_for_turn = BASE.visual_evidence_for_turn
@@ -124,9 +137,18 @@ def install(runtime: Any | None = None) -> None:
             pending = queue_qwen(*args, **kwargs)
             task_count = int(args[-2]) if len(args) >= 2 else 0
             source_action = int(args[-1]) if args else 0
+            turn = pending[1]
+            consolidating = isinstance(
+                getattr(turn, "document", {}).get("explanation_consolidation_task"),
+                Mapping,
+            )
             runtime.qwen_started(
                 task_count + 1,
-                phase="explaining-frame-0" if source_action == 0 else "semantic-update",
+                phase=(
+                    "consolidating-explanation" if consolidating else
+                    "explaining-frame-0" if source_action == 0 else
+                    "semantic-update"
+                ),
             )
             return pending
 
