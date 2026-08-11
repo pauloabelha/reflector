@@ -112,6 +112,15 @@ def has_transport_metadata_leak(value: Any) -> bool:
     if isinstance(value, (list, tuple)):
         return any(has_transport_metadata_leak(item) for item in value)
     return isinstance(value, str) and bool(TRANSPORT_METADATA_LEAK.search(value))
+
+
+def current_transition_evidence_ref() -> str | None:
+    value = (_R2_TRANSITION_OBSERVATION or {}).get("evidence_ref")
+    return value if isinstance(value, str) and value else None
+
+
+def scratchpad_basis_is_current(turn_evidence_ref: Any) -> bool:
+    return current_transition_evidence_ref() == turn_evidence_ref
 RETROSPECTIVE_ACTION_WINDOW = 140
 CONSOLIDATION_SITUATED_DETAIL = re.compile(
     r"(?:\b(?:black|blue|red|green|yellow|gr[ae]y|magenta|orange|cyan|"
@@ -975,6 +984,19 @@ def alias_revision_due(state: Any, workspace_id: str, qc: Any) -> bool:
     return action_id not in named
 
 
+def epistemic_scratchpad_revision_due(
+    state: Any, workspace_id: str, qc: Any,
+) -> bool:
+    """Require the shared scratchpad to consume every latest settlement once."""
+
+    latest_ref = (_R2_TRANSITION_OBSERVATION or {}).get("evidence_ref")
+    if not isinstance(latest_ref, str) or not latest_ref:
+        return False
+    prior = _latest_note(state, workspace_id, qc)
+    consumed_ref = None if prior is None else prior.payload.get("transition_evidence_ref")
+    return consumed_ref != latest_ref
+
+
 def initial_semantics_due(state: Any, workspace_id: str, qc: Any) -> bool:
     """Keep initial Qwen semantics due until one valid note is canonical."""
 
@@ -1078,6 +1100,10 @@ def install(qc: Any) -> None:
     qc.PROMPT = qc.PROMPT.replace(
         "11. A schema can enter the control gate only with Decrease or Increase of TranslationAlignmentResidual. Explanation claims may use the broader semantic vocabulary but do not directly control.",
         "11. No measure is privileged as a goal. Propose an action-free goal schema; R2 alone decides whether its observable can be grounded, measured, and used for control.",
+    )
+    qc.PROMPT = qc.PROMPT.replace(
+        "while each G row is explicitly a small-lossy summary of a contiguous dormant run.",
+        "while each G row is non-semantic bookkeeping for older ledger history.",
     )
 
     qc.PROMPT += """
@@ -1311,6 +1337,10 @@ CAUSAL VISUAL UNIT:
             document["explanation_consolidation_task"] = consolidation_task
         vocabulary = dict(document.get("allowed_vocabulary", {}))
         if vocabulary:
+            # Codec documentation is coordinator bookkeeping, not semantic
+            # vocabulary. The projected content remains available without the
+            # representation jargon that previously leaked into hypotheses.
+            vocabulary.pop("delta_codec", None)
             vocabulary["control_gate"] = {
                 "authority": "semantic-goal-proposal-requires-r2-grounding",
                 "measures": list(vocabulary.get("measures", ())),
@@ -1673,6 +1703,24 @@ CAUSAL VISUAL UNIT:
         except ValueError:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "model-scratchpad-contract"}]}
         scratchpad_text = model_scratchpad_text(scratchpad)
+        turn_evidence_ref = (
+            turn.document.get("scratchpad_context", {})
+            .get("r2_transition_observation", {})
+            .get("evidence_ref")
+        )
+        latest_evidence_ref = current_transition_evidence_ref()
+        if not scratchpad_basis_is_current(turn_evidence_ref):
+            return {
+                **compilation,
+                "rejected": [
+                    *compilation.get("rejected", ()),
+                    {
+                        "reason": "stale-epistemic-scratchpad-basis",
+                        "turn_evidence_ref": turn_evidence_ref,
+                        "latest_evidence_ref": latest_evidence_ref,
+                    },
+                ],
+            }
         prior_projection = turn.document.get("prior_working_note") or {}
         prior_prose_digest = prior_projection.get("prior_natural_language_digest")
         if (
@@ -2066,6 +2114,11 @@ CAUSAL VISUAL UNIT:
     qc.compile_response = compile_response
     qc.alias_revision_due = lambda state, workspace_id: alias_revision_due(
         state, workspace_id, qc
+    )
+    qc.epistemic_scratchpad_revision_due = (
+        lambda state, workspace_id: epistemic_scratchpad_revision_due(
+            state, workspace_id, qc
+        )
     )
     qc.initial_semantics_due = lambda state, workspace_id: initial_semantics_due(
         state, workspace_id, qc
