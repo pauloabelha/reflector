@@ -141,6 +141,61 @@ Boundary audit immediately after promotion:
   smoke was intentionally killed at its two-minute cap, not scored as a
   completed episode.
 
+## Checkpoint 4 — combined coverage build before freeze
+
+Execution candidate:
+
+- Added typed `ActionCommand` identity for simple and parameterized actions.
+- Coordinate candidates are actual observed region cells nearest the region
+  center (`x=column`, `y=row`), bounded and transport-validated.
+- Exact payload now flows through decision, pending ledger, environment step,
+  transition, replay, and intervention identity.
+- No-change and learned effects are scoped to the exact command; one dead
+  coordinate cannot suppress every click.
+- Parameterized counterfactual branches are explicitly skipped until both
+  branch payloads can be grounded, rather than executing invalid empty data.
+- Click fitting is restricted to role diagrams containing the grounded clicked
+  region, avoiding unrelated causal attribution and combinatorial work.
+
+Semantic-efficiency candidate:
+
+- Exact goal-set repetition is challenged only after explicit R2 grounding
+  rejection or unsupported prediction refutation.
+- Scheduler-only calls, open mechanisms/shadows, confirmed models, and
+  progress-eligible explanations preserve a stable proposal.
+- This guard routes failure evidence but never invents, ranks, or repairs a
+  semantic goal.
+
+Telemetry ordering correction:
+
+- The first native prediction bridge left the inherited action proposal's
+  selected-prediction list empty, so v1.9 correctly filtered later judgments
+  as potentially post-hoc.
+- A minimal native proposal now explicitly selects the already-durable native
+  prediction.
+- In a fresh nine-action `ar25` smoke, the graph recorded five environment
+  support edges and one refutation edge.
+
+Verification before freeze:
+
+- 178 repository, R2.1, command, and analyzer tests pass.
+- Failure-layer analysis distinguishes execution, perception/animation,
+  identity, mechanics, telos/repetition, exploration, planning, runtime, and
+  success while retaining explicit unknowns.
+
+Real execution boundary:
+
+- A fresh `ft09` smoke, which previously stopped at action zero because its
+  only usable mechanic is parameterized, selected `ACTION6` with grounded
+  payload `{x: 6, y: 4}`.
+- `ActionPending` and `TransitionCommitted` contain the identical payload and
+  command identity; the before/after frame digests differ.
+- This proves transport coverage and exact provenance, not that the chosen
+  click advances the level or that click planning is competent.
+
+Status: promoted as an execution-coverage candidate. Breadth score and runtime
+effects remain unverified; the next frozen campaign must test those separately.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:

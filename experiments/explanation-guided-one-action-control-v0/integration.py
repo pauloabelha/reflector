@@ -118,6 +118,7 @@ def install(base: Any) -> None:
         }
         prediction_objects = dict(refs.get("prediction_objects", {}))
         selected_prediction_objects = list(refs.get("selected_prediction_objects", ()))
+        proposal_object_id = refs["proposal_object_id"]
         current = contract.get("current_explanation") or {}
         if not isinstance(current, dict):
             current = {}
@@ -169,8 +170,32 @@ def install(base: Any) -> None:
             prediction_objects[prediction_id] = prediction_object_id
             selected_prediction_objects.append(prediction_object_id)
             controller.pending_r2_prediction_id = prediction_id
+            # The inherited proposal was necessarily frozen before this
+            # leaf-native prediction existed.  Publish a second, minimal
+            # proposal that selects it explicitly.  The inherited v1.9
+            # evidence-return boundary then admits only judgments whose
+            # target is selected by this durable proposal, preserving its
+            # anti-post-hoc support invariant.
+            state, proposal_object_id = base.ensure_graph_object(
+                root, workspace_id, state,
+                kind="action_proposal", created_by="r2",
+                identity={
+                    "plan_id": plan.plan_id,
+                    "native_prediction_id": prediction_id,
+                },
+                payload={
+                    "plan_id": plan.plan_id,
+                    "basis_revision": plan.basis_revision,
+                    "observation_digest": plan.observation_digest,
+                    "selected_prediction_objects": [prediction_object_id],
+                    "native_protocol": "r2.1-selected-prediction-v1",
+                },
+                dependency_ids=(prediction_object_id,),
+                event_key=f"r2.1-proposal:{plan.plan_id}",
+            )
         return state, {
             **refs,
+            "proposal_object_id": proposal_object_id,
             "objective_object_id": objective_id,
             "explanation_object_ids": explanation_ids,
             "rationale_object_id": rationale_id,

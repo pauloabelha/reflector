@@ -181,6 +181,23 @@ class R2Cognition:
             "transition_schema_provenance": sorted(self.runtime.graph.provenance[schema_id]),
         }
 
+    def advance_level(self, after_grid: Grid) -> dict[str, Any]:
+        """Re-ground a new level without learning a cross-level transition.
+
+        ARC returns the first frame of the next level as the successor of the
+        level-winning action.  The recursive schema graph is game knowledge and
+        remains available, but that screen replacement is not an object-level
+        causal effect of the action.
+        """
+        self.version += 1
+        after_batch = perceive_grid(
+            self.runtime.graph.terms, after_grid, f"cw:level:{self.version}"
+        )
+        self.runtime.observe(after_batch)
+        self.batch = after_batch
+        self.grid = after_grid
+        return {"status": "level-regrounded", "observation_version": self.version}
+
 
 @dataclass(slots=True)
 class Activation:

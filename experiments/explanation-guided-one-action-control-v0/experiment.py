@@ -34,6 +34,7 @@ def _local(name: str) -> Any:
 V116_MODULE = _load("one_action_frozen_v116", V116)
 BASE = V116_MODULE.BASE
 SCRATCHPAD = _local("scratchpad")
+ACTION_COMMAND = _local("action_command")
 CONTROLLER = _local("controller")
 INTEGRATION = _local("integration")
 RUNTIME = _local("runtime")
@@ -135,6 +136,7 @@ def install(runtime: Any | None = None) -> None:
         BASE.LC,
         runtime,
         fast_path_config=load_config().get("control", {}).get("fast_path", {}),
+        action_commands=ACTION_COMMAND,
     )
 
     class ActiveController(controller_type):
@@ -147,6 +149,9 @@ def install(runtime: Any | None = None) -> None:
         RUNTIME.install_action_hook(BASE, runtime)
 
     environment_base = BASE.BASE
+    if not getattr(environment_base, "_one_action_parameterized_actions_installed", False):
+        environment_base._one_action_parameterized_actions_installed = True
+        environment_base.simple_legal_actions = ACTION_COMMAND.legal_action_ids
     if not getattr(environment_base, "_one_action_level_start_installed", False):
         environment_base._one_action_level_start_installed = True
         open_environment = environment_base.open_environment

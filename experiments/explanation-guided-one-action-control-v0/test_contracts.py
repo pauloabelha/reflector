@@ -1410,6 +1410,191 @@ def test_qwen_action_alias_revision_replaces_gloss_without_mutating_prior_note()
     assert prior_payload == prior_snapshot
 
 
+def test_scheduler_or_open_mechanism_evidence_preserves_an_exact_goal_set():
+    scratchpad = load("scratchpad_semantic_stagnation") if (HERE / "scratchpad_semantic_stagnation.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    scratchpad.record_r2_transition_observation(
+        action=1, observation_changed=False, outcome="no-visible-change",
+        trace="Action 1 produced no visible change.", settlement=None,
+    )
+    first_turn = qc.build_turn(SimpleNamespace(objects=[]), (), None)
+    first = qc.compile_response(semantic_response(), first_turn)
+    first_payload = first["working_note"]
+    first_evidence_ref = first_turn.document["scratchpad_context"]["r2_transition_observation"]["evidence_ref"]
+    assert first_payload["transition_evidence_ref"] == first_evidence_ref
+
+    state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=first_payload,
+        created_revision=4, object_id="eo:prior-semantic-note",
+    )])
+    same_evidence_turn = qc.build_turn(state, (), None)
+    assert "semantic_stagnation" not in same_evidence_turn.document["scratchpad_context"]
+    same_evidence = qc.compile_response(semantic_response(
+        natural_language="The same evidence still leaves the compact relational proposal open.",
+    ), same_evidence_turn)
+    assert not same_evidence["rejected"]
+
+    prior_payload = same_evidence["working_note"]
+    prior_snapshot = json.loads(json.dumps(prior_payload))
+    state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=prior_payload,
+        created_revision=5, object_id="eo:latest-semantic-note",
+    )])
+    scratchpad.record_r2_transition_observation(
+        action=2, observation_changed=True, outcome="changed",
+        trace="Action 2 changed the visible relational configuration.",
+        settlement={"adjudication": "mechanism-observed", "actual_progress": 1.0},
+    )
+    revised_turn = qc.build_turn(state, (), None)
+    assert "semantic_stagnation" not in revised_turn.document["scratchpad_context"]
+    new_evidence_ref = revised_turn.document["scratchpad_context"]["r2_transition_observation"]["evidence_ref"]
+    preserved = qc.compile_response(semantic_response(
+        natural_language="The new transition was reviewed but the structured proposal is unchanged.",
+    ), revised_turn)
+    assert not preserved["rejected"]
+    assert preserved["working_note"]["transition_evidence_ref"] == new_evidence_ref
+    assert prior_payload == prior_snapshot
+
+
+def test_explicit_r2_grounding_rejection_blocks_an_exact_canonical_goal_set_repetition():
+    scratchpad = load("scratchpad_semantic_rejection") if (HERE / "scratchpad_semantic_rejection.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    first = qc.compile_response(
+        semantic_response(), qc.build_turn(SimpleNamespace(objects=[]), (), None),
+    )
+    prior_payload = first["working_note"]
+    prior_snapshot = json.loads(json.dumps(prior_payload))
+    state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=prior_payload,
+        created_revision=5, object_id="eo:rejected-semantic-note",
+    )])
+    scratchpad.record_r2_semantic_projection({
+        "rejected_semantic_proposals": [{
+            "reason": "no measurable typed tuple satisfies schema-required constraints",
+        }],
+        "open_shadows": [{"shadow_id": "shadow:still-open"}],
+    })
+    scratchpad.record_r2_transition_observation(
+        action=2, observation_changed=True, outcome="changed",
+        trace="Action 2 supplied successor evidence.", settlement=None,
+    )
+    revised_turn = qc.build_turn(state, (), None)
+    guard = revised_turn.document["scratchpad_context"]["semantic_stagnation"]
+    new_evidence_ref = revised_turn.document["scratchpad_context"]["r2_transition_observation"]["evidence_ref"]
+    assert guard["new_transition_evidence_ref"] == new_evidence_ref
+    assert guard["prior_goal_proposal_digests"]
+    assert guard["explicit_failure_signals"][0]["kind"] == "r2-semantic-proposal-rejected"
+    assert guard["authority"] == "qwen-must-revise-or-replace; r2-still-grounds-and-controls"
+
+    repeated = qc.compile_response(semantic_response(
+        natural_language="The grounding rejection was reviewed but the structured proposal is unchanged.",
+    ), revised_turn)
+    assert repeated["accepted"] == []
+    assert repeated["rejected"][-1]["reason"] == "evidence-stale-goal-proposal-repetition"
+    assert repeated["rejected"][-1]["new_transition_evidence_ref"] == new_evidence_ref
+    assert prior_payload == prior_snapshot
+
+    changed_response = semantic_response(
+        natural_language="The grounding rejection narrows the terminal claim while leaving grounding to R2.",
+    )
+    changed_response["parsed"]["workspace_write"]["goal_proposals"][0]["terminal_condition"] = (
+        "the observed residual reaches a stable minimum"
+    )
+    changed = qc.compile_response(changed_response, revised_turn)
+    assert not changed["rejected"]
+    assert changed["working_note"]["transition_evidence_ref"] == new_evidence_ref
+    assert changed["working_note"]["verified"] is False
+
+
+def test_unsupported_refutation_triggers_guard_but_progress_support_suppresses_it():
+    scratchpad = load("scratchpad_semantic_refutation") if (HERE / "scratchpad_semantic_refutation.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    first = qc.compile_response(
+        semantic_response(), qc.build_turn(SimpleNamespace(objects=[]), (), None),
+    )
+    state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=first["working_note"],
+        created_revision=4, object_id="eo:refuted-goal-note",
+    )])
+    scratchpad.record_r2_transition_observation(
+        action=3, observation_changed=True, outcome="changed",
+        trace="Action 3 contradicted the grounded prediction.",
+        settlement={"adjudication": "refuted", "actual_progress": -1.0},
+    )
+    refuted_turn = qc.build_turn(state, (), None)
+    assert refuted_turn.document["scratchpad_context"]["semantic_stagnation"]["explicit_failure_signals"] == [
+        {"kind": "environment-prediction-refuted"},
+    ]
+    rejected = qc.compile_response(semantic_response(
+        natural_language="The contradiction was reviewed without changing the structured proposal.",
+    ), refuted_turn)
+    assert rejected["rejected"][-1]["reason"] == "evidence-stale-goal-proposal-repetition"
+
+    supported = load("scratchpad_semantic_supported_refutation") if (HERE / "scratchpad_semantic_supported_refutation.py").exists() else load("scratchpad")
+    supported_qc = fake_qc(); supported.install(supported_qc)
+    supported_first = supported_qc.compile_response(
+        semantic_response(), supported_qc.build_turn(SimpleNamespace(objects=[]), (), None),
+    )
+    supported_state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=supported_first["working_note"],
+        created_revision=4, object_id="eo:supported-goal-note",
+    )])
+    supported.record_r2_semantic_projection({
+        "active_explanation": {
+            "control_status": "PROGRESS_ELIGIBLE", "confirmations": 2,
+        },
+        "latest_settlement": {"adjudication": "refuted"},
+        "rejected_semantic_proposals": [{"reason": "a competing grounding was rejected"}],
+        "open_shadows": [{"shadow_id": "shadow:question-not-failure"}],
+    })
+    supported.record_r2_transition_observation(
+        action=4, observation_changed=True, outcome="changed",
+        trace="Action 4 produced mixed evidence.",
+        settlement={"adjudication": "refuted", "actual_progress": -1.0},
+    )
+    supported_turn = supported_qc.build_turn(supported_state, (), None)
+    assert "semantic_stagnation" not in supported_turn.document["scratchpad_context"]
+    preserved = supported_qc.compile_response(semantic_response(
+        natural_language="The supported goal remains while its mechanism evidence is reconsidered.",
+    ), supported_turn)
+    assert not preserved["rejected"]
+
+
+def test_stagnation_guard_allows_preserving_one_exact_goal_when_the_proposal_set_changes():
+    scratchpad = load("scratchpad_semantic_partial_revision") if (HERE / "scratchpad_semantic_partial_revision.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    first = qc.compile_response(
+        semantic_response(), qc.build_turn(SimpleNamespace(objects=[]), (), None),
+    )
+    state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", payload=first["working_note"],
+        created_revision=4, object_id="eo:stable-goal-note",
+    )])
+    scratchpad.record_r2_transition_observation(
+        action=3, observation_changed=True, outcome="changed",
+        trace="Action 3 exposed a second visible relation.", settlement=None,
+    )
+    scratchpad.record_r2_semantic_projection({
+        "rejected_semantic_proposals": [{"reason": "role grounding rejected"}],
+    })
+    turn = qc.build_turn(state, (), None)
+    assert "semantic_stagnation" in turn.document["scratchpad_context"]
+    response = semantic_response(
+        natural_language="The latest transition leaves one proposal stable and opens a distinct contact hypothesis.",
+    )
+    contact = dict(_alignment_goal())
+    contact.update({
+        "verb": "touch", "schema_name": "Candidate contact",
+        "goal_family": "contact", "observable": "boundary_gap",
+        "terminal_condition": "the boundary gap reaches its minimum",
+    })
+    response["parsed"]["workspace_write"]["goal_proposals"].append(contact)
+    compiled = qc.compile_response(response, turn)
+    assert not compiled["rejected"]
+    assert compiled["working_note"]["goal_proposals"] == response["parsed"]["workspace_write"]["goal_proposals"]
+    assert compiled["working_note"]["verified"] is False
+
+
 def test_qwen_transport_omits_redundant_full_materialization_but_keeps_sparse_cut():
     scratchpad = load("scratchpad")
     qc = fake_qc(); scratchpad.install(qc)

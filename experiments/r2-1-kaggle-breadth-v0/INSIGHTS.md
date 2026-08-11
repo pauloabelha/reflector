@@ -54,8 +54,40 @@ Evidence:
   objects, and produced no semantic projection rejection.
 - The current frozen `g50t` run recorded one prediction object per action
   through action 17 with no decision/execution mismatch.
+- A later live audit showed confirmed/refuted judgments in
+  `TransitionCommitted` but no graph edges: the inherited v1.9 filter requires
+  the durable action proposal itself to name the selected prediction, while
+  the original proposal had been frozen before the native R2 prediction was
+  created.
+- A corrected native proposal now selects the native prediction explicitly.
+  A fresh nine-action `ar25` smoke produced five `supports` edges and one
+  `refutes` edge, with environment as edge creator.
 
-Status: promoted in `db1b3f7`; breadth confirmation still in progress.
+Status: prediction materialization promoted in `db1b3f7`; selected-proposal
+ordering correction verified locally and awaiting frozen commit/breadth run.
+
+## I2a — Parameterized mechanics must be executable before reasoning is judged
+
+Observed:
+
+- The inherited simple-action filter excluded every complex action. Six public
+  games were guaranteed to stop immediately, and nineteen exposed a click
+  action that R2 could not express.
+- A fresh `ft09` smoke previously representative of that exclusion now
+  executed `ACTION6` with grounded payload `{x: 6, y: 4}`. The exact payload is
+  identical in selection, pending ledger, and committed successor, and the
+  frame digest changed.
+
+Inference:
+
+- The zero-action failure was an interface/execution defect, not evidence that
+  R2 could not infer the game's telos or mechanics.
+- One successful transport does not show that the click was useful. Candidate
+  generation and demand-driven role fitting remain potential efficiency and
+  planning bottlenecks.
+
+Status: execution transport candidate verified at a real boundary; awaiting
+frozen breadth evidence for progress, latency, and cross-mechanic regressions.
 
 ## I3 — Exact no-change repetition was a control defect
 
@@ -98,7 +130,16 @@ Discipline:
 - A stagnation guard must rely on explicit semantic failure evidence or reduce
   redundant calls without retiring a still-grounded useful verb.
 
-Status: exact-repetition guard under review; not promoted.
+Intervention:
+
+- Exact proposal-set repetition is rejected only after explicit unsupported R2
+  grounding rejection or prediction refutation, and only when no confirmed or
+  progress-eligible explanation suppresses that signal.
+- Scheduler-only calls, open mechanisms, and mere new observations do not
+  force semantic churn.
+
+Status: contract-verified candidate; awaiting frozen breadth evidence that it
+reduces stale fitting without discarding stable useful goals.
 
 ## I5 — Current breadth trace separates several failure layers
 

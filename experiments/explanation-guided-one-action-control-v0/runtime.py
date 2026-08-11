@@ -261,7 +261,8 @@ class LiveRuntime:
             commit_prediction = getattr(self.schema_observer, "commit_prediction", None)
             if callable(commit_prediction):
                 commit_prediction(
-                    int(contract.get("selected_action", -1)),
+                    getattr(controller, "last_command", None)
+                    or int(contract.get("selected_action", -1)),
                     contract.get("current_explanation"),
                 )
         self.update(

@@ -466,7 +466,7 @@ def execute_action(environment: Any, game: str, action_id: int, data: Mapping[st
 
 
 def opaque_intervention(workspace_id: str, action_id: int, data: Mapping[str, int] | None = None) -> str:
-    return f"im:{LEDGER.stable_hash({'workspace': workspace_id, 'token': int(action_id), 'data_shape': sorted((data or {}).keys())})[:16]}"
+    return f"im:{LEDGER.stable_hash({'workspace': workspace_id, 'token': int(action_id), 'data': dict(sorted((data or {}).items()))})[:16]}"
 
 
 def _object_payload(event: Any) -> dict[str, Any] | None:
@@ -993,6 +993,7 @@ def ingest_transition_graph(
     judgments: Sequence[Mapping[str, str]] = (),
     prospective_evidence: Mapping[str, Any] | None = None,
     evidence_dependency_ids: Sequence[str] = (),
+    level_transition: bool = False,
 ) -> Any:
     before_pixel_digest = LEDGER.stable_hash(before_grid)
     before_frame = next(
@@ -1023,6 +1024,7 @@ def ingest_transition_graph(
             "after_frame": after_frame,
             "intervention_ref": intervention_ref,
             "observation_changed": before_record.get("frame_sha256") != after_record.get("frame_sha256"),
+            "level_transition": bool(level_transition),
         },
         dependency_ids=transition_dependencies,
         event_key=f"transition:{transition_id}",
@@ -1035,7 +1037,7 @@ def ingest_transition_graph(
     }
     before_figures = V0.V0.select_figures(before_grid)
     after_figures = V0.V0.select_figures(after_grid)
-    correspondence = V0.V0.BASE.correspond(before_figures, after_figures)
+    correspondence = {} if level_transition else V0.V0.BASE.correspond(before_figures, after_figures)
     before_local = {figure: f"f{index:02d}" for index, figure in enumerate(before_figures)}
     after_local = {figure: f"f{index:02d}" for index, figure in enumerate(after_figures)}
     pairs = [
@@ -1069,7 +1071,7 @@ def ingest_transition_graph(
         payload={
             "observation_changed": before_record.get("frame_sha256") != after_record.get("frame_sha256"),
             "level_delta": int(after_record.get("levels_completed", 0)) - int(before_record.get("levels_completed", 0)),
-            "relations": V0.motion_relations(before_grid, after_grid),
+            "relations": [] if level_transition else V0.motion_relations(before_grid, after_grid),
             "prospective": None if prospective_evidence is None else dict(prospective_evidence),
         },
         judgments=judgments,
@@ -1629,10 +1631,16 @@ def activate_then_maybe_queue_qwen(
             len(history),
         )
     triggers = {int(item) for item in config["qwen"]["trigger_action_counts"]}
+    alias_due = getattr(QC, "alias_revision_due", None)
+    evidence_trigger = bool(
+        config["qwen"].get("trigger_on_new_action_evidence", False)
+        and callable(alias_due)
+        and alias_due(state, workspace_id)
+    )
     if (
         live_qwen
         and pending_qwen is None
-        and len(history) in triggers
+        and (len(history) in triggers or evidence_trigger)
         and task_count < int(config["qwen"]["max_calls_per_episode"])
     ):
         # Re-read only after activation returns: binding, structured criticism,
@@ -1753,8 +1761,18 @@ def rebuild_controller(root: Path, initial_grid: Grid, legal: Sequence[int], con
             after_blob = LEDGER.read_blob(root, str(payload["after_blob"]))
             after_grid = grid_value(after_blob["grid"])
             action_id = int(pending_event["payload"]["action_id"])
-            controller.observe(action_id, current_grid, after_grid)
-            cognition.observe_transition(action_id, after_grid)
+            level_transition = (
+                bool((config or {}).get("continue_across_levels", False))
+                and int(after_blob["record"].get("levels_completed", 0))
+                > int(before_blob["record"].get("levels_completed", 0))
+            )
+            if level_transition and callable(getattr(controller, "observe_level_transition", None)):
+                controller.observe_level_transition(action_id, current_grid, after_grid)
+                cognition.advance_level(after_grid)
+                activated.clear()
+            else:
+                controller.observe(action_id, current_grid, after_grid)
+                cognition.observe_transition(action_id, after_grid)
             history.append(
                 {
                     "index": len(history),
@@ -1812,7 +1830,7 @@ def reconcile_transition_graphs(
             after_record=after["record"],
             legal=tuple(int(item) for item in after["record"].get("available_actions", ())),
             intervention_ref=opaque_intervention(
-                workspace_id, int(payload["action_id"])
+                workspace_id, int(payload["action_id"]), payload.get("data", {})
             ),
             judgments=tuple(payload.get("prospective_judgments", ())),
             prospective_evidence=evidence,
@@ -1930,6 +1948,19 @@ def run_counterfactual_branches(
             or not decision.get("prior_used")
             or plan.get("mode") != "control"
             or index >= len(history)
+        ):
+            continue
+        # Parameterized counterfactuals need a separately grounded payload for
+        # both the actual and fallback branches.  Reusing ``{}`` would be an
+        # invalid transport and inventing a coordinate would break the exact
+        # same-state comparison, so leave this branch explicitly unevaluated.
+        from arcengine import GameAction
+        if any(
+            GameAction.from_id(int(action_id)).is_complex()
+            for action_id in (
+                decision.get("action_id", -1),
+                decision.get("fallback_action_id", -1),
+            )
         ):
             continue
         selected_ids = set(str(item) for item in plan.get("selected_prediction_ids", ()))
@@ -2171,10 +2202,22 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
             raise RuntimeError("pending predecessor mismatch")
         successor = execute_action(environment, game, pending["payload"]["action_id"], pending["payload"].get("data", {}), "pending-recovery")
         after_blob, after_record, after_grid = store_observation(root, successor)
-        learning = controller.observe(
-            int(pending["payload"]["action_id"]), grid_value(before["grid"]), after_grid
+        level_transition = (
+            bool(config.get("continue_across_levels", False))
+            and int(after_record.get("levels_completed", 0))
+            > int(before["record"].get("levels_completed", 0))
         )
-        cognition.observe_transition(int(pending["payload"]["action_id"]), after_grid)
+        if level_transition and callable(getattr(controller, "observe_level_transition", None)):
+            learning = controller.observe_level_transition(
+                int(pending["payload"]["action_id"]), grid_value(before["grid"]), after_grid
+            )
+            cognition.advance_level(after_grid)
+            activated.clear()
+        else:
+            learning = controller.observe(
+                int(pending["payload"]["action_id"]), grid_value(before["grid"]), after_grid
+            )
+            cognition.observe_transition(int(pending["payload"]["action_id"]), after_grid)
         decision_document = LEDGER.read_blob(
             root, str(pending["payload"]["decision_blob"])
         )
@@ -2217,6 +2260,7 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 "before_digest": pending["payload"]["before_digest"],
                 "after_digest": after_record["digest"],
                 "action_id": pending["payload"]["action_id"],
+                "data": dict(pending["payload"].get("data", {})),
                 "levels_completed": after_record["levels_completed"],
                 "prospective_evidence_blob": prospective_evidence_blob,
                 "prospective_judgments": judgments,
@@ -2243,6 +2287,7 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
             judgments=judgments,
             prospective_evidence=prospective_evidence,
             evidence_dependency_ids=tuple(evidence_dependencies),
+            level_transition=level_transition,
         )
         observation = successor
 
@@ -2286,14 +2331,26 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
     qwen_compilations: list[dict[str, Any]] = []
     grounding_records: list[dict[str, Any]] = []
     try:
-        while len(history) < int(config["action_budget"]):
+        while True:
             terminal_state, before_record, grid = control_observation(observation)
             if terminal_state is not None:
                 stop_reason = f"terminal-{terminal_state.lower().replace('_', '-')}"
                 break
             assert before_record is not None and grid is not None
-            if int(before_record["levels_completed"]) >= 1:
+            continue_across_levels = bool(config.get("continue_across_levels", False))
+            if not continue_across_levels and int(before_record["levels_completed"]) >= 1:
                 stop_reason = "first-level-completed"
+                break
+            current_level = int(before_record["levels_completed"])
+            if config.get("reset_action_budget_each_level", False):
+                level_actions = sum(
+                    int(item["before"].get("levels_completed", 0)) == current_level
+                    for item in history
+                )
+            else:
+                level_actions = len(history)
+            if level_actions >= int(config["action_budget"]):
+                stop_reason = "level-action-budget" if config.get("reset_action_budget_each_level", False) else "action-budget"
                 break
             legal = BASE.simple_legal_actions(environment, observation)
             if not legal:
@@ -2316,6 +2373,10 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 pending_qwen is not None
                 and pending_source_action is not None
                 and len(history) >= pending_source_action + release_delay
+                and (
+                    not config["qwen"].get("nonblocking_semantic_integration", False)
+                    or pending_qwen[2].done()
+                )
             ):
                 state, compilation = integrate_qwen(root, workspace_id, state, *pending_qwen, profile, action_count=len(history))
                 qwen_compilations.append(compilation)
@@ -2342,6 +2403,20 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
             )
             grounding_records.extend(records)
 
+            if pending_qwen is not None and config["qwen"].get("eager_semantic_integration", False):
+                state, compilation = integrate_qwen(
+                    root, workspace_id, state, *pending_qwen, profile,
+                    action_count=len(history),
+                )
+                qwen_compilations.append(compilation)
+                pending_qwen = None
+                state, records = activate_visible_qwen(
+                    root, workspace_id, state, controller, grid, legal, history,
+                    profile, activated, len(history),
+                )
+                grounding_records.extend(records)
+                state, graph_events = graph_state(root)
+
             decision, prospective_plan = controller.plan(
                 legal,
                 observation_digest=str(before_record["digest"]),
@@ -2358,14 +2433,33 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 "prospective_graph": prospective_refs,
                 "controller": controller.report(),
             }
+            command_resolver = getattr(controller, "selected_action_command", None)
+            selected_command = command_resolver(decision) if callable(command_resolver) else None
+            action_data = (
+                dict(getattr(selected_command, "data", {}))
+                if selected_command is not None else {}
+            )
+            command_document = getattr(selected_command, "document", None)
+            if callable(command_document):
+                decision_document["selected_command"] = command_document()
             decision_blob = LEDGER.put_blob(root, decision_document)
             LEDGER.append_event(root, workspace_id=workspace_id, event_type="ActionDecision", actor="r2", payload={"decision_blob": decision_blob, "observation_digest": before_record["digest"], "proposal_object_id": prospective_refs["proposal_object_id"], "graph_revision": state.revision})
             before_blob = LEDGER.put_blob(root, {"record": before_record, "grid": [list(row) for row in grid]})
-            pending_event = LEDGER.append_event(root, workspace_id=workspace_id, event_type="ActionPending", actor="arbiter", payload={"before_blob": before_blob, "before_digest": before_record["digest"], "action_id": decision.action_id, "data": {}, "decision_blob": decision_blob, "proposal_object_id": prospective_refs["proposal_object_id"], "graph_revision": state.revision})
-            successor = execute_action(environment, game, decision.action_id, {}, decision.reason)
+            pending_event = LEDGER.append_event(root, workspace_id=workspace_id, event_type="ActionPending", actor="arbiter", payload={"before_blob": before_blob, "before_digest": before_record["digest"], "action_id": decision.action_id, "data": action_data, "decision_blob": decision_blob, "proposal_object_id": prospective_refs["proposal_object_id"], "graph_revision": state.revision})
+            successor = execute_action(environment, game, decision.action_id, action_data, decision.reason)
             after_blob, after_record, after_grid = store_observation(root, successor)
-            learning = controller.observe(decision.action_id, grid, after_grid)
-            cognition.observe_transition(decision.action_id, after_grid)
+            level_transition = (
+                continue_across_levels
+                and int(after_record.get("levels_completed", 0))
+                > int(before_record.get("levels_completed", 0))
+            )
+            if level_transition and callable(getattr(controller, "observe_level_transition", None)):
+                learning = controller.observe_level_transition(decision.action_id, grid, after_grid)
+                cognition.advance_level(after_grid)
+                activated.clear()
+            else:
+                learning = controller.observe(decision.action_id, grid, after_grid)
+                cognition.observe_transition(decision.action_id, after_grid)
             judgments: list[dict[str, str]] = []
             adjudication = learning.get("prospective_adjudication")
             prospective_evidence = None
@@ -2401,6 +2495,7 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                     "before_digest": before_record["digest"],
                     "after_digest": after_record["digest"],
                     "action_id": decision.action_id,
+                    "data": action_data,
                     "levels_completed": after_record["levels_completed"],
                     "prospective_evidence_blob": prospective_evidence_blob,
                     "prospective_judgments": judgments,
@@ -2419,10 +2514,11 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 before_record=before_record,
                 after_record=after_record,
                 legal=next_legal,
-                intervention_ref=opaque_intervention(workspace_id, decision.action_id),
+                intervention_ref=opaque_intervention(workspace_id, decision.action_id, action_data),
                 judgments=judgments,
                 prospective_evidence=prospective_evidence,
                 evidence_dependency_ids=tuple(evidence_dependencies),
+                level_transition=level_transition,
             )
             history = _history(LEDGER.list_events(root), root)
             observation = successor
@@ -2438,7 +2534,7 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
             }
             LEDGER.atomic_json(ARTIFACTS / "progress" / f"{workspace_id}.json", progress)
             LEDGER.write_cursor(root, "environment", ledger_seq=LEDGER.list_events(root)[-1]["seq"], graph_revision=state.revision, metadata={"actions": len(history)})
-            if int(after_record["levels_completed"]) >= 1:
+            if not continue_across_levels and int(after_record["levels_completed"]) >= 1:
                 stop_reason = "first-level-completed"
                 break
 

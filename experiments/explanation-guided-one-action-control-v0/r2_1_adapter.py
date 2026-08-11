@@ -16,7 +16,7 @@ from pathlib import Path
 import re
 import sys
 import time
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 
 HERE = Path(__file__).resolve().parent
@@ -323,8 +323,8 @@ class FrameSchemaObserver:
         self.last_regions: list[dict[str, Any]] = []
         self.last_region_descriptors: dict[str, dict[str, Any]] = {}
         self.last_relation_bindings: dict[tuple[str, tuple[str, ...]], str] = {}
-        self.action_effects: dict[tuple[int, tuple[Any, ...]], Counter[tuple[float, float]]] = defaultdict(Counter)
-        self.action_uses: Counter[int] = Counter()
+        self.action_effects: dict[tuple[Any, tuple[Any, ...]], Counter[tuple[float, float]]] = defaultdict(Counter)
+        self.action_uses: Counter[Any] = Counter()
         self.explanation_confirmations: Counter[str] = Counter()
         self.explanation_refutations: Counter[str] = Counter()
         self.pending_prediction: dict[str, Any] | None = None
@@ -334,7 +334,7 @@ class FrameSchemaObserver:
         self.last_rejected_goals: list[dict[str, Any]] = []
         self.last_potential_states: dict[str, dict[str, Any]] = {}
         self.last_verb_bindings: dict[str, dict[str, Any]] = {}
-        self.last_action_atoms: dict[int, str] = {}
+        self.last_action_atoms: dict[Any, str] = {}
         self.last_categorical_bindings: list[dict[str, Any]] = []
         self.last_temporal_comparisons: list[dict[str, Any]] = []
         self.previous_categorical_values: dict[tuple[str, str], dict[str, Any]] = {}
@@ -1181,6 +1181,33 @@ class FrameSchemaObserver:
         return int(region["value"]), int(region["area"]), tuple(region["shape"])
 
     @staticmethod
+    def _command_action(command: Any) -> int:
+        return int(getattr(command, "action_id", command))
+
+    @classmethod
+    def _command_id(cls, command: Any) -> str:
+        value = getattr(command, "command_id", None)
+        return str(value) if value is not None else f"legacy-action:{cls._command_action(command)}"
+
+    @classmethod
+    def _command_scope(cls, command: Any) -> Any:
+        return getattr(command, "effect_scope_id", cls._command_action(command))
+
+    @classmethod
+    def _command_document(cls, command: Any) -> dict[str, Any]:
+        document = getattr(command, "document", None)
+        if callable(document):
+            return dict(document())
+        return {
+            "protocol": "legacy-action-command",
+            "command_id": cls._command_id(command),
+            "action_id": cls._command_action(command),
+            "data": {},
+            "effect_scope_id": cls._command_scope(command),
+            "payload_grounding": None,
+        }
+
+    @staticmethod
     def _region_snapshot(region: dict[str, Any]) -> dict[str, Any]:
         """Keep only the bounded evidence needed for role correspondence."""
         snapshot = {
@@ -1434,12 +1461,12 @@ class FrameSchemaObserver:
         # them with an alignment proxy.
         return None
 
-    def _effect(self, action: int, region: dict[str, Any]) -> tuple[tuple[float, float] | None, float]:
+    def _effect(self, action: Any, region: dict[str, Any]) -> tuple[tuple[float, float] | None, float]:
         model = self._effect_model(action, region)
         return model["delta"], float(model["confidence"])
 
-    def _effect_model(self, action: int, region: dict[str, Any]) -> dict[str, Any]:
-        observations = self.action_effects.get((int(action), self._region_key(region)))
+    def _effect_model(self, action: Any, region: dict[str, Any]) -> dict[str, Any]:
+        observations = self.action_effects.get((self._command_scope(action), self._region_key(region)))
         if not observations:
             return {
                 "status": "UNKNOWN", "delta": None, "support": 0,
@@ -1464,20 +1491,24 @@ class FrameSchemaObserver:
         )
         return self.last_workspace.bind_schema0(schema, support, port_name="support")
 
-    def _action_atom(self, action: int) -> Any:
-        if action in self.last_action_atoms:
+    def _action_atom(self, action: Any) -> Any:
+        command_id = self._command_id(action)
+        if command_id in self.last_action_atoms:
             assert self.last_workspace is not None
-            return self.last_workspace.atoms[self.last_action_atoms[action]]
-        evidence = E.stable_id("available-intervention", {"frame": self.last_digest, "action": int(action)})
+            return self.last_workspace.atoms[self.last_action_atoms[command_id]]
+        command = self._command_document(action)
+        evidence = E.stable_id("available-intervention", {
+            "frame": self.last_digest, "command": command,
+        })
         atom = self._schema0_atom(
-            support_id=f"action:{int(action)}", support_type="action-support",
+            support_id=f"action:{command_id}", support_type="action-support",
             output_type="action-binding", evidence_id=evidence,
         )
-        self.last_action_atoms[int(action)] = atom.atom_id
+        self.last_action_atoms[command_id] = atom.atom_id
         return atom
 
     def _materialize_causal_chain(
-        self, *, action: int, semantic_goal: dict[str, Any], situated: dict[str, Any],
+        self, *, action: Any, semantic_goal: dict[str, Any], situated: dict[str, Any],
         predicted: float, progress: float,
     ) -> dict[str, Any]:
         """Fit action effect, preferred completion, progress and explanation schemas."""
@@ -1486,7 +1517,7 @@ class FrameSchemaObserver:
         before_id = str(situated["potential_binding_id"])
         action_atom = self._action_atom(action)
         successor_evidence = E.stable_id("prospective-potential", {
-            "frame": self.last_digest, "action": int(action), "verb": verb_atom_id,
+            "frame": self.last_digest, "command": self._command_document(action), "verb": verb_atom_id,
             "value": round(float(predicted), 9),
         })
         successor = self._schema0_atom(
@@ -1500,7 +1531,8 @@ class FrameSchemaObserver:
             "actor": situated["situated_roles"][semantic_goal["potential_roles"][0]],
             "target": situated["situated_roles"][semantic_goal["potential_roles"][1]],
             "situated_roles": dict(situated["situated_roles"]), "prospective": True,
-            "action": int(action),
+            "action": self._command_action(action),
+            "command": self._command_document(action),
         }
 
         projection_predicate = "ProjectsPotential"
@@ -1602,7 +1634,7 @@ class FrameSchemaObserver:
         return chain
 
     def _candidate(
-        self, actor: dict[str, Any], target: dict[str, Any], action: int,
+        self, actor: dict[str, Any], target: dict[str, Any], action: Any,
         semantic_goal: dict[str, Any], situated: dict[str, Any],
     ) -> dict[str, Any] | None:
         role_grounding = dict(situated.get("role_grounding", {}))
@@ -1667,7 +1699,7 @@ class FrameSchemaObserver:
         assert self.last_workspace is not None
         schema_id = self.last_workspace.bindings[verb_binding_id].schema_id
         chain = {} if predicted is None or progress is None else self._materialize_causal_chain(
-            action=int(action), semantic_goal=semantic_goal, situated=situated,
+            action=action, semantic_goal=semantic_goal, situated=situated,
             predicted=float(predicted), progress=float(progress),
         )
         binding_id = str(
@@ -1736,7 +1768,11 @@ class FrameSchemaObserver:
                 "simulation_status": simulation_status,
             },
             "prediction": {
-                "action": int(action), "actor_delta": list(delta) if delta is not None else None,
+                "action": self._command_action(action),
+                "command": self._command_document(action),
+                "command_id": self._command_id(action),
+                "effect_scope_id": self._command_scope(action),
+                "actor_delta": list(delta) if delta is not None else None,
                 "target_delta": list(target_delta) if target_delta is not None else None,
                 "residual_before": residual, "residual_after": predicted,
                 "expected_progress": progress,
@@ -1757,17 +1793,22 @@ class FrameSchemaObserver:
                 "target_correspondence": "UNIQUE",
                 "measure": observable, "predicted_value": predicted,
             },
-            "open_questions": ([] if models_supported else [f"What transformations does action {int(action)} induce for these tracked roles?"]),
+            "open_questions": ([] if models_supported else [f"What transformations does command {self._command_id(action)} induce for these tracked roles?"]),
         }
 
     def rank_actions(
         self, legal_actions: Sequence[int], *, fallback_action: int,
-        same_frame_no_change: dict[int, int] | None = None,
+        same_frame_no_change: dict[Any, int] | None = None,
         semantic_goal: dict[str, Any] | Sequence[dict[str, Any]] | None = None,
         semantic_abductions: Sequence[dict[str, Any]] | None = None,
+        action_commands: Sequence[Any] | None = None,
     ) -> dict[str, Any]:
         """Bind explanations and value one action by progress or information."""
         legal = tuple(sorted(set(int(action) for action in legal_actions)))
+        commands = tuple(action_commands or legal)
+        commands = tuple(
+            command for command in commands if self._command_action(command) in legal
+        )
         no_change = same_frame_no_change or {}
         semantic_goals = (
             [semantic_goal] if isinstance(semantic_goal, dict) else
@@ -1775,8 +1816,16 @@ class FrameSchemaObserver:
         )
         semantic_goals = self._bind_verb_schemas(semantic_goals)
         self._compile_abductions(list(semantic_abductions or ()))
-        candidates_by_action: dict[int, list[dict[str, Any]]] = defaultdict(list)
-        for action in legal:
+        candidates_by_action: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for action in commands:
+            command_id = self._command_id(action)
+            payload_grounding = getattr(action, "payload_grounding", None)
+            grounded_region = (
+                str(payload_grounding.get("region_binding_id"))
+                if isinstance(payload_grounding, Mapping)
+                and payload_grounding.get("region_binding_id") is not None
+                else None
+            )
             regions_by_binding = {region["binding_id"]: region for region in self.last_regions}
             for goal in semantic_goals:
                 potential_roles = tuple(goal.get("potential_roles", ("actor", "target")))
@@ -1784,13 +1833,21 @@ class FrameSchemaObserver:
                     if len(potential_roles) != 2:
                         continue
                     role_binding = situated["situated_roles"]
+                    # A coordinate intervention is situated evidence about
+                    # the region it actually addresses.  Do not fit every
+                    # click against unrelated role pairs: that is both
+                    # combinatorial waste and false causal scope.
+                    if grounded_region is not None and grounded_region not in {
+                        str(value) for value in role_binding.values()
+                    }:
+                        continue
                     actor = regions_by_binding.get(role_binding.get(potential_roles[0]))
                     target = regions_by_binding.get(role_binding.get(potential_roles[1]))
                     candidate = None
                     if actor is not None and target is not None and actor is not target:
                         candidate = self._candidate(actor, target, action, goal, situated)
                     if candidate is not None:
-                        candidates_by_action[action].append(candidate)
+                        candidates_by_action[command_id].append(candidate)
 
         # One bounded higher-order categorical pass reifies comparisons among
         # newly created verb, causal, explanation and abductive bindings. It is
@@ -1803,9 +1860,11 @@ class FrameSchemaObserver:
                 self.last_stats = {**self.last_stats, "categorical": categorical}
 
         ranked = []
-        for action in legal:
-            candidates = candidates_by_action[action]
-            risk = int(no_change.get(action, 0))
+        for command_index, action in enumerate(commands):
+            action_id = self._command_action(action)
+            command_id = self._command_id(action)
+            candidates = candidates_by_action[command_id]
+            risk = int(no_change.get(command_id, no_change.get(action_id, 0)))
             repeated_same_state = risk > 0
             progress_candidates = [
                 item for item in candidates
@@ -1857,7 +1916,7 @@ class FrameSchemaObserver:
                 )
             raw_progress = None if best is None else best["prediction"]["expected_progress"]
             progress = None if raw_progress is None else float(raw_progress)
-            information = 1.0 / (1.0 + self.action_uses[action])
+            information = 1.0 / (1.0 + self.action_uses[self._command_scope(action)])
             eligibility = (
                 "PROGRESS_ELIGIBLE" if progress_candidates else
                 "PROBE_ELIGIBLE" if probe_candidates else
@@ -1869,11 +1928,12 @@ class FrameSchemaObserver:
                 progress if progress is not None else 0.0,
                 information,
                 -risk,
-                1 if action == int(fallback_action) else 0,
-                -action,
+                1 if action_id == int(fallback_action) else 0,
+                -command_index,
             )
             ranked.append({
-                "action": action, "score_tuple": score, "control_eligible": control_eligible,
+                "action": action_id, "command": action,
+                "score_tuple": score, "control_eligible": control_eligible,
                 "eligibility": eligibility,
                 "role": "goal-progress" if control_eligible else ("discriminating-probe" if eligibility == "PROBE_ELIGIBLE" else "known-nonprogress"),
                 "expected_progress": progress, "information_value": round(information, 3), "risk": risk,
@@ -1881,7 +1941,7 @@ class FrameSchemaObserver:
             })
         ranked.sort(key=lambda item: item["score_tuple"], reverse=True)
         if not ranked:
-            return {"selected_action": int(fallback_action), "top_actions": [], "explanations": [], "current_explanation": None, "control_override": False}
+            return {"selected_action": int(fallback_action), "selected_command": None, "top_actions": [], "explanations": [], "current_explanation": None, "control_override": False}
         selected = ranked[0]
         current = selected["explanation"]
         if current is not None:
@@ -1895,6 +1955,7 @@ class FrameSchemaObserver:
                 explanations.append(explanation); seen.add(explanation["binding_id"])
         top_actions = [{
             "rank": index, "action": item["action"], "selected": index == 1,
+            "command": self._command_document(item["command"]),
             "role": item["role"], "eligibility": item["eligibility"],
             "expected_progress": item["expected_progress"],
             "information_value": item["information_value"], "risk": item["risk"],
@@ -1921,6 +1982,7 @@ class FrameSchemaObserver:
             control_proposal = {
                 "proposal_id": E.stable_id("control-proposal", {
                     "frame": self.last_digest, "action": selected["action"],
+                    "command": self._command_id(selected["command"]),
                     "explanation": current["binding_id"], "status": selected["eligibility"],
                 }),
                 "mode": "PROGRESS" if selected["eligibility"] == "PROGRESS_ELIGIBLE" else (
@@ -1933,6 +1995,7 @@ class FrameSchemaObserver:
                 "competing_role_hypotheses": role_hypotheses[:ROLE_GROUNDING_TOP_K],
                 "desired_delta": dict(current["desired_delta"]),
                 "action": int(selected["action"]),
+                "command": self._command_document(selected["command"]),
                 "mechanism": dict(current["mechanism"]),
                 "prediction": dict(current["prediction"]),
                 "observable_checkpoint": dict(current["observable_checkpoint"]),
@@ -1948,6 +2011,7 @@ class FrameSchemaObserver:
         self._refresh_recursive_stats()
         return {
             "selected_action": selected["action"], "top_actions": top_actions,
+            "selected_command": self._command_document(selected["command"]),
             "explanations": explanations[:8], "current_explanation": current,
             "control_override": bool(selected["control_eligible"]),
             "execution_authorized": selected["eligibility"] != "INELIGIBLE",
@@ -2110,13 +2174,20 @@ class FrameSchemaObserver:
             "selection_rule": "authorized state-conditioned evaluator; greatest strictly preferred grounded successor",
         }
 
-    def settle_action(self, action: int, before: Sequence[Sequence[int]], after: Sequence[Sequence[int]]) -> dict[str, Any]:
+    def settle_action(self, action: Any, before: Sequence[Sequence[int]], after: Sequence[Sequence[int]]) -> dict[str, Any]:
         """Settle identity before attributing a mechanism to controlling roles."""
         after_regions = _components(after)
-        self.action_uses[int(action)] += 1
+        action_id = self._command_action(action)
+        command_id = self._command_id(action)
+        effect_scope = self._command_scope(action)
+        self.action_uses[effect_scope] += 1
         prediction = (
             self.pending_prediction
-            if self.pending_prediction and self.pending_prediction["prediction"]["action"] == int(action)
+            if self.pending_prediction
+            and self.pending_prediction["prediction"]["action"] == action_id
+            and self.pending_prediction["prediction"].get(
+                "command_id", f"legacy-action:{action_id}",
+            ) == command_id
             else None
         )
         learned: list[dict[str, Any]] = []
@@ -2197,7 +2268,8 @@ class FrameSchemaObserver:
                     "status": correspondence["status"], "reason": correspondence.get("reason"),
                     "candidates": candidate_snapshots,
                     "source_area": source.get("area") if source else None,
-                    "turn_action": int(action),
+                    "turn_action": action_id,
+                    "turn_command_id": command_id,
                 }
                 role_result = {
                     "trajectory_id": trajectory_id,
@@ -2222,7 +2294,7 @@ class FrameSchemaObserver:
                         (float(successor["center2"][0]) - float(source["center2"][0])) / 2.0,
                         (float(successor["center2"][1]) - float(source["center2"][1])) / 2.0,
                     )
-                    self.action_effects[(int(action), self._region_key(source))][delta] += 1
+                    self.action_effects[(effect_scope, self._region_key(source))][delta] += 1
                     learned.append({
                         "trajectory_id": trajectory_id, "role": role,
                         "region_type": E.stable_id("region-type", self._region_key(source)),
@@ -2354,6 +2426,7 @@ class FrameSchemaObserver:
         self.pending_prediction = None
         settlement = {
             "proposal_id": (self.last_control_proposal or {}).get("proposal_id"),
+            "command": self._command_document(action),
             "explanation_binding_id": prediction["binding_id"] if prediction else None,
             "adjudication": adjudication, "actual_progress": actual_progress,
             "identity": identity_settlement, "mechanism": mechanism_settlement,
@@ -2388,7 +2461,7 @@ class FrameSchemaObserver:
         self.last_control_settlement = settlement
         return settlement
 
-    def commit_prediction(self, action: int, explanation: dict[str, Any] | None) -> None:
+    def commit_prediction(self, action: Any, explanation: dict[str, Any] | None) -> None:
         """Mark the definitive externally executed prediction.
 
         Planning may be invoked for internal counterfactuals. The runtime calls
@@ -2398,6 +2471,9 @@ class FrameSchemaObserver:
         if (
             explanation
             and explanation.get("control_status") != "INELIGIBLE"
-            and int(explanation.get("prediction", {}).get("action", -1)) == int(action)
+            and int(explanation.get("prediction", {}).get("action", -1)) == self._command_action(action)
+            and explanation.get("prediction", {}).get(
+                "command_id", f"legacy-action:{self._command_action(action)}",
+            ) == self._command_id(action)
         ):
             self.pending_prediction = explanation

@@ -167,6 +167,7 @@ def controller_class(
     live_controller: Any,
     runtime: Any | None = None,
     fast_path_config: Mapping[str, Any] | None = None,
+    action_commands: Any | None = None,
 ) -> type:
     base = live_controller.ProspectiveWorkspaceController
 
@@ -184,6 +185,9 @@ def controller_class(
             self.pending_r2_prediction_id: str | None = None
             self.settlements: list[dict[str, Any]] = []
             self.fast_path = FastPathAuthority(fast_path_config)
+            self.last_command: Any | None = None
+            self.command_uses: dict[str, int] = {}
+            self.command_no_change: dict[tuple[str, str], int] = {}
 
         @property
         def fast_path_active(self) -> bool:
@@ -197,6 +201,50 @@ def controller_class(
                 basis_revision=basis_revision,
             )
             legal = tuple(sorted(set(int(item) for item in legal_actions)))
+            schema_observer = getattr(runtime, "schema_observer", None) if runtime is not None else None
+            commands = (
+                tuple(action_commands.commands_for_frame(legal, schema_observer))
+                if action_commands is not None and schema_observer is not None else ()
+            )
+            by_action = {
+                action: tuple(item for item in commands if int(item.action_id) == action)
+                for action in legal
+            }
+            default_commands = by_action.get(int(decision.action_id), ())
+            if not default_commands and commands:
+                replacement_command = min(
+                    commands,
+                    key=lambda item: (
+                        self.command_no_change.get((str(observation_digest), item.command_id), 0),
+                        self.command_uses.get(item.command_id, 0), item.command_id,
+                    ),
+                )
+                decision = type(decision)(
+                    action_id=int(replacement_command.action_id),
+                    fallback_action_id=int(decision.fallback_action_id),
+                    reason="parameterized-action-has-grounded-payload",
+                    template_hash=None, residual_before=None,
+                    predicted_residual_after=None, prior_used=False,
+                )
+                plan = live_controller.PC.fallback_plan(
+                    plan, action_id=int(replacement_command.action_id), reason=decision.reason,
+                )
+                self.last_plan = plan
+                default_commands = (replacement_command,)
+            self.last_command = (
+                min(
+                    default_commands,
+                    key=lambda item: (
+                        self.command_no_change.get((str(observation_digest), item.command_id), 0),
+                        self.command_uses.get(item.command_id, 0), item.command_id,
+                    ),
+                )
+                if default_commands else
+                action_commands.ActionCommand.create(int(decision.action_id))
+                if action_commands is not None
+                and not action_commands.requires_payload(int(decision.action_id))
+                else None
+            )
             repeated_no_change = self.no_change_attempts.get((str(observation_digest), int(decision.action_id)), 0)
             if repeated_no_change:
                 alternatives = [
@@ -218,7 +266,6 @@ def controller_class(
                     self.last_plan = plan
 
             r2_1 = None
-            schema_observer = getattr(runtime, "schema_observer", None) if runtime is not None else None
             rank_actions = getattr(schema_observer, "rank_actions", None)
             rank_authorized = getattr(schema_observer, "rank_authorized_policy", None)
             if self.fast_path.active and callable(rank_authorized):
@@ -235,14 +282,17 @@ def controller_class(
                 r2_1 = rank_actions(
                     legal,
                     fallback_action=int(decision.action_id),
+                    action_commands=commands,
                     semantic_goal=(
                         semantic_explanation.get("goal_proposals")
                         or semantic_explanation.get("goal_proposal")
                     ),
                     semantic_abductions=semantic_explanation.get("abductive_compositions") or (),
                     same_frame_no_change={
-                        action: self.no_change_attempts.get((str(observation_digest), action), 0)
-                        for action in legal
+                        item.command_id: self.command_no_change.get(
+                            (str(observation_digest), item.command_id), 0,
+                        )
+                        for item in commands
                     },
                 )
             if r2_1 is not None:
@@ -256,10 +306,24 @@ def controller_class(
                     if callable(publish_runtime):
                         publish_runtime(projection)
                 r2_action = int(r2_1["selected_action"])
+                selected_command_id = str(
+                    (r2_1.get("selected_command") or {}).get("command_id", "")
+                )
+                selected_command = next(
+                    (item for item in commands if item.command_id == selected_command_id),
+                    None,
+                )
                 fast_mode = r2_1.get("control_proposal", {}).get("mode") == "FAST_PATH"
                 if (
                     r2_1.get("execution_authorized", r2_1.get("control_override", False))
-                    and (r2_action != int(decision.action_id) or fast_mode)
+                    and (
+                        r2_action != int(decision.action_id) or fast_mode
+                        or selected_command is not None
+                        and (
+                            self.last_command is None
+                            or selected_command.command_id != self.last_command.command_id
+                        )
+                    )
                 ):
                     explanation = r2_1.get("current_explanation") or {}
                     prediction = explanation.get("prediction", {})
@@ -281,6 +345,8 @@ def controller_class(
                     )
                     plan = live_controller.PC.fallback_plan(plan, action_id=r2_action, reason=decision.reason)
                     self.last_plan = plan
+                    if selected_command is not None:
+                        self.last_command = selected_command
 
             selected = [
                 prediction for prediction in plan.predictions
@@ -383,6 +449,9 @@ def controller_class(
                 "salient_schemas": salient_schemas,
                 "candidate_count": len(legal),
                 "selected_action": int(decision.action_id),
+                "selected_command": (
+                    self.last_command.document() if self.last_command is not None else None
+                ),
                 "selection_role": role,
                 "selection_rule": r2_1.get("selection_rule") if r2_1 else "lexicographic(progress, decision-relevant-information, support, novelty, stable-id)",
                 "predictions": [asdict(item) for item in selected],
@@ -392,13 +461,26 @@ def controller_class(
             }
             return decision, plan
 
+        def selected_action_command(self, decision: Any) -> Any:
+            """Return the exact payload-bearing command authorized for commit."""
+            if self.last_command is None or int(self.last_command.action_id) != int(decision.action_id):
+                if action_commands is None:
+                    return None
+                if action_commands.requires_payload(int(decision.action_id)):
+                    raise RuntimeError("parameterized action has no evidence-grounded payload candidate")
+                return action_commands.ActionCommand.create(int(decision.action_id))
+            return self.last_command
+
         def observe(self, action: int, before_grid: Any, after_grid: Any) -> dict[str, Any]:
             learning = super().observe(action, before_grid, after_grid)
             r2_1_settlement = None
             schema_observer = getattr(runtime, "schema_observer", None) if runtime is not None else None
             settle_action = getattr(schema_observer, "settle_action", None)
             if callable(settle_action):
-                r2_1_settlement = settle_action(int(action), before_grid, after_grid)
+                r2_1_settlement = settle_action(
+                    self.last_command if self.last_command is not None else int(action),
+                    before_grid, after_grid,
+                )
                 semantic_projection = getattr(schema_observer, "semantic_projection", None)
                 scratchpad = sys.modules.get("one_action_scratchpad")
                 publish_projection = getattr(scratchpad, "record_r2_semantic_projection", None)
@@ -431,11 +513,21 @@ def controller_class(
                 ]
                 learning = {**learning, "prospective_adjudication": merged}
             changed = before_grid != after_grid
+            command_id = (
+                self.last_command.command_id if self.last_command is not None
+                else f"legacy-action:{int(action)}"
+            )
+            self.command_uses[command_id] = self.command_uses.get(command_id, 0) + 1
             if not changed:
                 key = (self.current_observation_digest, int(action))
                 self.no_change_attempts[key] = self.no_change_attempts.get(key, 0) + 1
+                command_key = (self.current_observation_digest, command_id)
+                self.command_no_change[command_key] = self.command_no_change.get(command_key, 0) + 1
             settlement = {
                 "action": int(action),
+                "command": (
+                    self.last_command.document() if self.last_command is not None else None
+                ),
                 "predecessor_digest": self.current_observation_digest,
                 "observation_changed": bool(changed),
                 "outcome": "changed" if changed else "no-visible-change",
@@ -487,8 +579,10 @@ def controller_class(
             self.last_plan = None
             self.last_plan_records.clear()
             self.no_change_attempts.clear()
+            self.command_no_change.clear()
             self.current_observation_digest = ""
             self.last_contract = None
+            self.last_command = None
             self.fast_path.revoke("level-transition")
 
             if runtime is not None:
@@ -504,6 +598,7 @@ def controller_class(
                 **super().report(),
                 "decision_contract": self.last_contract,
                 "no_change_attempt_count": sum(self.no_change_attempts.values()),
+                "command_no_change_attempt_count": sum(self.command_no_change.values()),
                 "latest_settlement": self.settlements[-1] if self.settlements else None,
             }
 

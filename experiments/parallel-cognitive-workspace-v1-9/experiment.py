@@ -166,6 +166,7 @@ def ingest_transition_graph(
     judgments: Sequence[Mapping[str, str]] = (),
     prospective_evidence: Mapping[str, Any] | None = None,
     evidence_dependency_ids: Sequence[str] = (),
+    level_transition: bool = False,
 ) -> Any:
     selected_ids = BRIDGE.selected_prediction_objects(state, evidence_dependency_ids)
     selected = BRIDGE.selected_judgments(state, evidence_dependency_ids, judgments)
@@ -184,6 +185,7 @@ def ingest_transition_graph(
         judgments=selected,
         prospective_evidence=prospective_evidence,
         evidence_dependency_ids=evidence_dependency_ids,
+        level_transition=level_transition,
     )
     if selected:
         updated = _return_evidence_as_criticism(

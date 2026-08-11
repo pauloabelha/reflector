@@ -39,6 +39,66 @@ def _canonical_action_id(value: Any) -> str | None:
     return None
 
 
+def _canonical_goal_proposal_key(value: Any) -> str:
+    """Canonicalize Qwen's proposal without interpreting or repairing it."""
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def _transition_evidence_ref(document: Mapping[str, Any]) -> str | None:
+    transition = document.get("scratchpad_context", {}).get("r2_transition_observation") or {}
+    evidence_ref = transition.get("evidence_ref")
+    return str(evidence_ref) if isinstance(evidence_ref, str) and evidence_ref else None
+
+
+def _semantic_failure_signals(document: Mapping[str, Any]) -> tuple[dict[str, Any], ...]:
+    """Return only explicit R2 failures that can justify semantic revision.
+
+    A scheduler tick, a new observation, an open mechanism, and an open shadow
+    are not failures.  Nor does a refutation retire a proposal that R2 still
+    reports as confirmed or progress-eligible.  This function only routes
+    R2/environment judgments; it never interprets a goal proposal itself.
+    """
+    context = document.get("scratchpad_context", {})
+    feedback = context.get("r2_semantic_projection") or {}
+    signals: list[dict[str, Any]] = []
+    explanations = [
+        feedback.get("active_explanation"),
+        *feedback.get("competing_explanations", ()),
+    ]
+    supported = any(
+        isinstance(item, Mapping)
+        and (
+            item.get("control_status") == "PROGRESS_ELIGIBLE"
+            or int(item.get("confirmations") or 0) > 0
+            or int((item.get("epistemic_evaluation") or {}).get("confirmations") or 0) > 0
+        )
+        for item in explanations
+    )
+    rejected = [
+        item for item in feedback.get("rejected_semantic_proposals", ())
+        if isinstance(item, Mapping)
+    ]
+    if rejected and not supported:
+        reasons = sorted({
+            str(item.get("reason") or item.get("r2_grounding_status") or "r2-rejected")
+            for item in rejected
+        })
+        signals.append({
+            "kind": "r2-semantic-proposal-rejected",
+            "count": len(rejected),
+            "reason_digests": [
+                hashlib.sha256(item.encode("utf-8")).hexdigest()[:20]
+                for item in reasons
+            ],
+        })
+
+    transition = context.get("r2_transition_observation") or {}
+    settlement = feedback.get("latest_settlement") or transition.get("prediction_settlement") or {}
+    if settlement.get("adjudication") == "refuted" and not supported:
+        signals.append({"kind": "environment-prediction-refuted"})
+    return tuple(signals)
+
+
 def _action_evidence_refs(document: Mapping[str, Any]) -> dict[str, tuple[str, ...]]:
     """Index action-specific R2 evidence exposed in this semantic turn.
 
@@ -445,6 +505,7 @@ CAUSAL VISUAL UNIT:
                 "action_aliases": list(prior.payload.get("action_aliases", ())),
                 "open_questions": list(prior.payload.get("open_questions", ())),
                 "cited_ids": list(prior.payload.get("cited_ids", ())),
+                "transition_evidence_ref": prior.payload.get("transition_evidence_ref"),
                 "verified": False,
             }
         scratchpad_context = {
@@ -453,6 +514,39 @@ CAUSAL VISUAL UNIT:
             "r2_semantic_projection": copy.deepcopy(_R2_SEMANTIC_PROJECTION),
             "r2_transition_observation": copy.deepcopy(_R2_TRANSITION_OBSERVATION),
         }
+        current_evidence_ref = (_R2_TRANSITION_OBSERVATION or {}).get("evidence_ref")
+        prior_evidence_ref = None if prior is None else prior.payload.get("transition_evidence_ref")
+        if (
+            prior is not None
+            and isinstance(current_evidence_ref, str)
+            and current_evidence_ref
+            and current_evidence_ref != prior_evidence_ref
+        ):
+            failure_signals = _semantic_failure_signals({
+                "scratchpad_context": scratchpad_context,
+            })
+        else:
+            failure_signals = ()
+        if failure_signals:
+            prior_keys = sorted({
+                _canonical_goal_proposal_key(item)
+                for item in prior.payload.get("goal_proposals", ())
+            })
+            scratchpad_context["semantic_stagnation"] = {
+                "protocol": "evidence-stale-exact-proposal-guard-v1",
+                "new_transition_evidence_ref": current_evidence_ref,
+                "prior_transition_evidence_ref": prior_evidence_ref,
+                "prior_goal_proposal_digests": [
+                    hashlib.sha256(item.encode("utf-8")).hexdigest()[:20]
+                    for item in prior_keys
+                ],
+                "explicit_failure_signals": [dict(item) for item in failure_signals],
+                "instruction": (
+                    "R2 or environment failure evidence is available; do not return "
+                    "the exact same canonical goal_proposal set"
+                ),
+                "authority": "qwen-must-revise-or-replace; r2-still-grounds-and-controls",
+            }
         document = {**turn.document, "prior_working_note": projection, "scratchpad_context": scratchpad_context}
         vocabulary = dict(document.get("allowed_vocabulary", {}))
         if vocabulary:
@@ -738,9 +832,38 @@ CAUSAL VISUAL UNIT:
         unique_proposals = []
         seen_proposals = set()
         for proposal in note["goal_proposals"]:
-            key = json.dumps(proposal, sort_keys=True, separators=(",", ":"))
+            key = _canonical_goal_proposal_key(proposal)
             if key not in seen_proposals:
                 seen_proposals.add(key); unique_proposals.append(dict(proposal))
+        current_evidence_ref = _transition_evidence_ref(turn.document)
+        prior_evidence_ref = prior_projection.get("transition_evidence_ref")
+        prior_proposal_keys = {
+            _canonical_goal_proposal_key(item)
+            for item in prior_projection.get("goal_proposals", ())
+        }
+        evidence_stale_exact_repetition = (
+            bool(current_evidence_ref)
+            and current_evidence_ref != prior_evidence_ref
+            and bool(prior_proposal_keys)
+            and bool(_semantic_failure_signals(turn.document))
+            and seen_proposals == prior_proposal_keys
+        )
+        if evidence_stale_exact_repetition:
+            return {
+                **compilation,
+                "rejected": [
+                    *compilation.get("rejected", ()),
+                    {
+                        "reason": "evidence-stale-goal-proposal-repetition",
+                        "new_transition_evidence_ref": current_evidence_ref,
+                        "prior_transition_evidence_ref": prior_evidence_ref,
+                        "proposal_digests": [
+                            hashlib.sha256(item.encode("utf-8")).hexdigest()[:20]
+                            for item in sorted(seen_proposals)
+                        ],
+                    },
+                ],
+            }
         feedback = turn.document.get("scratchpad_context", {}).get("r2_semantic_projection") or {}
         available_schema_ids = {
             str(item.get("schema_id"))
@@ -774,6 +897,7 @@ CAUSAL VISUAL UNIT:
             "verified": False,
             "token_count": scratch_tokens,
             "token_budget": MAX_SCRATCHPAD_TOKENS,
+            "transition_evidence_ref": current_evidence_ref,
         }
         write = {
             "kind": "working_note",
