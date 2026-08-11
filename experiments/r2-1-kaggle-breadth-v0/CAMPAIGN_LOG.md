@@ -901,3 +901,21 @@ All 57 formerly safety-rejected parsed responses in the stored breadth corpus
 now classify as historical, while modal/future, choose, next-move, mixed-action,
 prior-sentence, and ambiguous-selected adversarials remain blocked. Status:
 contract-validated; exact LP85 live replay is the promotion gate.
+
+## Checkpoint 28 — live LP85 historical-class validation
+
+The focused LP85 run reproduced the first five grounded click commands and
+successors exactly, including coordinates, command/effect-scope IDs, frame and
+region grounding, rankings, observations, and prospective evidence. At the
+same action-1 transition reference, Qwen produced a different but equivalent
+historical form: “Action 6 produced no visible change.” It transported cleanly,
+compiled with two accepted objects and zero rejections, and persisted a stable
+ACTION_6 no-op hypothesis at that exact evidence. It contained no command,
+payload, future, directive, or execution authorization.
+
+Because upstream Qwen wording differed, this is a historical-language-class
+validation rather than the byte-identical-response A/B achieved on RE86. The
+exact old LP85 `despite action 6` clause is covered by the closed-corpus
+compiler regression. Status: promoted safety classification with exact
+execution/provenance control and an explicit model-output caveat; score remains
+zero in the short run.

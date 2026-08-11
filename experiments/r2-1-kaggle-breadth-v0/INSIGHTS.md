@@ -733,3 +733,11 @@ individually would keep chasing syntax. The transferable invariant is causal
 adjacency between one opaque action mention and one observed outcome, bounded
 against other actions, future/modal language, and claim boundaries. The full
 stored false-positive set plus adversarial controls defines that contract.
+
+## I36 — Distinguish exact-response proof from language-class proof
+
+RE86 held the parsed model response constant and isolated the compiler. LP85
+held commands, transitions, and evidence constant but Qwen changed the wording
+from one retrospective form to another. Both support the classifier, but at
+different strengths. Reporting that distinction prevents ordinary model
+variation from being mistaken for an exact causal replay.
