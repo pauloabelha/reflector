@@ -11,7 +11,7 @@ from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
 
-ARCADE_UI_VERSION = "canonical-r2-view-v16"
+ARCADE_UI_VERSION = "workspace-tabs-v17"
 
 
 def resolve_model_choice(
@@ -112,9 +112,10 @@ class ReplayStore:
         first = blob(initial["payload"]["observation_blob"])
         timeline: list[dict[str, Any]] = [{
             "turn": 0, **_frame_fields(first), "decision": None,
-            "scratchpad": None, "settlement": None,
+            "scratchpad": None, "workspace": None, "settlement": None,
         }]
         scratchpad = None
+        workspace = None
         pending_decision = None
         for event in events:
             kind = event.get("event_type")
@@ -122,8 +123,10 @@ class ReplayStore:
             if kind == "QwenTaskCompleted":
                 compilation = blob(payload.get("compilation_blob"))
                 if isinstance(compilation.get("working_note"), dict):
-                    scratchpad = compilation["working_note"]
+                    workspace = compilation["working_note"]
+                    scratchpad = workspace
                     timeline[-1]["scratchpad"] = scratchpad
+                    timeline[-1]["workspace"] = workspace
             elif kind == "ActionDecision":
                 document = blob(payload.get("decision_blob"))
                 pending_decision = document.get("controller", {}).get("decision_contract")
@@ -140,7 +143,8 @@ class ReplayStore:
                 timeline.append({
                     "turn": len(timeline), **_frame_fields(after),
                     "decision": None, "executed_decision": pending_decision,
-                    "scratchpad": scratchpad, "settlement": settlement,
+                    "scratchpad": scratchpad, "workspace": workspace,
+                    "settlement": settlement,
                     "levels_completed": int(record.get("levels_completed", payload.get("levels_completed", 0))),
                 })
                 pending_decision = None
@@ -174,6 +178,16 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8"><meta name="viewport
 PAGE = PAGE.replace(
     "MODEL SCRATCHPAD · UNVERIFIED",
     "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED",
+)
+PAGE = PAGE.replace(
+    '<h2>MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED</h2>',
+    '''<div class=workspace-tabs role=tablist aria-label="Semantic state"><button id=scratchpad-tab class=active role=tab aria-selected=true>SCRATCHPAD</button><button id=workspace-tab role=tab aria-selected=false>WORKSPACE</button></div><h2 id=semantic-panel-title>MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED</h2>''',
+)
+PAGE = PAGE.replace(
+    "</head>",
+    """<style>
+.workspace-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}.workspace-tabs button{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--muted)}.workspace-tabs button.active{color:var(--cyan);border-color:var(--cyan);background:#0b1815}.workspace-field{padding:9px 0;border-top:1px solid var(--line)}.workspace-field:first-child{border-top:0}.workspace-field h3{margin:0 0 5px;color:var(--lime);font-size:11px;letter-spacing:.08em}.workspace-empty{color:var(--muted);line-height:1.5}
+</style></head>""",
 )
 PAGE = PAGE.replace(
     '<article class=panel style="flex:0 0 auto"><h2>TOP-3 NEXT ACTIONS</h2><div id=decision></div></article>',
@@ -215,7 +229,7 @@ PAGE = PAGE.replace(
 PAGE = PAGE.replace(
     "</body>",
     """<script>
-const expectedArcadeUiVersion='canonical-r2-view-v16';
+const expectedArcadeUiVersion='workspace-tabs-v17';
 const versionedApiBase=api;
 api=async function(path,body){
   const value=await versionedApiBase(path,body);
@@ -345,7 +359,7 @@ render = function(){
 )
 PAGE = PAGE.replace(
     "$('#scratch').innerHTML=s?pretty(s):",
-    "$('#scratch').innerHTML=s?renderModelScratchpad(s):",
+    "$('#scratch').innerHTML=s?renderSemanticPanel(s):",
 )
 PAGE = PAGE.replace(
     "</head>",
@@ -370,6 +384,24 @@ function renderModelScratchpad(s){
   if((s.r2_action_traces||[]).length)html+='<div class=entry><small>R2 OBSERVATION TRACE</small><br>'+s.r2_action_traces.map(esc).join('<br>')+'</div>';
   return html;
 }
+let semanticPanelView='scratchpad';
+function workspaceField(name,value){return `<section class=workspace-field><h3>${esc(name)}:</h3>${pretty(value)}</section>`}
+function renderWorkspaceObject(){
+  const workspace=data.workspace;
+  if(!workspace||typeof workspace!=='object')return '<div class=workspace-empty>Waiting for a durable workspace write.</div>';
+  return Object.entries(workspace).map(([name,value])=>workspaceField(name,value)).join('');
+}
+function renderSemanticPanel(s){return semanticPanelView==='workspace'?renderWorkspaceObject():renderModelScratchpad(s)}
+function selectSemanticPanel(view){
+  semanticPanelView=view;
+  const scratch=view==='scratchpad';
+  $('#scratchpad-tab').classList.toggle('active',scratch);$('#scratchpad-tab').setAttribute('aria-selected',String(scratch));
+  $('#workspace-tab').classList.toggle('active',!scratch);$('#workspace-tab').setAttribute('aria-selected',String(!scratch));
+  $('#semantic-panel-title').textContent=scratch?'MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED':'DURABLE WORKSPACE OBJECT · MODEL WRITE';
+  $('#scratch').innerHTML=renderSemanticPanel(data.scratchpad||{});
+}
+$('#scratchpad-tab').onclick=()=>selectSemanticPanel('scratchpad');
+$('#workspace-tab').onclick=()=>selectSemanticPanel('workspace');
 </script></body>""",
 )
 PAGE = PAGE.replace(

@@ -308,6 +308,31 @@ def test_canonical_r2_owns_model_code_and_arcade_owns_only_the_view():
     assert not any(viewer.glob("*model_backend*.py"))
 
 
+def test_live_runtime_keeps_exact_workspace_separate_from_ui_traces():
+    from reflector2.r2.runtime import LiveRuntime
+
+    runtime = LiveRuntime()
+    note = {
+        "summary": "current model write",
+        "model_scratchpad": {
+            "game_objective": "finish",
+            "explanation": "fit",
+            "goal": "reduce the gap",
+            "expectation": "gap decreases",
+            "notes": "open",
+        },
+        "goal_proposals": [{"verb": "fit"}],
+    }
+    runtime.set_qwen_scratchpad(note)
+    note["goal_proposals"][0]["verb"] = "mutated-after-publish"
+    runtime.record_r2_action_trace("observed action")
+    snapshot = runtime.read()
+
+    assert snapshot["workspace"]["goal_proposals"] == [{"verb": "fit"}]
+    assert "r2_action_traces" not in snapshot["workspace"]
+    assert snapshot["scratchpad"]["r2_action_traces"] == ["observed action"]
+
+
 def test_r22_openai_profile_changes_model_and_all_budget_dimensions(monkeypatch):
     from reflector2.r2 import experiment
 
