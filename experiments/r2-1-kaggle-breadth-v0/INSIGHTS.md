@@ -705,3 +705,12 @@ were absent. The correct authority boundary is grammatical and structural:
 bounded retrospective outcome clauses may describe opaque actions; directives,
 future recommendations, ambiguous mentions, and mixed clauses still fail
 closed. This recovers evidence without letting Qwen select an action.
+
+## I33 — Same-response comparisons isolate compiler interventions
+
+The strongest compiler evidence holds model output constant. RE86 produced the
+same retrospective response before and after the filter repair: old compiler
+rejected it, new compiler accepted two objects and the exact evidence-backed
+alias. That rules out prompt/model variation as the cause. The intervention
+improves what R2 can retain and learn; a separate score experiment is still
+required before calling it competence gain.

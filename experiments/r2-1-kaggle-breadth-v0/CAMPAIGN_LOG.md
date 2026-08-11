@@ -847,3 +847,21 @@ control lexemes remain unconditional failures, and any ambiguous or mixed
 mention remains blocked. Exact RE86, corpus-derived history, mixed-directive,
 and choose/select/execute/press/button/click contracts pass. This expands
 evidence description, not Qwen's action authority.
+
+## Checkpoint 25 — exact live safety reclassification
+
+A second RE86 run reproduced the prior action-2 frontier exactly and received
+byte-identical Qwen response content, including the retrospective “Previous
+action (move left) adjusted positions but failed…” clause. Before the fix this
+response compiled to zero accepted objects with
+`working-note-safety-or-budget`; after the fix it compiled with two accepted
+objects, zero rejections, and durably added ACTION_2's alias at the exact
+transition evidence reference. No directive lexeme was present, and the goal
+remained non-executable alignment semantics.
+
+The following action-3 response likewise changed from safety rejection to two
+accepted objects. Through that boundary, all four Qwen transports were valid
+and accepted two objects each; command identity and the first three frontier
+cuts remained unchanged. The run committed four actions and scored no level
+before the focused deadline. Status: promoted recovery of semantic evidence on
+the same model output, without a score claim.
