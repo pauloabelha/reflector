@@ -178,6 +178,10 @@ def controller_class(
             self.no_change_attempts: dict[tuple[str, int], int] = {}
             self.current_observation_digest = ""
             self.last_contract: dict[str, Any] | None = None
+            # Set only after the selected native R2.1 prediction is durably
+            # materialized by the integration layer.  The next environment
+            # observation consumes it exactly once.
+            self.pending_r2_prediction_id: str | None = None
             self.settlements: list[dict[str, Any]] = []
             self.fast_path = FastPathAuthority(fast_path_config)
 
@@ -405,6 +409,27 @@ def controller_class(
                     publish_runtime = getattr(runtime, "set_r2_semantic_projection", None)
                     if callable(publish_runtime):
                         publish_runtime(projection)
+            pending_prediction_id = self.pending_r2_prediction_id
+            self.pending_r2_prediction_id = None
+            adjudication_status = (
+                r2_1_settlement.get("adjudication")
+                if isinstance(r2_1_settlement, Mapping) else None
+            )
+            if pending_prediction_id is not None and adjudication_status in {"confirmed", "refuted"}:
+                inherited = learning.get("prospective_adjudication")
+                merged = dict(inherited) if isinstance(inherited, Mapping) else {
+                    "protocol": "prospective-adjudication-v1",
+                    "judgments": [],
+                }
+                merged["judgments"] = [
+                    *list(merged.get("judgments", ())),
+                    {
+                        "prediction_id": pending_prediction_id,
+                        "status": "supports" if adjudication_status == "confirmed" else "refutes",
+                        "source": "r2.1-explanation-settlement",
+                    },
+                ]
+                learning = {**learning, "prospective_adjudication": merged}
             changed = before_grid != after_grid
             if not changed:
                 key = (self.current_observation_digest, int(action))

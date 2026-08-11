@@ -89,7 +89,7 @@ def compact_result(result: dict[str, Any], *, game: str, level: int) -> dict[str
         "stop_reason", "replay_verified", "support_authority_violations",
         "qwen_calls", "qwen_total_tokens", "qwen_valid_compilations",
         "qwen_changed_decisions", "qwen_transport_successful", "initial_digest",
-        "final_digest", "workspace_head",
+        "final_digest", "workspace_head", "prospective_chain",
     )
     row = {key: result.get(key) for key in wanted}
     row.update({

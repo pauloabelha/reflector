@@ -982,8 +982,15 @@ def test_controller_publishes_r2_semantics_after_ranking_and_settlement(monkeypa
     assert ranking_inputs[-1]["semantic_goal"][0]["verb"] == "touch"
     assert ranking_inputs[-1]["semantic_abductions"] == [{"local_ref": "composition_0"}]
     assert published[-1]["ranking"]["current_explanation"]["verb"] == "fit"
-    instance.observe(2, ((0, 2, 0),), ((0, 0, 2),))
+    instance.pending_r2_prediction_id = "r2.1:test-plan"
+    learning = instance.observe(2, ((0, 2, 0),), ((0, 0, 2),))
     assert published[-1]["settlement"]["adjudication"] == "confirmed"
+    assert learning["prospective_adjudication"]["judgments"] == [{
+        "prediction_id": "r2.1:test-plan",
+        "status": "supports",
+        "source": "r2.1-explanation-settlement",
+    }]
+    assert instance.pending_r2_prediction_id is None
     assert transitions[-1]["action"] == 2
     assert transitions[-1]["observation_changed"] is True
     assert transitions[-1]["settlement"]["adjudication"] == "confirmed"

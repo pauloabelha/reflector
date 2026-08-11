@@ -93,6 +93,39 @@ These are audited gaps, not implemented capability claims:
    control telemetry must not confuse absence from the inherited PCW counters
    with absence of R2 mechanism evidence.
 
+## Checkpoint 3 — native R2 predictions enter the evidence graph
+
+Observed in the still-running `g50t` episode from `run-20260811T032919Z`:
+
+- At action 40 the workspace contained 40 action proposals, 121 control
+  explanations, and grounded R2 predictions in the decision contracts.
+- The inherited aggregate nevertheless reported zero durable prediction
+  objects and zero support edges.
+- Seven semantic turns repeatedly returned the same `fit` and `align` goal
+  schemas while control evidence accumulated. This is recorded as semantic
+  stagnation, not yet as a causal explanation for the failed clear.
+
+Cause of the telemetry discrepancy:
+
+- Native R2.1 predictions lived in `current_explanation.prediction`, while the
+  inherited result builder counts only graph `prediction` objects and
+  environment `supports`/`refutes` edges.
+- R2.1 deliberately replaces the inherited plan with a fallback plan, whose
+  inherited prediction list is empty.
+
+Intervention:
+
+- The selected, eligible, action-matching R2.1 prediction is now materialized
+  before `ActionPending` with deterministic plan identity.
+- Its immediately following confirmed/refuted settlement is merged into the
+  existing prospective adjudication path, preserving inherited judgments and
+  result hashing.
+- The campaign summary now retains `prospective_chain`.
+- Verification: 68 passing contracts, including exact one-shot settlement
+  bridging and pending-identity clearing.
+
+This patch changes evidence accounting, not the controller's action choice.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:

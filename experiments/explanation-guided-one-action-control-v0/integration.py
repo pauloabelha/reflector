@@ -116,11 +116,61 @@ def install(base: Any) -> None:
             "explanation_object_ids": explanation_ids,
             "rationale_object_id": rationale_id,
         }
+        prediction_objects = dict(refs.get("prediction_objects", {}))
+        selected_prediction_objects = list(refs.get("selected_prediction_objects", ()))
+        current = contract.get("current_explanation") or {}
+        if not isinstance(current, dict):
+            current = {}
+        prediction = current.get("prediction") or {}
+        if not isinstance(prediction, dict):
+            prediction = {}
+        binding_id = current.get("binding_id") or current.get("binding_object_id")
+        selected_action = contract.get("selected_action")
+        predicted_action = prediction.get("action")
+        control_status = current.get("control_status")
+        if (
+            binding_id
+            and selected_action is not None
+            and predicted_action is not None
+            and int(predicted_action) == int(selected_action)
+            and control_status != "INELIGIBLE"
+        ):
+            prediction_id = f"r2.1:{plan.plan_id}"
+            state, prediction_object_id = base.ensure_graph_object(
+                root, workspace_id, state,
+                kind="prediction", created_by="r2",
+                identity={"prediction_id": prediction_id},
+                payload={
+                    "prediction_id": prediction_id,
+                    "binding_id": str(binding_id),
+                    "intervention_ref": base.opaque_intervention(
+                        workspace_id, int(selected_action)
+                    ),
+                    "basis_revision": plan.basis_revision,
+                    "observation_digest": plan.observation_digest,
+                    "current_residual": prediction.get("residual_before"),
+                    "predicted_residual": prediction.get("residual_after"),
+                    "predicted_delta": prediction.get("actor_delta"),
+                    "expected_progress": prediction.get("expected_progress"),
+                    "model_support": current.get("epistemic_status"),
+                    "modeled": prediction.get("actor_delta") is not None,
+                    "horizon": 1,
+                    "native_protocol": "r2.1-explanation-control-v1",
+                },
+                dependency_ids=tuple(sorted({rationale_id, *explanation_ids})),
+                event_key=f"r2.1-prediction:{plan.plan_id}",
+            )
+            prediction_objects[prediction_id] = prediction_object_id
+            selected_prediction_objects.append(prediction_object_id)
+            controller.pending_r2_prediction_id = prediction_id
         return state, {
             **refs,
             "objective_object_id": objective_id,
             "explanation_object_ids": explanation_ids,
             "rationale_object_id": rationale_id,
+            "prediction_objects": prediction_objects,
+            "selected_prediction_objects": selected_prediction_objects,
+            "graph_revision_after_plan": state.revision,
         }
 
     def ingest(*args: Any, **kwargs: Any) -> Any:
