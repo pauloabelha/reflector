@@ -17,6 +17,23 @@ def load_analyzer():
     return module
 
 
+def load_runner():
+    spec = importlib.util.spec_from_file_location("r21_campaign_runner_test", HERE / "run.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def write_event(root: Path, seq: int, event_type: str, payload: dict | None = None):
+    path = root / "workspaces" / "w" / "events" / f"{seq:08d}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({
+        "event_type": event_type,
+        "payload": payload or {},
+    }), encoding="utf-8")
+
+
 def traced_turn(
     turn: int, *, action: int = 2, selected: int = 2,
     changed: bool = False, identity: str = "UNIQUE",
@@ -153,4 +170,23 @@ def test_analyze_classifies_outcomes_that_have_no_replay(tmp_path):
     assert classified["layers"]["runtime_deadline"]["assessment"] == "failure-observed"
     assert report["observable_failure_layer_counts"]["runtime_deadline"] == {
         "failure-observed": 1,
+    }
+
+
+def test_timeout_partial_outcome_counts_only_committed_successors(tmp_path):
+    runner = load_runner()
+    write_event(tmp_path, 1, "ActionPending", {"action_id": 1})
+    write_event(tmp_path, 2, "TransitionCommitted", {"levels_completed": 0})
+    write_event(tmp_path, 3, "ActionPending", {"action_id": 2})
+    write_event(tmp_path, 4, "TransitionCommitted", {"levels_completed": 1})
+    write_event(tmp_path, 5, "ActionPending", {"action_id": 3})
+    # A malformed or half-written artifact must not manufacture an action.
+    broken = tmp_path / "workspaces" / "w" / "events" / "00000006.json"
+    broken.write_text("{", encoding="utf-8")
+
+    assert runner.partial_ledger_outcome(tmp_path) == {
+        "actions": 2,
+        "levels_completed": 1,
+        "uncommitted_pending_actions": 1,
+        "partial_ledger_recovered": True,
     }

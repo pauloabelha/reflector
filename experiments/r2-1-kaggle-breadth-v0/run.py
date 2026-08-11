@@ -46,6 +46,31 @@ def r21_source_hashes() -> dict[str, str]:
     return {str(path.relative_to(REPO)): file_hash(path) for path in paths}
 
 
+def partial_ledger_outcome(run_root: Path) -> dict[str, Any]:
+    """Recover only externally committed progress from an interrupted worker."""
+    transitions = 0
+    pending = 0
+    levels_completed = 0
+    for path in sorted(run_root.glob("workspaces/*/events/*.json")):
+        try:
+            event = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        event_type = event.get("event_type")
+        payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+        if event_type == "ActionPending":
+            pending += 1
+        elif event_type == "TransitionCommitted":
+            transitions += 1
+            levels_completed = max(levels_completed, int(payload.get("levels_completed") or 0))
+    return {
+        "actions": transitions,
+        "levels_completed": levels_completed,
+        "uncommitted_pending_actions": max(0, pending - transitions),
+        "partial_ledger_recovered": bool(transitions or pending),
+    }
+
+
 def game_tags(game: str) -> tuple[str, ...]:
     metadata = next((ENVIRONMENTS / game).glob("*/metadata.json"))
     return tuple(json.loads(metadata.read_text(encoding="utf-8")).get("tags", ()))
@@ -221,6 +246,7 @@ def run_batch(args: argparse.Namespace) -> int:
                         "worker_elapsed_s": round(time.monotonic() - episode_started, 3),
                         "artifact_root": str(run_root.relative_to(REPO)),
                     }
+                    row.update(partial_ledger_outcome(run_root))
                     atomic_json(result_path, row)
                 else:
                     if result_path.exists():
@@ -230,6 +256,11 @@ def run_batch(args: argparse.Namespace) -> int:
                             "game": game, "start_level": start_level, "status": "error",
                             "error": f"worker exited {return_code} without an outcome",
                         }
+                    if row.get("status") != "complete":
+                        recovered = partial_ledger_outcome(run_root)
+                        for key, value in recovered.items():
+                            if row.get(key) is None:
+                                row[key] = value
                     row["return_code"] = return_code
                     row["artifact_root"] = str(run_root.relative_to(REPO))
             row["log"] = str(log_path.relative_to(REPO))

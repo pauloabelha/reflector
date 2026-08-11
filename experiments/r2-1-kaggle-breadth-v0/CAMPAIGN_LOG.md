@@ -196,6 +196,17 @@ Real execution boundary:
 Status: promoted as an execution-coverage candidate. Breadth score and runtime
 effects remain unverified; the next frozen campaign must test those separately.
 
+Timeout accounting correction:
+
+- The first frozen `g50t` deadline row reported null actions even though its
+  ledger held 41 committed successors and one interrupted pending action.
+- Future timeout/error rows recover actions and level clears only from durable
+  `TransitionCommitted` events and report unresolved pending count separately.
+- Malformed or half-written tail events are ignored rather than counted.
+
+This correction changes campaign measurement only; it cannot manufacture an
+environment action or level clear.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:

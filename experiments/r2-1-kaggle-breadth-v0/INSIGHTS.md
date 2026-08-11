@@ -163,6 +163,22 @@ Inference:
 
 Status: live evidence; revisit at terminal outcome and across other mechanics.
 
+## I5a — Deadline failures still require exact action accounting
+
+Observed:
+
+- The `g50t` worker timed out after 41 committed successors with one later
+  `ActionPending`, but the parent summary recorded null actions.
+
+Intervention:
+
+- Interrupted outcomes now derive action and level counts exclusively from
+  durable `TransitionCommitted` events and expose uncommitted pending actions
+  separately.
+
+Status: contract-verified telemetry correction; affects aggregate honesty, not
+controller behavior or score.
+
 ## I6 — Structural transfer must remain probe-only
 
 Observed:
