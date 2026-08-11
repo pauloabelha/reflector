@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import threading
 import time
 import sys
@@ -52,7 +53,8 @@ class LiveRuntime:
         self.snapshot: dict[str, Any] = {
             "status": "idle", "frame": [], "observation_envelope": None,
             "turn": 0, "level_turn": 0,
-            "decision": None, "settlement": None, "scratchpad": None,
+            "decision": None, "settlement": None,
+            "scratchpad": None, "workspace": None,
             "r2_semantic_projection": None,
             "r2_1_schema_stats": None,
             "qwen": {
@@ -155,7 +157,14 @@ class LiveRuntime:
     def set_qwen_scratchpad(self, note: Mapping[str, Any]) -> None:
         with self.condition:
             previous = dict(self.snapshot.get("scratchpad") or {})
-            self.snapshot["scratchpad"] = {**dict(note), "r2_action_traces": previous.get("r2_action_traces", [])}
+            # Keep the durable working note exact. Runtime-only observation
+            # traces belong to the Scratchpad presentation, not Workspace.
+            workspace = copy.deepcopy(dict(note))
+            self.snapshot["workspace"] = workspace
+            self.snapshot["scratchpad"] = {
+                **copy.deepcopy(workspace),
+                "r2_action_traces": previous.get("r2_action_traces", []),
+            }
             self.condition.notify_all()
 
     def set_r2_semantic_projection(self, projection: Mapping[str, Any]) -> None:
@@ -227,6 +236,7 @@ class LiveRuntime:
                 "decision": None,
                 "settlement": None,
                 "scratchpad": None,
+                "workspace": None,
                 "r2_semantic_projection": None,
                 "current_explanation": None,
                 "salient_schemas": [],
