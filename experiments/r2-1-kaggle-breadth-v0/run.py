@@ -41,6 +41,11 @@ def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def r21_source_hashes() -> dict[str, str]:
+    paths = [*sorted(R21_DIR.glob("*.py")), R21_DIR / "config.json", REPO / "R2_1.md"]
+    return {str(path.relative_to(REPO)): file_hash(path) for path in paths}
+
+
 def game_tags(game: str) -> tuple[str, ...]:
     metadata = next((ENVIRONMENTS / game).glob("*/metadata.json"))
     return tuple(json.loads(metadata.read_text(encoding="utf-8")).get("tags", ()))
@@ -93,6 +98,11 @@ def compact_result(result: dict[str, Any], *, game: str, level: int) -> dict[str
         "status": "complete",
         "r2_1_experiment_sha256": file_hash(R21_EXPERIMENT),
         "r2_1_config_sha256": file_hash(R21_DIR / "config.json"),
+        "r2_1_source_hashes": r21_source_hashes(),
+        "source_revision": subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=REPO, text=True,
+            capture_output=True, check=False,
+        ).stdout.strip(),
     })
     return row
 
