@@ -6,7 +6,7 @@ from arcade.agent import ARCADE_UI_VERSION, PAGE, resolve_model_choice
 
 
 def test_agent_arcade_mirrors_all_canonical_scratchpad_fields():
-    assert ARCADE_UI_VERSION == "workspace-panel-v18"
+    assert ARCADE_UI_VERSION == "inline-model-picker-v19"
     assert "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED" in PAGE
     assert "Waiting for the configured model." in PAGE
     assert "ACTION ALIASES · MODEL GLOSS, NOT CONTROL" in PAGE
@@ -18,6 +18,15 @@ def test_agent_arcade_mirrors_all_canonical_scratchpad_fields():
         assert f"scratchField('{heading}'" in PAGE
     assert "const exact=s.model_scratchpad" in PAGE
     assert "QWEN SCRATCHPAD · UNVERIFIED" not in PAGE
+
+
+def test_model_picker_shares_game_row_and_playback_selector_is_hidden():
+    inline = '<label>GAME <select id=game></select></label><label>MODEL <select id=model-choice></select></label>'
+    assert inline in PAGE
+    assert '<h2>PLAYBACK</h2>' not in PAGE
+    assert '<select id=runs>' not in PAGE
+    assert '<select id=runs hidden>' in PAGE
+    assert '>LOAD</button>' not in PAGE
 
 
 def test_agent_arcade_has_full_right_workspace_object_panel():
