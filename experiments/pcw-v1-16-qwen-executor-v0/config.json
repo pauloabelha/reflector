@@ -1,0 +1,33 @@
+{
+  "experiment": "pcw-v1-16-qwen-executor-v0",
+  "protocol": "pcw-v1.16-qwen-executor-v0",
+  "source_commit": "3da145b8d0f502c393d3fd9c6dc7d4a2d53d68ca",
+  "game": "ar25",
+  "profile": "generic_prospective",
+  "arms": ["arm-a", "arm-b", "arm-c"],
+  "action_budget": 64,
+  "executor": {
+    "trigger": "multiple-legal-actions-and-no-settled-unique-policy-or-live-control-ambiguity",
+    "seed": 314159,
+    "temperature": 0,
+    "top_p": 1,
+    "thinking_budget_tokens": 1024,
+    "max_tokens_stage_1": 3072,
+    "max_tokens_stage_2": 3072,
+    "request_timeout_seconds": 180,
+    "context_window_tokens": 24576,
+    "max_recent_transitions": 64,
+    "snapshot_max_bytes": 1500000
+  },
+  "python": {
+    "max_source_chars": 12000,
+    "timeout_seconds": 3.0,
+    "max_stdout_bytes": 32768,
+    "max_return_bytes": 65536,
+    "memory_bytes": 268435456
+  },
+  "counterfactual": {
+    "one_step_only": true,
+    "first_divergence_per_pair": true
+  }
+}

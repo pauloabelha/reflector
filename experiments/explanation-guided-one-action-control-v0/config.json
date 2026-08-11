@@ -6,7 +6,7 @@
   "arms": ["shared_live_qwen"],
   "action_budget": 48,
   "qwen": {
-    "max_tokens": 640,
+    "max_tokens": 1280,
     "thinking_budget_tokens": 192
   },
   "scratchpad": {

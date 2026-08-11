@@ -57,18 +57,39 @@ def install(base: Any) -> None:
         )
         explanation_ids: list[str] = []
         for index, explanation in enumerate(contract.get("explanations", ())):
-            binding_id = explanation.get("binding_object_id")
-            dependencies = tuple(sorted(set((objective_id, *frame_dependencies, *((binding_id,) if binding_id else ())))))
+            binding_id = explanation.get("binding_object_id") or explanation.get("binding_id")
+            schema_id = explanation.get("schema_object_id") or explanation.get("schema_id")
+            # A recursive R2.1 binding ID is stable workspace identity, but it
+            # is not itself an epistemic-graph object. Only graph IDs may be
+            # dependency edges; both identities remain in the payload.
+            binding_dependency = binding_id if isinstance(binding_id, str) and binding_id.startswith("eo:") else None
+            dependencies = tuple(sorted(set((objective_id, *frame_dependencies, *((binding_dependency,) if binding_dependency else ())))))
+            if explanation.get("schema_id"):
+                # Exact interventions belong to the transient control
+                # contract, not Qwen's canonical semantic projection. Keep
+                # the grounded diagram and epistemic state durable without
+                # leaking action tokens back into semantic cognition.
+                payload = {
+                    key: explanation[key]
+                    for key in (
+                        "kind", "epistemic_status", "schema_id", "ports",
+                        "claim", "goal", "epistemic_evaluation",
+                    )
+                    if key in explanation
+                }
+                payload["open_question_count"] = len(explanation.get("open_questions", ()))
+            else:
+                payload = {key: value for key, value in explanation.items() if key != "binding_object_id"}
             state, explanation_id = base.ensure_graph_object(
                 root, workspace_id, state,
                 kind="control_explanation", created_by="r2",
                 identity={
                     "objective_id": objective_id,
-                    "schema_object_id": explanation.get("schema_object_id"),
+                    "schema_object_id": schema_id,
                     "binding_object_id": binding_id,
                     "plan_id": plan.plan_id,
                 },
-                payload={key: value for key, value in explanation.items() if key != "binding_object_id"},
+                payload=payload,
                 dependency_ids=dependencies,
                 event_key=f"one-action-explanation:{plan.plan_id}:{index}",
             )

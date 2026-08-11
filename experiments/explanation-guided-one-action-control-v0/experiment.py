@@ -39,6 +39,7 @@ INTEGRATION = _local("integration")
 RUNTIME = _local("runtime")
 ARCADE = _local("arcade")
 FIRST_FRAME = _local("first_frame")
+R2_1 = _local("r2_1_adapter")
 
 
 def load_config() -> dict[str, Any]:
@@ -75,6 +76,16 @@ def build_manifest(config: Mapping[str, Any]) -> dict[str, Any]:
 
 def install(runtime: Any | None = None) -> None:
     SCRATCHPAD.install(BASE.QC)
+    if not getattr(BASE, "_one_action_causal_visual_evidence", False):
+        BASE._one_action_causal_visual_evidence = True
+        visual_evidence_for_turn = BASE.visual_evidence_for_turn
+
+        def causal_visual_evidence_for_turn(*args: Any, **kwargs: Any) -> list[dict[str, str]]:
+            return SCRATCHPAD.causal_visual_evidence(
+                visual_evidence_for_turn(*args, **kwargs)
+            )
+
+        BASE.visual_evidence_for_turn = causal_visual_evidence_for_turn
     if runtime is not None and not getattr(BASE.QC, "_one_action_runtime_scratchpad", False):
         BASE.QC._one_action_runtime_scratchpad = True
         compile_response = BASE.QC.compile_response
@@ -174,6 +185,9 @@ def run_game(game: str = "ar25", *, level: int = 1, runtime: Any | None = None, 
     config = configure_base(artifact_root)
     config["start_level"] = int(level)
     install(runtime)
+    SCRATCHPAD.reset_episode_context()
+    if runtime is not None:
+        runtime.reset_schema_observer()
     if level < 1:
         raise ValueError("level must be positive")
     BASE.BASE._one_action_start_level = int(level) - 1
@@ -198,7 +212,9 @@ def run_game(game: str = "ar25", *, level: int = 1, runtime: Any | None = None, 
             status="starting",
             game=game,
             metadata={
-                "r2_version": manifest["experiment"],
+                "r2_version": "R2.1",
+                "controller": manifest["experiment"],
+                "schema_engine": "parallel-recursive-schema-fitting",
                 "protocol": manifest["protocol"],
                 "manifest_digest": manifest["manifest_digest"],
                 "game": game,
@@ -240,6 +256,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.arcade:
         runtime = RUNTIME.LiveRuntime()
+        runtime.set_schema_observer(R2_1.FrameSchemaObserver())
 
         def start(game: str, level: int) -> None:
             try:

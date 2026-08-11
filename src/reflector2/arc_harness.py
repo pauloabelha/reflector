@@ -411,6 +411,21 @@ class ArcGameSession:
         )
         self.qwen_orientation = integrated.orientation
         self.qwen_calls += 1
+        self.trace.emit(
+            {
+                "event": "shared-qwen-exchange",
+                "request_id": request_id,
+                "basis_revision": integrated.turn.basis_revision,
+                "request_document": integrated.turn.document,
+                "response": integrated.response,
+                "compilation": {
+                    "valid": integrated.compilation.valid,
+                    "abstained": integrated.compilation.abstained,
+                    "rejection": integrated.compilation.rejection,
+                    "response_id": integrated.compilation.response_id,
+                },
+            }
+        )
         grounded = integrated.grounded
         activated = ()
         hypothesis_payload: dict[str, object] | None = None
@@ -428,6 +443,7 @@ class ArcGameSession:
                 "basis_revision": self.shared.epistemic.revision,
                 "abstained": integrated.compilation.abstained,
                 "proposal_valid": integrated.compilation.valid,
+                "compiler_rejection": integrated.compilation.rejection,
                 "grounding_status": None if grounded is None else grounded.status,
                 "grounded_alternatives": len(activated),
                 "hypothesis": hypothesis_payload,

@@ -1,0 +1,27 @@
+{
+  "beam_size": 8,
+  "cohort_size": 7,
+  "experiment": "prospective-explanation-control-v0",
+  "max_consequences_per_explanation": 16,
+  "max_executed_overrides_per_game": 8,
+  "max_expansions_per_decision": 128,
+  "max_packets_per_game": 40,
+  "outcome_order": [
+    "completed-level delta",
+    "treatment-only consequential-prediction correctness",
+    "baseline-only consequential-prediction correctness",
+    "tie"
+  ],
+  "parallel_workers": 7,
+  "protocol_version": 1,
+  "ranking": {
+    "prospective_tuple": [
+      "progress_support",
+      "negative_failure_support",
+      "robustness",
+      "discrimination"
+    ],
+    "tie_break": "frozen-baseline-rank-then-opaque-action-id"
+  },
+  "seed": 0
+}

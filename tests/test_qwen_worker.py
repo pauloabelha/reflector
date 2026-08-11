@@ -72,6 +72,12 @@ def test_visual_turn_contains_direct_frames_and_shared_frontier() -> None:
     )
     assert turn.document["workspace"]["frontier"]
     assert turn.next_orientation.cursor == cognition.epistemic.revision
+    index = turn.document["deltas"]["authoritative_index"]
+    assert len(index["kind_codes"]) == index["object_count"]
+    assert len(index["creator_codes"]) == index["object_count"]
+    assert len(index["semantic_payload_digest4_pairs"]) == index["object_count"]
+    assert "kinds" not in index
+    assert "creators" not in index
 
 
 def test_strict_qwen_write_compiles_and_grounds_in_native_r2() -> None:
@@ -106,7 +112,7 @@ def test_strict_qwen_write_compiles_and_grounds_in_native_r2() -> None:
                                         }
                                     ],
                                     "operator": "Decrease",
-                                    "measure": "RelationalResidual",
+                                    "measure": "TranslationAlignmentResidual",
                                     "effect_arguments": ["?left", "?right"],
                                     "basis_ids": [observation_alias],
                                     "revises_id": None,
@@ -230,6 +236,126 @@ def test_revision_turn_uses_small_exclusive_contract_and_exact_target() -> None:
     assert compilation.criticism_id == initial.criticism_id
 
 
+def test_unbound_effect_variable_becomes_visible_compiler_criticism() -> None:
+    runtime = Runtime()
+    cognition = NativeSharedCognition(runtime)
+    cognition.observe(_batch(runtime))
+
+    def poster(_endpoint, payload, _timeout):
+        input_text = payload["messages"][0]["content"][-1]["text"]
+        document = json.loads(input_text.split("EPISTEMIC_INPUT\n", 1)[1])
+        observation_alias = next(
+            item["id"]
+            for item in document["workspace"]["frontier"]
+            if item["kind"] == "observation"
+        )
+        return {
+            "id": "qwen:unbound-effect",
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "protocol": PROTOCOL,
+                                "request_id": document["request_id"],
+                                "proposal": {
+                                    "name": "MalformedUnboundEffect",
+                                    "conditions": [
+                                        {
+                                            "predicate": "SameStructure",
+                                            "arguments": ["?a", "?b"],
+                                        }
+                                    ],
+                                    "operator": "Decrease",
+                                    "measure": "TranslationAlignmentResidual",
+                                    "effect_arguments": ["?a", "?family"],
+                                    "basis_ids": [observation_alias],
+                                    "revises_id": None,
+                                    "criticism_id": None,
+                                },
+                            }
+                        )
+                    }
+                }
+            ],
+        }
+
+    worker = QwenSemanticWorker(poster=poster)
+    integrated = worker.think(
+        cognition,
+        orientation=QwenOrientation(),
+        request_id="request:malformed",
+        current_frame=((0, 1), (0, 1)),
+    )
+
+    assert not integrated.compilation.valid
+    assert integrated.compilation.rejection == "proposal-shape:'?family'"
+    assert integrated.grounded is None
+    assert integrated.orientation.turn_index == 1
+    criticisms = [
+        item
+        for item in cognition.epistemic.objects
+        if item.kind == "structured-criticism"
+        and item.payload.get("status") == "compiler-rejected"
+    ]
+    assert len(criticisms) == 1
+    assert cognition.epistemic.support(criticisms[0].object_id) == 0
+    next_turn = worker.build_turn(
+        cognition,
+        orientation=integrated.orientation,
+        request_id="request:repair",
+        current_frame=((0, 1), (0, 1)),
+    )
+    visible_kinds = {
+        item["kind"] for item in next_turn.document["workspace"]["frontier"]
+    }
+    assert "qwen-write-attempt" in visible_kinds
+    assert "structured-criticism" in visible_kinds
+
+
+def test_rolling_turn_compacts_dormant_events_without_duplicating_payloads() -> None:
+    runtime = Runtime()
+    cognition = NativeSharedCognition(runtime)
+    cognition.observe(_batch(runtime))
+    worker = QwenSemanticWorker(root_limit=1, poster=lambda *_args: {})
+    first = worker.build_turn(
+        cognition,
+        orientation=QwenOrientation(),
+        request_id="request:initial",
+        current_frame=((0, 1), (0, 1)),
+    )
+    dormant = cognition.epistemic.add_object(
+        kind="dormant-note",
+        semantic_key={"note": "unselected"},
+        payload={"large_semantic_body": "must-stay-in-ledger" * 40},
+        creator="r2",
+    )
+    cognition.epistemic.add_object(
+        kind="observation",
+        semantic_key={"context": "frame:1"},
+        payload={
+            "context": "frame:1",
+            "facts": [["SameStructure", ["entity:left", "entity:right"]]],
+        },
+        creator="environment",
+    )
+    second = worker.build_turn(
+        cognition,
+        orientation=first.next_orientation,
+        request_id="request:rolling",
+        current_frame=((0, 1), (0, 1)),
+    )
+
+    deltas = second.document["deltas"]
+    assert deltas["fidelity"].startswith("mixed compact projection")
+    assert deltas["total_event_count"] == 2
+    assert any(row[0] == "G" for row in deltas["rows"])
+    assert "must-stay-in-ledger" not in json.dumps(deltas)
+    assert cognition.epistemic.object(dormant.object_id).payload[
+        "large_semantic_body"
+    ].startswith("must-stay-in-ledger")
+
+
 def test_png_encoder_is_deterministic() -> None:
     first = grid_png_data_url(((0, 1), (2, 3)))
     second = grid_png_data_url(((0, 1), (2, 3)))
@@ -237,3 +363,16 @@ def test_png_encoder_is_deterministic() -> None:
     assert len(first) > 100
     assert grid_png_data_url(((10, 11),)) == grid_png_data_url(((10, 11),))
     assert grid_png_data_url(((10, 11),)) != grid_png_data_url(((11, 10),))
+
+
+def test_context_reservation_rejects_impossible_configuration() -> None:
+    try:
+        QwenSemanticWorker(
+            context_window_tokens=2048,
+            max_tokens=2048,
+            poster=lambda *_args: {},
+        )
+    except Exception as exc:
+        assert "context reservation" in str(exc)
+    else:
+        raise AssertionError("impossible completion reserve was accepted")

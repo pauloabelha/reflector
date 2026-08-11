@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 import sys
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 
 def _components(grid: Any) -> list[tuple[int, int, int, int, int, int]]:
@@ -88,6 +88,60 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                     plan = live_controller.PC.fallback_plan(plan, action_id=replacement, reason="same-state-no-change-excluded")
                     self.last_plan = plan
 
+            r2_1 = None
+            schema_observer = getattr(runtime, "schema_observer", None) if runtime is not None else None
+            rank_actions = getattr(schema_observer, "rank_actions", None)
+            if callable(rank_actions):
+                runtime_snapshot = getattr(runtime, "snapshot", {})
+                latest_note = runtime_snapshot.get("scratchpad")
+                semantic_explanation = (
+                    latest_note if isinstance(latest_note, Mapping)
+                    else runtime_snapshot.get("current_explanation") or {}
+                )
+                r2_1 = rank_actions(
+                    legal,
+                    fallback_action=int(decision.action_id),
+                    semantic_goal=(
+                        semantic_explanation.get("goal_proposals")
+                        or semantic_explanation.get("goal_proposal")
+                    ),
+                    semantic_abductions=semantic_explanation.get("abductive_compositions") or (),
+                    same_frame_no_change={
+                        action: self.no_change_attempts.get((str(observation_digest), action), 0)
+                        for action in legal
+                    },
+                )
+                semantic_projection = getattr(schema_observer, "semantic_projection", None)
+                scratchpad = sys.modules.get("one_action_scratchpad")
+                publish_projection = getattr(scratchpad, "record_r2_semantic_projection", None)
+                if callable(semantic_projection) and callable(publish_projection):
+                    projection = semantic_projection(ranking=r2_1)
+                    projection = publish_projection(projection) or projection
+                    publish_runtime = getattr(runtime, "set_r2_semantic_projection", None)
+                    if callable(publish_runtime):
+                        publish_runtime(projection)
+                r2_action = int(r2_1["selected_action"])
+                if r2_1.get("execution_authorized", r2_1.get("control_override", False)) and r2_action != int(decision.action_id):
+                    explanation = r2_1.get("current_explanation") or {}
+                    prediction = explanation.get("prediction", {})
+                    control_status = str(explanation.get("control_status", ""))
+                    decision = type(decision)(
+                        action_id=r2_action,
+                        fallback_action_id=int(decision.fallback_action_id),
+                        reason=(
+                            "r2.1-control-v0-progress"
+                            if control_status == "PROGRESS_ELIGIBLE"
+                            or (not control_status and prediction.get("expected_progress", 0) and prediction["expected_progress"] > 0)
+                            else "r2.1-control-v0-probe"
+                        ),
+                        template_hash=None,
+                        residual_before=prediction.get("residual_before"),
+                        predicted_residual_after=prediction.get("residual_after"),
+                        prior_used=prediction.get("actor_delta") is not None,
+                    )
+                    plan = live_controller.PC.fallback_plan(plan, action_id=r2_action, reason=decision.reason)
+                    self.last_plan = plan
+
             selected = [
                 prediction for prediction in plan.predictions
                 if prediction.prediction_id in plan.selected_prediction_ids
@@ -116,6 +170,8 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                 }
                 for item in active
             ]
+            if r2_1 and r2_1.get("explanations"):
+                situated_explanations = list(r2_1["explanations"])
             winning_family = {
                 "kind": "winning-explanation-family",
                 "status": "exists-unidentified",
@@ -148,6 +204,9 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                 }
                 for rank, action in enumerate(ranked_actions[:3], start=1)
             ]
+            if r2_1 and r2_1.get("top_actions"):
+                top_actions = list(r2_1["top_actions"])
+                role = str(top_actions[0]["role"])
             salient_schemas = [
                 {
                     "schema_object_id": item.schema_object_id,
@@ -170,14 +229,15 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                 },
                 "winning_explanation_set": winning_family,
                 "explanations": [winning_family, *situated_explanations],
-                "current_explanation": situated_explanations[0] if situated_explanations else winning_family,
+                "current_explanation": r2_1.get("current_explanation") if r2_1 and r2_1.get("current_explanation") else (situated_explanations[0] if situated_explanations else winning_family),
                 "top_actions": top_actions,
                 "salient_schemas": salient_schemas,
                 "candidate_count": len(legal),
                 "selected_action": int(decision.action_id),
                 "selection_role": role,
-                "selection_rule": "lexicographic(progress, decision-relevant-information, support, novelty, stable-id)",
+                "selection_rule": r2_1.get("selection_rule") if r2_1 else "lexicographic(progress, decision-relevant-information, support, novelty, stable-id)",
                 "predictions": [asdict(item) for item in selected],
+                "r2_1_explanation_control": r2_1,
                 "repeated_identical_no_change_excluded": bool(repeated_no_change),
                 "one_external_action_only": True,
             }
@@ -185,6 +245,21 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
 
         def observe(self, action: int, before_grid: Any, after_grid: Any) -> dict[str, Any]:
             learning = super().observe(action, before_grid, after_grid)
+            r2_1_settlement = None
+            schema_observer = getattr(runtime, "schema_observer", None) if runtime is not None else None
+            settle_action = getattr(schema_observer, "settle_action", None)
+            if callable(settle_action):
+                r2_1_settlement = settle_action(int(action), before_grid, after_grid)
+                semantic_projection = getattr(schema_observer, "semantic_projection", None)
+                scratchpad = sys.modules.get("one_action_scratchpad")
+                publish_projection = getattr(scratchpad, "record_r2_semantic_projection", None)
+                ranking = (self.last_contract or {}).get("r2_1_explanation_control")
+                if callable(semantic_projection) and callable(publish_projection):
+                    projection = semantic_projection(ranking=ranking, settlement=r2_1_settlement)
+                    projection = publish_projection(projection) or projection
+                    publish_runtime = getattr(runtime, "set_r2_semantic_projection", None)
+                    if callable(publish_runtime):
+                        publish_runtime(projection)
             changed = before_grid != after_grid
             if not changed:
                 key = (self.current_observation_digest, int(action))
@@ -195,6 +270,7 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                 "observation_changed": bool(changed),
                 "outcome": "changed" if changed else "no-visible-change",
                 "prospective_adjudication": learning.get("prospective_adjudication"),
+                "r2_1_explanation_adjudication": r2_1_settlement,
             }
             self.settlements.append(settlement)
             if runtime is not None:
@@ -204,6 +280,13 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                 record = getattr(scratchpad, "record_r2_action_trace", None)
                 if callable(record):
                     record(trace)
+                record_transition = getattr(scratchpad, "record_r2_transition_observation", None)
+                if callable(record_transition):
+                    record_transition(
+                        action=int(action), observation_changed=bool(changed),
+                        outcome=settlement["outcome"], trace=trace,
+                        settlement=r2_1_settlement,
+                    )
                 runtime.update(settlement=settlement)
             return {**learning, "one_action_settlement": settlement}
 

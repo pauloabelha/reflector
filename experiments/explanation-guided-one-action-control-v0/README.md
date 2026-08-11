@@ -11,7 +11,7 @@ Run the validated `ar25` episode:
 .venv/bin/python experiments/explanation-guided-one-action-control-v0/experiment.py --run --game ar25
 ```
 
-Watch a fresh run in the agent arcade:
+From `/home/pauloabelha/reflector2`, watch a fresh run in the agent arcade:
 
 ```bash
 .venv/bin/python experiments/explanation-guided-one-action-control-v0/experiment.py --arcade --game ar25
@@ -33,6 +33,22 @@ know which candidate it is.
 
 The local Qwen endpoint configured by the inherited protocol must be running
 at `127.0.0.1:8081`.
+
+Qwen is managed independently as an always-up user service. Arcade restarts do
+not restart the model:
+
+```bash
+systemctl --user enable --now reflector-qwen.service
+systemctl --user status reflector-qwen.service
+curl -sS http://127.0.0.1:8081/health
+```
+
+For logs or a deliberate model restart:
+
+```bash
+journalctl --user -u reflector-qwen.service -f
+systemctl --user restart reflector-qwen.service
+```
 
 ## Validated result
 

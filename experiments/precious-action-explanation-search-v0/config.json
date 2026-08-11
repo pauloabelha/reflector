@@ -1,0 +1,46 @@
+{
+  "experiment": "precious-action-explanation-search-v0",
+  "protocol": "precious-action-causal-v0",
+  "source_experiment": "pcw-v1-16-qwen-executor-v0",
+  "source_commit": "3da145b8d0f502c393d3fd9c6dc7d4a2d53d68ca",
+  "game": "ar25",
+  "arms": ["arm-a", "arm-b", "arm-c"],
+  "battlefield": {
+    "minimum_predecessor_transitions": 24,
+    "require_qwen_changed_action": true,
+    "require_prior_used": true,
+    "require_control_mode": true,
+    "require_exact_counterfactual": true
+  },
+  "executor": {
+    "seed": 314159,
+    "temperature": 0,
+    "top_p": 1,
+    "thinking_budget_tokens": 1024,
+    "max_tokens_stage_1": 3072,
+    "max_tokens_stage_2": 3072,
+    "request_timeout_seconds": 180,
+    "context_window_tokens": 24576,
+    "snapshot_max_bytes": 8388608,
+    "model_snapshot_max_bytes": 40960,
+    "maximum_live_explanations": 8,
+    "minimum_live_explanations_when_available": 2
+  },
+  "python": {
+    "primitive_version": "executor-generic-primitives-v0.1",
+    "max_source_chars": 12000,
+    "timeout_seconds": 3.0,
+    "max_stdout_bytes": 32768,
+    "max_return_bytes": 65536,
+    "memory_bytes": 268435456
+  },
+  "runtime": {
+    "global_deadline_seconds": 28800,
+    "finalization_reserve_seconds": 1800
+  },
+  "branch": {
+    "one_primitive_action": true,
+    "require_exact_prefix_replay": true,
+    "maximum_branches": 3
+  }
+}

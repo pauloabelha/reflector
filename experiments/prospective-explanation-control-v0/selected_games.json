@@ -1,0 +1,17 @@
+{
+  "evidence_cutoff": "pre-treatment committed context-spinoff checkpoints and public recording metadata",
+  "games": [
+    {"game": "ar25", "stratum": "causal-control-opportunity"},
+    {"game": "cd82", "stratum": "causal-control-opportunity"},
+    {"game": "sb26", "stratum": "causal-control-opportunity"},
+    {"game": "sp80", "stratum": "causal-control-opportunity"},
+    {"game": "cn04", "stratum": "existing-partial-progress"},
+    {"game": "g50t", "stratum": "existing-partial-progress"},
+    {"game": "ka59", "stratum": "negative-control"}
+  ],
+  "mechanical_rule": {
+    "causal-control-opportunity": "first four lexicographic completed context-spinoff checkpoints with one or more eligible opportunities",
+    "existing-partial-progress": "first two lexicographic remaining recordings with max(levels_completed)>0 and terminal state != WIN",
+    "negative-control": "first lexicographic remaining completed checkpoint with zero eligible opportunities and max(levels_completed)=0"
+  }
+}

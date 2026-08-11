@@ -6,6 +6,7 @@ import base64
 import json
 import re
 import struct
+import urllib.error
 import urllib.request
 import zlib
 from dataclasses import dataclass
@@ -25,6 +26,7 @@ from .store import SourceAtom, canonical_variable_ordinals
 PROTOCOL = "native-r2-qwen-v1"
 FORBIDDEN_PROMPT_KEYS = frozenset({"game", "game_id", "action", "action_id"})
 MAX_CONDITIONS = 4
+_CODE_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 EXECUTABLE_MEASURES = (
     "TranslationAlignmentResidual",
 )
@@ -65,6 +67,7 @@ class QwenCompilation:
     criticism_id: str | None
     response_id: str
     rejection: str | None = None
+    attempted_write: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,6 +75,8 @@ class QwenIntegration:
     compilation: QwenCompilation
     grounded: GroundedProposal | None
     orientation: QwenOrientation
+    turn: QwenTurn
+    response: Mapping[str, Any]
 
 
 Poster = Callable[[str, Mapping[str, Any], float], Mapping[str, Any]]
@@ -300,10 +305,12 @@ class QwenSemanticWorker:
         endpoint: str = "http://127.0.0.1:8081/v1/chat/completions",
         model: str = "qwen3-vl-4b-thinking-q4_k_m",
         token_budget: int = 6400,
-        root_limit: int = 24,
+        root_limit: int = 4,
         max_deltas: int = 96,
         max_tokens: int = 2048,
         thinking_budget_tokens: int = 1024,
+        context_window_tokens: int = 24576,
+        context_safety_margin_tokens: int = 512,
         timeout_seconds: float = 180.0,
         poster: Poster | None = None,
     ) -> None:
@@ -316,7 +323,17 @@ class QwenSemanticWorker:
         self.max_deltas = max_deltas
         self.max_tokens = max_tokens
         self.thinking_budget_tokens = thinking_budget_tokens
+        self.context_window_tokens = int(context_window_tokens)
+        self.context_safety_margin_tokens = int(context_safety_margin_tokens)
+        if (
+            self.max_tokens < 1
+            or self.context_safety_margin_tokens < 0
+            or self.max_tokens + self.context_safety_margin_tokens
+            >= self.context_window_tokens
+        ):
+            raise QwenWorkerError("invalid Qwen context reservation")
         self.timeout_seconds = timeout_seconds
+        self._uses_default_poster = poster is None
         self.poster = poster or self._post
 
     @staticmethod
@@ -329,8 +346,14 @@ class QwenSemanticWorker:
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
-            parsed = json.loads(response.read())
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
+                parsed = json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="replace")
+            raise QwenWorkerError(
+                f"completion endpoint rejected request ({exc.code}): {body[:2000]}"
+            ) from exc
         if not isinstance(parsed, Mapping):
             raise QwenWorkerError("completion endpoint returned a non-object")
         return parsed
@@ -364,6 +387,14 @@ class QwenSemanticWorker:
 
         objects = cognition.epistemic.objects
         ordinal = {item.object_id: index for index, item in enumerate(objects)}
+        kinds = sorted({item.kind for item in objects})
+        creators = sorted({item.creator for item in objects})
+        if len(kinds) > len(_CODE_ALPHABET) or len(creators) > len(_CODE_ALPHABET):
+            raise QwenWorkerError("bootstrap index exceeds compact legend alphabet")
+        kind_code = {value: _CODE_ALPHABET[index] for index, value in enumerate(kinds)}
+        creator_code = {
+            value: _CODE_ALPHABET[index] for index, value in enumerate(creators)
+        }
         previous_revision = 0
         revision_deltas: list[int] = []
         for item in objects:
@@ -376,17 +407,158 @@ class QwenSemanticWorker:
             "canonical_id_manifest_digest": content_hash(
                 [item.object_id for item in objects]
             ),
-            "kinds": [item.kind for item in objects],
-            "creators": [item.creator for item in objects],
+            "kind_legend": kinds,
+            "kind_codes": "".join(kind_code[item.kind] for item in objects),
+            "creator_legend": creators,
+            "creator_codes": "".join(
+                creator_code[item.creator] for item in objects
+            ),
             "created_revision_deltas": revision_deltas,
             "dependency_ordinals": [
                 [ordinal[dependency] for dependency in item.dependency_ids]
                 for item in objects
             ],
-            "semantic_key_digests": [
-                content_hash(item.semantic_key)[:16] for item in objects
+            "semantic_payload_digest4_pairs": [
+                f"{content_hash(item.semantic_key)[:8]}.{content_hash(item.payload)[:8]}"
+                for item in objects
             ],
-            "payload_digests": [content_hash(item.payload)[:16] for item in objects],
+            "support_default": 0,
+            "support_nonzero": [
+                [index, value]
+                for index, item in enumerate(objects)
+                if (value := cognition.epistemic.support(item.object_id)) != 0
+            ],
+            "attention_total_nonzero": [
+                [
+                    index,
+                    cognition.epistemic.attention(item.object_id, "r2"),
+                    cognition.epistemic.attention(item.object_id, "qwen"),
+                ]
+                for index, item in enumerate(objects)
+                if cognition.epistemic.attention(item.object_id, "r2")
+                or cognition.epistemic.attention(item.object_id, "qwen")
+            ],
+            "attention_columns": ["object_ordinal", "r2_total", "qwen_total"],
+            "payload_rule": (
+                "aliases, kinds, creators, revisions, dependency topology, compact "
+                "identity/payload digests, support, and current attention totals are "
+                "preserved; semantic bodies for the active cut are rendered separately"
+            ),
+        }
+
+    @staticmethod
+    def _compact_deltas(
+        events: Sequence[Any],
+        *,
+        selected_ids: set[str],
+        alias_by_id: Mapping[str, str],
+    ) -> dict[str, Any]:
+        """Render live changes without duplicating their full object bodies.
+
+        Selected objects already appear semantically in the dependency-closed
+        frontier.  Their construction and attention events therefore need only
+        field-exact topology rows. Environment evidence keeps its verdict and
+        payload exact. Contiguous dormant runs retain count, type census, and an
+        ordered digest while their canonical events remain in the authoritative
+        ledger. This is the same separation as workspace truth versus a bounded
+        cognitive rendering; it is intentionally not called lossless replay.
+        """
+
+        rows: list[list[Any]] = []
+        pending: list[Any] = []
+
+        def alias(value: object) -> str:
+            text = str(value)
+            return alias_by_id.get(text, text)
+
+        def flush() -> None:
+            if not pending:
+                return
+            counts: dict[str, int] = {}
+            for event in pending:
+                counts[event.event_type] = counts.get(event.event_type, 0) + 1
+            rows.append(
+                [
+                    "G",
+                    pending[0].revision,
+                    pending[-1].revision,
+                    len(pending),
+                    counts,
+                    content_hash([event.event_hash for event in pending])[:12],
+                ]
+            )
+            pending.clear()
+
+        for event in events:
+            body = event.body
+            if event.event_type == "object-added":
+                object_id = str(body["object_id"])
+                if object_id not in selected_ids:
+                    pending.append(event)
+                    continue
+                flush()
+                rows.append(
+                    [
+                        "O",
+                        event.revision,
+                        alias(object_id),
+                        body["kind"],
+                        [alias(value) for value in body["dependency_ids"]],
+                        event.event_hash[:12],
+                    ]
+                )
+            elif event.event_type == "attention-contributed":
+                object_id = str(body["object_id"])
+                if object_id not in selected_ids:
+                    pending.append(event)
+                    continue
+                flush()
+                rows.append(
+                    [
+                        "A",
+                        event.revision,
+                        body["worker"],
+                        alias(object_id),
+                        body["weight"],
+                        body["channel"],
+                        [alias(value) for value in body["basis_ids"]],
+                    ]
+                )
+            elif event.event_type == "environment-evidence":
+                related = {str(body["target_id"]), *map(str, body["dependency_ids"])}
+                if not related.intersection(selected_ids):
+                    pending.append(event)
+                    continue
+                flush()
+                rows.append(
+                    [
+                        "E",
+                        event.revision,
+                        body["verdict"],
+                        alias(body["target_id"]),
+                        "vt:" + content_hash(str(body["transition_id"]))[:16],
+                        _cognitive_projection(body["payload"]),
+                        [alias(value) for value in body["dependency_ids"]],
+                        event.event_hash[:12],
+                    ]
+                )
+            else:
+                pending.append(event)
+        flush()
+        return {
+            "fidelity": "mixed compact projection; canonical events remain externally exact",
+            "rows_are_contiguous_and_ordered": True,
+            "row_grammar": (
+                "O=[type,revision,id,kind,deps,event_hash12]; "
+                "A=[type,revision,worker,id,weight,channel,basis]; "
+                "E=[type,revision,verdict,target,transition_ref,payload,deps,event_hash12]; "
+                "G=[type,first_revision,last_revision,count,event_type_counts,ordered_hash12]"
+            ),
+            "O_A": "field-exact; semantic object bodies are in the current frontier",
+            "E": "field-exact environment authority row",
+            "G": "small-lossy dormant contiguous run",
+            "total_event_count": len(events),
+            "rows": rows,
         }
 
     def build_turn(
@@ -472,28 +644,12 @@ class QwenSemanticWorker:
                 ),
                 "authoritative_index": self._workspace_index(cognition),
             }
-        elif len(deltas) > self.max_deltas:
-            exact = [
-                _cognitive_projection(event.document())
-                for event in deltas
-                if event.event_id in causal_ids
-                or any(object_id in event.body_json for object_id in causal_ids)
-            ]
-            delta_document: dict[str, Any] = {
-                "fidelity": "small-lossy-dormant-run",
-                "total_count": len(deltas),
-                "ordered_run_digest": content_hash(
-                    [event.document() for event in deltas]
-                ),
-                "exact_causal_events": exact[-self.max_deltas :],
-            }
         else:
-            delta_document = {
-                "fidelity": "exact-ordered",
-                "events": [
-                    _cognitive_projection(event.document()) for event in deltas
-                ],
-            }
+            delta_document = self._compact_deltas(
+                deltas,
+                selected_ids=causal_ids,
+                alias_by_id=alias_by_id,
+            )
         document = {
             "protocol": PROTOCOL,
             "request_id": request_id,
@@ -685,6 +841,7 @@ class QwenSemanticWorker:
                 None,
                 response_id,
                 f"proposal-shape:{exc}",
+                proposal_body,
             )
         references = {*basis_aliases}
         if revises_alias is not None:
@@ -693,7 +850,14 @@ class QwenSemanticWorker:
             references.add(str(criticism_alias))
         if not references.issubset(turn.visible_object_ids):
             return QwenCompilation(
-                False, False, None, None, None, response_id, "invisible-reference"
+                False,
+                False,
+                None,
+                None,
+                None,
+                response_id,
+                "invisible-reference",
+                proposal_body,
             )
         basis_ids = tuple(turn.alias_to_object_id[value] for value in basis_aliases)
         revises_id = (
@@ -717,7 +881,14 @@ class QwenSemanticWorker:
             )
         except (SharedCognitionError, TypeError, ValueError) as exc:
             return QwenCompilation(
-                False, False, None, None, None, response_id, f"semantic:{exc}"
+                False,
+                False,
+                None,
+                None,
+                None,
+                response_id,
+                f"semantic:{exc}",
+                proposal_body,
             )
         return QwenCompilation(
             valid=True,
@@ -726,6 +897,86 @@ class QwenSemanticWorker:
             revises_id=None if revises_id is None else str(revises_id),
             criticism_id=None if criticism_id is None else str(criticism_id),
             response_id=response_id,
+        )
+
+    @staticmethod
+    def _compiler_instruction(rejection: str) -> str:
+        if rejection.startswith("proposal-shape:"):
+            return (
+                "Rewrite the proposal so every effect variable occurs in at least "
+                "one condition atom and every required field follows the strict contract."
+            )
+        if rejection == "invisible-reference":
+            return "Cite only stable aliases visible in the current epistemic cut."
+        if rejection.startswith("semantic:"):
+            return "Emit a mechanically groundable schema within the executable DSL."
+        return "Repair the strict semantic write or abstain; do not repeat the rejected form."
+
+    def _record_compiler_rejection(
+        self,
+        cognition: NativeSharedCognition,
+        turn: QwenTurn,
+        compilation: QwenCompilation,
+    ) -> None:
+        """Return a failed semantic write to the shared world as criticism.
+
+        A malformed write is not silently accepted and does not gain support.  It
+        nevertheless consumed worker compute and is valuable causal history: the
+        next Qwen turn must be able to see exactly why the kernel could not ground
+        it.  This keeps compiler feedback in the same durable attentional economy
+        as R2 grounding criticism instead of terminating the cognitive loop.
+        """
+
+        attempted = dict(compilation.attempted_write or {})
+        dependency_ids: list[str] = []
+        for key in ("basis_ids",):
+            aliases = attempted.get(key, ())
+            if isinstance(aliases, Sequence) and not isinstance(aliases, (str, bytes)):
+                for alias in aliases:
+                    object_id = turn.alias_to_object_id.get(str(alias))
+                    if object_id is not None and object_id not in dependency_ids:
+                        dependency_ids.append(object_id)
+        for key in ("revises_id", "criticism_id"):
+            alias = attempted.get(key)
+            object_id = turn.alias_to_object_id.get(str(alias))
+            if object_id is not None and object_id not in dependency_ids:
+                dependency_ids.append(object_id)
+        attempt = cognition.epistemic.add_object(
+            kind="qwen-write-attempt",
+            semantic_key={"response_id": compilation.response_id},
+            payload={
+                "response_id": compilation.response_id,
+                "write": _cognitive_projection(attempted),
+                "status": "compiler-rejected",
+            },
+            creator="qwen",
+            dependency_ids=tuple(dependency_ids),
+        )
+        criticism = cognition.epistemic.add_object(
+            kind="structured-criticism",
+            semantic_key={
+                "attempt": attempt.object_id,
+                "status": "compiler-rejected",
+                "reason": compilation.rejection,
+            },
+            payload={
+                "target": attempt.object_id,
+                "status": "compiler-rejected",
+                "reason": compilation.rejection,
+                "instruction": self._compiler_instruction(
+                    compilation.rejection or "semantic compilation failed"
+                ),
+            },
+            creator="kernel",
+            dependency_ids=(attempt.object_id, *dependency_ids),
+        )
+        cognition.epistemic.attend(
+            worker="qwen",
+            object_id=criticism.object_id,
+            weight=900,
+            channel="compiler-criticism",
+            basis_ids=(attempt.object_id,),
+            nonce=compilation.response_id,
         )
 
     def think(
@@ -746,10 +997,49 @@ class QwenSemanticWorker:
             previous_frame=previous_frame,
             transition=transition,
         )
-        response = self.poster(self.endpoint, turn.request, self.timeout_seconds)
+        admission: dict[str, int] | None = None
+        if self._uses_default_poster:
+            probe = {
+                **turn.request,
+                "max_tokens": 1,
+                "thinking_budget_tokens": 0,
+            }
+            counted = self._post(self.endpoint, probe, self.timeout_seconds)
+            try:
+                prompt_tokens = int(counted["usage"]["prompt_tokens"])
+            except (KeyError, TypeError, ValueError) as exc:
+                raise QwenWorkerError(
+                    "serving stack returned no exact prompt-token count"
+                ) from exc
+            occupied = prompt_tokens + self.max_tokens
+            allowed = self.context_window_tokens - self.context_safety_margin_tokens
+            admission = {
+                "prompt_tokens": prompt_tokens,
+                "reserved_completion_tokens": self.max_tokens,
+                "occupied_tokens": occupied,
+                "context_window_tokens": self.context_window_tokens,
+                "safety_margin_tokens": self.context_safety_margin_tokens,
+                "headroom_tokens": allowed - occupied,
+            }
+            if occupied > allowed:
+                raise QwenWorkerError(
+                    "exact context admission failed: "
+                    f"prompt {prompt_tokens} + reserve {self.max_tokens} > "
+                    f"safe window {allowed}"
+                )
+        response = dict(self.poster(self.endpoint, turn.request, self.timeout_seconds))
+        if admission is not None:
+            response["context_admission"] = admission
         compilation = self.compile_response(turn, response)
         if not compilation.valid:
-            raise QwenWorkerError(compilation.rejection or "semantic compilation failed")
+            self._record_compiler_rejection(cognition, turn, compilation)
+            return QwenIntegration(
+                compilation=compilation,
+                grounded=None,
+                orientation=turn.next_orientation,
+                turn=turn,
+                response=response,
+            )
         grounded = None
         if compilation.proposal is not None:
             try:
@@ -825,4 +1115,6 @@ class QwenSemanticWorker:
             compilation=compilation,
             grounded=grounded,
             orientation=turn.next_orientation,
+            turn=turn,
+            response=response,
         )

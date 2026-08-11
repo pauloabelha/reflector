@@ -45,10 +45,13 @@ class LiveRuntime:
         self.qwen_started_at: float | None = None
         self.qwen_durations: list[float] = []
         self.qwen_latency_prior_seconds = float(qwen_latency_prior_seconds)
+        self.schema_observer: Any | None = None
         self.reset_requested = threading.Event()
         self.snapshot: dict[str, Any] = {
             "status": "idle", "frame": [], "turn": 0,
             "decision": None, "settlement": None, "scratchpad": None,
+            "r2_semantic_projection": None,
+            "r2_1_schema_stats": None,
             "qwen": {
                 "awaiting": False,
                 "phase": "ready",
@@ -58,6 +61,26 @@ class LiveRuntime:
                 "eta_samples": 0,
             },
         }
+
+    def set_schema_observer(self, observer: Any) -> None:
+        """Attach the R2.1 frame-local epistemic fitting layer."""
+        self.schema_observer = observer
+
+    def reset_schema_observer(self) -> None:
+        """Clear all episode-local epistemic state before a new game starts."""
+        reset = getattr(self.schema_observer, "reset_episode", None)
+        if callable(reset):
+            reset()
+
+    def observe_schemas(self, frame: list[list[int]], turn: int) -> dict[str, Any] | None:
+        if self.schema_observer is None or not frame:
+            return None
+        try:
+            return self.schema_observer.fit_frame(frame, turn=turn)
+        except Exception as error:
+            # Epistemic telemetry must remain inspectable without masking the
+            # underlying environment/controller failure mode.
+            return {"engine": "R2.1", "turn": int(turn), "levels": [], "error": f"{type(error).__name__}: {error}"}
 
     def configure(self, *, paused: bool | None = None, speed: float | None = None, step: bool = False) -> dict[str, Any]:
         with self.condition:
@@ -91,6 +114,15 @@ class LiveRuntime:
         return value
 
     def update(self, **values: Any) -> None:
+        # Frame publication and R2.1 fitting are one atomic semantic event.
+        # This includes frame 0 while Qwen is still forming its first
+        # explanation; schema telemetry therefore never waits for an action.
+        if "frame" in values and "r2_1_schema_stats" not in values:
+            frame = plain_frame(values["frame"])
+            values["frame"] = frame
+            values["r2_1_schema_stats"] = self.observe_schemas(
+                frame, int(values.get("turn", self.snapshot.get("turn", 0))),
+            )
         with self.condition:
             if self.reset_requested.is_set():
                 return
@@ -108,6 +140,14 @@ class LiveRuntime:
         with self.condition:
             previous = dict(self.snapshot.get("scratchpad") or {})
             self.snapshot["scratchpad"] = {**dict(note), "r2_action_traces": previous.get("r2_action_traces", [])}
+            self.condition.notify_all()
+
+    def set_r2_semantic_projection(self, projection: Mapping[str, Any]) -> None:
+        """Expose exactly the bounded R2 attention cut read by Semantic Qwen."""
+        with self.condition:
+            if self.reset_requested.is_set():
+                return
+            self.snapshot["r2_semantic_projection"] = dict(projection)
             self.condition.notify_all()
 
     def qwen_started(self, call_index: int, *, phase: str) -> None:
@@ -169,11 +209,13 @@ class LiveRuntime:
                 "decision": None,
                 "settlement": None,
                 "scratchpad": None,
+                "r2_semantic_projection": None,
                 "current_explanation": None,
                 "salient_schemas": [],
                 "metadata": None,
                 "error": None,
                 "r2_parallel_phase": None,
+                "r2_1_schema_stats": None,
                 "qwen": {
                     "awaiting": False,
                     "phase": "ready",
@@ -198,6 +240,8 @@ class LiveRuntime:
             raise RuntimeError("arcade reset requested")
         raw = environment.observation_space
         frame = plain_frame(raw.frame)
+        turn = int(self.snapshot.get("turn", 0))
+        schema_stats = self.observe_schemas(frame, turn)
         contract = None if controller.last_contract is None else dict(controller.last_contract)
         if contract is not None:
             current = contract.get("current_explanation")
@@ -207,11 +251,18 @@ class LiveRuntime:
                 and current.get("kind") == "winning-explanation-family"
             ):
                 contract["current_explanation"] = dict(self.snapshot["current_explanation"])
+            commit_prediction = getattr(self.schema_observer, "commit_prediction", None)
+            if callable(commit_prediction):
+                commit_prediction(
+                    int(contract.get("selected_action", -1)),
+                    contract.get("current_explanation"),
+                )
         self.update(
             status="choosing",
             frame=frame,
             decision=contract,
-            turn=int(self.snapshot.get("turn", 0)),
+            turn=turn,
+            r2_1_schema_stats=schema_stats,
         )
         with self.condition:
             while self.paused and self.step_tokens == 0:
@@ -227,10 +278,12 @@ class LiveRuntime:
             raise RuntimeError("arcade reset requested")
         raw = successor
         frame = plain_frame(raw.frame)
+        turn = int(self.snapshot.get("turn", 0)) + 1
         self.update(
             status="observing",
             frame=frame,
-            turn=int(self.snapshot.get("turn", 0)) + 1,
+            turn=turn,
+            r2_1_schema_stats=self.observe_schemas(frame, turn),
             levels_completed=int(raw.levels_completed),
             levels_total=int(raw.win_levels),
             settlement=controller.settlements[-1] if controller.settlements else None,
