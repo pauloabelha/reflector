@@ -630,3 +630,87 @@ A campaign intervention is promoted only after:
 1. its intended dataflow is visible in provenance;
 2. a targeted contract or same-state comparison supports its causal effect;
 3. a later frozen, mechanic-diverse run checks transfer and runtime regressions.
+
+## Checkpoint 15 — frozen 25-game breadth at `62465d9`
+
+The first pass completed across all 25 public games under one frozen 68-file
+source manifest (`7ca8b7aa...`), with no source drift, replay failure, authority
+violation, or completed Qwen transport error.
+
+- 383 committed actions; 18 timeout-boundary pending actions were excluded.
+- One real level clear: AR25, on the independently reproduced 17-action path.
+  This is 1/25 games and 1/383 committed actions.
+- Outcomes were 22 timeouts, two controller errors, and one clean completion;
+  clean completion is a runtime status, not a score predicate.
+- 132 coordinate clicks were committed across 17 games. Every click carried
+  exact x/y data, current-frame region evidence, command identity, and effect
+  scope through pending, execution, transition, and replay.
+- All 408 canonical environment observations had valid ordered envelopes. 64
+  packets across 13 games were multi-frame, preserving 967 ordered frames in
+  total (maximum stack 42).
+- The controller observed 307 changed and 76 unchanged successors. It emitted
+  24 supports and six refutes, concentrated in six games; 19 games produced no
+  prospective judgment.
+
+Observable failure-layer coverage was broad: execution coverage 25/25;
+animation evidence 13/25; identity support/limitation 10/15; mechanics
+support/open 12/13; semantic evidence/repetition 14/11; exploration support or
+no-change limitation 13/12; and success observed/not observed 1/24. This is a
+failure taxonomy, not a claim that any one layer is the unique cause.
+
+Throughput varied from two to 48 committed actions in the same five-minute
+window. The exact graph batch intervention removed the demonstrated cumulative
+replay slope, but perception fitting, semantic inference, and model latency
+still produce large mechanic-dependent runtime differences.
+
+## Checkpoint 16 — breadth-discovered boundary repairs at `ac3b73b`
+
+The frozen pass exposed two generic failures after the external transition
+substrate had become trustworthy:
+
+1. SU15 had 27 exact grounded click candidates, but a repeated-no-change branch
+   changed the selected action from simple action 7 to parameterized action 6
+   after command resolution. The resolver correctly failed closed rather than
+   fabricate coordinates. The repair atomically rebinds any post-resolution
+   action mutation to an exact current-frame command and retains fail-closed
+   behavior when none exists.
+2. SP80 naturally entered GAME_OVER, durably committed an action-0 retry, and
+   returned a playable successor with `full_reset=false` and unchanged score.
+   Graph ingestion then failed because the v1.9 wrapper did not forward the
+   explicit retry boundary. The wrapper now forwards `boundary_kind` without
+   weakening its selected-judgment filter.
+
+The same commit repaired score surfaces: committed levels recovered from
+timeout/error ledgers now count, while pending actions remain excluded. The
+post-hoc frozen oracle reports one level and AR25 as the clearing game without
+altering runtime statuses or any failure-layer count.
+
+Combined controller, action-command, request-admission, reset, v1.4, v1.9,
+v1.12, analyzer, replay, and stored-request contracts passed. A real SP80
+checkpoint correctly refused resume after source drift; the compatibility gate
+was preserved rather than bypassed.
+
+## Checkpoint 17 — current score boundary after breadth
+
+Qwen scheduling was demand-driven and non-polling: 145 queued turns comprised
+25 initial, 115 alias-only, four explicit-failure-only, and one overlapping
+alias/failure demand. All 135 completed calls had valid JSON transport and no
+transport error. Exact admission preserved at least 2,048 completion tokens.
+
+The remaining bottleneck is semantic revision and causal conversion:
+
+- 35/145 turns collapsed to the safe 59-token, zero-object attention frontier;
+  all 28 completed calls at that frontier produced no accepted working note.
+- Richer turns produced 82 notes from 107 completions, but 51/57 consecutive
+  accepted proposal sets were canonically identical.
+- Every one of the five explicit unsupported/refuted revision demands failed
+  to produce a new accepted note.
+- Across 401 decisions, only 22 were goal-progress selections; 374 were
+  information or discriminating probes. Actual progress was positive 22 times,
+  negative 11 times, and zero 318 times.
+
+The next intervention should therefore be a bounded, evidence-addressed
+semantic-delta task that preserves Qwen's authority and R2's exact-repeat
+rejection. Separately, admission should recover the richest safe frontier when
+capacity remains, without weakening the reserved completion budget. Neither
+change should invent goals or infer action semantics from game IDs.

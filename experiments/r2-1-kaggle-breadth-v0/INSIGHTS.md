@@ -603,3 +603,47 @@ Inference:
 
 Status: score-moving generic intervention promoted; level-2 and cross-game
 transfer remain the next boundary.
+
+## I22 — Access to a mechanic is not control of that mechanic
+
+The command substrate converted hard exclusion into real coverage: 132
+coordinate clicks were committed in 17 games, with exact grounded payloads and
+replay identity. Yet prospective supports/refutes appeared in only six games,
+and the click-heavy traces usually produced none. Interface coverage is a
+prerequisite, not evidence that R2 has identified what a click controls.
+
+## I23 — Runtime capacity and cognitive competence are separate axes
+
+Exact graph batching improved the matched G50T five-minute window from 22 to 28
+committed actions while performing more successful model inference. Across the
+same frozen breadth build, however, games still ranged from two to 48 actions.
+This residual spread belongs to perception/schema fitting and demand/context
+cost as much as controller quality. Score comparisons should report both
+actions per wall-clock and levels per committed action.
+
+## I24 — A timeout can contain authoritative score
+
+AR25 cleared a level at action 17 and later timed out in level 2. Filtering
+score by worker status erased that real success. The durable authority is the
+maximum level counter in committed successors; pending actions contribute
+neither actions nor score. Runtime completion, replay completeness, and game
+progress are distinct report dimensions.
+
+## I25 — Semantic failure needs an evidence-addressed revision task
+
+The scheduler now calls Qwen only on observable demand, but an explicit
+grounding rejection or refutation is projected as general scratchpad context
+rather than a bounded revision object. All five such demands failed to yield a
+new accepted note, while 89.5% of consecutive accepted proposal sets repeated
+exactly. The safe next step is not controller-authored semantics; it is a Qwen
+task that names the failed proposal, exact evidence, required delta, and
+abstention option, with R2 retaining grounding and execution authority.
+
+## I26 — RESET success is an end-to-end boundary, not a transport fact
+
+SP80 proved that the engine-level retry works naturally: GAME_OVER was followed
+by a durable action-0 boundary and a playable, non-full-reset successor with
+score preserved. The run still failed because one inherited graph wrapper
+dropped the boundary type. Retry competence therefore requires transport,
+budget accounting, controller re-grounding, graph provenance, replay, and
+wrapper compatibility to agree on the same explicit boundary.
