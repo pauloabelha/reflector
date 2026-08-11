@@ -1,0 +1,9 @@
+{
+  "experiment": "parallel-cognitive-workspace-v1-8",
+  "protocol": "prospective-control-v1.8",
+  "workspace_protocol": "prospective-control-v1.8",
+  "qwen": {
+    "context_window_tokens": 24576
+  }
+}
+

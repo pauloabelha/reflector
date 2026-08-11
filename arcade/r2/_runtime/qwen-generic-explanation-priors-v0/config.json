@@ -1,0 +1,23 @@
+{
+  "action_budget": 32,
+  "arms": [
+    "scratch",
+    "qwen_own",
+    "qwen_mismatch"
+  ],
+  "complex_action_policy": "epistemic-abstention",
+  "experiment": "qwen-generic-explanation-priors-v0",
+  "max_hypotheses": 4,
+  "max_parallel_game_workers": 4,
+  "qwen": {
+    "endpoint": "http://127.0.0.1:8081/v1/chat/completions",
+    "max_tokens": 900,
+    "model": "qwen3-vl-4b-thinking-q4_k_m",
+    "seed": 1730,
+    "temperature": 0,
+    "thinking_budget": 256,
+    "top_p": 1
+  },
+  "source_result_commit": "8f64083",
+  "structured_state_only": true
+}
