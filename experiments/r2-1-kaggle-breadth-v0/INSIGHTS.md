@@ -89,6 +89,13 @@ Inference:
 Status: execution transport candidate verified at a real boundary; awaiting
 frozen breadth evidence for progress, latency, and cross-mechanic regressions.
 
+Breadth regression:
+
+- Both mixed-modality `lf52` and click-only `lp85` reached the new command path
+  and then crashed on the same optional null `control_proposal` field.
+- This is an execution/publication defect rather than game-specific evidence;
+  the one-line normalization is protected by a direct controller contract.
+
 ## I3 — Exact no-change repetition was a control defect
 
 Observed:
@@ -196,3 +203,32 @@ Safe hypothesis:
   or a fast path until locally confirmed.
 
 Status: designed, not implemented; lower priority than execution coverage.
+
+## I7 — Settled-frame control and ordered sensory evidence are distinct
+
+Observed:
+
+- The inherited observation and live-runtime normalizers repeatedly selected
+  the last toolkit support and discarded every earlier support.
+- The campaign classifier already distinguished ordered animation evidence,
+  but replay could never expose it because observation blobs contained only
+  the settled grid.
+
+Intervention:
+
+- Preserve the toolkit packet as an ordered, digested observation envelope in
+  both live state and durable observation blobs.
+- Continue to feed only its explicitly marked final support to existing R2.1
+  control. Earlier supports are evidence, not automatically states, objects,
+  motions, causes, or progress signals.
+
+Inference:
+
+- This repairs an observability boundary without adding game rules or granting
+  control authority to an untested animation interpretation.
+- Whether transient supports improve identity, mechanics, or planning remains
+  an empirical question requiring real multi-support traces and a separate,
+  evidence-bounded interpreter.
+
+Status: contract-verified observability candidate; real packet prevalence and
+decision impact remain unmeasured.

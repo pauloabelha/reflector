@@ -196,6 +196,33 @@ Real execution boundary:
 Status: promoted as an execution-coverage candidate. Breadth score and runtime
 effects remain unverified; the next frozen campaign must test those separately.
 
+## Checkpoint 5 — ordered observation envelope before the next freeze
+
+Perception-evidence candidate:
+
+- Toolkit observations now retain every frame support in supplied order under
+  `ordered-observation-envelope-v1`, with per-support and packet digests.
+- The last supplied support is explicitly marked as settled and remains the
+  only frame consumed by existing R2.1 fitting and control, so this change does
+  not infer animation semantics or alter action choice.
+- Initial and successor observation blobs preserve the envelope beside the
+  legacy settled `grid`; replay surfaces expose `ordered_frames` for the
+  campaign's existing animation-evidence classifier.
+- Live runtime state likewise retains the packet while publishing the settled
+  frame to the existing UI/control field.
+
+Verification before freeze:
+
+- Multi-frame fixtures prove exact normalized order, order-sensitive packet
+  identity, single-grid compatibility, final settled selection, live-runtime
+  retention, inherited-ledger retention, and replay exposure.
+- 194 repository, R2.1, command, envelope, and analyzer tests pass after the
+  implementation; focused envelope/analyzer contracts also pass independently.
+
+Status: contract-verified observability candidate. No claim is made that R2.1
+interprets transient supports yet; a fresh real trace must first demonstrate
+that the toolkit supplies multi-support packets for the selected games.
+
 Timeout accounting correction:
 
 - The first frozen `g50t` deadline row reported null actions even though its
@@ -206,6 +233,17 @@ Timeout accounting correction:
 
 This correction changes campaign measurement only; it cannot manufacture an
 environment action or level clear.
+
+Live mixed/click regression and repair:
+
+- `lf52` crossed five changing successors, including an exact grounded click;
+  parallel click-only `lp85` reached planning as well.
+- Both then exposed the same generic publication defect: an explicitly null
+  optional `control_proposal` was treated as a mapping when checking fast-path
+  mode.
+- The controller now normalizes only that optional field to an empty mapping.
+  A contract reproduces the null ranking and verifies ordinary probe selection
+  remains unchanged.
 
 ## Promotion discipline
 

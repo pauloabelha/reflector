@@ -161,6 +161,39 @@ class DefeasibleRoleGrounder:
             float(left[key]) < float(right[key]) for key in dimensions
         )
 
+    @classmethod
+    def _pareto_front(
+        cls, candidates: Sequence[dict[str, Any]], dimensions: tuple[str, ...],
+    ) -> list[dict[str, Any]]:
+        """Return the exact front after indexing equal comparison vectors.
+
+        Candidates in one bucket are indistinguishable to ``_dominates``:
+        equality means none can dominate another, and every external vector
+        dominates either all bucket members or none.  Comparing one retained
+        representative per exact vector is therefore extensionally identical
+        to the exhaustive candidate-by-candidate test.  The final scan keeps
+        every nondominated candidate in its original enumeration order.
+        """
+        representatives: dict[tuple[float, ...], dict[str, Any]] = {}
+        candidate_vectors: list[tuple[float, ...]] = []
+        for candidate in candidates:
+            vector = tuple(float(candidate["residual_vector"][key]) for key in dimensions)
+            candidate_vectors.append(vector)
+            representatives.setdefault(vector, candidate["residual_vector"])
+        dominated = {
+            vector
+            for vector, residuals in representatives.items()
+            if any(
+                other_vector != vector
+                and cls._dominates(other, residuals, dimensions)
+                for other_vector, other in representatives.items()
+            )
+        }
+        return [
+            candidate for candidate, vector in zip(candidates, candidate_vectors, strict=True)
+            if vector not in dominated
+        ]
+
     def ground(self, goal: dict[str, Any]) -> list[dict[str, Any]]:
         roles = tuple(dict.fromkeys(str(role) for role in goal.get("roles", ()))) or ("actor", "target")
         potential_roles = tuple(str(role) for role in goal.get("potential_roles", ()))
@@ -224,14 +257,7 @@ class DefeasibleRoleGrounder:
             "spatial_measurability_residual", "evidence_mass_residual",
             "identity_continuity_residual",
         )
-        front = [
-            candidate for candidate in candidates
-            if not any(
-                other is not candidate
-                and self._dominates(other["residual_vector"], candidate["residual_vector"], dimensions)
-                for other in candidates
-            )
-        ]
+        front = self._pareto_front(candidates, dimensions)
         # Rank aggregation is deliberately fixed and generic.  Semantic clues
         # break otherwise-equal comparisons but cannot erase a Pareto-plausible
         # structural candidate.

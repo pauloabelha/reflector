@@ -47,9 +47,11 @@ class LiveRuntime:
         self.qwen_durations: list[float] = []
         self.qwen_latency_prior_seconds = float(qwen_latency_prior_seconds)
         self.schema_observer: Any | None = None
+        self.observation_envelope_builder: Any | None = None
         self.reset_requested = threading.Event()
         self.snapshot: dict[str, Any] = {
-            "status": "idle", "frame": [], "turn": 0, "level_turn": 0,
+            "status": "idle", "frame": [], "observation_envelope": None,
+            "turn": 0, "level_turn": 0,
             "decision": None, "settlement": None, "scratchpad": None,
             "r2_semantic_projection": None,
             "r2_1_schema_stats": None,
@@ -66,6 +68,19 @@ class LiveRuntime:
     def set_schema_observer(self, observer: Any) -> None:
         """Attach the R2.1 frame-local epistemic fitting layer."""
         self.schema_observer = observer
+
+    def set_observation_envelope_builder(self, builder: Any) -> None:
+        """Attach the lossless ordered-support normalizer used by this leaf."""
+        self.observation_envelope_builder = builder
+
+    def observation_surfaces(self, raw: Any) -> tuple[list[list[int]], dict[str, Any] | None]:
+        if self.observation_envelope_builder is None:
+            return plain_frame(raw.frame), None
+        envelope = self.observation_envelope_builder(raw)
+        frames = envelope["ordered_frames"]
+        settled = int(envelope["settled_support_ordinal"])
+        frame = [[int(cell) for cell in row] for row in frames[settled]]
+        return frame, envelope
 
     def reset_schema_observer(self) -> None:
         """Clear all episode-local epistemic state before a new game starts."""
@@ -206,6 +221,7 @@ class LiveRuntime:
             self.snapshot = {
                 "status": "resetting",
                 "frame": [],
+                "observation_envelope": None,
                 "turn": 0,
                 "level_turn": 0,
                 "decision": None,
@@ -241,7 +257,7 @@ class LiveRuntime:
         if self.reset_requested.is_set():
             raise RuntimeError("arcade reset requested")
         raw = environment.observation_space
-        frame = plain_frame(raw.frame)
+        frame, observation_envelope = self.observation_surfaces(raw)
         turn = int(self.snapshot.get("turn", 0))
         fast_path = bool(getattr(controller, "fast_path_active", False))
         schema_stats = (
@@ -268,6 +284,7 @@ class LiveRuntime:
         self.update(
             status="choosing",
             frame=frame,
+            observation_envelope=observation_envelope,
             decision=contract,
             turn=turn,
             r2_1_schema_stats=schema_stats,
@@ -286,7 +303,7 @@ class LiveRuntime:
         if self.reset_requested.is_set():
             raise RuntimeError("arcade reset requested")
         raw = successor
-        frame = plain_frame(raw.frame)
+        frame, observation_envelope = self.observation_surfaces(raw)
         turn = int(self.snapshot.get("turn", 0)) + 1
         previous_levels = int(self.snapshot.get("levels_completed", 0))
         levels_completed = int(raw.levels_completed)
@@ -309,6 +326,7 @@ class LiveRuntime:
         self.update(
             status="observing",
             frame=frame,
+            observation_envelope=observation_envelope,
             turn=turn,
             level_turn=level_turn,
             r2_1_schema_stats=schema_stats,

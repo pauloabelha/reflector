@@ -27,6 +27,18 @@ def _grid(value: Any) -> list[list[int]]:
     return [[int(cell) for cell in row] for row in value] if isinstance(value, list) else []
 
 
+def _frame_fields(stored_observation: Any) -> dict[str, Any]:
+    """Expose ordered supports when present while retaining the settled frame."""
+
+    value = stored_observation if isinstance(stored_observation, dict) else {}
+    fields: dict[str, Any] = {"frame": _grid(value.get("grid", []))}
+    envelope = value.get("observation_envelope")
+    if isinstance(envelope, dict) and isinstance(envelope.get("ordered_frames"), list):
+        fields["observation_envelope"] = envelope
+        fields["ordered_frames"] = envelope["ordered_frames"]
+    return fields
+
+
 class ReplayStore:
     def __init__(self, root: Path) -> None:
         self.root = root.resolve()
@@ -84,7 +96,7 @@ class ReplayStore:
             raise ValueError("run has no initial observation")
         first = blob(initial["payload"]["observation_blob"])
         timeline: list[dict[str, Any]] = [{
-            "turn": 0, "frame": _grid(first.get("grid", [])), "decision": None,
+            "turn": 0, **_frame_fields(first), "decision": None,
             "scratchpad": None, "settlement": None,
         }]
         scratchpad = None
@@ -111,7 +123,7 @@ class ReplayStore:
                     "prospective_judgments": payload.get("prospective_judgments", []),
                 }
                 timeline.append({
-                    "turn": len(timeline), "frame": _grid(after.get("grid", [])),
+                    "turn": len(timeline), **_frame_fields(after),
                     "decision": None, "executed_decision": pending_decision,
                     "scratchpad": scratchpad, "settlement": settlement,
                     "levels_completed": int(record.get("levels_completed", payload.get("levels_completed", 0))),

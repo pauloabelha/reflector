@@ -444,7 +444,11 @@ def terminal_result_record(
 
 def store_observation(root: Path, observation: Any) -> tuple[str, dict[str, Any], Grid]:
     record, grid = observation_value(observation)
-    blob = LEDGER.put_blob(root, {"record": record, "grid": [list(row) for row in grid]})
+    value = {"record": record, "grid": [list(row) for row in grid]}
+    envelope = getattr(BASE, "observation_envelope", None)
+    if callable(envelope):
+        value["observation_envelope"] = envelope(observation)
+    blob = LEDGER.put_blob(root, value)
     return blob, record, grid
 
 

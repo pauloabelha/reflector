@@ -802,6 +802,110 @@ def test_defeasible_grounder_recovers_congruent_pair_from_incorrect_semantic_clu
     assert all(item["epistemic_status"] == "defeasible-role-hypothesis" for item in hypotheses)
 
 
+def test_equal_vector_index_is_exactly_equivalent_to_exhaustive_pareto_filter():
+    adapter = load("r2_1_pareto_index") if (HERE / "r2_1_pareto_index.py").exists() else load("r2_1_adapter")
+    dimensions = ("shape", "area", "mass")
+    vectors = [
+        (float(index % 5), float((index * 3) % 7), float((index * 5) % 11))
+        for index in range(29)
+    ]
+    candidates = [
+        {
+            "candidate": index,
+            "residual_vector": dict(zip(dimensions, vectors[index % len(vectors)], strict=True)),
+        }
+        for index in range(4032)
+    ]
+    unique = {
+        vector: dict(zip(dimensions, vector, strict=True))
+        for vector in vectors
+    }
+    nondominated_vectors = {
+        vector
+        for vector, residuals in unique.items()
+        if not any(
+            other_vector != vector
+            and adapter.DefeasibleRoleGrounder._dominates(other, residuals, dimensions)
+            for other_vector, other in unique.items()
+        )
+    }
+    expected = [
+        item for item in candidates
+        if tuple(item["residual_vector"][key] for key in dimensions) in nondominated_vectors
+    ]
+
+    class CountingGrounder(adapter.DefeasibleRoleGrounder):
+        dominance_calls = 0
+
+        @staticmethod
+        def _dominates(left, right, compared_dimensions):
+            CountingGrounder.dominance_calls += 1
+            return adapter.DefeasibleRoleGrounder._dominates(
+                left, right, compared_dimensions,
+            )
+
+    actual = CountingGrounder._pareto_front(candidates, dimensions)
+    assert actual == expected
+    assert [id(item) for item in actual] == [id(item) for item in expected]
+    assert CountingGrounder.dominance_calls <= len(vectors) * (len(vectors) - 1)
+    assert CountingGrounder.dominance_calls < len(candidates)
+
+
+def test_indexed_and_exhaustive_role_grounders_return_identical_bindings():
+    adapter = load("r2_1_pareto_grounding_equivalence") if (HERE / "r2_1_pareto_grounding_equivalence.py").exists() else load("r2_1_adapter")
+    regions = []
+    shapes = (
+        ((0, 0),),
+        ((0, 0), (0, 1)),
+        ((0, 0), (1, 0), (1, 1)),
+    )
+    for index in range(12):
+        shape = shapes[index % len(shapes)]
+        regions.append({
+            "binding_id": f"region:{index:02d}",
+            "value": index % 4,
+            "area": len(shape),
+            "shape": shape,
+            "outline": shape,
+            "hole_count": 0,
+            "center2": (index * 2, (index % 5) * 2),
+        })
+    measure = lambda _observable, left, right: float(
+        abs(left["center2"][0] - right["center2"][0])
+        + abs(left["center2"][1] - right["center2"][1])
+    )
+    goal = {
+        "verb": "fit", "roles": ["actor", "target"],
+        "potential_roles": ["actor", "target"],
+        "observable": "centroid_distance", "role_constraints": [],
+    }
+
+    class ExhaustiveGrounder(adapter.DefeasibleRoleGrounder):
+        @classmethod
+        def _pareto_front(cls, candidates, dimensions):
+            return [
+                candidate for candidate in candidates
+                if not any(
+                    other is not candidate
+                    and cls._dominates(
+                        other["residual_vector"], candidate["residual_vector"], dimensions,
+                    )
+                    for other in candidates
+                )
+            ]
+
+    indexed = adapter.DefeasibleRoleGrounder(
+        regions, measure=measure, relation_bindings={},
+    ).ground(goal)
+    exhaustive = ExhaustiveGrounder(
+        regions, measure=measure, relation_bindings={},
+    ).ground(goal)
+    assert indexed == exhaustive
+    assert {item["candidate_binding_id"] for item in indexed} == {
+        item["candidate_binding_id"] for item in exhaustive
+    }
+
+
 def test_probe_selection_uses_best_comparative_role_hypothesis():
     adapter = load("r2_1_ranked_probe_adapter") if (HERE / "r2_1_ranked_probe_adapter.py").exists() else load("r2_1_adapter")
     observer = adapter.FrameSchemaObserver()
@@ -1354,6 +1458,37 @@ def test_controller_executes_authorized_evaluator_choice_not_fallback():
     assert decision.reason == "r2.1-bounded-fast-path"
     assert instance.last_contract["selected_action"] == 2
     assert instance.last_contract["current_explanation"]["prediction"]["action"] == 2
+
+
+def test_controller_accepts_explicitly_absent_control_proposal():
+    controller = load("controller")
+    explanation = {
+        "kind": "situated-control-explanation", "binding_id": "e-open",
+        "control_status": "PROBE_ELIGIBLE",
+        "prediction": {"action": 1, "expected_progress": None},
+    }
+    ranking = {
+        "selected_action": 1,
+        "top_actions": [{"rank": 1, "action": 1, "role": "probe", "selected": True}],
+        "explanations": [explanation], "current_explanation": explanation,
+        "execution_authorized": False,
+        "control_proposal": None,
+        "selection_rule": "bounded probe",
+    }
+    observer = SimpleNamespace(rank_actions=lambda legal, **kwargs: ranking)
+    runtime = SimpleNamespace(schema_observer=observer, snapshot={})
+    live = SimpleNamespace(ProspectiveWorkspaceController=BaseController, PC=SimpleNamespace(
+        fallback_plan=lambda plan, action_id, reason: replace(
+            plan, action_id=action_id, fallback_action_id=action_id, probe_basis=reason,
+        )
+    ))
+    instance = controller.controller_class(live, runtime)()
+
+    decision, _plan = instance.plan((1,), observation_digest="frame", basis_revision=4)
+
+    assert decision.action_id == 1
+    assert instance.last_contract["selected_action"] == 1
+    assert instance.last_contract["current_explanation"] == explanation
 
 
 def test_qwen_action_alias_abstention_is_valid_and_unsupported_alias_is_rejected():

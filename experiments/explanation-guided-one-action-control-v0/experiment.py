@@ -35,6 +35,7 @@ V116_MODULE = _load("one_action_frozen_v116", V116)
 BASE = V116_MODULE.BASE
 SCRATCHPAD = _local("scratchpad")
 ACTION_COMMAND = _local("action_command")
+OBSERVATION_ENVELOPE = _local("observation_envelope")
 CONTROLLER = _local("controller")
 INTEGRATION = _local("integration")
 RUNTIME = _local("runtime")
@@ -149,6 +150,9 @@ def install(runtime: Any | None = None) -> None:
         RUNTIME.install_action_hook(BASE, runtime)
 
     environment_base = BASE.BASE
+    OBSERVATION_ENVELOPE.install(environment_base)
+    if runtime is not None:
+        runtime.set_observation_envelope_builder(OBSERVATION_ENVELOPE.from_observation)
     if not getattr(environment_base, "_one_action_parameterized_actions_installed", False):
         environment_base._one_action_parameterized_actions_installed = True
         environment_base.simple_legal_actions = ACTION_COMMAND.legal_action_ids

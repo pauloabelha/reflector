@@ -313,7 +313,7 @@ def controller_class(
                     (item for item in commands if item.command_id == selected_command_id),
                     None,
                 )
-                fast_mode = r2_1.get("control_proposal", {}).get("mode") == "FAST_PATH"
+                fast_mode = (r2_1.get("control_proposal") or {}).get("mode") == "FAST_PATH"
                 if (
                     r2_1.get("execution_authorized", r2_1.get("control_override", False))
                     and (
