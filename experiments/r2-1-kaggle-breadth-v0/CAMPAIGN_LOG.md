@@ -377,10 +377,7 @@ Intervention candidate:
 - The scheduler reuses the causal packet builder's canonical eligibility
   function. A malformed eligible unit remains due and raises the normal packet
   error rather than disappearing behind an approximate predicate.
-- A rejected first compilation remains due until a valid note exists. The
-  previously declared two-consecutive rejected/abstained-call cap is now
-  enforced from durable, workspace-scoped completion blobs and resets after a
-  valid accepted compilation.
+- A rejected first compilation remains due until a valid note exists.
 - Overlapping reasons feed one boolean queue gate; existing pending, replay,
   and maximum-call invariants are unchanged.
 
@@ -388,10 +385,20 @@ Verification before freeze:
 
 - Leaf, v1.4, v1.12, campaign and selected repository suites pass in isolated
   processes, including initial reject→valid, exact causal eligibility,
-  malformed packet, failure-cap, alias, overlap, and positive-cadence tests.
+  malformed packet, alias, overlap, and positive-cadence tests.
 
-Status: contract-verified candidate; requires a clean serial breadth cohort to
-measure call savings and ensure required semantic revisions are not starved.
+Falsified cap variant:
+
+- An intermediate build enforced the previously inert global
+  two-consecutive-failure config. In clean G50T it cut calls 50% by action 19,
+  but the two failures belonged to different alias demands and the cap then
+  suppressed later evidence-driven retries that succeeded in the prior trace.
+- That cap is reverted. New durable alias evidence remains a valid demand after
+  earlier compilation failures. Suppression requires a same-demand identity,
+  which the current queue protocol does not yet persist explicitly.
+
+Status: revised contract-verified candidate; requires a clean serial breadth
+cohort to measure cadence savings without semantic starvation.
 
 ## Promotion discipline
 

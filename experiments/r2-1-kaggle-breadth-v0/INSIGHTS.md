@@ -296,10 +296,20 @@ Intervention:
 - Positive action-count cadence is removed. Initial semantics remain due until
   a canonical valid note exists; exact causal packets, alias evidence, and
   unsupported semantic failures remain demand triggers.
-- The configured consecutive rejection/abstention cap is enforced durably and
-  per workspace, with valid acceptance resetting the count.
+- A rejected initial compilation remains due until a canonical valid note
+  exists.
 
-Status: contract-verified candidate; clean serial breadth evidence pending.
+Falsification:
+
+- Enforcing the previously inert global two-failure cap halved calls by action
+  19 but grouped different alias demands together and suppressed later retries
+  that had succeeded in the prior trace. The cap was reverted.
+- New action/evidence demand must remain eligible after unrelated compilation
+  failures. A future same-demand cap requires a durable demand key rather than
+  a global streak.
+
+Status: revised contract-verified candidate; clean serial breadth evidence
+pending.
 
 ## I10 — Intervention identity includes payload
 

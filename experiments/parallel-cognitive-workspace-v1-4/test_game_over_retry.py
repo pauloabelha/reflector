@@ -101,43 +101,40 @@ def test_qwen_scheduler_uses_demands_not_positive_action_cadence(monkeypatch) ->
     ) is True
 
 
-def test_qwen_consecutive_failure_cap_is_derived_from_durable_compilations(
+def test_two_prior_failures_do_not_suppress_a_new_alias_evidence_demand(
     monkeypatch,
 ) -> None:
-    config = {"prospective_control": {
-        "stop_qwen_after_consecutive_rejected_or_abstained_calls": 2,
-    }}
-    events = [
-        {"seq": 1, "event_type": "QwenTaskCompleted", "workspace_id": "ws",
-         "payload": {"compilation_blob": "first"}},
-        {"seq": 2, "event_type": "QwenTaskCompleted", "workspace_id": "ws",
-         "payload": {"compilation_blob": "second"}},
-    ]
-    blobs = {
-        "first": {"valid_json_contract": False, "accepted": [], "rejected": [{}]},
-        "second": {"valid_json_contract": True, "accepted": [], "rejected": [],
-                   "revision_decision": "abstain"},
-        "legacy-abstain": {"valid_json_contract": True, "accepted": [],
-                           "rejected": []},
-        "valid": {"valid_json_contract": True, "accepted": [{"kind": "working_note"}],
-                  "rejected": []},
+    config = {
+        "qwen": {"trigger_on_new_action_evidence": True},
+        # This legacy field has no sound cross-demand scope and is deliberately
+        # unenforced. Pending-task and exact evidence sequencing still dedupe.
+        "prospective_control": {
+            "stop_qwen_after_consecutive_rejected_or_abstained_calls": 2,
+        },
     }
-    monkeypatch.setattr(BASE.LEDGER, "list_events", lambda root: list(events))
-    monkeypatch.setattr(BASE.LEDGER, "read_blob", lambda root, digest: blobs[digest])
-    assert BASE.qwen_retry_cap_reached(Path("unused"), "ws", config) is True
-
-    events[1]["payload"]["compilation_blob"] = "legacy-abstain"
-    assert BASE.qwen_retry_cap_reached(Path("unused"), "ws", config) is True
-
-    events.append({
-        "seq": 3, "event_type": "QwenTaskCompleted", "workspace_id": "ws",
-        "payload": {"compilation_blob": "valid"},
-    })
-    assert BASE.qwen_retry_cap_reached(Path("unused"), "ws", config) is False
-
-    # Another workspace cannot consume this workspace's retry allowance.
-    events[-1]["workspace_id"] = "other"
-    assert BASE.qwen_retry_cap_reached(Path("unused"), "ws", config) is True
+    state = SimpleNamespace()
+    monkeypatch.setattr(
+        BASE.QC, "initial_semantics_due", lambda state, workspace_id: False,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        BASE.QC, "causal_revision_due", lambda state, workspace_id: False,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        BASE.QC, "alias_revision_due", lambda state, workspace_id: True,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        BASE.QC, "semantic_failure_revision_due",
+        lambda state, workspace_id: False,
+        raising=False,
+    )
+    # task_count=2 represents two durable prior failures; a distinct current
+    # alias evidence demand remains schedulable.
+    assert BASE.qwen_revision_due(
+        state, "ws", config=config, task_count=2
+    ) is True
 
 
 def test_retry_never_authorizes_win_and_consumes_the_same_level_budget() -> None:

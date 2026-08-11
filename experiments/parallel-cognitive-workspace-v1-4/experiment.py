@@ -1732,55 +1732,6 @@ def qwen_revision_due(
     )
 
 
-def qwen_compilation_rejected_or_abstained(compilation: Mapping[str, Any]) -> bool:
-    """Classify a whole Qwen call without misclassifying valid revisions."""
-
-    if compilation.get("revision_decision") == "abstain":
-        return True
-    if not bool(compilation.get("valid_json_contract")):
-        return True
-    # A valid legacy response with no accepted write is its abstention form.
-    # Mixed compilations made at least one valid contribution and therefore
-    # reset the whole-call failure streak.
-    return not bool(compilation.get("accepted"))
-
-
-def qwen_retry_cap_reached(
-    root: Path,
-    workspace_id: str,
-    config: Mapping[str, Any],
-) -> bool:
-    """Enforce the configured consecutive failure cap from durable results."""
-
-    limit = int(
-        config.get("prospective_control", {}).get(
-            "stop_qwen_after_consecutive_rejected_or_abstained_calls", 0
-        )
-    )
-    if limit <= 0:
-        return False
-    completed = sorted(
-        (
-            item for item in LEDGER.list_events(root)
-            if item["event_type"] == "QwenTaskCompleted"
-            and item.get("workspace_id") == workspace_id
-        ),
-        key=lambda item: int(item["seq"]),
-        reverse=True,
-    )
-    consecutive = 0
-    for item in completed:
-        compilation = LEDGER.read_blob(
-            root, str(item["payload"]["compilation_blob"])
-        )
-        if not qwen_compilation_rejected_or_abstained(compilation):
-            break
-        consecutive += 1
-        if consecutive >= limit:
-            return True
-    return False
-
-
 def activate_then_maybe_queue_qwen(
     root: Path,
     workspace_id: str,
@@ -1818,7 +1769,6 @@ def activate_then_maybe_queue_qwen(
     if (
         live_qwen
         and pending_qwen is None
-        and not qwen_retry_cap_reached(root, workspace_id, config)
         and qwen_revision_due(
             state, workspace_id, config=config, task_count=task_count
         )
