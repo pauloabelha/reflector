@@ -22,11 +22,11 @@ import time
 import traceback
 from typing import Any, Iterable
 
-from arcade.r2 import model_backend
+from . import model_backend
 
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parents[1]
+REPO = HERE.parents[2]
 R2_DIR = HERE
 R2_EXPERIMENT = R2_DIR / "experiment.py"
 ENVIRONMENTS = REPO / "environment_files"
@@ -328,7 +328,7 @@ def run_batch(args: argparse.Namespace) -> int:
             result_path = root / "outcomes" / f"{run_name}.json"
             result_path.parent.mkdir(parents=True, exist_ok=True)
             command = [
-                sys.executable, "-m", "arcade.r2.kaggle", "--worker",
+                sys.executable, "-m", "reflector2.r2.kaggle", "--worker",
                 "--game", game, "--level", str(start_level),
                 "--artifact-root", str(run_root), "--result-path", str(result_path),
             ]
