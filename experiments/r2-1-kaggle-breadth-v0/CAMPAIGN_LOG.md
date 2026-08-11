@@ -865,3 +865,18 @@ and accepted two objects each; command identity and the first three frontier
 cuts remained unchanged. The run committed four actions and scored no level
 before the focused deadline. Status: promoted recovery of semantic evidence on
 the same model output, without a score claim.
+
+## Checkpoint 26 — first final-regression failure followed immediately
+
+The first latest-build regression was stopped during G50T when the same safety
+boundary rejected “No visible change after action 1.” Thirteen actions had
+committed with no command, settlement, advisory, animation, transport, or
+frontier invariant failure; all five Qwen cuts were nonempty. The stop therefore
+isolated a second retrospective grammar form rather than a controller failure.
+
+The exemption now also accepts a bare action mention immediately governed by
+`after`/`following` when the same bounded clause contains an observed past
+outcome before or after it. Exact G50 prose compiles, while connector-only,
+future, ambiguous, directive, and mixed forms such as “After Action 1 choose
+Action 2” remain blocked. The broad freeze is restarted from the new commit;
+the interrupted prefix is diagnostic evidence, not a completed cohort.

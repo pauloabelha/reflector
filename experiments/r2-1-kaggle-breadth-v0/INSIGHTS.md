@@ -714,3 +714,12 @@ rejected it, new compiler accepted two objects and the exact evidence-backed
 alias. That rules out prompt/model variation as the cause. The intervention
 improves what R2 can retain and learn; a separate score experiment is still
 required before calling it competence gain.
+
+## I34 — Freeze, stop on causal failure, repair, refreeze
+
+A broad regression should not accumulate evidence under a source that is
+already known to reject valid cognition. The final G50 prefix exposed one
+bounded retrospective form, with every other invariant healthy. Stopping the
+freeze, repairing only that classifier seam, and restarting preserves causal
+interpretability; silently patching a live cohort or averaging across source
+versions would not.

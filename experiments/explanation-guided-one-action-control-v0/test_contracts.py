@@ -2217,6 +2217,25 @@ def test_qwen_safety_filter_accepts_exact_re86_retrospective_response():
     assert compiled["working_note"]["verified"] is False
 
 
+def test_qwen_safety_filter_accepts_exact_g50_following_outcome_response():
+    scratchpad = load("scratchpad_g50_following_outcome") if (HERE / "scratchpad_g50_following_outcome.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    turn = qc.build_turn(SimpleNamespace(objects=[]), (), None)
+    prose = (
+        "Current frame shows four disjoint Figures (f00-f04) with no alignment. All pairs "
+        "are Disjoint, DifferentArea, DifferentOutline, and DifferentInteriorLayout. "
+        "Fit_residual=71.0 indicates significant misalignment. No visible change after "
+        "action 1, suggesting the current verb schemas require refinement. Must identify "
+        "a pair with potential contact without violating other constraints."
+    )
+
+    assert scratchpad._has_action_proposal(prose) is False
+    compiled = qc.compile_response(semantic_response(natural_language=prose), turn)
+    assert compiled["valid_json_contract"] is True
+    assert not compiled["rejected"]
+    assert compiled["working_note"]["verified"] is False
+
+
 def test_qwen_safety_filter_requires_bounded_governor_and_past_outcome():
     scratchpad = load("scratchpad_retrospective_bounds") if (HERE / "scratchpad_retrospective_bounds.py").exists() else load("scratchpad")
     assert scratchpad._has_action_proposal(
@@ -2228,6 +2247,21 @@ def test_qwen_safety_filter_requires_bounded_governor_and_past_outcome():
     assert scratchpad._has_action_proposal("Action 2 moved the visible group.") is True
     assert scratchpad._has_action_proposal("The previous action was Action 2.") is True
     assert scratchpad._has_action_proposal("Move left next.") is True
+
+
+def test_qwen_safety_filter_following_form_requires_observed_outcome_and_still_blocks_mixed_control():
+    scratchpad = load("scratchpad_following_outcome_bounds") if (HERE / "scratchpad_following_outcome_bounds.py").exists() else load("scratchpad")
+    assert scratchpad._has_action_proposal("No visible change after Action 1.") is False
+    assert scratchpad._has_action_proposal(
+        "Following Action 2, the observation changed in the successor frame."
+    ) is False
+    assert scratchpad._has_action_proposal("After Action 1 choose Action 2.") is True
+    assert scratchpad._has_action_proposal("After Action 1, move left next.") is True
+    assert scratchpad._has_action_proposal("Following Action 1 will improve alignment.") is True
+    assert scratchpad._has_action_proposal("After Action 1.") is True
+    assert scratchpad._has_action_proposal(
+        "No visible change after Action 1; choose Action 2."
+    ) is True
 
 
 def test_qwen_safety_filter_retrospective_context_never_masks_directives():

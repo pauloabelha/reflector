@@ -31,6 +31,16 @@ PAST_ACTION_OUTCOME = re.compile(
     r"left|moved|produced|reduced|resolved|resulted|shifted|was|were)\b",
     re.IGNORECASE,
 )
+FOLLOWING_ACTION_CONNECTOR = re.compile(
+    r"\b(?:after|following)\s*$",
+    re.IGNORECASE,
+)
+OBSERVED_ACTION_OUTCOME = re.compile(
+    r"\b(?:no\s+visible\s+change|visible\s+change|observation\s+(?:changed|remained)|"
+    r"adjusted|altered|changed|confirmed|decreased|failed|had|increased|left|moved|"
+    r"produced|reduced|resolved|resulted|shifted|was|were)\b",
+    re.IGNORECASE,
+)
 RETROSPECTIVE_ACTION_WINDOW = 120
 
 
@@ -59,10 +69,18 @@ def _is_bounded_retrospective_action(text: str, match: re.Match[str]) -> bool:
     clause_end = min(next_boundaries, default=len(text))
     prefix = text[max(clause_start, match.start() - RETROSPECTIVE_ACTION_WINDOW):match.start()]
     suffix = text[match.end():min(clause_end, match.end() + RETROSPECTIVE_ACTION_WINDOW)]
-    return bool(
+    governed_history = bool(
         RETROSPECTIVE_ACTION_GOVERNOR.search(prefix)
         and PAST_ACTION_OUTCOME.search(suffix)
     )
+    following_observation = bool(
+        FOLLOWING_ACTION_CONNECTOR.search(prefix)
+        and (
+            OBSERVED_ACTION_OUTCOME.search(prefix)
+            or OBSERVED_ACTION_OUTCOME.search(suffix)
+        )
+    )
+    return governed_history or following_observation
 
 
 def _text_has_action_proposal(text: str) -> bool:
