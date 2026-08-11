@@ -6,7 +6,7 @@ from arcade.agent import ARCADE_UI_VERSION, PAGE, resolve_model_choice
 
 
 def test_agent_arcade_mirrors_all_canonical_scratchpad_fields():
-    assert ARCADE_UI_VERSION == "workspace-tabs-v17"
+    assert ARCADE_UI_VERSION == "workspace-panel-v18"
     assert "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED" in PAGE
     assert "Waiting for the configured model." in PAGE
     assert "ACTION ALIASES · MODEL GLOSS, NOT CONTROL" in PAGE
@@ -20,13 +20,15 @@ def test_agent_arcade_mirrors_all_canonical_scratchpad_fields():
     assert "QWEN SCRATCHPAD · UNVERIFIED" not in PAGE
 
 
-def test_agent_arcade_has_exact_workspace_object_tab():
-    assert 'id=scratchpad-tab' in PAGE
-    assert 'id=workspace-tab' in PAGE
+def test_agent_arcade_has_full_right_workspace_object_panel():
+    assert 'class="panel workspace-column"' in PAGE
+    assert 'id=workspace' in PAGE
+    assert 'id=scratchpad-tab' not in PAGE
+    assert 'id=workspace-tab' not in PAGE
     assert "DURABLE WORKSPACE OBJECT · MODEL WRITE" in PAGE
     assert "const workspace=data.workspace" in PAGE
     assert "Object.entries(workspace)" in PAGE
-    assert "renderSemanticPanel(s)" in PAGE
+    assert "renderWithWorkspaceObject" in PAGE
 
 
 def test_arcade_resolves_only_one_exact_server_allowlisted_choice():

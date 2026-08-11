@@ -11,7 +11,7 @@ from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
 
-ARCADE_UI_VERSION = "workspace-tabs-v17"
+ARCADE_UI_VERSION = "workspace-panel-v18"
 
 
 def resolve_model_choice(
@@ -180,13 +180,14 @@ PAGE = PAGE.replace(
     "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED",
 )
 PAGE = PAGE.replace(
-    '<h2>MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED</h2>',
-    '''<div class=workspace-tabs role=tablist aria-label="Semantic state"><button id=scratchpad-tab class=active role=tab aria-selected=true>SCRATCHPAD</button><button id=workspace-tab role=tab aria-selected=false>WORKSPACE</button></div><h2 id=semantic-panel-title>MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED</h2>''',
+    '<section class=stack>',
+    '<section class="panel workspace-column"><h2>DURABLE WORKSPACE OBJECT · MODEL WRITE</h2><div id=workspace><div class=workspace-empty>Waiting for a durable workspace write.</div></div><div class=workspace-legacy hidden>',
 )
+PAGE = PAGE.replace("</section></main>", "</div></section></main>")
 PAGE = PAGE.replace(
     "</head>",
     """<style>
-.workspace-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}.workspace-tabs button{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--muted)}.workspace-tabs button.active{color:var(--cyan);border-color:var(--cyan);background:#0b1815}.workspace-field{padding:9px 0;border-top:1px solid var(--line)}.workspace-field:first-child{border-top:0}.workspace-field h3{margin:0 0 5px;color:var(--lime);font-size:11px;letter-spacing:.08em}.workspace-empty{color:var(--muted);line-height:1.5}
+.workspace-column{overflow:auto;min-height:0;border-left:3px solid var(--lime)}.workspace-legacy{display:none!important}.workspace-field{padding:9px 0;border-top:1px solid var(--line)}.workspace-field:first-child{border-top:0}.workspace-field h3{margin:0 0 5px;color:var(--lime);font-size:11px;letter-spacing:.08em}.workspace-empty{color:var(--muted);line-height:1.5}@media(max-width:1050px){main{grid-template-columns:minmax(210px,.5fr) minmax(400px,1fr) minmax(300px,.7fr)}}@media(max-width:720px){main{grid-template-columns:1fr}.workspace-column{max-height:55dvh}}
 </style></head>""",
 )
 PAGE = PAGE.replace(
@@ -229,7 +230,7 @@ PAGE = PAGE.replace(
 PAGE = PAGE.replace(
     "</body>",
     """<script>
-const expectedArcadeUiVersion='workspace-tabs-v17';
+const expectedArcadeUiVersion='workspace-panel-v18';
 const versionedApiBase=api;
 api=async function(path,body){
   const value=await versionedApiBase(path,body);
@@ -359,7 +360,7 @@ render = function(){
 )
 PAGE = PAGE.replace(
     "$('#scratch').innerHTML=s?pretty(s):",
-    "$('#scratch').innerHTML=s?renderSemanticPanel(s):",
+    "$('#scratch').innerHTML=s?renderModelScratchpad(s):",
 )
 PAGE = PAGE.replace(
     "</head>",
@@ -384,24 +385,14 @@ function renderModelScratchpad(s){
   if((s.r2_action_traces||[]).length)html+='<div class=entry><small>R2 OBSERVATION TRACE</small><br>'+s.r2_action_traces.map(esc).join('<br>')+'</div>';
   return html;
 }
-let semanticPanelView='scratchpad';
 function workspaceField(name,value){return `<section class=workspace-field><h3>${esc(name)}:</h3>${pretty(value)}</section>`}
 function renderWorkspaceObject(){
   const workspace=data.workspace;
   if(!workspace||typeof workspace!=='object')return '<div class=workspace-empty>Waiting for a durable workspace write.</div>';
   return Object.entries(workspace).map(([name,value])=>workspaceField(name,value)).join('');
 }
-function renderSemanticPanel(s){return semanticPanelView==='workspace'?renderWorkspaceObject():renderModelScratchpad(s)}
-function selectSemanticPanel(view){
-  semanticPanelView=view;
-  const scratch=view==='scratchpad';
-  $('#scratchpad-tab').classList.toggle('active',scratch);$('#scratchpad-tab').setAttribute('aria-selected',String(scratch));
-  $('#workspace-tab').classList.toggle('active',!scratch);$('#workspace-tab').setAttribute('aria-selected',String(!scratch));
-  $('#semantic-panel-title').textContent=scratch?'MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED':'DURABLE WORKSPACE OBJECT · MODEL WRITE';
-  $('#scratch').innerHTML=renderSemanticPanel(data.scratchpad||{});
-}
-$('#scratchpad-tab').onclick=()=>selectSemanticPanel('scratchpad');
-$('#workspace-tab').onclick=()=>selectSemanticPanel('workspace');
+const renderWithWorkspaceObject=render;
+render=function(){renderWithWorkspaceObject();$('#workspace').innerHTML=renderWorkspaceObject()};
 </script></body>""",
 )
 PAGE = PAGE.replace(
