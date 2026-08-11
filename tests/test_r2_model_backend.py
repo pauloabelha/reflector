@@ -325,7 +325,61 @@ def test_agent_arcade_uses_provider_neutral_visible_labels():
     assert "model-context" not in PAGE
     for heading in ("Explanation", "Goal", "Expectation", "Notes"):
         assert f"scratchField('{heading}'" in PAGE
+    assert "const exact=s.model_scratchpad" in PAGE
     assert "QWEN SCRATCHPAD · UNVERIFIED" not in PAGE
+
+
+def test_model_scratchpad_is_one_exact_four_field_object():
+    from arcade.r2 import scratchpad
+
+    source = {
+        "notes": "  observed successor  ",
+        "expectation": "residual decreases",
+        "goal": "fit the compatible structures",
+        "explanation": "the structures instantiate fit",
+    }
+    canonical = scratchpad.canonical_model_scratchpad(source)
+    assert list(canonical) == ["explanation", "goal", "expectation", "notes"]
+    assert canonical["notes"] == "observed successor"
+    canonical["goal"] = "changed copy"
+    assert source["goal"] == "fit the compatible structures"
+
+
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        None,
+        {},
+        {"explanation": "x", "goal": "g", "expectation": "e"},
+        {"explanation": "x", "goal": "g", "expectation": "e", "notes": "n", "extra": "no"},
+        {"explanation": "x", "goal": "g", "expectation": "e", "notes": 3},
+        {"explanation": "x", "goal": " ", "expectation": "e", "notes": "n"},
+    ],
+)
+def test_model_scratchpad_rejects_shape_drift(invalid):
+    from arcade.r2 import scratchpad
+
+    with pytest.raises(ValueError, match="model scratchpad"):
+        scratchpad.canonical_model_scratchpad(invalid)
+
+
+def test_model_scratchpad_serialization_is_stable_and_wysiwyg():
+    from arcade.r2 import scratchpad
+
+    first = {"explanation": "x", "goal": "g", "expectation": "e", "notes": "n"}
+    reordered = {"notes": "n", "goal": "g", "explanation": "x", "expectation": "e"}
+    assert scratchpad.model_scratchpad_text(first) == scratchpad.model_scratchpad_text(reordered)
+    assert json.loads(scratchpad.model_scratchpad_text(first)) == first
+
+
+def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
+    from arcade.r2 import scratchpad
+
+    source = Path(scratchpad.__file__).read_text(encoding="utf-8")
+    assert 'document["model_scratchpad"] = copy.deepcopy(projection["scratchpad"])' in source
+    assert '"allowed_vocabulary", "model_scratchpad",' in source
+    assert '"model_scratchpad": dict(scratchpad)' in source
+    assert '"required": ["protocol", "request_id", "scratchpad", "workspace_write"]' in source
 
 
 def test_arcade_picker_validates_custom_budgets_and_restores_environment(monkeypatch):
