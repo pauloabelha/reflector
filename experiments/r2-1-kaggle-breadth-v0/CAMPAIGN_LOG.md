@@ -880,3 +880,24 @@ outcome before or after it. Exact G50 prose compiles, while connector-only,
 future, ambiguous, directive, and mixed forms such as “After Action 1 choose
 Action 2” remain blocked. The broad freeze is restarted from the new commit;
 the interrupted prefix is diagnostic evidence, not a completed cohort.
+
+## Checkpoint 27 — close the observed retrospective grammar
+
+The restarted freeze crossed G50T cleanly, then stopped at LP85's exact phrase
+“fit_residual remains ... despite action 6. ... no visible change occurred.”
+Through LP85, six games committed 46 actions with zero command, payload,
+settlement, advisory, animation, frontier, transport, or runtime exception;
+18/18 Qwen frontiers were nonempty. The sole compiler rejection was this valid
+retrospective response.
+
+Rather than enumerate another connector, the classifier now recognizes a bare
+opaque action as history only when a known observed-outcome phrase is causally
+adjacent within 140 characters, with no intervening action, modal/future
+language, semicolon, or multiple claim boundaries. A parenthesized plural
+action list is the only shared-outcome exception. Directive/control tokens
+remain independently fatal per match.
+
+All 57 formerly safety-rejected parsed responses in the stored breadth corpus
+now classify as historical, while modal/future, choose, next-move, mixed-action,
+prior-sentence, and ambiguous-selected adversarials remain blocked. Status:
+contract-validated; exact LP85 live replay is the promotion gate.

@@ -2244,7 +2244,7 @@ def test_qwen_safety_filter_requires_bounded_governor_and_past_outcome():
     assert scratchpad._has_action_proposal(
         "Prior actions (Action 2, Action 4) failed to change the frame."
     ) is False
-    assert scratchpad._has_action_proposal("Action 2 moved the visible group.") is True
+    assert scratchpad._has_action_proposal("Action 2 moved the visible group.") is False
     assert scratchpad._has_action_proposal("The previous action was Action 2.") is True
     assert scratchpad._has_action_proposal("Move left next.") is True
 
@@ -2290,6 +2290,44 @@ def test_qwen_safety_filter_accepts_bounded_retrospective_corpus_phrases():
     ]
     for text in retrospective_phrases:
         assert scratchpad._has_action_proposal(text) is False, text
+
+
+def test_qwen_safety_filter_accepts_every_remaining_stored_historical_form():
+    scratchpad = load("scratchpad_closed_historical_corpus") if (HERE / "scratchpad_closed_historical_corpus.py").exists() else load("scratchpad")
+    stored_clauses = [
+        "Action 1 resulted in no visible change, confirming alignment stability.",
+        "Action 4 moved all figures right 3 units; fit_residual remains 84.0.",
+        "Action 7 moved f00 left 3 and f03 left 6, but fit_residual remains 84.0.",
+        "Action 6: No visible change. R2's semantic projection confirms an open mechanism.",
+        "No visible change from action 6 confirms the hypothesis requires further evidence.",
+        "No visible change from Action 2 suggests the mechanism requires refinement.",
+        "Action 5 (no visible change) suggests no structural shift.",
+        "Action 2 (align pair) reduced fit_residual from 65.0 to 59.0.",
+        "No visible change from Action 3 suggests the current state is stable.",
+        "No visible change from Action 2 suggests alignment attempts failed.",
+        (
+            "Fit_residual remains at 18.0 despite action 6. Alignment constraints are "
+            "satisfied for all pairs, but no visible change occurred."
+        ),
+    ]
+    for text in stored_clauses:
+        assert scratchpad._has_action_proposal(text) is False, text
+
+
+def test_qwen_safety_filter_closed_historical_rule_rejects_adversarial_inheritance():
+    scratchpad = load("scratchpad_closed_historical_adversarial") if (HERE / "scratchpad_closed_historical_adversarial.py").exists() else load("scratchpad")
+    unsafe_or_ambiguous = [
+        "Action 1 may have failed.",
+        "Action 1 should have moved the figure.",
+        "Action 1 moved the figure; choose Action 2.",
+        "Action 1. Action 2 moved the figure.",
+        "No visible change. Action 1.",
+        "Action 1 was selected.",
+        "Action 1, move left next.",
+        "Action 1 will be followed by no visible change.",
+    ]
+    for text in unsafe_or_ambiguous:
+        assert scratchpad._has_action_proposal(text) is True, text
 
 
 def test_initial_working_hypothesis_is_an_unverified_explanation():

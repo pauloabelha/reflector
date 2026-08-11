@@ -723,3 +723,13 @@ bounded retrospective form, with every other invariant healthy. Stopping the
 freeze, repairing only that classifier seam, and restarting preserves causal
 interpretability; silently patching a live cohort or averaging across source
 versions would not.
+
+## I35 — Generalize from the closed failure set, not one connector at a time
+
+Retrospective action evidence appeared subject-first, outcome-first,
+parenthetical, colon-delimited, coordinated, and once across an immediately
+following sentence. Patching words such as “previous,” “after,” and “despite”
+individually would keep chasing syntax. The transferable invariant is causal
+adjacency between one opaque action mention and one observed outcome, bounded
+against other actions, future/modal language, and claim boundaries. The full
+stored false-positive set plus adversarial controls defines that contract.

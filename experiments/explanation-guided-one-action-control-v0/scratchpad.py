@@ -22,34 +22,80 @@ ACTION_PROPOSAL = re.compile(
     r"move\s+(?:up|down|left|right))\b",
     re.IGNORECASE,
 )
-RETROSPECTIVE_ACTION_GOVERNOR = re.compile(
-    r"\b(?:previous|prior|last|latest|recent)\s+actions?\b",
-    re.IGNORECASE,
-)
-PAST_ACTION_OUTCOME = re.compile(
-    r"\b(?:adjusted|altered|changed|confirmed|decreased|failed|had|increased|"
-    r"left|moved|produced|reduced|resolved|resulted|shifted|was|were)\b",
-    re.IGNORECASE,
-)
-FOLLOWING_ACTION_CONNECTOR = re.compile(
-    r"\b(?:after|following)\s*$",
-    re.IGNORECASE,
-)
 OBSERVED_ACTION_OUTCOME = re.compile(
-    r"\b(?:no\s+visible\s+change|visible\s+change|observation\s+(?:changed|remained)|"
-    r"adjusted|altered|changed|confirmed|decreased|failed|had|increased|left|moved|"
-    r"produced|reduced|resolved|resulted|shifted|was|were)\b",
+    r"\b(?:no\s+visible\s+change|visible\s+(?:change|configuration\s+changed)|"
+    r"observation\s+(?:changed|remained)|adjusted|altered|changed|confirmed|decreased|"
+    r"failed|increased|left|moved|occurred|produced|reduced|remained|remains|resolved|"
+    r"resulted|shifted)\b",
     re.IGNORECASE,
 )
-RETROSPECTIVE_ACTION_WINDOW = 120
+FUTURE_OR_MODAL_CONTROL = re.compile(
+    r"\b(?:could|future|may|might|must|next|plan|propose|recommend|should|try|will|would)\b",
+    re.IGNORECASE,
+)
+RETROSPECTIVE_ACTION_WINDOW = 140
+
+
+def _is_coordinated_historical_action_list(
+    text: str,
+    action_match: re.Match[str],
+    outcome_match: re.Match[str],
+) -> bool:
+    """Recognize a parenthesized action list sharing one observed outcome."""
+
+    if outcome_match.start() < action_match.end():
+        return False
+    open_paren = text.rfind("(", 0, action_match.start())
+    close_paren = text.find(")", action_match.end(), outcome_match.start())
+    if open_paren < 0 or close_paren < 0:
+        return False
+    governor = text[max(0, open_paren - 48):open_paren]
+    return bool(re.search(r"\bactions\s*$", governor, re.IGNORECASE))
+
+
+def _outcome_is_causally_adjacent(
+    text: str,
+    action_match: re.Match[str],
+    outcome_match: re.Match[str],
+) -> bool:
+    """Require a short, unambiguous link from one opaque action to an outcome."""
+
+    if outcome_match.end() <= action_match.start():
+        gap = text[outcome_match.end():action_match.start()]
+        if len(gap) > RETROSPECTIVE_ACTION_WINDOW or any(
+            boundary in gap for boundary in (".", "!", "?", ";", "\n")
+        ):
+            return False
+    elif outcome_match.start() >= action_match.end():
+        gap = text[action_match.end():outcome_match.start()]
+        if len(gap) > RETROSPECTIVE_ACTION_WINDOW:
+            return False
+        # An outcome may begin the immediately following sentence, but it may
+        # not inherit across multiple claims or a semicolon/new paragraph.
+        if sum(gap.count(boundary) for boundary in (".", "!", "?")) > 1 or any(
+            boundary in gap for boundary in (";", "\n")
+        ):
+            return False
+    else:
+        return False
+    if FUTURE_OR_MODAL_CONTROL.search(gap):
+        return False
+    return bool(
+        not ACTION_PROPOSAL.search(gap)
+        or _is_coordinated_historical_action_list(
+            text,
+            action_match,
+            outcome_match,
+        )
+    )
 
 
 def _is_bounded_retrospective_action(text: str, match: re.Match[str]) -> bool:
     """Accept an opaque action mention only as bounded observed history.
 
     Directive/control matches are never eligible.  A bare Action-N or move
-    direction needs both an explicit retrospective governor before it and a
-    past outcome predicate after it in the same short clause.
+    direction is historical only when a nearby observed outcome is connected
+    without another action, modal/future control language, or claim boundary.
     """
 
     token = match.group(0)
@@ -59,28 +105,16 @@ def _is_bounded_retrospective_action(text: str, match: re.Match[str]) -> bool:
         re.IGNORECASE,
     ):
         return False
-    clause_start = max(
-        text.rfind(boundary, 0, match.start()) for boundary in (".", "!", "?", ";", "\n")
-    ) + 1
-    next_boundaries = [
-        position for boundary in (".", "!", "?", ";", "\n")
-        if (position := text.find(boundary, match.end())) >= 0
-    ]
-    clause_end = min(next_boundaries, default=len(text))
-    prefix = text[max(clause_start, match.start() - RETROSPECTIVE_ACTION_WINDOW):match.start()]
-    suffix = text[match.end():min(clause_end, match.end() + RETROSPECTIVE_ACTION_WINDOW)]
-    governed_history = bool(
-        RETROSPECTIVE_ACTION_GOVERNOR.search(prefix)
-        and PAST_ACTION_OUTCOME.search(suffix)
-    )
-    following_observation = bool(
-        FOLLOWING_ACTION_CONNECTOR.search(prefix)
-        and (
-            OBSERVED_ACTION_OUTCOME.search(prefix)
-            or OBSERVED_ACTION_OUTCOME.search(suffix)
+    window_start = max(0, match.start() - RETROSPECTIVE_ACTION_WINDOW)
+    window_end = min(len(text), match.end() + RETROSPECTIVE_ACTION_WINDOW)
+    return any(
+        _outcome_is_causally_adjacent(text, match, outcome)
+        for outcome in OBSERVED_ACTION_OUTCOME.finditer(
+            text,
+            window_start,
+            window_end,
         )
     )
-    return governed_history or following_observation
 
 
 def _text_has_action_proposal(text: str) -> bool:
