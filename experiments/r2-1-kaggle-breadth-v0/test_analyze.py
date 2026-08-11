@@ -190,3 +190,22 @@ def test_timeout_partial_outcome_counts_only_committed_successors(tmp_path):
         "uncommitted_pending_actions": 1,
         "partial_ledger_recovered": True,
     }
+
+
+def test_click_repetition_uses_exact_command_not_bare_action_id():
+    analyzer = load_analyzer()
+    first = traced_turn(1, action=6, selected=6, changed=False)
+    second = traced_turn(2, action=6, selected=6, changed=False)
+    third = traced_turn(3, action=6, selected=6, changed=False)
+    first["decision"]["selected_command"] = {"command_id": "click:a"}
+    second["decision"]["selected_command"] = {"command_id": "click:b"}
+    third["decision"]["selected_command"] = {"command_id": "click:b"}
+
+    classified = analyzer.classify_trace([first, second, third])
+    # Distinct coordinates are distinct interventions; only the exact repeated
+    # click command is evidence of repeated non-informative probing.
+    assert classified["layers"]["exploration_no_change"]["evidence"] == [
+        {"changed_observations": 0},
+        {"no_change_observations": 3},
+        {"consecutive_identical_no_change": 1},
+    ]

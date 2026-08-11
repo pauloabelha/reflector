@@ -230,5 +230,80 @@ Inference:
   an empirical question requiring real multi-support traces and a separate,
   evidence-bounded interpreter.
 
-Status: contract-verified observability candidate; real packet prevalence and
-decision impact remain unmeasured.
+Evidence:
+
+- 2,763 of 12,025 observations in the local 50-recording corpus are
+  multi-support; 2,002 contain distinct frames and fourteen games are affected.
+- The current frozen G50T trace preserves seven real multi-support packets in
+  its first thirteen observations. Declared settled frames equal legacy grids
+  exactly, and replay returns the complete order.
+- Only the perception-evidence classification changes. Identity, mechanics,
+  planning, exploration, runtime, and success assessments remain unchanged.
+
+Status: promoted as an observation/provenance repair. Transient-frame
+interpretation and control value remain unmeasured and unauthorized.
+
+## I8 — Exact equivalence can remove fitting cost without removing hypotheses
+
+Observed:
+
+- FT09 generated 4,032 ordered role pairs but only 29 distinct vectors in the
+  nine dimensions used by Pareto dominance. Repeated equal-vector comparisons
+  consumed most of the grounding time.
+
+Intervention:
+
+- Evaluate every role tuple as before, index exact-equal dominance vectors,
+  compute the vector frontier, and restore all nondominated tuple members in
+  original order before unchanged ranking.
+
+Evidence:
+
+- Exhaustive and indexed results are exactly equal on the stored real FT09
+  frame, including all 994 Pareto members and selected top bindings.
+- Wall time improved about 5.1–5.6× in repeated local measurements.
+
+Inference:
+
+- This is a transferable efficiency gain because it changes neither the
+  hypothesis population nor epistemic authority. It buys more environment
+  interactions per deadline without hiding difficult bindings.
+
+Status: frozen in `4b2932d`; live breadth throughput and score effects pending.
+
+## I9 — Semantic model calls should be triggered by durable demand
+
+Observed:
+
+- In a 61-queue breadth snapshot, seven calls (11.5%) were caused only by
+  positive action-count cadence. Three were exact semantic no-ops; none carried
+  a causal-revision packet.
+- The other 54 calls had observable demand. Repeated alias calls sometimes
+  succeeded only after an earlier compiler rejection, so suppressing retries
+  merely because an action was seen before would lose useful work.
+
+Safe hypothesis:
+
+- Preserve the initial call. Queue later only for the exact causal-packet
+  eligibility predicate, new unaliased-action evidence, or explicit unsupported
+  R2 semantic rejection/refutation. Overlapping reasons still create one task.
+- Open mechanisms, confirmed/progress explanations, and fixed counts alone do
+  not demand Qwen. The scheduler requests semantics but never repairs or
+  invents them.
+
+Status: audited design; implementation waits for the reset-boundary seam to
+avoid concurrent changes to inherited scheduling code.
+
+## I10 — Intervention identity includes payload
+
+Observed:
+
+- Once click actions became executable, action-only analysis could falsely
+  label two different coordinates as the same repeated no-change probe.
+
+Intervention:
+
+- Repetition analysis keys parameterized actions by exact durable command ID
+  and falls back to action ID for simple controls.
+
+Status: contract-verified telemetry correction; no effect on controller choice.

@@ -32,6 +32,13 @@ def digest(value: Any) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def intervention_identity(decision: dict[str, Any], action: Any) -> str:
+    command = decision.get("selected_command") or {}
+    if isinstance(command, dict) and command.get("command_id"):
+        return str(command["command_id"])
+    return f"action:{action}"
+
+
 FAILURE_LAYERS = (
     "execution_coverage",
     "perception_animation_evidence",
@@ -83,7 +90,7 @@ def classify_trace(
     identity_statuses: Counter[str] = Counter()
     mechanism_statuses: Counter[str] = Counter()
     prior_frame_digest = None
-    prior_action = None
+    prior_command = None
     prior_no_change = False
     traced_levels_completed = 0
 
@@ -106,14 +113,15 @@ def classify_trace(
         elif observation_changed is False:
             unchanged += 1
         action = settlement.get("action")
+        command_identity = intervention_identity(decision, action)
         frame_digest = digest(turn.get("frame"))
         if (
             observation_changed is False and prior_no_change
-            and action == prior_action and frame_digest == prior_frame_digest
+            and command_identity == prior_command and frame_digest == prior_frame_digest
         ):
             repeated_no_change += 1
         prior_no_change = observation_changed is False
-        prior_action = action
+        prior_command = command_identity
         prior_frame_digest = frame_digest
         selected = decision.get("selected_action")
         if action is not None and selected is not None and int(action) != int(selected):
@@ -335,7 +343,7 @@ def analyze_episode(
     mismatches = []
     repeated_no_change = []
     previous_frame_digest = None
-    previous_action = None
+    previous_command = None
     previous_no_change = False
     for turn in replay["timeline"]:
         decision = turn.get("executed_decision") or turn.get("decision") or {}
@@ -357,14 +365,18 @@ def analyze_episode(
         if action is not None and selected is not None and int(action) != int(selected):
             mismatches.append({"turn": turn["turn"], "executed": action, "contract": selected})
         frame_digest = digest(turn.get("frame"))
+        command_identity = intervention_identity(decision, action)
         if (
             settlement.get("observation_changed") is False
             and previous_no_change
-            and previous_action == action
+            and previous_command == command_identity
             and previous_frame_digest == frame_digest
         ):
-            repeated_no_change.append({"turn": turn["turn"], "action": action})
-        previous_action = action
+            repeated_no_change.append({
+                "turn": turn["turn"], "action": action,
+                "command_id": command_identity,
+            })
+        previous_command = command_identity
         previous_frame_digest = frame_digest
         previous_no_change = settlement.get("observation_changed") is False
     return {

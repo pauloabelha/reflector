@@ -223,6 +223,23 @@ Status: contract-verified observability candidate. No claim is made that R2.1
 interprets transient supports yet; a fresh real trace must first demonstrate
 that the toolkit supplies multi-support packets for the selected games.
 
+Real prevalence and provenance audit:
+
+- Across 50 toolkit recordings and 12,025 observations, 2,763 packets (22.98%)
+  have multiple supports; 2,002 contain more than one distinct support.
+- Fourteen games contain multi-support observations. Recorded packets range
+  from 2 to 42 supports.
+- In the current frozen G50T trace, 7 of the first 13 observations are
+  multi-support, including packets with 7–21 supports. Each envelope's declared
+  settled support exactly equals the legacy control grid, while replay exposes
+  the complete ordered packet.
+- The failure classifier changes only `perception_animation_evidence` from
+  static/partial to ordered evidence observed; all other layer assessments are
+  unchanged.
+
+Status: promoted as an observation/provenance repair. Interpreting transient
+supports remains a separate unimplemented hypothesis.
+
 Timeout accounting correction:
 
 - The first frozen `g50t` deadline row reported null actions even though its
@@ -244,6 +261,44 @@ Live mixed/click regression and repair:
 - The controller now normalizes only that optional field to an empty mapping.
   A contract reproduces the null ranking and verifies ordinary probe selection
   remains unchanged.
+
+Exact grounding-efficiency candidate:
+
+- The audited FT09 frame contains 64 regions and 4,032 ordered role pairs, but
+  only 29 distinct vectors in the exact dimensions used by Pareto dominance.
+- The new index still evaluates every role pair, compares one representative
+  per exactly equal vector, then restores every member of each nondominated
+  vector before the unchanged ranking and top-k stages.
+- Indexed and exhaustive grounding outputs are exactly equal on the real FT09
+  frame: candidate count 4,032, Pareto count 994, and identical selected
+  bindings. Measured grounding time fell by roughly 5.1–5.6×.
+
+Frozen breadth restart:
+
+- Revision `4b2932d` is pushed and preregistered in
+  `run-20260811T041300Z-frozen-4b2932d` across all 25 local games.
+- The invalid pre-fix campaign was stopped while AR25 still held the old
+  controller in memory; its earlier G50T/LF52 traces remain diagnostic only.
+
+Demand-driven Qwen audit:
+
+- Of 61 durable queues in the audited breadth snapshot, 54 had observable
+  demand (initial semantics, new unaliased-action evidence, or overlap with
+  explicit refutation) and seven were positive-count cadence only.
+- The cadence-only calls were 11.5% of queues; three were proven semantic
+  no-ops, while none carried a causal-revision packet.
+- Alias retries cannot be suppressed wholesale: later retries sometimes
+  compiled successfully after earlier format rejection, and no duplicate exact
+  `(workspace, action, evidence)` queue key was observed.
+- Safe implementation requires replacing cadence with the exact causal-packet
+  eligibility predicate plus initial, alias-evidence, and explicit unsupported
+  semantic-failure demand. It remains designed, not yet promoted.
+
+Parameterized repetition telemetry correction:
+
+- Analyzer no-change identity now uses exact `selected_command.command_id` when
+  present. Different click coordinates are distinct interventions even though
+  they share `ACTION6`; simple actions retain action-ID identity.
 
 ## Promotion discipline
 
