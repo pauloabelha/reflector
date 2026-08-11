@@ -759,3 +759,24 @@ decisions in final closure. Score did not follow. The remaining work is to turn
 exact interventions and ordered successors into trustworthy situated effects,
 then into milestones and plans. More raw action breadth, generic fit prose, or
 unverified structural averaging will not cross that boundary by itself.
+
+## I39 — Repeated score under the final source closes the promotion loop
+
+The command-identity repair first restored AR25's exact clearing trajectory in
+a targeted same-state run, then scored in the primary 25-game breadth pass, and
+finally reproduced the action-17 clear after every later generic intervention.
+That sequence—diagnosis, exact causal repair, breadth observation, final-source
+replication—is the standard a score-moving change should meet. It remains one
+game of evidence and must not be generalized into a hidden-game claim.
+
+## I40 — Cross-level similarity is a hypothesis, not inherited authority
+
+AR25's exact situated keys prevented level-1 effects from aliasing different
+level-2 objects, which is the correct safe default. A shadow fresh-versus-carried
+comparison then found genuine cross-level conflicts: one command reversed
+direction and doubled magnitude, while two others depended on the current
+state regime. Historical action-use counts can reduce redundant probing, but
+they can also skip necessary re-identification. Structural transfer should
+therefore enter a new level only as a bounded discriminating hypothesis after
+cross-context consensus and explicit regime checks—not as an averaged effect,
+role-label match, or progress-authorized command.

@@ -975,3 +975,54 @@ command controls, and held-out prospective confirmation before probe-only
 promotion. Structural cross-level transfer remains high eventual leverage but
 has only one authoritative level-2 boundary and must remain probe-only until
 more local confirmations exist.
+
+## Checkpoint 30 — final realistic-budget score replication
+
+The final source `a101c72` was frozen for a 300-second-per-game score cohort.
+Six games finalized before the parent was stopped after its next worker ceased
+progressing: G50T 26/0, LF52 9/0, AR25 19/1, FT09 16/0, LS20 12/0, and LP85
+20/0 (actions/levels). Aggregate: 102 committed actions, one level, six
+timeouts, zero errors or authority/replay failures.
+
+AR25 independently reproduced the exact score boundary under all final changes:
+action 17 completed the same `1, 2×11, 3×5` learned trajectory, committed the
+known successor digest, and incremented levels to one. Actions 18–19 continued
+in level 2. No route was encoded; the trajectory emerged through the repaired
+command identity and environment-confirmed mechanics.
+
+The other five games matched or modestly exceeded primary action depth without
+scoring. Completed Qwen calls remained transport-clean and accepted, and
+frontiers remained nonempty. This strengthens the causal score result while
+also confirming that one generic control repair has not yet converted broad
+mechanic access into broad score.
+
+On the same six games, the primary build used 33 queued / 31 completed Qwen
+calls and accepted 23; the final build used 27 / 25 and accepted all 25. It
+therefore queued 18.2% fewer calls while producing 8.7% more accepted objects.
+The primary slice had seven retrospective-language false positives, one stale
+proposal rejection, two empty frontiers, and three projection-induced semantic
+failure demands. The final slice had none of those failures. This is strong
+evidence that the final cognition path delivers denser usable evidence, not
+evidence that it broadly improves score.
+
+## Checkpoint 31 — AR25 level-boundary transfer audit
+
+A shadow comparison used the same stored AR25 level-2 start with carried
+level-1 state and with a fresh state. Exact situated effect keys remained
+fail-closed: level-1 and level-2 region value/area/shape identities differed,
+so none of 30 learned level-1 role effects was silently applied in level 2.
+Both traces correctly began with uninitialized identities and unsupported
+current mechanisms.
+
+Carried action-use counts skipped three already-used commands, but neither
+trace cleared level 2. More importantly, effects were regime-dependent:
+level-1 action 3 moved in the opposite direction and at half the magnitude of
+the observed level-2 action-3 effect, while actions 1 and 2 sometimes had no
+effect in the initial level-2 regime and moved only later. Schema-level
+confirmation counters also did not cross the mechanism gate.
+
+The existing exact-key transfer is therefore safe, but structural backoff is
+not promoted. Any future cross-level hypothesis must remain a single bounded
+discriminating probe, require directional consensus and current-regime
+compatibility, and never inherit PROGRESS_ELIGIBLE authority from a prior
+level. This audit found no evidence that such backoff would yet increase score.
