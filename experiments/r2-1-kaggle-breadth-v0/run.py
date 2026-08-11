@@ -224,7 +224,11 @@ def aggregate(rows: list[dict[str, Any]], *, run_id: str, started_at: str, deadl
             str(row["game"]) for row in completed if int(row.get("levels_completed") or 0) > 0
         }),
         "total_levels_completed": sum(int(row.get("levels_completed") or 0) for row in completed),
-        "total_actions": sum(int(row.get("actions") or 0) for row in completed),
+        # Error and timeout rows recover ``actions`` from TransitionCommitted
+        # events.  Those actions happened even when the run did not produce a
+        # scored completion; uncommitted ActionPending events are reported in a
+        # separate row field and must not be added here.
+        "total_actions": sum(int(row.get("actions") or 0) for row in rows),
         "replay_failures": sum(row.get("replay_verified") is False for row in completed),
         "authority_violations": sum(int(row.get("support_authority_violations") or 0) for row in completed),
         "rows": rows,

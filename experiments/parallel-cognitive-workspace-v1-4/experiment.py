@@ -1334,13 +1334,41 @@ def admitted_qwen_request(
     token_budget = int(maximum_budget)
     rebuilds = 0
     maximum_rebuilds = int(qwen.get("max_context_budget_rebuilds", 2))
+    frontier_budget_errors = tuple(
+        dict.fromkeys(
+            (EG.FrontierBudgetError, QC.GRAPH.FrontierBudgetError)
+        )
+    )
+
+    def mandatory_closure_fallback() -> tuple[Any, dict[str, Any], Any, int, int]:
+        """Try the exact minimum dependency-closed frontier before giving up.
+
+        A guided decrement is intentionally approximate because removing one
+        frontier token can change the rendered request and its schema enums by
+        a different amount.  Once that bounded search is exhausted, probe a
+        one-token budget to obtain the graph's exact mandatory-closure cost,
+        then admit that closure normally.  The admission gate is never
+        bypassed: mandatory content that cannot fit still fails pre-transport.
+        """
+
+        fallback_rebuilds = rebuilds + 1
+        try:
+            turn, request, admission = candidate(1)
+            return turn, request, admission, 1, fallback_rebuilds
+        except frontier_budget_errors as error:
+            required = int(error.required)
+            if required < 1 or required > maximum_budget:
+                raise
+            turn, request, admission = candidate(required)
+            return turn, request, admission, required, fallback_rebuilds + 1
+
     while True:
         try:
             turn, request, admission = candidate(token_budget)
             return turn, request, admission, token_budget, rebuilds
-        except EG.FrontierBudgetError as error:
+        except frontier_budget_errors as error:
             if rebuilds >= maximum_rebuilds:
-                raise
+                return mandatory_closure_fallback()
             required = int(error.required)
             if required >= token_budget or required > maximum_budget:
                 raise
@@ -1348,7 +1376,9 @@ def admitted_qwen_request(
             rebuilds += 1
         except QC.ContextAdmissionError as error:
             if rebuilds >= maximum_rebuilds:
-                raise
+                if token_budget <= 1:
+                    raise
+                return mandatory_closure_fallback()
             deficit = max(1, int(error.report.occupied_tokens - error.report.context_window_tokens))
             # One model token removed from the serialized request generally
             # costs less than one frontier-budget token because object IDs also
@@ -1356,6 +1386,19 @@ def admitted_qwen_request(
             # deliberately conservative and bounds expensive full rebuilds.
             decrement = max(1, (3 * deficit + 3) // 4)
             proposed = max(1, token_budget - decrement)
+            # A frontier is a staircase: many nearby budgets can render the
+            # exact same cut.  The candidate annotates admission failures with
+            # that cut's exact cost, so ``used - 1`` crosses the current
+            # plateau while preserving the largest cheaper dependency-closed
+            # alternative.  Fall back to the conservative decrement for
+            # generic candidates that cannot expose this checkpoint.
+            used = getattr(error, "frontier_used_tokens", None)
+            if (
+                isinstance(used, int)
+                and not isinstance(used, bool)
+                and 1 < used <= token_budget
+            ):
+                proposed = min(proposed, used - 1)
             if proposed >= token_budget:
                 raise
             token_budget = proposed
@@ -1391,13 +1434,20 @@ def queue_qwen(
         request = QC.request_payload(
             turn, config["qwen"], visual_evidence=visual_evidence,
         )
-        admission = QC.admit_request_context(
-            request,
-            config["qwen"],
-            prompt_token_counter=lambda value: QC.conservative_request_prompt_tokens(
-                value, config["qwen"]
-            ),
-        )
+        try:
+            admission = QC.admit_request_context(
+                request,
+                config["qwen"],
+                prompt_token_counter=lambda value: QC.conservative_request_prompt_tokens(
+                    value, config["qwen"]
+                ),
+            )
+        except QC.ContextAdmissionError as error:
+            sparse_cut = turn.document.get("sparse_cut", {})
+            used = sparse_cut.get("used_tokens")
+            if isinstance(used, int) and not isinstance(used, bool) and used > 0:
+                error.frontier_used_tokens = used
+            raise
         return turn, request, admission
 
     turn, request, _admission, _token_budget, _rebuilds = admitted_qwen_request(

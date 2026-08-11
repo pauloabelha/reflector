@@ -18,6 +18,10 @@ TRACE = Path(
     "artifacts/run-20260811-final-serial-8beebf8/episodes/"
     "pass-01--g50t--level-01"
 )
+LIVE_ACTION1 = Path(
+    "/home/pauloabelha/reflector2/experiments/r2-1-kaggle-breadth-v0/"
+    "artifacts/final-live-a16c455/episodes/pass-01--g50t--level-01"
+)
 
 
 def load_experiment():
@@ -137,3 +141,104 @@ def test_stored_overflows_fit_with_reserve_and_exact_required_coverage() -> None
         )
         evidence_ref = context["r2_transition_observation"]["evidence_ref"]
         assert evidence_ref in json.dumps(request, sort_keys=True)
+
+
+@pytest.mark.skipif(
+    not LIVE_ACTION1.exists(), reason="stored live G50T action-1 failure unavailable"
+)
+def test_live_action1_crosses_exact_frontier_plateau_and_keeps_evidence() -> None:
+    """Regress the 6400 -> 6385 -> 6370 staircase admission failure.
+
+    The failed request was correctly never persisted.  Reconstruct its graph,
+    transition scratchpad, and bounded active explanation solely from durable
+    ledger/decision data, then exercise the production admission boundary.
+    """
+
+    module = load_experiment()
+    runtime = module.RUNTIME.LiveRuntime()
+    module.install(runtime)
+    module.SCRATCHPAD.reset_episode_context()
+    base = module.BASE
+    workspace = next((LIVE_ACTION1 / "workspaces").iterdir())
+    ledger_events = base.LEDGER.list_events(workspace)
+    initial_event = next(
+        item for item in ledger_events if item["event_type"] == "InitialObservation"
+    )
+    initial = base.LEDGER.read_blob(
+        workspace, initial_event["payload"]["observation_blob"]
+    )
+    config = json.loads((LIVE_ACTION1 / "manifest.json").read_text())["config"]
+    base.rebuild_controller(
+        workspace,
+        base.grid_value(initial["grid"]),
+        tuple(initial["record"]["available_actions"]),
+        config,
+    )
+    decision_event = next(
+        item for item in ledger_events if item["event_type"] == "ActionDecision"
+    )
+    decision = base.LEDGER.read_blob(
+        workspace, decision_event["payload"]["decision_blob"]
+    )
+    active = decision["controller"]["decision_contract"]["current_explanation"]
+    module.SCRATCHPAD.record_r2_semantic_projection({
+        "protocol": "r2.1-semantic-projection-v1",
+        "authority": "r2-empirical",
+        "frame_digest": decision_event["payload"]["observation_digest"],
+        "active_explanation": active,
+        "latest_settlement": None,
+        "schema_summary": {},
+        "categorical_comparisons": [],
+        "temporal_comparisons": [],
+        "grounded_abductions": [],
+    })
+    state, graph_events = base.graph_state(workspace)
+    orientation = base.read_orientation(workspace, decision_event["workspace_id"])
+    visual = base.visual_evidence_for_turn(
+        workspace, decision_event["workspace_id"]
+    )
+    calls = []
+
+    def candidate(token_budget: int):
+        calls.append(token_budget)
+        turn = base.QC.build_turn(
+            state,
+            graph_events,
+            orientation,
+            request_id="qr:1234567890abcdef12345678",
+            token_budget=token_budget,
+            max_deltas=10_000,
+            compact_ids=True,
+        )
+        request = base.QC.request_payload(
+            turn, config["qwen"], visual_evidence=visual
+        )
+        try:
+            admission = base.QC.admit_request_context(
+                request,
+                config["qwen"],
+                prompt_token_counter=lambda value: base.QC.conservative_request_prompt_tokens(
+                    value, config["qwen"]
+                ),
+            )
+        except base.QC.ContextAdmissionError as error:
+            error.frontier_used_tokens = turn.document["sparse_cut"]["used_tokens"]
+            raise
+        return turn, request, admission
+
+    turn, request, admission, budget, rebuilds = base.admitted_qwen_request(
+        candidate,
+        maximum_budget=6_400,
+        qwen=config["qwen"],
+    )
+    cut = turn.document["sparse_cut"]
+    context = turn.document["scratchpad_context"]
+    evidence_ref = context["r2_transition_observation"]["evidence_ref"]
+
+    assert calls == [6_400, 3_654]
+    assert (budget, rebuilds, cut["used_tokens"]) == (3_654, 1, 3_017)
+    assert admission.reserved_output_tokens >= 2_048
+    assert admission.occupied_tokens <= admission.context_window_tokens == 16_384
+    assert evidence_ref in json.dumps(request, sort_keys=True)
+    assert sum(item["kind"] == "entity" for item in cut["objects"]) == 5
+    assert sum(item["kind"] == "prediction" for item in cut["objects"]) == 1

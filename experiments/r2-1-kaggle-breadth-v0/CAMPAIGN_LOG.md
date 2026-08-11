@@ -502,6 +502,44 @@ reconfigured on another installation.
 Status: pushed candidate in `942122e`; next frozen serial breadth cohort will
 test real transport success, latency, and cross-game behavior.
 
+## Checkpoint 11 — live admission boundary and staircase repair
+
+Two failed launches are quarantined rather than scored:
+
+- `final-serial-a16c455` ran inside a network-restricted sandbox. Three games
+  stopped at frame zero with `Operation not permitted`; the first-frame gate
+  correctly spent no action. This is infrastructure evidence only.
+- `final-live-a16c455` reached the local model. G50T's initial semantics call
+  transported and compiled in 13.7s, action 1 committed, then the action-1
+  evidence revision failed locally at context admission by 19 tokens.
+
+Root cause:
+
+- Retry budgets 6,400→6,385→6,370 all rendered the same 3,655-token sparse
+  cut. Nominal budget decrement treated the dependency-closed frontier as a
+  continuous function, but it is a staircase.
+
+Repair:
+
+- An overflowing candidate now reports its exact rendered frontier cost. The
+  next retry uses at most `used_tokens - 1`, crossing the current plateau while
+  selecting the largest cheaper dependency-closed cut.
+- If guided search is exhausted, a final minimum-closure proof still admits
+  through the exact context gate or fails closed. The response reserve and all
+  mandatory content remain non-negotiable.
+
+Exact live replay:
+
+- The failed G50T action-1 request now takes 6,400→3,654 in one rebuild, uses
+  3,017 frontier tokens / 11 objects, retains all five current entities, one
+  prediction, and the exact transition evidence reference, and occupies 15,472
+  tokens including the 2,048-token reserve (912 headroom).
+- Campaign aggregation now counts committed transitions recovered from error
+  and timeout rows while still excluding pending actions and preserving
+  completed-run-only score totals.
+
+Status: contract and exact-live-replay verified; refreeze required.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:

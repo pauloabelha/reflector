@@ -193,6 +193,43 @@ def test_timeout_partial_outcome_counts_only_committed_successors(tmp_path):
     }
 
 
+def test_aggregate_counts_recovered_commits_but_scores_only_completed_runs():
+    runner = load_runner()
+    rows = [
+        {
+            "game": "complete-game", "status": "complete",
+            "actions": 2, "levels_completed": 1,
+        },
+        {
+            "game": "error-game", "status": "error",
+            "actions": 1, "levels_completed": 2,
+            "uncommitted_pending_actions": 1,
+            "partial_ledger_recovered": True,
+        },
+        {
+            "game": "timeout-game", "status": "timeout",
+            "actions": 0, "levels_completed": 3,
+            "uncommitted_pending_actions": 2,
+            "partial_ledger_recovered": True,
+        },
+    ]
+
+    summary = runner.aggregate(
+        rows, run_id="test", started_at="2026-01-01T00:00:00+00:00",
+        deadline_s=60,
+    )
+
+    # All three externally committed transitions count, including the one
+    # recovered after error. Pending actions do not.
+    assert summary["total_actions"] == 3
+    # Campaign score remains based on completed outcomes, not partial recovery.
+    assert summary["total_levels_completed"] == 1
+    assert summary["games_clearing_a_level"] == ["complete-game"]
+    assert summary["runs_completed"] == 1
+    assert summary["runs_errored"] == 1
+    assert summary["runs_timed_out"] == 1
+
+
 def test_controller_source_inventory_covers_loaded_chain_and_excludes_tests():
     runner = load_runner()
     hashes = runner.r21_source_hashes()

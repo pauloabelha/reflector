@@ -505,3 +505,27 @@ Inference:
   calls without suppressing distinct semantic demands.
 
 Status: contract- and stored-trace-verified in `942122e`; live breadth pending.
+
+## I18 — Dependency-closed context is a staircase, not a token continuum
+
+Observed:
+
+- Three nominal budgets spanning 6,400 to 6,370 generated the same 3,655-token
+  frontier and therefore the same over-context request. Another 183 small
+  decrements would have been needed to reach the next cut.
+
+Inference:
+
+- Retry control must use the rendered frontier's exact cost, not infer request
+  shrinkage from the requested budget. Crossing `used_tokens - 1` preserves the
+  largest available cheaper dependency-closed alternative and makes one retry
+  causally meaningful.
+
+Evidence:
+
+- On the exact live G50T action-1 state, the next cut fits with 912 tokens of
+  conservative headroom while preserving current entities, prediction, and
+  transition evidence. Minimum-closure fallback separately proves that
+  mandatory overflow still fails before transport.
+
+Status: exact live regression passes; breadth transfer pending.
