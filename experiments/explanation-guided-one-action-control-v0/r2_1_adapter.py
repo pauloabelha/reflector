@@ -1805,9 +1805,12 @@ class FrameSchemaObserver:
         ranked = []
         for action in legal:
             candidates = candidates_by_action[action]
+            risk = int(no_change.get(action, 0))
+            repeated_same_state = risk > 0
             progress_candidates = [
                 item for item in candidates
-                if item["prediction"]["expected_progress"] is not None
+                if not repeated_same_state
+                and item["prediction"]["expected_progress"] is not None
                 and float(item["prediction"]["expected_progress"]) > 0
                 and item["identity"]["control_eligible"]
                 and item["mechanism"]["models_supported"]
@@ -1815,7 +1818,8 @@ class FrameSchemaObserver:
             ]
             probe_candidates = [
                 item for item in candidates
-                if not item["mechanism"]["models_supported"]
+                if not repeated_same_state
+                and not item["mechanism"]["models_supported"]
                 and all(
                     value.get("status") != "BROKEN"
                     for key, value in item["identity"].items()
@@ -1854,7 +1858,6 @@ class FrameSchemaObserver:
             raw_progress = None if best is None else best["prediction"]["expected_progress"]
             progress = None if raw_progress is None else float(raw_progress)
             information = 1.0 / (1.0 + self.action_uses[action])
-            risk = int(no_change.get(action, 0))
             eligibility = (
                 "PROGRESS_ELIGIBLE" if progress_candidates else
                 "PROBE_ELIGIBLE" if probe_candidates else

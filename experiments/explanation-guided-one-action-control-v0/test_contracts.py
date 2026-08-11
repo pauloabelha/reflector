@@ -227,6 +227,30 @@ def test_control_v0_probe_settlement_does_not_attribute_every_changed_fragment()
     assert {item["role"] for item in settlement["learned_effects"]} == {"actor", "target"}
 
 
+def test_r2_1_same_state_no_change_closes_that_exact_probe():
+    adapter = load("r2_1_no_change_probe_adapter") if (HERE / "r2_1_no_change_probe_adapter.py").exists() else load("r2_1_adapter")
+    observer = adapter.FrameSchemaObserver()
+    before, _middle, _after = _three_alignment_frames()
+    observer.fit_frame(before, turn=0)
+
+    first = observer.rank_actions(
+        (1, 2), fallback_action=1, semantic_goal=_alignment_goal(),
+        same_frame_no_change={},
+    )
+    assert first["selected_action"] == 1
+    assert first["top_actions"][0]["eligibility"] == "PROBE_ELIGIBLE"
+
+    second = observer.rank_actions(
+        (1, 2), fallback_action=1, semantic_goal=_alignment_goal(),
+        same_frame_no_change={1: 1},
+    )
+    assert second["selected_action"] == 2
+    assert second["top_actions"][0]["eligibility"] == "PROBE_ELIGIBLE"
+    repeated = next(item for item in second["top_actions"] if item["action"] == 1)
+    assert repeated["eligibility"] == "INELIGIBLE"
+    assert repeated["risk"] == 1
+
+
 def test_control_v0_settlement_uses_frozen_predecessor_after_successor_is_fitted():
     adapter = load("r2_1_frozen_predecessor_adapter") if (HERE / "r2_1_frozen_predecessor_adapter.py").exists() else load("r2_1_adapter")
     observer = adapter.FrameSchemaObserver()
@@ -887,6 +911,34 @@ def test_controller_lets_r2_1_explanation_choose_the_action():
     assert decision.action_id == 2
     assert decision.reason == "r2.1-control-v0-progress"
     assert instance.last_contract["current_explanation"]["binding_id"] == "e1"
+
+
+def test_controller_separates_unauthorized_r2_advice_from_executed_selection():
+    controller = load("controller_advisory_selection") if (HERE / "controller_advisory_selection.py").exists() else load("controller")
+    advisory = {
+        "selected_action": 2,
+        "top_actions": [{
+            "rank": 1, "action": 2, "selected": True,
+            "role": "known-nonprogress", "eligibility": "INELIGIBLE",
+        }],
+        "explanations": [], "current_explanation": None,
+        "control_override": False, "execution_authorized": False,
+        "selection_rule": "test-advisory",
+    }
+    observer = SimpleNamespace(rank_actions=lambda legal, **kwargs: advisory)
+    runtime = SimpleNamespace(schema_observer=observer, snapshot={})
+    pc = SimpleNamespace(fallback_plan=lambda plan, action_id, reason: replace(
+        plan, action_id=action_id, fallback_action_id=action_id, probe_basis=reason,
+    ))
+    live = SimpleNamespace(ProspectiveWorkspaceController=BaseController, PC=pc)
+    instance = controller.controller_class(live, runtime)()
+    decision, _plan = instance.plan((1, 2), observation_digest="frame", basis_revision=1)
+
+    assert decision.action_id == 1
+    assert instance.last_contract["selected_action"] == 1
+    assert instance.last_contract["top_actions"][0]["action"] == 1
+    assert instance.last_contract["top_actions"][0]["selected"] is True
+    assert instance.last_contract["advisory_top_actions"][0]["action"] == 2
 
 
 def test_controller_publishes_r2_semantics_after_ranking_and_settlement(monkeypatch):

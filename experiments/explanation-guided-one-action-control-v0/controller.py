@@ -340,9 +340,17 @@ def controller_class(
                 }
                 for rank, action in enumerate(ranked_actions[:3], start=1)
             ]
-            if r2_1 and r2_1.get("top_actions"):
+            r2_execution_authorized = bool(
+                r2_1 and r2_1.get(
+                    "execution_authorized", r2_1.get("control_override", False),
+                )
+            )
+            advisory_top_actions = []
+            if r2_1 and r2_1.get("top_actions") and r2_execution_authorized:
                 top_actions = list(r2_1["top_actions"])
                 role = str(top_actions[0]["role"])
+            elif r2_1 and r2_1.get("top_actions"):
+                advisory_top_actions = list(r2_1["top_actions"])
             salient_schemas = [
                 {
                     "schema_object_id": item.schema_object_id,
@@ -367,6 +375,7 @@ def controller_class(
                 "explanations": [winning_family, *situated_explanations],
                 "current_explanation": r2_1.get("current_explanation") if r2_1 and r2_1.get("current_explanation") else (situated_explanations[0] if situated_explanations else winning_family),
                 "top_actions": top_actions,
+                "advisory_top_actions": advisory_top_actions,
                 "salient_schemas": salient_schemas,
                 "candidate_count": len(legal),
                 "selected_action": int(decision.action_id),
