@@ -529,3 +529,52 @@ Evidence:
   mandatory overflow still fails before transport.
 
 Status: exact live regression passes; breadth transfer pending.
+
+## I19 — Exact reduction speed converts directly into more verified actions
+
+Observed:
+
+- At a fixed 360-second G50T deadline, the batched build committed 28 actions
+  versus 22 for both baselines. Qwen preparation stayed under 6.1 seconds late
+  in a 14k-object graph instead of growing beyond 50 seconds.
+- The new build completed eight valid model calls with no transport/parse error
+  and still acted more often, despite spending more time on actual inference.
+
+Inference:
+
+- The gain is not from forgetting evidence, reducing model work, or weakening
+  validation. It is the causal consequence of byte-equivalent batched graph
+  reduction and bounded request admission, which converts orchestration time
+  into additional grounded interventions and successor observations.
+- Zero levels means the competence boundary on G50T remains semantic/control
+  quality (including identity breaks and repeated goal family), not execution
+  coverage or graph replay throughput.
+
+Status: promoted as a transferable efficiency improvement with exactness proof
+and frozen live evidence; score effect remains unproven.
+
+## I20 — Correct transport is insufficient when settlement names another command
+
+Observed:
+
+- Outer ActionPending and environment execution agreed, yet fast-path decisions
+  could leave the controller's prior fallback command in memory. Later
+  settlement and effect learning then attributed the successor to that stale
+  command.
+- Five unique instances occur across stored G50T and AR25 traces. Four have a
+  later observable settlement mismatch, usually executed action 2 versus stale
+  command 3.
+
+Inference:
+
+- Intervention identity is one end-to-end invariant, not separate transport
+  and cognition fields. A correct environment action paired with a false
+  settlement corrupts novelty, mechanics, and future control even though replay
+  of the external action remains valid.
+- The exact AR25 common-state comparison makes score relevance credible but not
+  guaranteed: false action-3 usage lowered its information rank, after which an
+  unmodeled action-4 probe worsened the residual and the run missed the known
+  clearing path. No route or action meaning is hard-coded by the repair.
+
+Status: cross-game defect reproduced and fixed at the generic command boundary;
+frozen score rerun pending.

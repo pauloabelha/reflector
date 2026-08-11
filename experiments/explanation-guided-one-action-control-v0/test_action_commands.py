@@ -140,6 +140,18 @@ class ClickBase:
     def report(self): return {}
 
 
+class FallbackThreeBase:
+    def __init__(self, **_kwargs):
+        self.action_uses = {1: 0, 2: 0, 3: 0}
+        self.last_plan = Plan(action_id=3, fallback_action_id=3)
+    def _active_records(self): return []
+    def plan(self, _legal, **_kwargs): return Decision(3, 3, "fallback"), self.last_plan
+    def observe(self, action, _before, _after):
+        self.action_uses[int(action)] += 1
+        return {"prospective_adjudication": None}
+    def report(self): return {}
+
+
 def test_controller_commits_a_grounded_click_and_excludes_only_that_dead_coordinate():
     controller_module = load("controller")
     regions = [
@@ -194,6 +206,54 @@ def test_controller_commits_a_grounded_click_and_excludes_only_that_dead_coordin
     assert selected_inputs[-1]["same_frame_no_change"][second_command.command_id] == 0
 
 
+def test_fast_path_override_replaces_fallback_command_before_settlement_attribution():
+    controller_module = load("controller")
+    observer = ADAPTER.FrameSchemaObserver()
+    ranking = {
+        "selected_action": 2,
+        "selected_command": None,
+        "top_actions": [{"rank": 1, "action": 2, "role": "authorized-policy"}],
+        "explanations": [], "current_explanation": None,
+        "execution_authorized": True,
+        "control_proposal": {"mode": "FAST_PATH", "action": 2},
+        "selection_rule": "authorized evaluator",
+    }
+    observer.rank_authorized_policy = lambda _legal, **_kwargs: ranking
+    runtime = SimpleNamespace(
+        schema_observer=observer, snapshot={},
+        record_r2_action_trace=lambda _value: None,
+        update=lambda **_value: None,
+    )
+    pc = SimpleNamespace(fallback_plan=lambda plan, action_id, reason: replace(
+        plan, action_id=action_id, fallback_action_id=action_id, probe_basis=reason,
+    ))
+    live = SimpleNamespace(ProspectiveWorkspaceController=FallbackThreeBase, PC=pc)
+    controller = controller_module.controller_class(
+        live, runtime, action_commands=COMMAND,
+    )()
+    controller.fast_path.license = {
+        "status": "AUTHORIZED", "signature": "generic", "remaining": 2,
+        "max_actions": 2, "max_failures": 0, "confirmations": 2, "confidence": 1.0,
+    }
+
+    decision, _plan = controller.plan((1, 2, 3), observation_digest="pivot", basis_revision=1)
+    command = controller.selected_action_command(decision)
+
+    assert decision.action_id == 2
+    assert command.action_id == 2
+    assert controller.last_command is command
+    assert controller.last_contract["selected_command"] == command.document()
+
+    learning = controller.observe(2, ((0,),), ((0,),))
+
+    settlement = learning["one_action_settlement"]
+    assert settlement["action"] == 2
+    assert settlement["command"] == command.document()
+    assert settlement["command"]["effect_scope_id"] == 2
+    assert observer.action_uses[2] == 1
+    assert observer.action_uses[3] == 0
+
+
 def test_controller_refuses_to_fabricate_an_empty_complex_payload():
     controller_module = load("controller")
     observer = SimpleNamespace(
@@ -201,19 +261,32 @@ def test_controller_refuses_to_fabricate_an_empty_complex_payload():
         rank_actions=lambda _legal, **_kwargs: {
             "selected_action": 6, "selected_command": None, "top_actions": [],
             "explanations": [], "current_explanation": None,
-            "control_override": False, "execution_authorized": False,
+            "control_override": True, "execution_authorized": True,
             "selection_rule": "no-grounded-command",
         },
     )
     runtime = SimpleNamespace(schema_observer=observer, snapshot={})
+    class SimpleFallbackBase(FallbackThreeBase):
+        def __init__(self, **_kwargs):
+            super().__init__()
+            self.action_uses[6] = 0
+        def plan(self, _legal, **_kwargs):
+            return Decision(1, 1, "fallback"), replace(
+                self.last_plan, action_id=1, fallback_action_id=1,
+            )
     live = SimpleNamespace(
-        ProspectiveWorkspaceController=ClickBase,
-        PC=SimpleNamespace(fallback_plan=lambda plan, **_kwargs: plan),
+        ProspectiveWorkspaceController=SimpleFallbackBase,
+        PC=SimpleNamespace(fallback_plan=lambda plan, action_id, reason: replace(
+            plan, action_id=action_id, fallback_action_id=action_id, probe_basis=reason,
+        )),
     )
     controller = controller_module.controller_class(
         live, runtime, action_commands=COMMAND,
     )()
-    decision, _plan = controller.plan((6,), observation_digest="empty", basis_revision=1)
+    decision, _plan = controller.plan((1, 6), observation_digest="empty", basis_revision=1)
+    assert decision.action_id == 6
+    assert controller.last_command is None
+    assert controller.last_contract["selected_command"] is None
     with pytest.raises(RuntimeError, match="no evidence-grounded payload"):
         controller.selected_action_command(decision)
 

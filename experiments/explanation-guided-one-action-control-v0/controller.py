@@ -345,8 +345,26 @@ def controller_class(
                     )
                     plan = live_controller.PC.fallback_plan(plan, action_id=r2_action, reason=decision.reason)
                     self.last_plan = plan
-                    if selected_command is not None:
+                    if (
+                        selected_command is not None
+                        and int(selected_command.action_id) == r2_action
+                    ):
                         self.last_command = selected_command
+                    elif (
+                        action_commands is not None
+                        and not action_commands.requires_payload(r2_action)
+                    ):
+                        # The evaluator may authorize a simple fast-path action
+                        # without repeating its trivially empty payload.  Make
+                        # that exact resolved command durable before building
+                        # the decision contract; never retain the overridden
+                        # fallback command as the pending intervention.
+                        self.last_command = action_commands.ActionCommand.create(r2_action)
+                    else:
+                        # A parameterized action is executable only when the
+                        # evaluator selected one of this frame's grounded exact
+                        # commands.  The commit seam below will fail closed.
+                        self.last_command = None
 
             selected = [
                 prediction for prediction in plan.predictions
@@ -468,7 +486,9 @@ def controller_class(
                     return None
                 if action_commands.requires_payload(int(decision.action_id)):
                     raise RuntimeError("parameterized action has no evidence-grounded payload candidate")
-                return action_commands.ActionCommand.create(int(decision.action_id))
+                self.last_command = action_commands.ActionCommand.create(int(decision.action_id))
+                if self.last_contract is not None:
+                    self.last_contract["selected_command"] = self.last_command.document()
             return self.last_command
 
         def observe(self, action: int, before_grid: Any, after_grid: Any) -> dict[str, Any]:

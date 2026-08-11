@@ -540,6 +540,63 @@ Exact live replay:
 
 Status: contract and exact-live-replay verified; refreeze required.
 
+## Checkpoint 12 — first frozen live outcome at `44ef930`
+
+G50T, 360-second bound:
+
+- 28 committed actions, one uncommitted pending action, zero levels.
+- Both comparable frozen baselines committed 22 actions in the same 360-second
+  window: +6 actions / +27.3% throughput.
+- Time to action 28 improved from 527.7–536.5s to 336.0s (36–37% faster).
+- Median committed-transition→next-demanded-Qwen-queue preparation fell from
+  about 20.1–20.6s to 4.66s; the maximum fell from 51.6–56.9s to 6.1s even at
+  14,362 graph objects.
+- Eight Qwen calls completed with zero transport/parse errors. The baselines had
+  six to eight errors in their comparable early calls. New execution spent more
+  wall time on successful model inference yet still committed six more actions.
+- The auditable chain contains 28 transitions/predictions/evidence records and
+  five support/refute edges (three supports, two refutes). No identical
+  consecutive no-change action and no decision/execution mismatch occurred.
+
+Score did not improve on this game. The result promotes exact graph batching as
+a generic runtime intervention, not as a competence claim. The active serial
+cohort has continued to the click-mechanic games.
+
+## Checkpoint 13 — command identity at the AR25 score boundary
+
+Frozen `44ef930` outcomes before intervention:
+
+- G50T: 28 commits / 0 levels.
+- LF52: 11 commits / 0 levels, including two exact coordinate clicks.
+- AR25: 27 commits / 0 levels.
+
+AR25 reached the byte-identical state produced by the historical clearing
+prefix `1, 2×11`. The historical run then used action 3 five times and cleared
+at action 17. The current run's unmodified fallback at that state was also
+action 3, but R2 ranked action 4 as the more novel probe and it worsened the
+declared boundary gap 6→9.
+
+The generic cause was found earlier in the same episode: a bounded fast-path
+override executed simple action 2 while the controller retained fallback
+command 3 internally. Transport was correct, but settlement paired
+`action=2` with `command/effect_scope=3`, falsely consuming command 3's novelty
+and corrupting causal attribution. The same pattern occurs in G50T; the stored
+campaign corpus contains five unique fast-path decisions with stale internal
+command identity across the two games.
+
+Repair:
+
+- Every resolved simple override now synthesizes and stores its exact command
+  before the decision contract is persisted.
+- Parameterized overrides without a frame-grounded exact command clear stale
+  state and fail closed.
+- Defensive resolution also synchronizes the internal command and contract, so
+  decision, pending, execution, settlement, effect scope, and action-use
+  attribution share one identity.
+
+Status: generic contract suite green; same-state AR25 rerun pending. Historical
+route success is comparison evidence only and is not encoded as a heuristic.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:
