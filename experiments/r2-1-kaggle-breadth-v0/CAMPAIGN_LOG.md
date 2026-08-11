@@ -126,6 +126,21 @@ Intervention:
 
 This patch changes evidence accounting, not the controller's action choice.
 
+Boundary audit immediately after promotion:
+
+- Fresh `lf52`, `ls20`, and `ar25` workers rejected the first post-action
+  semantic projection because the native prediction depended on a quarantined
+  control explanation whose open question named an opaque numbered action.
+- The parent batch was stopped; these outcomes are invalid capability results.
+- Correction: native prediction ancestry now points only to the latest frame,
+  matching the semantic-safe boundary of inherited predictions. The proposal
+  and environment settlement still retain exact control ancestry outside the
+  Qwen projection.
+- A fresh bounded `ar25` smoke then crossed two action/observation boundaries
+  without the rejection and durably recorded two prediction objects. The
+  smoke was intentionally killed at its two-minute cap, not scored as a
+  completed episode.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:

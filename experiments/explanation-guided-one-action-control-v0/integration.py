@@ -157,7 +157,13 @@ def install(base: Any) -> None:
                     "horizon": 1,
                     "native_protocol": "r2.1-explanation-control-v1",
                 },
-                dependency_ids=tuple(sorted({rationale_id, *explanation_ids})),
+                # Native R2 control explanations intentionally contain opaque
+                # intervention questions (for example, a numbered action).
+                # They are quarantined from Semantic Qwen.  Keep the durable
+                # prediction on the same semantic-safe frame boundary used by
+                # inherited predictions; the action proposal and settlement
+                # retain the full control ancestry outside that projection.
+                dependency_ids=frame_dependencies,
                 event_key=f"r2.1-prediction:{plan.plan_id}",
             )
             prediction_objects[prediction_id] = prediction_object_id
