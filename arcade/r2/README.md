@@ -8,6 +8,26 @@ The semantic model proposes bounded schemas and explanations. R2 still owns
 grounding, action selection, authority, evidence, settlement, and reusable
 schema promotion. Changing a provider or model never changes that boundary.
 
+## Shared model scratchpad
+
+The workspace carries one canonical `model_scratchpad` object:
+
+```json
+{
+  "explanation": "...",
+  "goal": "...",
+  "expectation": "...",
+  "notes": "..."
+}
+```
+
+The object is stored in the durable working note, shown directly by Agent
+Arcade, and passed without field renaming or presentation-derived reconstruction
+to both ordinary semantic calls and deep explanation-consolidation calls. The
+model must rewrite the same exact four-field shape. Compatibility prose used by
+the inherited compiler is derived only from `notes`; it is not a second model
+scratchpad.
+
 ## Local Qwen
 
 The default profile preserves the resident OpenAI-compatible Qwen service:

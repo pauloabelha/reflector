@@ -18,7 +18,11 @@ FRESH_BINDING_AUTHORITY = "fresh-binding-probe-only"
 DEEP_CONSOLIDATION_MAX_TOKENS = 5120
 DEEP_CONSOLIDATION_THINKING_TOKENS = 1024
 MAX_CONSOLIDATION_PROPOSALS = 3
+MODEL_SCRATCHPAD_FIELDS = ("explanation", "goal", "expectation", "notes")
 CONSOLIDATION_PROMPT = """You are the configured semantic model performing R2 explanation consolidation.
+Read model_scratchpad as the exact current shared workspace scratchpad used by
+ordinary semantic turns and Agent Arcade. Rewrite the same four-field object in
+your response; do not rename, omit, or add fields.
 The packet is a deterministic digest of a completed context. Compare
 its explanation families, potential summaries, change points, confirmations,
 refutations, and terminal evidence. Propose the smallest reusable action-free R2
@@ -62,6 +66,29 @@ FUTURE_OR_MODAL_CONTROL = re.compile(
     r"\b(?:could|future|may|might|must|next|plan|propose|recommend|should|try|will|would)\b",
     re.IGNORECASE,
 )
+
+
+def canonical_model_scratchpad(value: Any) -> dict[str, str]:
+    """Validate and copy the exact model/UI/workspace scratchpad contract."""
+
+    if not isinstance(value, Mapping) or set(value) != set(MODEL_SCRATCHPAD_FIELDS):
+        raise ValueError("model scratchpad must contain exactly four canonical fields")
+    output: dict[str, str] = {}
+    for field in MODEL_SCRATCHPAD_FIELDS:
+        item = value.get(field)
+        if not isinstance(item, str) or not item.strip():
+            raise ValueError(f"model scratchpad {field} must be a nonempty string")
+        output[field] = item.strip()
+    return output
+
+
+def model_scratchpad_text(value: Any) -> str:
+    return json.dumps(
+        canonical_model_scratchpad(value),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
 RETROSPECTIVE_ACTION_WINDOW = 140
 CONSOLIDATION_SITUATED_DETAIL = re.compile(
     r"(?:\b(?:black|blue|red|green|yellow|gr[ae]y|magenta|orange|cyan|"
@@ -1033,13 +1060,17 @@ def install(qc: Any) -> None:
     qc.PROMPT += """
 
 TWO SEPARATE OUTPUT CHANNELS:
-1. natural_language_scratchpad is bounded, unverified prose for your next
-semantic turn. Rewrite it rather than appending a transcript. It is not
-evidence and is never compiled as a workspace claim.
+1. scratchpad is one bounded object with exactly four string fields:
+explanation, goal, expectation, and notes. This exact object is stored, shown
+in Agent Arcade, and passed back to your next semantic turn without renaming or
+reformatting. Rewrite the four fields rather than appending a transcript. The
+object is unverified, is not evidence, and is never compiled as a workspace
+claim.
 On every post-action turn, begin from the latest causal visual unit and R2
 feedback. State what the latest observation established, contradicted, or left
-open. Do not repeat the frame-0 description or copy the prior prose. The prior
-prose is intentionally unavailable; its digest only detects failed rewrites.
+open. Read model_scratchpad as the exact prior shared state, then revise it in
+place. Do not repeat the frame-0 description or copy fields unchanged when new
+evidence requires a revision.
 2. workspace_write is a compact structured, cited, defeasible explanation.
 R2 alone owns formal schema binding and action selection. Propose one to three
 action-free prospective verb schemas through goal_proposals. Each proposal
@@ -1160,12 +1191,32 @@ CAUSAL VISUAL UNIT:
         prior = _latest_note(state, turn.workspace_id, qc)
         projection = None
         if prior is not None:
+            stored_scratchpad = prior.payload.get("model_scratchpad")
+            try:
+                stored_scratchpad = canonical_model_scratchpad(stored_scratchpad)
+            except ValueError:
+                proposal = next(iter(prior.payload.get("goal_proposals", ())), {})
+                expectation_parts = [
+                    str(value) for value in (
+                        proposal.get("observable"), proposal.get("direction"),
+                        proposal.get("terminal_condition") or proposal.get("terminal_class"),
+                    ) if value
+                ]
+                stored_scratchpad = {
+                    "explanation": str(prior.payload.get("summary") or "Open."),
+                    "goal": str(prior.payload.get("objective_hypothesis") or "Open."),
+                    "expectation": " · ".join(expectation_parts) or "Open.",
+                    "notes": str(prior.payload.get("natural_language") or "Open."),
+                }
+                stored_scratchpad = canonical_model_scratchpad(stored_scratchpad)
+            scratchpad_text = model_scratchpad_text(stored_scratchpad)
             projection = {
                 "object_id": prior.object_id,
                 "basis_revision": prior.payload.get("basis_revision"),
+                "scratchpad": copy.deepcopy(stored_scratchpad),
                 "summary": prior.payload.get("summary", ""),
                 "prior_natural_language_digest": hashlib.sha256(
-                    str(prior.payload.get("natural_language", "")).encode("utf-8")
+                    scratchpad_text.encode("utf-8")
                 ).hexdigest(),
                 "objective_hypothesis": prior.payload.get("objective_hypothesis", ""),
                 "goal_proposals": list(prior.payload.get("goal_proposals", ())),
@@ -1218,7 +1269,15 @@ CAUSAL VISUAL UNIT:
                 ),
                 "authority": "qwen-must-revise-or-replace; r2-still-grounds-and-controls",
             }
-        document = {**turn.document, "prior_working_note": projection, "scratchpad_context": scratchpad_context}
+        document = {
+            **turn.document,
+            "prior_working_note": projection,
+            "scratchpad_context": scratchpad_context,
+        }
+        if projection is not None:
+            # One canonical WYSIWYG object shared by ordinary semantic turns,
+            # explanation consolidation, the durable workspace, and Arcade.
+            document["model_scratchpad"] = copy.deepcopy(projection["scratchpad"])
         if consolidation_task is not None:
             document["explanation_consolidation_task"] = consolidation_task
         vocabulary = dict(document.get("allowed_vocabulary", {}))
@@ -1461,12 +1520,22 @@ CAUSAL VISUAL UNIT:
         return {
             "type": "object",
             "additionalProperties": False,
-            "required": ["protocol", "request_id", "natural_language_scratchpad", "workspace_write"],
+            "required": ["protocol", "request_id", "scratchpad", "workspace_write"],
             "properties": {
                 "protocol": {"const": turn.document["protocol"]},
                 "request_id": {"const": turn.request_id},
-                "natural_language_scratchpad": {
-                    "type": "string", "maxLength": 320 if is_consolidation else 900,
+                "scratchpad": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["explanation", "goal", "expectation", "notes"],
+                    "properties": {
+                        "explanation": {"type": "string", "minLength": 1, "maxLength": 360},
+                        "goal": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "expectation": {"type": "string", "minLength": 1, "maxLength": 240},
+                        "notes": {
+                            "type": "string", "minLength": 1,
+                            "maxLength": 320 if is_consolidation else 900,
+                        },
+                    },
                 },
                 "workspace_write": note_schema(turn),
             },
@@ -1494,7 +1563,8 @@ CAUSAL VISUAL UNIT:
                 key: compact_document[key]
                 for key in (
                     "protocol", "request_id", "workspace_ref",
-                    "allowed_vocabulary", "explanation_consolidation_task",
+                    "allowed_vocabulary", "model_scratchpad",
+                    "explanation_consolidation_task",
                 )
                 if key in compact_document
             }
@@ -1551,10 +1621,10 @@ CAUSAL VISUAL UNIT:
         parsed = response.get("parsed", response)
         if not isinstance(parsed, Mapping):
             return original_compile_response(response, turn)
-        prose = parsed.get("natural_language_scratchpad")
+        scratchpad = parsed.get("scratchpad")
         note = parsed.get("workspace_write")
         stripped = dict(parsed)
-        stripped.pop("natural_language_scratchpad", None)
+        stripped.pop("scratchpad", None)
         stripped.pop("workspace_write", None)
         envelope = dict(response)
         envelope["parsed"] = stripped
@@ -1569,13 +1639,16 @@ CAUSAL VISUAL UNIT:
             "explanation_alternative_count": 0,
             "schema_write_mode": "compact-working-hypothesis",
         }
-        if not isinstance(prose, str) or not prose.strip():
-            return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "natural-language-scratchpad-missing"}]}
+        try:
+            scratchpad = canonical_model_scratchpad(scratchpad)
+        except ValueError:
+            return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "model-scratchpad-contract"}]}
+        scratchpad_text = model_scratchpad_text(scratchpad)
         prior_projection = turn.document.get("prior_working_note") or {}
         prior_prose_digest = prior_projection.get("prior_natural_language_digest")
         if (
             isinstance(prior_prose_digest, str)
-            and hashlib.sha256(prose.strip().encode("utf-8")).hexdigest() == prior_prose_digest
+            and hashlib.sha256(scratchpad_text.encode("utf-8")).hexdigest() == prior_prose_digest
         ):
             return {
                 **compilation,
@@ -1610,9 +1683,9 @@ CAUSAL VISUAL UNIT:
                 "action_aliases": [],
                 "open_questions": [],
             }
-        scratch_tokens = qc.GRAPH.estimate_tokens(prose)
+        scratch_tokens = qc.GRAPH.estimate_tokens(scratchpad_text)
         action_free_note = {key: value for key, value in note.items() if key != "action_aliases"}
-        if _has_action_proposal(prose) or _has_action_proposal(action_free_note) or scratch_tokens > MAX_SCRATCHPAD_TOKENS:
+        if _has_action_proposal(scratchpad) or _has_action_proposal(action_free_note) or scratch_tokens > MAX_SCRATCHPAD_TOKENS:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "working-note-safety-or-budget"}]}
         _index, visible = qc._v14_visible(turn)
         aliases = dict(turn.id_aliases)
@@ -1897,7 +1970,8 @@ CAUSAL VISUAL UNIT:
             "goal_proposals": unique_proposals,
             "abductive_compositions": abductions,
             "action_aliases": action_aliases,
-            "natural_language": prose.strip(),
+            "model_scratchpad": dict(scratchpad),
+            "natural_language": scratchpad["notes"],
             "cited_ids": real_citations,
             "workspace_ref": _workspace_ref(qc, turn.workspace_id),
             "basis_revision": turn.basis_revision,
@@ -1914,7 +1988,7 @@ CAUSAL VISUAL UNIT:
             "identity": {
                 "workspace_ref": _workspace_ref(qc, turn.workspace_id),
                 "basis_revision": turn.basis_revision,
-                "content_hash": qc.stable_hash({"natural_language": prose, "workspace_write": note}),
+                "content_hash": qc.stable_hash({"scratchpad": scratchpad, "workspace_write": note}),
             },
             "payload": payload,
             "dependency_ids": sorted(set((
