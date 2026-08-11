@@ -11,7 +11,7 @@ from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
 
-ARCADE_UI_VERSION = "inline-model-picker-v19"
+ARCADE_UI_VERSION = "pretty-workspace-v20"
 
 
 def resolve_model_choice(
@@ -187,7 +187,7 @@ PAGE = PAGE.replace("</section></main>", "</div></section></main>")
 PAGE = PAGE.replace(
     "</head>",
     """<style>
-.workspace-column{overflow:auto;min-height:0;border-left:3px solid var(--lime)}.workspace-legacy{display:none!important}.workspace-field{padding:9px 0;border-top:1px solid var(--line)}.workspace-field:first-child{border-top:0}.workspace-field h3{margin:0 0 5px;color:var(--lime);font-size:11px;letter-spacing:.08em}.workspace-empty{color:var(--muted);line-height:1.5}@media(max-width:1050px){main{grid-template-columns:minmax(210px,.5fr) minmax(400px,1fr) minmax(300px,.7fr)}}@media(max-width:720px){main{grid-template-columns:1fr}.workspace-column{max-height:55dvh}}
+.workspace-column{overflow:auto;min-height:0;border-left:3px solid var(--lime)}.workspace-legacy{display:none!important}.workspace-empty{color:var(--muted);line-height:1.5}.workspace-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 10px}.workspace-stat{padding:7px;background:#0b1210;border:1px solid var(--line);border-radius:6px}.workspace-stat strong{display:block;color:var(--lime);font-size:13px;overflow-wrap:anywhere}.workspace-stat small{font-size:9px;letter-spacing:.08em}.workspace-field{padding:10px 0;border-top:1px solid var(--line)}.workspace-field:first-of-type{border-top:0}.workspace-field>h3{display:flex;align-items:center;justify-content:space-between;gap:5px;margin:0 0 7px;color:var(--cyan);font-size:10px;letter-spacing:.1em;text-transform:uppercase}.workspace-count{padding:2px 5px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:9px}.workspace-prose{font-size:12px;line-height:1.5;color:var(--ink)}.workspace-card{margin:6px 0;padding:8px;background:#0b1210;border:1px solid var(--line);border-radius:7px}.workspace-card-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px}.workspace-card-title{color:var(--lime);font-weight:800;overflow-wrap:anywhere}.workspace-kv{display:grid;grid-template-columns:74px 1fr;gap:4px 7px;font-size:10px;line-height:1.4}.workspace-kv span:nth-child(odd){color:var(--muted);text-transform:uppercase}.workspace-kv span:nth-child(even){overflow-wrap:anywhere}.workspace-chip{display:inline-block;margin:2px 3px 2px 0;padding:2px 5px;border:1px solid #385047;border-radius:4px;color:var(--ink);font-size:9px;overflow-wrap:anywhere}.workspace-chip.id{color:var(--muted)}.workspace-chip.good{color:var(--lime);border-color:#52702e}.workspace-chip.warn{color:#e8d36a;border-color:#6c6230}.workspace-list{margin:0;padding-left:18px}.workspace-list li{margin:5px 0;font-size:11px;line-height:1.45}.workspace-scratch{display:grid;gap:5px}.workspace-scratch-row{padding:6px 7px;background:#0b1210;border-left:2px solid var(--cyan)}.workspace-scratch-row small{display:block;margin-bottom:3px;color:var(--cyan);font-size:9px;text-transform:uppercase;letter-spacing:.08em}.workspace-scratch-row div{font-size:10px;line-height:1.4}.workspace-raw{margin-top:7px}.workspace-raw summary{cursor:pointer;color:var(--muted);font-size:9px;letter-spacing:.08em}.workspace-raw pre{margin-top:6px;padding:7px;background:#080b0a;border-radius:5px;font-size:9px;max-height:260px;overflow:auto}.workspace-empty-value{color:var(--muted);font-style:italic}@media(max-width:1050px){main{grid-template-columns:minmax(210px,.5fr) minmax(400px,1fr) minmax(300px,.7fr)}}@media(max-width:720px){main{grid-template-columns:1fr}.workspace-column{max-height:55dvh}}
 </style></head>""",
 )
 PAGE = PAGE.replace(
@@ -230,7 +230,7 @@ PAGE = PAGE.replace(
 PAGE = PAGE.replace(
     "</body>",
     """<script>
-const expectedArcadeUiVersion='inline-model-picker-v19';
+const expectedArcadeUiVersion='pretty-workspace-v20';
 const versionedApiBase=api;
 api=async function(path,body){
   const value=await versionedApiBase(path,body);
@@ -385,11 +385,44 @@ function renderModelScratchpad(s){
   if((s.r2_action_traces||[]).length)html+='<div class=entry><small>R2 OBSERVATION TRACE</small><br>'+s.r2_action_traces.map(esc).join('<br>')+'</div>';
   return html;
 }
-function workspaceField(name,value){return `<section class=workspace-field><h3>${esc(name)}:</h3>${pretty(value)}</section>`}
+function workspaceCount(value){return Array.isArray(value)?`<span class=workspace-count>${value.length}</span>`:''}
+function workspaceRaw(value){return `<details class=workspace-raw><summary>RAW JSON</summary>${pretty(value)}</details>`}
+function shortWorkspaceId(value){const text=String(value||'');const split=text.indexOf(':');return split<0||text.length<22?text:`${text.slice(0,split+1)}${text.slice(split+1,split+9)}…`}
+function workspaceChip(value,kind=''){const text=String(value??'');return `<span class="workspace-chip ${kind}" title="${esc(text)}">${esc(shortWorkspaceId(text))}</span>`}
+function workspaceList(value){return value.length?`<ul class=workspace-list>${value.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`:'<span class=workspace-empty-value>None</span>'}
+function workspaceGoal(value,index){
+  const constraints=(value.role_constraints||[]).map(item=>workspaceChip(`${item.modality||'open'} · ${item.predicate||'?'}(${(item.arguments||[]).join(', ')})`,item.modality==='required'?'good':'')).join('');
+  return `<article class=workspace-card><div class=workspace-card-head><span class=workspace-card-title>${esc(String(value.verb||value.schema_name||`goal ${index+1}`).toUpperCase())}</span>${workspaceChip(value.goal_family||'open')}</div><div class=workspace-kv><span>schema</span><span>${esc(value.schema_name||'open')}</span><span>potential</span><span>${esc(value.observable||'open')} · ${esc(value.direction||'unknown')}</span><span>terminal</span><span>${esc(value.terminal_condition||value.terminal_class||'open')}</span><span>roles</span><span>${(value.roles||[]).map(item=>workspaceChip(item)).join('')||'open'}</span></div>${constraints?`<div style="margin-top:6px">${constraints}</div>`:''}${workspaceRaw(value)}</article>`;
+}
+function workspaceComposition(value,index){
+  const morphisms=(value.morphisms||[]).map(item=>`<li>${workspaceChip(item.source_schema_id,'id')} <strong>${esc(item.kind||'maps')}</strong> ${workspaceChip(item.target_schema_id,'id')}</li>`).join('');
+  const residuals=(value.preferred_residual_changes||[]).map(item=>workspaceChip(`${item.dimension||'?'} ${item.direction||'?'}`,'good')).join('');
+  return `<article class=workspace-card><div class=workspace-card-head><span class=workspace-card-title>${esc(value.local_ref||`composition ${index+1}`)}</span><span class=workspace-count>${(value.component_schema_ids||[]).length} components</span></div><div>${(value.component_schema_ids||[]).map(item=>workspaceChip(item,'id')).join('')}</div>${morphisms?`<ul class=workspace-list>${morphisms}</ul>`:''}${residuals?`<div>${residuals}</div>`:''}${(value.open_questions||[]).length?`<div style="margin-top:6px">${workspaceList(value.open_questions)}</div>`:''}${workspaceRaw(value)}</article>`;
+}
+function workspaceScratchpad(value){return `<div class=workspace-scratch>${['game_objective','explanation','goal','expectation','notes'].filter(name=>name in value).map(name=>`<div class=workspace-scratch-row><small>${esc(name.replaceAll('_',' '))}</small><div>${esc(value[name])}</div></div>`).join('')}</div>${workspaceRaw(value)}`}
+function workspaceAliases(value){return value.length?value.map(item=>`<article class=workspace-card><div class=workspace-card-head>${workspaceChip(item.action_id,'good')}<span class=workspace-chip ${item.status==='confirmed'?'good':'warn'}>${esc(item.status||'open')}</span></div><div class=workspace-prose>${esc(item.alias||'No alias')}</div><div>${(item.evidence_refs||[]).map(ref=>workspaceChip(ref,'id')).join('')}</div></article>`).join(''):'<span class=workspace-empty-value>None</span>'}
+function workspaceField(name,value){
+  let body;
+  if(name==='goal_proposals'&&Array.isArray(value))body=value.map(workspaceGoal).join('')||'<span class=workspace-empty-value>None</span>';
+  else if(name==='abductive_compositions'&&Array.isArray(value))body=value.map(workspaceComposition).join('')||'<span class=workspace-empty-value>None</span>';
+  else if(name==='model_scratchpad'&&value&&typeof value==='object')body=workspaceScratchpad(value);
+  else if(name==='action_aliases'&&Array.isArray(value))body=workspaceAliases(value);
+  else if(name==='open_questions'&&Array.isArray(value))body=workspaceList(value);
+  else if(name==='cited_ids'&&Array.isArray(value))body=value.map(item=>workspaceChip(item,'id')).join('')||'<span class=workspace-empty-value>None</span>';
+  else if(typeof value==='string')body=`<div class=workspace-prose>${esc(value)}</div>`;
+  else if(typeof value==='number'||typeof value==='boolean')body=`<div class=workspace-prose>${esc(value)}</div>`;
+  else body=workspaceRaw(value);
+  return `<section class=workspace-field><h3><span>${esc(name.replaceAll('_',' '))}</span>${workspaceCount(value)}</h3>${body}</section>`;
+}
 function renderWorkspaceObject(){
   const workspace=data.workspace;
   if(!workspace||typeof workspace!=='object')return '<div class=workspace-empty>Waiting for a durable workspace write.</div>';
-  return Object.entries(workspace).map(([name,value])=>workspaceField(name,value)).join('');
+  const preferred=['summary','objective_hypothesis','goal_proposals','abductive_compositions','open_questions','action_aliases','model_scratchpad','natural_language','cited_ids'];
+  const metadata=['workspace_ref','basis_revision','verified','token_count','token_budget','transition_evidence_ref'];
+  const known=new Set([...preferred,...metadata]);
+  const ordered=[...preferred.filter(name=>name in workspace),...Object.keys(workspace).filter(name=>!known.has(name)),...metadata.filter(name=>name in workspace)];
+  const stats=`<div class=workspace-overview><div class=workspace-stat><strong>${esc(workspace.basis_revision??'—')}</strong><small>REVISION</small></div><div class=workspace-stat><strong>${esc(workspace.token_count??'—')}/${esc(workspace.token_budget??'—')}</strong><small>TOKENS</small></div><div class=workspace-stat><strong>${workspace.verified?'YES':'NO'}</strong><small>VERIFIED</small></div></div>`;
+  return stats+ordered.map(name=>workspaceField(name,workspace[name])).join('');
 }
 const renderWithWorkspaceObject=render;
 render=function(){renderWithWorkspaceObject();$('#workspace').innerHTML=renderWorkspaceObject()};

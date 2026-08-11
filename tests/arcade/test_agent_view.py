@@ -6,7 +6,7 @@ from arcade.agent import ARCADE_UI_VERSION, PAGE, resolve_model_choice
 
 
 def test_agent_arcade_mirrors_all_canonical_scratchpad_fields():
-    assert ARCADE_UI_VERSION == "inline-model-picker-v19"
+    assert ARCADE_UI_VERSION == "pretty-workspace-v20"
     assert "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED" in PAGE
     assert "Waiting for the configured model." in PAGE
     assert "ACTION ALIASES · MODEL GLOSS, NOT CONTROL" in PAGE
@@ -36,8 +36,18 @@ def test_agent_arcade_has_full_right_workspace_object_panel():
     assert 'id=workspace-tab' not in PAGE
     assert "DURABLE WORKSPACE OBJECT · MODEL WRITE" in PAGE
     assert "const workspace=data.workspace" in PAGE
-    assert "Object.entries(workspace)" in PAGE
+    assert "ordered.map(name=>workspaceField(name,workspace[name]))" in PAGE
     assert "renderWithWorkspaceObject" in PAGE
+
+
+def test_workspace_panel_pretty_prints_semantic_field_shapes():
+    for marker in (
+        "workspace-overview", "workspaceGoal", "workspaceComposition",
+        "workspaceScratchpad", "workspaceAliases", "workspaceList",
+        "RAW JSON", "preferred=['summary','objective_hypothesis'",
+    ):
+        assert marker in PAGE
+    assert "Object.entries(workspace).map(([name,value])=>workspaceField" not in PAGE
 
 
 def test_arcade_resolves_only_one_exact_server_allowlisted_choice():
