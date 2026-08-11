@@ -185,7 +185,23 @@ def configure_base(artifact_root: Path = ARTIFACTS) -> dict[str, Any]:
     return config
 
 
+def active_runtime(runtime: Any | None = None) -> Any:
+    """Return a runtime with the R2.1 observer installed for every run mode.
+
+    The arcade supplies its presentation runtime explicitly.  Headless runs
+    need the same epistemic/control substrate even though nobody is polling a
+    browser endpoint; otherwise they silently fall back to the inherited PCW
+    policy and cannot measure R2.1 at all.
+    """
+    if runtime is None:
+        runtime = RUNTIME.LiveRuntime()
+    if getattr(runtime, "schema_observer", None) is None:
+        runtime.set_schema_observer(R2_1.FrameSchemaObserver())
+    return runtime
+
+
 def run_game(game: str = "ar25", *, level: int = 1, runtime: Any | None = None, artifact_root: Path = ARTIFACTS) -> dict[str, Any]:
+    runtime = active_runtime(runtime)
     config = configure_base(artifact_root)
     config["start_level"] = int(level)
     install(runtime)
@@ -263,8 +279,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(build_manifest(config), indent=2, sort_keys=True))
         return 0
     if args.arcade:
-        runtime = RUNTIME.LiveRuntime()
-        runtime.set_schema_observer(R2_1.FrameSchemaObserver())
+        runtime = active_runtime()
 
         def start(game: str, level: int) -> None:
             try:

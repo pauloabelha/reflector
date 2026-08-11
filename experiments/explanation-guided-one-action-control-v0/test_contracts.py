@@ -488,6 +488,17 @@ def test_multilevel_run_is_enabled_with_a_per_level_budget_and_boundary_hooks():
     assert "level_transition=level_transition" in bridge_source
 
 
+def test_headless_run_installs_the_same_r2_1_observer_as_arcade():
+    experiment = load("experiment")
+    runtime = experiment.active_runtime()
+    assert isinstance(runtime, experiment.RUNTIME.LiveRuntime)
+    assert isinstance(runtime.schema_observer, experiment.R2_1.FrameSchemaObserver)
+
+    supplied = experiment.RUNTIME.LiveRuntime()
+    assert experiment.active_runtime(supplied) is supplied
+    assert isinstance(supplied.schema_observer, experiment.R2_1.FrameSchemaObserver)
+
+
 def test_r2_1_identical_first_frame_gets_a_fresh_workspace_after_reset():
     adapter = load("r2_1_adapter")
     observer = adapter.FrameSchemaObserver()
