@@ -1323,6 +1323,45 @@ def visual_evidence_for_turn(root: Path, workspace_id: str) -> list[dict[str, st
     ]
 
 
+def admitted_qwen_request(
+    candidate: Any,
+    *,
+    maximum_budget: int,
+    qwen: Mapping[str, Any],
+) -> tuple[Any, dict[str, Any], Any, int, int]:
+    """Build the largest cheaply found frontier that passes exact admission."""
+
+    token_budget = int(maximum_budget)
+    rebuilds = 0
+    maximum_rebuilds = int(qwen.get("max_context_budget_rebuilds", 2))
+    while True:
+        try:
+            turn, request, admission = candidate(token_budget)
+            return turn, request, admission, token_budget, rebuilds
+        except EG.FrontierBudgetError as error:
+            if rebuilds >= maximum_rebuilds:
+                raise
+            required = int(error.required)
+            if required >= token_budget or required > maximum_budget:
+                raise
+            token_budget = required
+            rebuilds += 1
+        except QC.ContextAdmissionError as error:
+            if rebuilds >= maximum_rebuilds:
+                raise
+            deficit = max(1, int(error.report.occupied_tokens - error.report.context_window_tokens))
+            # One model token removed from the serialized request generally
+            # costs less than one frontier-budget token because object IDs also
+            # disappear from response-schema enums.  A 3/4 guided decrement is
+            # deliberately conservative and bounds expensive full rebuilds.
+            decrement = max(1, (3 * deficit + 3) // 4)
+            proposed = max(1, token_budget - decrement)
+            if proposed >= token_budget:
+                raise
+            token_budget = proposed
+            rebuilds += 1
+
+
 def queue_qwen(
     root: Path,
     workspace_id: str,
@@ -1336,20 +1375,35 @@ def queue_qwen(
 ) -> tuple[str, Any, Future[Any]]:
     orientation = read_orientation(root, workspace_id)
     request_id = f"qr:{LEDGER.stable_hash({'workspace': workspace_id, 'index': task_index})[:24]}"
-    turn_budget = int(profile["frontier_token_budget"])
-    turn = QC.build_turn(
-        state,
-        graph_events,
-        orientation,
-        request_id=request_id,
-        token_budget=turn_budget,
-        max_deltas=10_000,
-        compact_ids=True,
-    )
-    request = QC.request_payload(
-        turn,
-        config["qwen"],
-        visual_evidence=visual_evidence_for_turn(root, workspace_id),
+    maximum_budget = int(profile["frontier_token_budget"])
+    visual_evidence = visual_evidence_for_turn(root, workspace_id)
+
+    def candidate(token_budget: int) -> tuple[Any, dict[str, Any], Any]:
+        turn = QC.build_turn(
+            state,
+            graph_events,
+            orientation,
+            request_id=request_id,
+            token_budget=token_budget,
+            max_deltas=10_000,
+            compact_ids=True,
+        )
+        request = QC.request_payload(
+            turn, config["qwen"], visual_evidence=visual_evidence,
+        )
+        admission = QC.admit_request_context(
+            request,
+            config["qwen"],
+            prompt_token_counter=lambda value: QC.conservative_request_prompt_tokens(
+                value, config["qwen"]
+            ),
+        )
+        return turn, request, admission
+
+    turn, request, _admission, _token_budget, _rebuilds = admitted_qwen_request(
+        candidate,
+        maximum_budget=maximum_budget,
+        qwen=config["qwen"],
     )
     request_blob = LEDGER.put_blob(root, request)
     turn_blob = LEDGER.put_blob(root, asdict(turn))

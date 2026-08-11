@@ -22,6 +22,39 @@ GRAPH = load("parallel_workspace_v14_test_graph", HERE / "epistemic_graph.py")
 COGNITION = load("parallel_workspace_v14_test_cognition", HERE / "qwen_cognition.py")
 
 
+def test_conservative_request_count_covers_full_schema_images_and_margin(monkeypatch) -> None:
+    seen = []
+    monkeypatch.setattr(
+        COGNITION,
+        "model_token_count",
+        lambda text, qwen: seen.append(text) or 100,
+    )
+    request = {
+        "max_tokens": 512,
+        "messages": [{"role": "user", "content": [
+            {"type": "text", "text": "complete prompt"},
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64,secret"}},
+        ]}],
+        "response_format": {"json_schema": {"schema": {"const": "required-schema"}}},
+    }
+    counted = COGNITION.conservative_request_prompt_tokens(
+        request,
+        {"image_max_tokens": 128, "chat_template_token_margin": 256},
+    )
+    assert counted == 100 + 128 + 256
+    assert "required-schema" in seen[0]
+    assert "complete prompt" in seen[0]
+    assert "base64,secret" not in seen[0]
+    assert "<image>" in seen[0]
+
+    admitted = COGNITION.admit_request_context(
+        request,
+        {"context_window_tokens": 4096, "reserved_tokens": 1024},
+        prompt_token_counter=lambda value: 2048,
+    )
+    assert admitted.reserved_output_tokens == 2048
+
+
 def add_object(
     state: Any,
     events: list[Any],

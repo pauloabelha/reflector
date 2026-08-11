@@ -12,8 +12,9 @@ from __future__ import annotations
 import importlib.util
 import itertools
 import json
-import queue
 import re
+import subprocess
+import queue
 import sys
 import threading
 from concurrent.futures import Future
@@ -230,18 +231,23 @@ def admit_request_context(
     if not callable(prompt_token_counter):
         raise CognitionError("context admission requires an exact prompt token counter")
     context_window = qwen.get("context_window_tokens")
-    reserved = request.get("max_tokens")
-    configured_reserved = qwen.get("max_tokens", reserved)
+    request_max = request.get("max_tokens")
+    configured_reserved = qwen.get("reserved_tokens", qwen.get("max_tokens", request_max))
     if (
         not isinstance(context_window, int)
         or isinstance(context_window, bool)
         or context_window < 1
     ):
         raise CognitionError("context_window_tokens must be a positive integer")
-    if not isinstance(reserved, int) or isinstance(reserved, bool) or reserved < 0:
+    if not isinstance(request_max, int) or isinstance(request_max, bool) or request_max < 0:
         raise CognitionError("request max_tokens must be a nonnegative integer")
-    if configured_reserved != reserved:
-        raise CognitionError("request max_tokens differs from configured output reserve")
+    if (
+        not isinstance(configured_reserved, int)
+        or isinstance(configured_reserved, bool)
+        or configured_reserved < 0
+    ):
+        raise CognitionError("configured output reserve must be a nonnegative integer")
+    reserved = max(2048, request_max, configured_reserved)
     prompt_tokens = prompt_token_counter(request)
     if (
         not isinstance(prompt_tokens, int)
@@ -261,6 +267,65 @@ def admit_request_context(
     if occupied > context_window:
         raise ContextAdmissionError(report)
     return report
+
+
+def model_token_count(text: str, qwen: Mapping[str, Any]) -> int:
+    """Count text with the exact GGUF tokenizer used by the resident model."""
+
+    executable = qwen.get("tokenizer_executable")
+    model = qwen.get("tokenizer_model")
+    if not isinstance(executable, str) or not executable:
+        raise CognitionError("tokenizer_executable is required for request admission")
+    if not isinstance(model, str) or not model:
+        raise CognitionError("tokenizer_model is required for request admission")
+    try:
+        result = subprocess.run(
+            [
+                executable, "--model", model, "--stdin", "--no-bos",
+                "--show-count", "--log-disable",
+            ],
+            input=text,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=float(qwen.get("tokenizer_timeout_seconds", 30)),
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise CognitionError(f"model tokenizer failed: {error}") from error
+    match = re.search(r"(\d+)\s*$", result.stdout)
+    if match is None:
+        raise CognitionError("model tokenizer returned no terminal token count")
+    return int(match.group(1))
+
+
+def conservative_request_prompt_tokens(
+    request: Mapping[str, Any], qwen: Mapping[str, Any]
+) -> int:
+    """Count the full request while conservatively accounting for images.
+
+    llama.cpp consumes image URLs outside the text tokenizer.  Replace each
+    URL with a stable marker, count the complete remaining request (messages,
+    prompt, response schema, and generation parameters) with the model's GGUF
+    tokenizer, then reserve the server's configured maximum tokens per image
+    plus a bounded chat-template margin.
+    """
+
+    rendered = json.loads(stable_json(request))
+    image_count = 0
+    for message in rendered.get("messages", ()):  # type: ignore[union-attr]
+        content = message.get("content") if isinstance(message, Mapping) else None
+        if not isinstance(content, list):
+            continue
+        for part in content:
+            if isinstance(part, dict) and part.get("type") == "image_url":
+                part["image_url"] = {"url": "<image>"}
+                image_count += 1
+    textual = model_token_count(stable_json(rendered), qwen)
+    image_ceiling = int(qwen.get("image_max_tokens", 1024))
+    template_margin = int(qwen.get("chat_template_token_margin", 256))
+    if image_ceiling < 0 or template_margin < 0:
+        raise CognitionError("request admission margins must be nonnegative")
+    return textual + image_count * image_ceiling + template_margin
 
 
 def cursor_document(state: Any) -> dict[str, Any]:

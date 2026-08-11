@@ -758,14 +758,17 @@ CAUSAL VISUAL UNIT:
         container = request["response_format"]["json_schema"]
         container["schema"] = response_schema(turn)
 
-        # The canonical turn retains a full object index/materialization for
-        # compilation and audit.  Sending those redundant structures to the
-        # model can exceed its context on visually busy games even though the
-        # protocol's sparse cut is within budget.  The model sees the bounded
-        # sparse cut; response validation still uses the untouched full turn.
+        # The canonical turn retains the full catalog and mixed lossy delta
+        # frontier for compilation and audit. Sending those attention-routing
+        # structures is redundant once the current dependency-closed sparse
+        # cut and R2 scratchpad projection are present. Required causal and
+        # evidence packets are separate fields and are never projected away;
+        # response validation still uses the untouched full turn.
         compact_document = dict(turn.document)
         omitted = []
-        for field in ("full_materialization", "object_index"):
+        for field in (
+            "full_materialization", "object_index", "ordered_lossless_deltas",
+        ):
             if field in compact_document:
                 compact_document.pop(field)
                 omitted.append(field)
