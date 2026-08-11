@@ -22,7 +22,13 @@ MODEL_SCRATCHPAD_FIELDS = ("explanation", "goal", "expectation", "notes")
 CONSOLIDATION_PROMPT = """You are the configured semantic model performing R2 explanation consolidation.
 Read model_scratchpad as the exact current shared workspace scratchpad used by
 ordinary semantic turns and Agent Arcade. Rewrite the same four-field object in
-your response; do not rename, omit, or add fields.
+your response; do not rename, omit, or add fields. During consolidation set:
+- explanation to the smallest reusable explanation that survived settlement;
+- goal to its action-free transferable objective;
+- expectation to a falsifiable prediction for a fresh future binding;
+- notes to what was preserved, discarded, refuted, or left open by consolidation.
+At least one field must change from the input object; prefer revising all four
+when the completed context changes their meaning.
 The packet is a deterministic digest of a completed context. Compare
 its explanation families, potential summaries, change points, confirmations,
 refutations, and terminal evidence. Propose the smallest reusable action-free R2
