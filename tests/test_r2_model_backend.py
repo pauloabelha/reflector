@@ -372,6 +372,34 @@ def test_model_scratchpad_serialization_is_stable_and_wysiwyg():
     assert json.loads(scratchpad.model_scratchpad_text(first)) == first
 
 
+@pytest.mark.parametrize(
+    "leak",
+    [
+        "A contiguous dormant run exists",
+        "inspect the delta codec",
+        "the ordered lossless projection is the goal",
+        "retain a lossy event summary",
+        "use transport projection as evidence",
+        "event compression explains the board",
+    ],
+)
+def test_transport_metadata_cannot_become_scratchpad_semantics(leak):
+    from arcade.r2 import scratchpad
+
+    assert scratchpad.has_transport_metadata_leak({"goal": leak})
+
+
+def test_game_semantics_do_not_trigger_transport_metadata_guard():
+    from arcade.r2 import scratchpad
+
+    assert not scratchpad.has_transport_metadata_leak({
+        "explanation": "three figures preserve their outline",
+        "goal": "align compatible figures",
+        "expectation": "fit residual decreases",
+        "notes": "the latest successor moved the target downward",
+    })
+
+
 def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
     from arcade.r2 import scratchpad
 
@@ -382,6 +410,7 @@ def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
     assert '"required": ["protocol", "request_id", "scratchpad", "workspace_write"]' in source
     assert "notes to what was preserved, discarded, refuted, or left open" in source
     assert "explanation_consolidation_due" in source
+    assert "transport-metadata-semantic-leak" in source
 
 
 def test_arcade_picker_validates_custom_budgets_and_restores_environment(monkeypatch):

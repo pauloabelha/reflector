@@ -72,6 +72,13 @@ FUTURE_OR_MODAL_CONTROL = re.compile(
     r"\b(?:could|future|may|might|must|next|plan|propose|recommend|should|try|will|would)\b",
     re.IGNORECASE,
 )
+TRANSPORT_METADATA_LEAK = re.compile(
+    r"\b(?:contiguous\s+)?dormant\s+run(?:s)?\b|"
+    r"\bdelta\s+codec\b|\bordered\s+(?:lossless\s+)?projection(?:s)?\b|"
+    r"\blossy\s+(?:event\s+)?summar(?:y|ies)\b|"
+    r"\btransport\s+projection\b|\bevent\s+compression\b",
+    re.IGNORECASE,
+)
 
 
 def canonical_model_scratchpad(value: Any) -> dict[str, str]:
@@ -95,6 +102,16 @@ def model_scratchpad_text(value: Any) -> str:
         separators=(",", ":"),
         ensure_ascii=False,
     )
+
+
+def has_transport_metadata_leak(value: Any) -> bool:
+    """Detect representation-layer jargon miscast as game-world semantics."""
+
+    if isinstance(value, Mapping):
+        return any(has_transport_metadata_leak(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return any(has_transport_metadata_leak(item) for item in value)
+    return isinstance(value, str) and bool(TRANSPORT_METADATA_LEAK.search(value))
 RETROSPECTIVE_ACTION_WINDOW = 140
 CONSOLIDATION_SITUATED_DETAIL = re.compile(
     r"(?:\b(?:black|blue|red|green|yellow|gr[ae]y|magenta|orange|cyan|"
@@ -1102,6 +1119,12 @@ Use a cautious question-mark gloss rather than omitting an evidenced but still
 ambiguous action.
 
 SEMANTIC COHERENCE:
+- A contiguous dormant run, G row, delta codec, ordered projection, lossy
+  summary, and transport projection are representation-layer bookkeeping only.
+  They never denote a visible object, spatial relation, causal mechanism,
+  explanation, goal, expectation, or game state. Never copy or paraphrase those
+  terms into scratchpad or workspace_write. Reason only from the observations
+  and epistemic content they carry.
 - Express telic quantities as residuals whenever possible: progress decreases
   a residual toward minimum/zero. FIT should use fit_residual, which composes
   boundary_gap + overlap_deficit and therefore has a gradient before contact.
@@ -1691,6 +1714,8 @@ CAUSAL VISUAL UNIT:
             }
         scratch_tokens = qc.GRAPH.estimate_tokens(scratchpad_text)
         action_free_note = {key: value for key, value in note.items() if key != "action_aliases"}
+        if has_transport_metadata_leak(scratchpad) or has_transport_metadata_leak(action_free_note):
+            return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "transport-metadata-semantic-leak"}]}
         if _has_action_proposal(scratchpad) or _has_action_proposal(action_free_note) or scratch_tokens > MAX_SCRATCHPAD_TOKENS:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "working-note-safety-or-budget"}]}
         _index, visible = qc._v14_visible(turn)
