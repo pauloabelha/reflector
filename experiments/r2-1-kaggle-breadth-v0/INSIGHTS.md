@@ -629,15 +629,14 @@ maximum level counter in committed successors; pending actions contribute
 neither actions nor score. Runtime completion, replay completeness, and game
 progress are distinct report dimensions.
 
-## I25 — Semantic failure needs an evidence-addressed revision task
+## I25 — A refuted prediction does not necessarily refute its semantic goal
 
-The scheduler now calls Qwen only on observable demand, but an explicit
-grounding rejection or refutation is projected as general scratchpad context
-rather than a bounded revision object. All five such demands failed to yield a
-new accepted note, while 89.5% of consecutive accepted proposal sets repeated
-exactly. The safe next step is not controller-authored semantics; it is a Qwen
-task that names the failed proposal, exact evidence, required delta, and
-abstention option, with R2 retaining grounding and execution authority.
+All five initially reported semantic-failure demands retained progress-eligible
+control, confirmations, unique identity, and supported mechanics in the full
+R2 state. The bounded projection had dropped those support gates, turning a
+local horizon-prediction refutation into apparent semantic rejection. A
+semantic revision task is justified only by genuinely unsupported evidence;
+it must not retire a useful goal because one situated prediction missed.
 
 ## I26 — RESET success is an end-to-end boundary, not a transport fact
 
@@ -669,10 +668,20 @@ learning a false rationale.
 ## I29 — Safe context fallback can still be scientifically wasteful
 
 The 59-token mandatory frontier is admission-safe, yet 28/28 completed calls
-at that frontier produced no working note. Server usage later showed 7.2k–8.9k
-tokens of headroom after the required reserve, because conservative multimodal
-accounting—not exact resident occupancy—forced the collapse. A safe rescue must
-count the exact richest candidate on the serving stack once, preserve the
-already-admitted mandatory fallback, and accept the richer cut only when that
-same request demonstrably fits. Raising budgets or assuming monotonicity would
-not provide the same authority.
+at that frontier produced no working note. A bounded recovery need not weaken
+admission: preserve the exact mandatory request first, try one richer
+dependency-closed cut through the same exact GGUF gate, and return the original
+object by identity on any failure or no-object result. This recovered nonempty
+attention in 34/35 frozen cases while keeping the 2,048-token reserve. It does
+not claim the globally richest server-fit cut; it is a safe, measured gain over
+the empty fallback.
+
+## I30 — A changed click successor needs spatial attribution before semantics
+
+Among 132 grounded clicks, 56 produced one connected observed-change footprint,
+26 produced multiple disconnected footprints, and 50 settled unchanged. The
+single-footprint cases are candidates for situated causal study, not proven
+effects: connectedness does not identify an entity, direction, goal, or rule.
+Still, this is a sharper boundary than `observation_changed`: it separates
+conservative unique spatial evidence from ambiguity and abstention while using
+the exact ordered animation packet.

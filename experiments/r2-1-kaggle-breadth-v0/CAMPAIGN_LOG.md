@@ -703,17 +703,17 @@ The remaining bottleneck is semantic revision and causal conversion:
   all 28 completed calls at that frontier produced no accepted working note.
 - Richer turns produced 82 notes from 107 completions, but 51/57 consecutive
   accepted proposal sets were canonically identical.
-- Every one of the five explicit unsupported/refuted revision demands failed
-  to produce a new accepted note.
+- Five turns were initially classified as unsupported/refuted revision demand;
+  a later full-state audit showed that classification was caused by projection
+  truncation, not authoritative unsupported semantics.
 - Across 401 decisions, only 22 were goal-progress selections; 374 were
   information or discriminating probes. Actual progress was positive 22 times,
   negative 11 times, and zero 318 times.
 
-The next intervention should therefore be a bounded, evidence-addressed
-semantic-delta task that preserves Qwen's authority and R2's exact-repeat
-rejection. Separately, admission should recover the richest safe frontier when
-capacity remains, without weakening the reserved completion budget. Neither
-change should invent goals or infer action semantics from game IDs.
+The next intervention must first preserve support gates through bounded
+projection. Separately, admission should recover the richest safe frontier
+when capacity remains, without weakening the reserved completion budget.
+Neither change should invent goals or infer action semantics from game IDs.
 ## Checkpoint 18 — live recovery of both breadth errors
 
 Fresh focused runs on `0ad9caf` crossed the exact two pass-1 failure seams:
@@ -752,18 +752,17 @@ and confirmed explanations suppress false failure routing while remaining
 inside the 12KB bound. The larger semantic-revision protocol remains
 unpromoted until it can consume causally sound projections.
 
-## Checkpoint 20 — evidence-addressed semantic revision and truthful advice
+## Checkpoint 20 — false-failure reclassification and truthful advice
 
-The semantic failure path now gives Qwen a bounded revision task only when the
-canonical classifier sees an unsupported rejection/refutation at an exact
-current transition reference. The task carries prior/current evidence refs,
-failure signals, copied R2 binding/proposal addresses, prior proposal digests,
-and the authority split. Qwen must explicitly choose `revise` or `abstain` and
-acknowledge that exact evidence. Revision requires a nonempty canonically
-changed goal set; abstention requires no goals or abductive composition. Both
-advance the durable evidence reference, preventing repeated calls for the same
-failure while allowing a distinct later failure. Malformed or mismatched
-acknowledgment fails closed. R2 remains the sole grounding/control authority.
+A bounded evidence-addressed revision protocol was implemented behind the
+corrected support gate, then removed before promotion when the full frozen
+corpus showed it had no observed target. All five apparent failure demands
+(AR25 one, G50T two, KA59 two) retained `PROGRESS_ELIGIBLE` control, unique
+identity, confirmations, and supported mechanics in their authoritative full
+decision blobs. Projection truncation alone had erased those gates. A fresh
+KA59 run reproduced both refutations but correctly emitted no failure task.
+The campaign therefore keeps the small projection repair and ordinary exact-set
+stagnation guard, not an unneeded revision protocol.
 
 A separate provenance repair distinguishes unauthorized R2 rankings from the
 executed decision. In first-pass telemetry, 153/207 advisory selections differed
@@ -775,5 +774,39 @@ as `advisory_selection_rule`. Raw evaluator output remains intact and controller
 behavior is unchanged.
 
 Combined semantic, controller, integration, action-command, observation, and
-stored-request suites pass. Live semantic-revision behavior remains the next
-promotion gate.
+stored-request suites pass. A future revision protocol requires genuinely
+unsupported live evidence before promotion.
+
+## Checkpoint 21 — exact-admitted recovery from empty attention
+
+After the ordinary bounded frontier search exhausts, the controller now keeps
+the already-admitted mandatory cut as an immutable fallback and tries exactly
+one richer interpolated dependency-closed cut. The probe still passes through
+the unchanged GGUF request admission and 2,048-token reserve. If it fails,
+raises a frontier error, or adds no object, the previously built fallback is
+returned by identity. Normal non-collapse paths never enter this branch.
+
+An offline oracle reconstructed all 35 frozen first-pass 59-token/zero-object
+turns from exact graph prefixes, scratchpad projections, visuals, and request
+IDs. 34/35 recovered 5–12 objects (median 10) with exact reserve and 44–1,865
+tokens of admitted headroom. G50T action 19 admitted no additional object and
+correctly retained the exact mandatory fallback. There were zero context,
+mandatory-binding, causal-packet, determinism, or admission failures.
+
+## Checkpoint 22 — shadow click causal-footprint census
+
+A new analysis-only tool replayed all 132 committed coordinate clicks from the
+frozen first pass. It requires exact command grounding, decision/pending/commit
+identity, blob integrity, ordered-frame digests, and settled-grid equality; any
+violation abstains. It unions pixel changes across the ordered successor packet
+and reports only the number of connected observed-change footprints.
+
+- 56 clicks had one connected footprint across eight games.
+- 26 had multiple disconnected footprints and remain ambiguous.
+- 50 settled unchanged and abstain, even when transient animation occurred.
+- All 132 passed transport/grounding/envelope integrity; 220 ordered frames and
+  18 multi-frame click packets were consumed.
+
+`unique` is deliberately shadow-only: it grants no game-rule, progress, graph,
+or control authority. It establishes a measurable substrate for the next
+held-out attribution experiment without changing an action.
