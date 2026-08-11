@@ -597,6 +597,32 @@ Repair:
 Status: generic contract suite green; same-state AR25 rerun pending. Historical
 route success is comparison evidence only and is not encoded as a heuristic.
 
+## Checkpoint 14 — same-state score recovery at `37ca449`
+
+The frozen targeted AR25 rerun provides a controlled score result:
+
+- It reproduced the byte-identical prefix `1, 2×11` and the exact common pivot
+  digest from the failed `44ef930` episode.
+- At the former stale-command boundary, executed action, exact command,
+  decision contract, settlement command, effect scope, and action-use ledger
+  all remained action 2.
+- At the pivot, R2 selected action 3. Five action-3 successors matched the
+  historical successful digest sequence byte-for-byte, and level 1 cleared on
+  action 17.
+- The failed build diverged from the same state to action 4, worsened its
+  residual, and scored 0 after 27 actions. The corrected build scored 1 after
+  17 actions.
+
+The suffix was learned online: the first action 3 was an information probe;
+successors then raised exact mechanism support/confidence and subsequent
+action-3 decisions became progress eligible. No action route, hidden semantic,
+or game-specific goal was added.
+
+The six-minute worker ended with 22 committed actions, one uncommitted pending
+action, and one cleared level; the five level-2 actions did not clear another
+level. Status: promoted generic control intervention with exact same-state score
+and causal-chain evidence; deeper-level transfer remains open.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:

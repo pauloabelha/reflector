@@ -578,3 +578,28 @@ Inference:
 
 Status: cross-game defect reproduced and fixed at the generic command boundary;
 frozen score rerun pending.
+
+## I21 — Intervention-identity repair recovers real score without a route prior
+
+Observed:
+
+- Before the repair, AR25 and the corrected rerun shared every frame through
+  action 12. The failed controller chose action 4 and timed out scoreless; the
+  repaired controller chose action 3, reproduced five historical successors,
+  and cleared level 1 at action 17.
+- The repair changes no action ranking formula, semantic goal, environment
+  rule, or game-specific parameter. It only prevents a fast-path action from
+  being settled and counted under the fallback command's identity.
+
+Inference:
+
+- Correct causal bookkeeping is itself a control intervention: restoring the
+  novelty and effect scope of a never-executed action changes which experiment
+  R2 rationally chooses, then lets environment confirmations promote that
+  experiment into supported progress control.
+- This is the campaign's strongest score result because state, prefix, and
+  successor digests match exactly; the only intended architectural difference
+  is the generic command-identity invariant.
+
+Status: score-moving generic intervention promoted; level-2 and cross-game
+transfer remain the next boundary.
