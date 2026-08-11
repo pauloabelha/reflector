@@ -53,9 +53,9 @@ def install(base: Any, runtime: Any | None = None) -> None:
                 salient_schemas=_salient_schemas(base, state),
                 r2_parallel_phase="frame-parsed; schemas activated; bindings available; awaiting Qwen merge",
             )
-        # The first semantic turn is a prerequisite for action 1. Keep the
-        # resolved pending handle so the inherited delayed-release accounting
-        # later observes the same durable compilation without another call.
+        # The first semantic turn is a prerequisite for action 1. It is fully
+        # integrated here, so no resolved handle should delay an evidence-led
+        # alias revision after the first observed action.
         state, _compilation = base.integrate_qwen(
             root,
             workspace_id,
@@ -99,6 +99,6 @@ def install(base: Any, runtime: Any | None = None) -> None:
                 r2_parallel_phase="Qwen merged; grounding and one-action ranking",
             )
         state, graph_events = base.graph_state(root)
-        return state, graph_events, pending, task_count, [*records, *grounded]
+        return state, graph_events, None, task_count, [*records, *grounded]
 
     base.activate_then_maybe_queue_qwen = activate_then_maybe_queue_qwen

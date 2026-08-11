@@ -131,7 +131,11 @@ def install(runtime: Any | None = None) -> None:
         BASE.queue_qwen = queue_and_publish
     INTEGRATION.install(BASE)
     FIRST_FRAME.install(BASE, runtime)
-    controller_type = CONTROLLER.controller_class(BASE.LC, runtime)
+    controller_type = CONTROLLER.controller_class(
+        BASE.LC,
+        runtime,
+        fast_path_config=load_config().get("control", {}).get("fast_path", {}),
+    )
 
     class ActiveController(controller_type):
         def __init__(self, **kwargs: Any) -> None:
@@ -220,8 +224,12 @@ def run_game(game: str = "ar25", *, level: int = 1, runtime: Any | None = None, 
                 "game": game,
                 "start_level": int(level),
                 "action_budget": int(config["action_budget"]),
+                "action_budget_scope": "per-level" if config.get("reset_action_budget_each_level") else "game",
             },
             action_budget=int(config["action_budget"]),
+            level_action_budget=int(config["action_budget"]),
+            level_turn=0,
+            levels_completed=0,
         )
     try:
         result = BASE.run_episode(payload, fifo)

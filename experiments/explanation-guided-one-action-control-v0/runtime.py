@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import threading
 import time
+import sys
 from typing import Any, Mapping
 
 
@@ -48,7 +49,7 @@ class LiveRuntime:
         self.schema_observer: Any | None = None
         self.reset_requested = threading.Event()
         self.snapshot: dict[str, Any] = {
-            "status": "idle", "frame": [], "turn": 0,
+            "status": "idle", "frame": [], "turn": 0, "level_turn": 0,
             "decision": None, "settlement": None, "scratchpad": None,
             "r2_semantic_projection": None,
             "r2_1_schema_stats": None,
@@ -108,9 +109,9 @@ class LiveRuntime:
                 "progress_fraction": round(min(0.96, elapsed / max(1.0, eta)), 3),
             })
         value["qwen"] = qwen
-        budget = value.get("action_budget")
+        budget = value.get("level_action_budget", value.get("action_budget"))
         if isinstance(budget, int) and budget >= 0:
-            value["actions_remaining"] = max(0, budget - int(value.get("turn", 0)))
+            value["actions_remaining"] = max(0, budget - int(value.get("level_turn", value.get("turn", 0))))
         return value
 
     def update(self, **values: Any) -> None:
@@ -206,6 +207,7 @@ class LiveRuntime:
                 "status": "resetting",
                 "frame": [],
                 "turn": 0,
+                "level_turn": 0,
                 "decision": None,
                 "settlement": None,
                 "scratchpad": None,
@@ -241,7 +243,12 @@ class LiveRuntime:
         raw = environment.observation_space
         frame = plain_frame(raw.frame)
         turn = int(self.snapshot.get("turn", 0))
-        schema_stats = self.observe_schemas(frame, turn)
+        fast_path = bool(getattr(controller, "fast_path_active", False))
+        schema_stats = (
+            {**dict(self.snapshot.get("r2_1_schema_stats") or {}),
+             "turn": turn, "cached": True, "fast_path": True, "elapsed_ms": 0.0}
+            if fast_path else self.observe_schemas(frame, turn)
+        )
         contract = None if controller.last_contract is None else dict(controller.last_contract)
         if contract is not None:
             current = contract.get("current_explanation")
@@ -263,6 +270,7 @@ class LiveRuntime:
             decision=contract,
             turn=turn,
             r2_1_schema_stats=schema_stats,
+            fast_path=(controller.fast_path.document() if hasattr(controller, "fast_path") else None),
         )
         with self.condition:
             while self.paused and self.step_tokens == 0:
@@ -279,14 +287,35 @@ class LiveRuntime:
         raw = successor
         frame = plain_frame(raw.frame)
         turn = int(self.snapshot.get("turn", 0)) + 1
+        previous_levels = int(self.snapshot.get("levels_completed", 0))
+        levels_completed = int(raw.levels_completed)
+        level_advanced = levels_completed > previous_levels
+        if level_advanced:
+            advance = getattr(self.schema_observer, "advance_level", None)
+            if callable(advance):
+                advance()
+            scratchpad = sys.modules.get("one_action_scratchpad")
+            advance_context = getattr(scratchpad, "advance_level_context", None)
+            if callable(advance_context):
+                advance_context()
+        level_turn = 0 if level_advanced else int(self.snapshot.get("level_turn", 0)) + 1
+        fast_path = bool(getattr(controller, "fast_path_active", False)) and not level_advanced
+        schema_stats = (
+            {**dict(self.snapshot.get("r2_1_schema_stats") or {}),
+             "turn": turn, "cached": True, "fast_path": True, "elapsed_ms": 0.0}
+            if fast_path else self.observe_schemas(frame, turn)
+        )
         self.update(
             status="observing",
             frame=frame,
             turn=turn,
-            r2_1_schema_stats=self.observe_schemas(frame, turn),
-            levels_completed=int(raw.levels_completed),
+            level_turn=level_turn,
+            r2_1_schema_stats=schema_stats,
+            levels_completed=levels_completed,
             levels_total=int(raw.win_levels),
+            level_transition=level_advanced,
             settlement=controller.settlements[-1] if controller.settlements else None,
+            fast_path=(controller.fast_path.document() if hasattr(controller, "fast_path") else None),
         )
 
 

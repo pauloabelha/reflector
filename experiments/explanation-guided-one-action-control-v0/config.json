@@ -5,9 +5,18 @@
   "games": ["ar25"],
   "arms": ["shared_live_qwen"],
   "action_budget": 48,
+  "continue_across_levels": true,
+  "reset_action_budget_each_level": true,
   "qwen": {
-    "max_tokens": 1280,
-    "thinking_budget_tokens": 192
+    "context_window_tokens": 16384,
+    "reserved_tokens": 2048,
+    "max_tokens": 2048,
+    "thinking_budget_tokens": 192,
+    "max_calls_per_episode": 16,
+    "trigger_on_new_action_evidence": true,
+    "eager_semantic_integration": false,
+    "nonblocking_semantic_integration": true,
+    "logical_release_delay_actions": 0
   },
   "scratchpad": {
     "max_tokens": 1024,
@@ -21,6 +30,13 @@
     "winning_explanation_set_nonempty_from_frame_zero": true,
     "reobserve_after_every_action": true,
     "selection_objectives": ["goal-progress", "decision-relevant-information"],
-    "retain_no_visible_change": true
+    "retain_no_visible_change": true,
+    "fast_path": {
+      "enabled": true,
+      "minimum_confirmations": 2,
+      "confidence_threshold": 0.8,
+      "max_actions": 4,
+      "max_failures": 0
+    }
   }
 }

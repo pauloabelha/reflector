@@ -91,7 +91,7 @@ def test_r2_action_trace_reports_grounded_displacement():
 
 def test_arcade_exposes_required_live_surfaces():
     page = load("arcade").PAGE
-    for phrase in ("EXPLANATION · CURRENT", "CONTROL V0 · CURRENT PROPOSAL", "SALIENT VERBS", "R2.1 SCHEMA LEVELS · CURRENT FRAME", "CATEGORICAL DIAGRAMS · ABDUCTIONS", "METADATA", "QWEN SCRATCHPAD", "R2 FEEDBACK · READ BY NEXT SEMANTIC QWEN", "ACTION ALIASES · QWEN GLOSS, NOT CONTROL", "action-token", "action-gloss", "actionColor", "STEP ONE", "RESET", "ACTION ${turn}/${budget", "SPEED", "AGENT ARCADE", "verb-chip", "verbColor", "USES", "executableExplanation", "POTENTIAL", "PREDICTS", "HYPOTHESES", "EVIDENCE", "semantic-action-alias-v10", "expectedArcadeUiVersion"):
+    for phrase in ("EXPLANATION · CURRENT", "CONTROL V0 · CURRENT PROPOSAL", "SALIENT VERBS", "R2.1 SCHEMA LEVELS · CURRENT FRAME", "CATEGORICAL DIAGRAMS · ABDUCTIONS", "METADATA", "QWEN SCRATCHPAD", "R2 FEEDBACK · READ BY NEXT SEMANTIC QWEN", "ACTION ALIASES · QWEN GLOSS, NOT CONTROL", "DETAILED EVENT LOG", "LIVE RUNTIME TELEMETRY · PRESENTATION ONLY · NOT EVIDENCE", "arcade-log", "appendArcadeEvent", "captureArcadeEvents", "log-action", "log-qwen", "log-alias", "log-settlement", "log-fast", "POLICY AUTHORIZED", "log-level", "log-error", "FOLLOW ON", "CLEAR", "action-token", "action-gloss", "actionColor", "actionAlias", "actionBadge", "STEP ONE", "RESET", "LEVEL ACTION ${levelTurn}/${budget", "TOTAL ${turn}", "SPEED", "AGENT ARCADE", "verb-chip", "verbColor", "USES", "executableExplanation", "POTENTIAL", "PREDICTS", "HYPOTHESES", "EVIDENCE", "generic-fast-path-v15", "expectedArcadeUiVersion", "semantic update rejected; control continues"):
         assert phrase in page
     assert "TOP-3 NEXT ACTIONS" not in page
     assert "SALIENT SCHEMAS" not in page
@@ -99,6 +99,7 @@ def test_arcade_exposes_required_live_surfaces():
     assert "const name=String(value?.verb||'')" in page
     assert "/^[a-z][a-z0-9_]{0,39}$/" in page
     assert page.index("EXPLANATION · CURRENT") < page.index("CONTROL V0 · CURRENT PROPOSAL") < page.index("SALIENT VERBS") < page.index("R2.1 SCHEMA LEVELS · CURRENT FRAME") < page.index("CATEGORICAL DIAGRAMS · ABDUCTIONS") < page.index("METADATA")
+    assert page.index("</main>") < page.index("DETAILED EVENT LOG")
 
 
 def test_r2_1_fits_current_frame_at_multiple_recursive_levels():
@@ -179,6 +180,9 @@ def test_r2_1_explanation_learns_progress_and_settles_prediction():
     settled = observer.settle_action(4, middle, after)
     assert settled["adjudication"] == "confirmed"
     assert settled["actual_progress"] == 1
+    assert settled["preferred_order"]["advanced"] is True
+    assert settled["protected_invariants"]["hold"] is True
+    assert observer.fast_policy_state is not None
 
 
 def test_control_v0_rejects_area_collapse_as_broken_identity():
@@ -398,6 +402,92 @@ def test_r2_1_episode_reset_clears_every_epistemic_store():
     assert observer.last_action_atoms == {}
 
 
+def test_r2_1_level_transition_retains_game_mechanics_but_clears_bindings():
+    adapter = load("r2_1_level_scope_adapter") if (HERE / "r2_1_level_scope_adapter.py").exists() else load("r2_1_adapter")
+    observer = adapter.FrameSchemaObserver()
+    before, middle, _after = _three_alignment_frames()
+    observer.fit_frame(before, turn=0)
+    observer.rank_actions((1, 4), fallback_action=4, semantic_goal=_alignment_goal())
+    observer.settle_action(4, before, middle)
+    effects = observer.action_effects
+    uses = observer.action_uses
+    assert effects and uses and observer.last_workspace is not None
+
+    observer.advance_level()
+
+    assert observer.action_effects is effects
+    assert observer.action_uses is uses
+    assert observer.action_effects and observer.action_uses
+    assert observer.last_digest is None
+    assert observer.last_workspace is None
+    assert observer.last_regions == []
+    assert observer.pending_prediction is None
+    assert observer.role_trajectories == {}
+
+
+def test_live_runtime_resets_only_per_level_action_counter_on_level_advance():
+    runtime = load("runtime_level_scope") if (HERE / "runtime_level_scope.py").exists() else load("runtime")
+    calls = []
+    observer = SimpleNamespace(
+        advance_level=lambda: calls.append("advance"),
+        fit_frame=lambda frame, turn: {"turn": turn, "frame": frame},
+    )
+    live = runtime.LiveRuntime()
+    live.set_schema_observer(observer)
+    live.snapshot.update({"turn": 7, "level_turn": 7, "levels_completed": 0, "level_action_budget": 48})
+    controller = SimpleNamespace(settlements=[])
+    live.after_action(
+        SimpleNamespace(frame=[[[1]]], levels_completed=1, win_levels=3), controller,
+    )
+    state = live.read()
+    assert calls == ["advance"]
+    assert state["turn"] == 8
+    assert state["level_turn"] == 0
+    assert state["actions_remaining"] == 48
+    assert state["level_transition"] is True
+
+
+def test_live_runtime_skips_recursive_refit_during_authorized_fast_path():
+    runtime = load("runtime_fast_path") if (HERE / "runtime_fast_path.py").exists() else load("runtime")
+    fits = []; commits = []
+    observer = SimpleNamespace(
+        fit_frame=lambda frame, turn: fits.append((frame, turn)) or {"turn": turn},
+        commit_prediction=lambda action, explanation: commits.append((action, explanation)),
+    )
+    authority = SimpleNamespace(document=lambda: {"status": "AUTHORIZED", "remaining": 2})
+    controller = SimpleNamespace(
+        fast_path_active=True,
+        fast_path=authority,
+        last_contract={"selected_action": 3, "current_explanation": {"prediction": {"action": 3}}},
+        settlements=[],
+    )
+    live = runtime.LiveRuntime()
+    live.set_schema_observer(observer)
+    live.snapshot.update({"turn": 4, "levels_completed": 0, "r2_1_schema_stats": {"turn": 3}})
+    live.configure(speed=20)
+    environment = SimpleNamespace(observation_space=SimpleNamespace(frame=[[[0, 2, 0]]]))
+    live.before_action(environment, controller)
+    live.after_action(SimpleNamespace(frame=[[[0, 0, 2]]], levels_completed=0, win_levels=2), controller)
+    assert fits == []
+    assert commits[-1][0] == 3
+    assert live.read()["r2_1_schema_stats"]["fast_path"] is True
+
+
+def test_multilevel_run_is_enabled_with_a_per_level_budget_and_boundary_hooks():
+    config = json.loads((HERE / "config.json").read_text())
+    assert config["continue_across_levels"] is True
+    assert config["reset_action_budget_each_level"] is True
+    base_source = (HERE.parent / "parallel-cognitive-workspace-v1-4" / "experiment.py").read_text()
+    assert "while True:" in base_source
+    assert 'stop_reason = "level-action-budget"' in base_source
+    assert "controller.observe_level_transition" in base_source
+    assert "cognition.advance_level(after_grid)" in base_source
+    assert "level_transition=level_transition" in base_source
+    bridge_source = (HERE.parent / "parallel-cognitive-workspace-v1-9" / "experiment.py").read_text()
+    assert "level_transition: bool = False" in bridge_source
+    assert "level_transition=level_transition" in bridge_source
+
+
 def test_r2_1_identical_first_frame_gets_a_fresh_workspace_after_reset():
     adapter = load("r2_1_adapter")
     observer = adapter.FrameSchemaObserver()
@@ -504,7 +594,7 @@ def test_qwen_abduction_compiles_to_a_typed_schema_binding_and_open_shadow():
             component_ids.append(item["schema_id"])
     assert len(component_ids) >= 2
     proposal = {
-        "local_ref": "ab0", "component_schema_ids": component_ids[:2],
+        "local_ref": "composition_0", "component_schema_ids": component_ids[:2],
         "morphisms": [{"source_schema_id": component_ids[0], "target_schema_id": component_ids[1], "kind": "co_describes"}],
         "preferred_residual_changes": [{"comparison_schema_id": component_ids[0], "dimension": "schema_difference", "direction": "decrease"}],
         "open_questions": ["Does the residual decrease under intervention?"],
@@ -526,7 +616,7 @@ def test_qwen_abduction_with_stale_schema_ids_is_rejected_not_grounded():
     before, _middle, _after = _three_alignment_frames()
     observer.fit_frame(before, turn=0)
     ranked = observer.rank_actions((1,), fallback_action=1, semantic_goal=None, semantic_abductions=[{
-        "local_ref": "ab0", "component_schema_ids": ["schema:missing-a", "schema:missing-b"],
+        "local_ref": "composition_0", "component_schema_ids": ["schema:missing-a", "schema:missing-b"],
         "morphisms": [{"source_schema_id": "schema:missing-a", "target_schema_id": "schema:missing-b", "kind": "preserves"}],
         "preferred_residual_changes": [], "open_questions": [],
     }])
@@ -816,7 +906,7 @@ def test_controller_publishes_r2_semantics_after_ranking_and_settlement(monkeypa
             "current_explanation": {"goal_proposals": [_alignment_goal()]},
             "scratchpad": {
                 "goal_proposals": [{**_alignment_goal(), "verb": "touch"}],
-                "abductive_compositions": [{"local_ref": "ab0"}],
+                "abductive_compositions": [{"local_ref": "composition_0"}],
             },
         },
         record_r2_action_trace=lambda _trace: None,
@@ -827,7 +917,7 @@ def test_controller_publishes_r2_semantics_after_ranking_and_settlement(monkeypa
     instance = controller.controller_class(live, runtime)()
     instance.plan((1, 2), observation_digest="frame", basis_revision=1)
     assert ranking_inputs[-1]["semantic_goal"][0]["verb"] == "touch"
-    assert ranking_inputs[-1]["semantic_abductions"] == [{"local_ref": "ab0"}]
+    assert ranking_inputs[-1]["semantic_abductions"] == [{"local_ref": "composition_0"}]
     assert published[-1]["ranking"]["current_explanation"]["verb"] == "fit"
     instance.observe(2, ((0, 2, 0),), ((0, 0, 2),))
     assert published[-1]["settlement"]["adjudication"] == "confirmed"
@@ -950,10 +1040,10 @@ def fake_qc():
     return qc
 
 
-def semantic_response(*, action_aliases=()):
+def semantic_response(*, action_aliases=(), natural_language="I am retaining a compact interpretation of observed structure."):
     return {"parsed": {
         "protocol": "p", "request_id": "r",
-        "natural_language_scratchpad": "I am retaining a compact interpretation of observed structure.",
+        "natural_language_scratchpad": natural_language,
         "workspace_write": {
             "summary": "Observed structure supports a compact working interpretation.",
             "objective_hypothesis": "A relational residual may organize progress.",
@@ -1044,10 +1134,156 @@ def test_qwen_action_alias_uses_existing_turn_and_action_specific_r2_evidence():
     request = qc.request_payload(turn, {})
     assert request_calls == [1]
     alias_schema = request["response_format"]["json_schema"]["schema"]["properties"]["workspace_write"]["properties"]["action_aliases"]
+    assert alias_schema["minItems"] == alias_schema["maxItems"] == 1
     branch = alias_schema["items"]["oneOf"][0]
     assert branch["properties"]["action_id"]["const"] == "ACTION_3"
     assert evidence_ref in branch["properties"]["evidence_refs"]["items"]["enum"]
     assert "authority from the name" in qc.PROMPT
+
+
+def test_newly_evidenced_action_immediately_requests_one_alias_revision():
+    scratchpad = load("scratchpad_alias_trigger") if (HERE / "scratchpad_alias_trigger.py").exists() else load("scratchpad")
+    qc = fake_qc(); scratchpad.install(qc)
+    state = SimpleNamespace(objects=[])
+    assert qc.alias_revision_due(state, "ws") is False
+    scratchpad.record_r2_transition_observation(
+        action=2, observation_changed=True, outcome="changed",
+        trace="Action 2 changed one tracked role.", settlement=None,
+    )
+    assert qc.alias_revision_due(state, "ws") is True
+    state.objects.append(SimpleNamespace(
+        kind="working_note", created_by="qwen", created_revision=1,
+            object_id="eo:alias-note", payload={
+            "workspace_ref": scratchpad._workspace_ref(qc, "ws"),
+            "action_aliases": [{
+                "action_id": "ACTION_2", "alias": "move?", "status": "tentative",
+                "evidence_refs": ["r2-transition:any"],
+            }],
+        },
+    ))
+    assert qc.alias_revision_due(state, "ws") is False
+
+
+def test_alias_runtime_configuration_is_nonblocking_and_matches_qwen_context():
+    config = json.loads((HERE / "config.json").read_text())
+    qwen = config["qwen"]
+    assert qwen["trigger_on_new_action_evidence"] is True
+    assert qwen["eager_semantic_integration"] is False
+    assert qwen["nonblocking_semantic_integration"] is True
+    assert qwen["logical_release_delay_actions"] == 0
+    assert qwen["context_window_tokens"] == 16384
+    assert qwen["max_tokens"] == 2048
+    service = Path("/home/pauloabelha/.config/systemd/user/reflector-qwen.service").read_text()
+    assert "--ctx-size 16384" in service
+
+
+def test_fast_path_authorizes_policy_not_action_and_revokes_on_failure():
+    controller = load("controller_fast_path_authority") if (HERE / "controller_fast_path_authority.py").exists() else load("controller")
+    authority = controller.FastPathAuthority({
+        "minimum_confirmations": 2, "confidence_threshold": 0.8, "max_actions": 3,
+    })
+    explanation = {
+        "schema_id": "schema:generic",
+        "control_status": "PROGRESS_ELIGIBLE",
+        "goal": {"measure": "ordered-state", "direction": "preferred", "terminal_class": "maximum"},
+        "ports": {"situated_role_descriptors": {"subject": {"value": 7, "area": 2}}},
+        "prediction": {"action": 2},
+        "epistemic_evaluation": {"mechanism_confidence": 0.9},
+    }
+    confirmed = {
+        "adjudication": "confirmed",
+        "preferred_order": {"advanced": True},
+        "protected_invariants": {"hold": True},
+    }
+    authority.consider(explanation, confirmed)
+    assert not authority.active
+    # Changing the selected action or palette value does not change the
+    # policy signature; structural applicability and grounded effects do.
+    explanation["prediction"]["action"] = 5
+    explanation["ports"]["situated_role_descriptors"]["subject"]["value"] = 11
+    authority.consider(explanation, confirmed)
+    assert authority.active
+    assert authority.document()["remaining"] == 3
+    authority.consider(explanation, {
+        **confirmed, "preferred_order": {"advanced": False},
+    })
+    assert not authority.active
+    assert authority.document()["last_revocation"] == "successor-not-preferred"
+
+
+def test_authorized_policy_can_choose_a_different_best_legal_action():
+    adapter = load("r2_1_fast_policy") if (HERE / "r2_1_fast_policy.py").exists() else load("r2_1_adapter")
+    observer = adapter.FrameSchemaObserver()
+    observer.frame_shape = (20, 20)
+
+    def region(value, x):
+        return {
+            "value": value, "area": 1, "cells": ((5, x),),
+            "shape": ((0, 0),), "outline": ((0, 0),), "center2": (10.0, float(2 * x)),
+            "binding_id": f"binding:{value}",
+        }
+
+    actor, target = region(2, 10), region(3, 2)
+    for action, delta in ((1, (0.0, -1.0)), (4, (0.0, -3.0))):
+        observer.action_effects[(action, observer._region_key(actor))][delta] = 3
+        observer.action_effects[(action, observer._region_key(target))][(0.0, 0.0)] = 3
+    template = {
+        "schema_id": "schema:generic", "binding_id": "binding:explanation",
+        "goal": {"measure": "centroid_distance", "direction": "decrease", "terminal_class": "minimum"},
+        "desired_delta": {"measure": "centroid_distance", "direction": "decrease"},
+        "ports": {
+            "actor": actor["binding_id"], "target": target["binding_id"],
+            "situated_roles": {"subject": actor["binding_id"], "reference": target["binding_id"]},
+            "situated_role_descriptors": {
+                "subject": {"value": 2, "area": 1}, "reference": {"value": 3, "area": 1},
+            },
+        },
+        "identity": {"subject": {"status": "UNIQUE"}, "reference": {"status": "UNIQUE"}, "control_eligible": True},
+        "epistemic_evaluation": {"mechanism_confidence": 1.0},
+    }
+    observer.fast_policy_state = {"template": template, "actor": actor, "target": target}
+    ranking = observer.rank_authorized_policy((1, 4), authorization={
+        "status": "AUTHORIZED", "signature": "generic-policy", "confidence": 0.8,
+    })
+    assert ranking is not None
+    assert ranking["selected_action"] == 4
+    assert ranking["current_explanation"]["prediction"]["expected_progress"] == 3.0
+
+
+def test_controller_executes_authorized_evaluator_choice_not_fallback():
+    controller = load("controller_fast_path_execution") if (HERE / "controller_fast_path_execution.py").exists() else load("controller")
+    explanation = {
+        "kind": "situated-control-explanation", "binding_id": "e-fast",
+        "control_status": "PROGRESS_ELIGIBLE",
+        "prediction": {
+            "action": 2, "expected_progress": 1,
+            "residual_before": 3, "residual_after": 2, "actor_delta": [0, 1],
+        },
+    }
+    ranking = {
+        "selected_action": 2,
+        "top_actions": [{"rank": 1, "action": 2, "role": "authorized-policy"}],
+        "explanations": [explanation], "current_explanation": explanation,
+        "execution_authorized": True,
+        "control_proposal": {"mode": "FAST_PATH", "action": 2},
+        "selection_rule": "authorized evaluator",
+    }
+    observer = SimpleNamespace(rank_authorized_policy=lambda legal, **kwargs: ranking)
+    runtime = SimpleNamespace(schema_observer=observer, snapshot={})
+    pc = SimpleNamespace(fallback_plan=lambda plan, action_id, reason: replace(
+        plan, action_id=action_id, fallback_action_id=action_id, probe_basis=reason,
+    ))
+    live = SimpleNamespace(ProspectiveWorkspaceController=BaseController, PC=pc)
+    instance = controller.controller_class(live, runtime)()
+    instance.fast_path.license = {
+        "status": "AUTHORIZED", "signature": "generic", "remaining": 2,
+        "max_actions": 2, "max_failures": 0, "confirmations": 2, "confidence": 1.0,
+    }
+    decision, _plan = instance.plan((1, 2), observation_digest="frame", basis_revision=4)
+    assert decision.action_id == 2
+    assert decision.reason == "r2.1-bounded-fast-path"
+    assert instance.last_contract["selected_action"] == 2
+    assert instance.last_contract["current_explanation"]["prediction"]["action"] == 2
 
 
 def test_qwen_action_alias_abstention_is_valid_and_unsupported_alias_is_rejected():
@@ -1088,10 +1324,17 @@ def test_qwen_action_alias_revision_replaces_gloss_without_mutating_prior_note()
     )])
     second_turn = qc.build_turn(state, (), None)
     assert second_turn.document["prior_working_note"]["action_aliases"][0]["alias"] == "move up"
+    assert "natural_language" not in second_turn.document["prior_working_note"]
+    assert second_turn.document["prior_working_note"]["prior_natural_language_digest"]
+    unchanged = qc.compile_response(semantic_response(action_aliases=[{
+        "action_id": "ACTION_3", "alias": "move up", "status": "stable",
+        "evidence_refs": [evidence_ref],
+    }]), second_turn)
+    assert unchanged["rejected"][-1]["reason"] == "natural-language-scratchpad-not-revised"
     revised = qc.compile_response(semantic_response(action_aliases=[{
         "action_id": "ACTION_3", "alias": "context-dependent move?", "status": "tentative",
         "evidence_refs": [evidence_ref],
-    }]), second_turn)
+    }], natural_language="The latest observed transition makes the earlier directional gloss conditional."), second_turn)
     assert not revised["rejected"]
     assert revised["working_note"]["action_aliases"][0]["alias"] == "context-dependent move?"
     assert prior_payload == prior_snapshot
@@ -1114,7 +1357,7 @@ def test_qwen_transport_omits_redundant_full_materialization_but_keeps_sparse_cu
     assert "INDEX_ONLY_" not in text
     assert "SPARSE_VISIBLE" in text
     assert "bounded-sparse-cut" in text
-    assert len(text) < 6000
+    assert len(text) < 6600
 
 
 def test_semantic_qwen_next_turn_reads_bounded_r2_projection_and_reset_clears_it():
@@ -1185,7 +1428,7 @@ def test_semantic_qwen_can_propose_abductive_composition_only_over_exposed_schem
             "objective_hypothesis": "A shared structural completion may predict residual reduction.",
             "goal_proposals": [_alignment_goal()],
             "abductive_compositions": [{
-                "local_ref": "ab0", "component_schema_ids": [schema_a, schema_b],
+                "local_ref": "composition_0", "component_schema_ids": [schema_a, schema_b],
                 "morphisms": [{"source_schema_id": schema_a, "target_schema_id": schema_b, "kind": "co_describes"}],
                 "preferred_residual_changes": [{"comparison_schema_id": schema_a, "dimension": "schema_difference", "direction": "decrease"}],
                 "open_questions": ["Does the predicted residual decrease?"],
@@ -1300,3 +1543,30 @@ def test_semantic_projection_quarantines_action_boundary_payloads():
     assert projected["observation_changed"] is True
     assert projected["level_delta"] == 0
     assert set(omitted) >= {"action_id", "reason"}
+
+
+def test_durable_aliases_bypass_canonical_graph_cut_but_reenter_prior_note():
+    scratchpad = load("scratchpad_alias_quarantine") if (HERE / "scratchpad_alias_quarantine.py").exists() else load("scratchpad")
+    qc = fake_qc()
+    qc._payload_projection = lambda _kind, value: (dict(value), [])
+    qc.build_turn = lambda _state, _events, _orientation, **kwargs: Turn(
+        "r", kwargs.get("workspace_id", "w"), 4, None, "delta", {"protocol": "p"},
+    )
+    scratchpad.install(qc)
+    payload = {
+        "workspace_ref": scratchpad._workspace_ref(qc, "ws"),
+        "natural_language": "A tracked effect has a cautious gloss.",
+        "action_aliases": [{
+            "action_id": "ACTION_1", "alias": "move?", "status": "tentative",
+            "evidence_refs": ["r2-transition:evidence"],
+        }],
+    }
+    projected, omitted = qc._payload_projection("working_note", payload)
+    assert "action_aliases" not in projected
+    assert "action_aliases" in omitted
+    state = SimpleNamespace(objects=[SimpleNamespace(
+        kind="working_note", created_by="qwen", created_revision=1,
+        object_id="eo:alias-note", payload=payload,
+    )])
+    turn = qc.build_turn(state, (), None, workspace_id="ws")
+    assert turn.document["prior_working_note"]["action_aliases"][0]["action_id"] == "ACTION_1"

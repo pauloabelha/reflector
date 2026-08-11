@@ -211,6 +211,29 @@ def reset_episode_context() -> None:
     _R2_TRANSITION_OBSERVATION = None
 
 
+def advance_level_context() -> None:
+    """Discard frame-local semantic projections, retaining the game note."""
+    global _R2_SEMANTIC_PROJECTION, _R2_TRANSITION_OBSERVATION
+    _R2_ACTION_TRACES.clear()
+    _R2_SEMANTIC_PROJECTION = None
+    _R2_TRANSITION_OBSERVATION = None
+
+
+def alias_revision_due(state: Any, workspace_id: str, qc: Any) -> bool:
+    """Request one semantic revision when a newly observed action lacks a gloss."""
+    transition = _R2_TRANSITION_OBSERVATION or {}
+    action_id = _canonical_action_id(transition.get("action"))
+    if action_id is None or not transition.get("evidence_ref"):
+        return False
+    prior = _latest_note(state, workspace_id, qc)
+    named = {
+        _canonical_action_id(item.get("action_id"))
+        for item in (() if prior is None else prior.payload.get("action_aliases", ()))
+        if isinstance(item, Mapping)
+    }
+    return action_id not in named
+
+
 def semantic_control_projection(kind: str, payload: Mapping[str, Any], digest: str) -> tuple[dict[str, Any], list[str]] | None:
     """Project control artifacts without exposing intervention tokens to Qwen.
 
@@ -264,7 +287,15 @@ def install(qc: Any) -> None:
             )
             if quarantined is not None:
                 return quarantined
-            return original_payload_projection(kind, payload)
+            projected, omitted = original_payload_projection(kind, payload)
+            if kind == "working_note" and "action_aliases" in projected:
+                # Aliases are reintroduced below through prior_working_note and
+                # scratchpad_context.  They must not enter the canonical graph
+                # projection, whose action-token quarantine remains absolute.
+                projected = dict(projected)
+                projected.pop("action_aliases", None)
+                omitted = [*omitted, "action_aliases"]
+            return projected, omitted
 
         qc._payload_projection = payload_projection
 
@@ -279,6 +310,10 @@ TWO SEPARATE OUTPUT CHANNELS:
 1. natural_language_scratchpad is bounded, unverified prose for your next
 semantic turn. Rewrite it rather than appending a transcript. It is not
 evidence and is never compiled as a workspace claim.
+On every post-action turn, begin from the latest causal visual unit and R2
+feedback. State what the latest observation established, contradicted, or left
+open. Do not repeat the frame-0 description or copy the prior prose. The prior
+prose is intentionally unavailable; its digest only detects failed rewrites.
 2. workspace_write is a compact structured, cited, defeasible explanation.
 R2 alone owns formal schema binding and action selection. Propose one to three
 action-free prospective verb schemas through goal_proposals. Each proposal
@@ -299,6 +334,9 @@ no-op. Use move?/interact? or abstain when ambiguous. Never infer aliases from
 button position, action index, convention, or expectation. Never infer control
 authority from the name. Aliases are defeasible unverified glosses—not
 evidence, semantics, grounding, or control. ACTION_i stays canonical.
+Return exactly one alias for every action exposed by the action_aliases schema.
+Use a cautious question-mark gloss rather than omitting an evidenced but still
+ambiguous action.
 
 SEMANTIC COHERENCE:
 - Express telic quantities as residuals whenever possible: progress decreases
@@ -399,7 +437,9 @@ CAUSAL VISUAL UNIT:
                 "object_id": prior.object_id,
                 "basis_revision": prior.payload.get("basis_revision"),
                 "summary": prior.payload.get("summary", ""),
-                "natural_language": prior.payload.get("natural_language", ""),
+                "prior_natural_language_digest": hashlib.sha256(
+                    str(prior.payload.get("natural_language", "")).encode("utf-8")
+                ).hexdigest(),
                 "objective_hypothesis": prior.payload.get("objective_hypothesis", ""),
                 "goal_proposals": list(prior.payload.get("goal_proposals", ())),
                 "action_aliases": list(prior.payload.get("action_aliases", ())),
@@ -430,7 +470,7 @@ CAUSAL VISUAL UNIT:
         cited_item = {"enum": visible_ids} if visible_ids else {"type": "string", "maxLength": 0}
         abstract_roles = ["actor", "target", "reference", "item", "container", "hazard", "occluder", "hidden", "source", "destination"]
         feedback = turn.document.get("scratchpad_context", {}).get("r2_semantic_projection") or {}
-        action_evidence = _action_evidence_refs(turn.document)
+        action_evidence = dict(list(_action_evidence_refs(turn.document).items())[:8])
         stable_schema_ids = set()
         active = feedback.get("active_explanation") or {}
         if active.get("schema_id"): stable_schema_ids.add(str(active["schema_id"]))
@@ -443,7 +483,9 @@ CAUSAL VISUAL UNIT:
             "type": "object", "additionalProperties": False,
             "required": ["local_ref", "component_schema_ids", "morphisms", "preferred_residual_changes", "open_questions"],
             "properties": {
-                "local_ref": {"type": "string", "pattern": "^ab[0-9]{1,2}$"},
+                # Avoid the two-letters-plus-two-digits shape reserved by the
+                # cognition boundary for opaque game identifiers.
+                "local_ref": {"type": "string", "pattern": "^composition_[0-9]{1,2}$"},
                 "component_schema_ids": {
                     "type": "array", "uniqueItems": True,
                     "minItems": 2 if len(stable_schema_ids) >= 2 else 0,
@@ -513,7 +555,7 @@ CAUSAL VISUAL UNIT:
                 },
             })
         action_aliases = {
-            "type": "array", "minItems": 0,
+            "type": "array", "minItems": len(action_evidence),
             "maxItems": min(8, len(action_evidence)), "uniqueItems": True,
             "items": (
                 {"oneOf": alias_branches}
@@ -635,6 +677,19 @@ CAUSAL VISUAL UNIT:
         }
         if not isinstance(prose, str) or not prose.strip():
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "natural-language-scratchpad-missing"}]}
+        prior_projection = turn.document.get("prior_working_note") or {}
+        prior_prose_digest = prior_projection.get("prior_natural_language_digest")
+        if (
+            isinstance(prior_prose_digest, str)
+            and hashlib.sha256(prose.strip().encode("utf-8")).hexdigest() == prior_prose_digest
+        ):
+            return {
+                **compilation,
+                "rejected": [
+                    *compilation.get("rejected", ()),
+                    {"reason": "natural-language-scratchpad-not-revised"},
+                ],
+            }
         if note is None:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "workspace-write-missing"}]}
         required = {"summary", "objective_hypothesis", "goal_proposals", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"}
@@ -763,3 +818,6 @@ CAUSAL VISUAL UNIT:
     qc.response_schema = response_schema
     qc.request_payload = request_payload
     qc.compile_response = compile_response
+    qc.alias_revision_due = lambda state, workspace_id: alias_revision_due(
+        state, workspace_id, qc
+    )

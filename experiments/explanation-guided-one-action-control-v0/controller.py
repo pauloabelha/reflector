@@ -3,8 +3,124 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import json
 import sys
 from typing import Any, Mapping, Sequence
+
+
+class FastPathAuthority:
+    """Grant bounded execution authority to an empirically supported policy.
+
+    The authority is deliberately indifferent to game, verb, action identity,
+    and the representation of the preferred order.  It consumes only the
+    generic claims emitted by R2 settlement: the expected transition was
+    confirmed, protected invariants held, and the successor was preferred.
+    """
+
+    def __init__(self, config: Mapping[str, Any] | None = None) -> None:
+        cfg = dict(config or {})
+        self.enabled = bool(cfg.get("enabled", True))
+        self.minimum_confirmations = max(1, int(cfg.get("minimum_confirmations", 2)))
+        self.confidence_threshold = float(cfg.get("confidence_threshold", 0.8))
+        self.horizon = max(1, int(cfg.get("max_actions", 4)))
+        self.support: dict[str, int] = {}
+        self.license: dict[str, Any] | None = None
+        self.last_revocation: str | None = None
+
+    @staticmethod
+    def _signature(explanation: Mapping[str, Any]) -> str:
+        goal = explanation.get("goal", {})
+        ports = explanation.get("ports", {})
+        roles = ports.get("situated_role_descriptors", {})
+        applicability = {
+            str(role): {
+                "area": descriptor.get("area"),
+            }
+            for role, descriptor in sorted(roles.items())
+            if isinstance(descriptor, Mapping)
+        }
+        # The policy signature intentionally excludes action ID and situated
+        # binding IDs and raw palette values.  A state-conditioned policy may
+        # select different legal actions while retaining the same grounded
+        # objective and structural applicability conditions.
+        return json.dumps({
+            "schema": explanation.get("schema_id"),
+            "measure": goal.get("measure"),
+            "direction": goal.get("direction"),
+            "terminal_class": goal.get("terminal_class"),
+            "applicability": applicability,
+        }, sort_keys=True, separators=(",", ":"))
+
+    @property
+    def active(self) -> bool:
+        return self.license is not None and int(self.license.get("remaining", 0)) > 0
+
+    def revoke(self, reason: str) -> None:
+        self.license = None
+        self.last_revocation = str(reason)
+
+    def consider(
+        self,
+        explanation: Mapping[str, Any] | None,
+        settlement: Mapping[str, Any] | None,
+    ) -> None:
+        if not self.enabled or not explanation or not settlement:
+            self.revoke("missing-grounded-policy-or-settlement")
+            return
+        preferred = settlement.get("preferred_order", {})
+        invariants = settlement.get("protected_invariants", {})
+        evaluation = explanation.get("epistemic_evaluation", {})
+        confidence = float(evaluation.get("mechanism_confidence") or 0.0)
+        confirmed = settlement.get("adjudication") == "confirmed"
+        valid = (
+            confirmed
+            and preferred.get("advanced") is True
+            and invariants.get("hold") is True
+            and confidence >= self.confidence_threshold
+            and explanation.get("control_status") == "PROGRESS_ELIGIBLE"
+        )
+        signature = self._signature(explanation)
+        if not valid:
+            self.support[signature] = 0
+            reason = (
+                str(settlement.get("adjudication")) if not confirmed else
+                "successor-not-preferred" if preferred.get("advanced") is not True else
+                "protected-invariant-violated" if invariants.get("hold") is not True else
+                "mechanism-confidence-below-threshold" if confidence < self.confidence_threshold else
+                "policy-not-progress-eligible"
+            )
+            self.revoke(reason)
+            return
+        confirmations = self.support.get(signature, 0) + 1
+        self.support[signature] = confirmations
+        if self.active and self.license and self.license.get("signature") == signature:
+            self.license["remaining"] = int(self.license["remaining"]) - 1
+            self.license["confirmations"] = confirmations
+            self.license["confidence"] = confidence
+            if int(self.license["remaining"]) <= 0:
+                self.revoke("bounded-horizon-exhausted")
+            return
+        if confirmations >= self.minimum_confirmations:
+            self.license = {
+                "protocol": "bounded-preferred-policy-v1",
+                "signature": signature,
+                "remaining": self.horizon,
+                "max_actions": self.horizon,
+                "max_failures": 0,
+                "confirmations": confirmations,
+                "confidence": confidence,
+                "status": "AUTHORIZED",
+            }
+            self.last_revocation = None
+
+    def document(self) -> dict[str, Any]:
+        if self.active and self.license:
+            return dict(self.license)
+        return {
+            "protocol": "bounded-preferred-policy-v1",
+            "status": "INACTIVE",
+            "last_revocation": self.last_revocation,
+        }
 
 
 def _components(grid: Any) -> list[tuple[int, int, int, int, int, int]]:
@@ -47,7 +163,11 @@ def action_trace(action: int, before: Any, after: Any) -> str:
     return f"Action {action} → " + ("; ".join(messages) if messages else "visible configuration changed; object correspondence unresolved.")
 
 
-def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
+def controller_class(
+    live_controller: Any,
+    runtime: Any | None = None,
+    fast_path_config: Mapping[str, Any] | None = None,
+) -> type:
     base = live_controller.ProspectiveWorkspaceController
 
     class OneActionController(base):
@@ -59,6 +179,11 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
             self.current_observation_digest = ""
             self.last_contract: dict[str, Any] | None = None
             self.settlements: list[dict[str, Any]] = []
+            self.fast_path = FastPathAuthority(fast_path_config)
+
+        @property
+        def fast_path_active(self) -> bool:
+            return self.fast_path.active
 
         def plan(self, legal_actions: Sequence[int], *, observation_digest: str, basis_revision: int) -> tuple[Any, Any]:
             self.current_observation_digest = str(observation_digest)
@@ -91,7 +216,12 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
             r2_1 = None
             schema_observer = getattr(runtime, "schema_observer", None) if runtime is not None else None
             rank_actions = getattr(schema_observer, "rank_actions", None)
-            if callable(rank_actions):
+            rank_authorized = getattr(schema_observer, "rank_authorized_policy", None)
+            if self.fast_path.active and callable(rank_authorized):
+                r2_1 = rank_authorized(legal, authorization=self.fast_path.document())
+                if not r2_1:
+                    self.fast_path.revoke("no-preferred-legal-successor")
+            if r2_1 is None and callable(rank_actions):
                 runtime_snapshot = getattr(runtime, "snapshot", {})
                 latest_note = runtime_snapshot.get("scratchpad")
                 semantic_explanation = (
@@ -111,6 +241,7 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                         for action in legal
                     },
                 )
+            if r2_1 is not None:
                 semantic_projection = getattr(schema_observer, "semantic_projection", None)
                 scratchpad = sys.modules.get("one_action_scratchpad")
                 publish_projection = getattr(scratchpad, "record_r2_semantic_projection", None)
@@ -121,7 +252,11 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                     if callable(publish_runtime):
                         publish_runtime(projection)
                 r2_action = int(r2_1["selected_action"])
-                if r2_1.get("execution_authorized", r2_1.get("control_override", False)) and r2_action != int(decision.action_id):
+                fast_mode = r2_1.get("control_proposal", {}).get("mode") == "FAST_PATH"
+                if (
+                    r2_1.get("execution_authorized", r2_1.get("control_override", False))
+                    and (r2_action != int(decision.action_id) or fast_mode)
+                ):
                     explanation = r2_1.get("current_explanation") or {}
                     prediction = explanation.get("prediction", {})
                     control_status = str(explanation.get("control_status", ""))
@@ -129,7 +264,8 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                         action_id=r2_action,
                         fallback_action_id=int(decision.fallback_action_id),
                         reason=(
-                            "r2.1-control-v0-progress"
+                            "r2.1-bounded-fast-path"
+                            if fast_mode else "r2.1-control-v0-progress"
                             if control_status == "PROGRESS_ELIGIBLE"
                             or (not control_status and prediction.get("expected_progress", 0) and prediction["expected_progress"] > 0)
                             else "r2.1-control-v0-probe"
@@ -273,6 +409,8 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                 "r2_1_explanation_adjudication": r2_1_settlement,
             }
             self.settlements.append(settlement)
+            executed_explanation = (self.last_contract or {}).get("current_explanation")
+            self.fast_path.consider(executed_explanation, r2_1_settlement)
             if runtime is not None:
                 trace = action_trace(int(action), before_grid, after_grid)
                 runtime.record_r2_action_trace(trace)
@@ -289,6 +427,43 @@ def controller_class(live_controller: Any, runtime: Any | None = None) -> type:
                     )
                 runtime.update(settlement=settlement)
             return {**learning, "one_action_settlement": settlement}
+
+        def observe_level_transition(self, action: int, before_grid: Any, after_grid: Any) -> dict[str, Any]:
+            """Settle a win without fitting correspondences across level boards."""
+            self.action_uses[int(action)] += 1
+            settlement = {
+                "action": int(action),
+                "predecessor_digest": self.current_observation_digest,
+                "observation_changed": True,
+                "outcome": "level-completed",
+                "prospective_adjudication": None,
+                "r2_1_explanation_adjudication": None,
+            }
+            self.settlements.append(settlement)
+
+            # These objects are grounded in the completed level.  Action-use
+            # statistics and R2.1's empirical action effects remain game-scoped.
+            self.inner = live_controller.Q0.PairPotentialController((), "externally-proposed")
+            self.inner.uses.update(self.action_uses)
+            self.action_uses = self.inner.uses
+            self.records.clear()
+            self.active_schema_ids.clear()
+            self.probe_decisions = 0
+            self.control_decisions = 0
+            self.last_plan = None
+            self.last_plan_records.clear()
+            self.no_change_attempts.clear()
+            self.current_observation_digest = ""
+            self.last_contract = None
+            self.fast_path.revoke("level-transition")
+
+            if runtime is not None:
+                runtime.update(settlement=settlement)
+            return {
+                "prospective_adjudication": None,
+                "one_action_settlement": settlement,
+                "level_transition": True,
+            }
 
         def report(self) -> dict[str, Any]:
             return {

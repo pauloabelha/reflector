@@ -7,6 +7,7 @@ does the binding; this module does not assign game-specific roles or goals.
 from __future__ import annotations
 
 from collections import Counter, defaultdict, deque
+from copy import deepcopy
 from hashlib import sha256
 import importlib.util
 from itertools import islice, permutations, product
@@ -344,6 +345,7 @@ class FrameSchemaObserver:
         self.last_identity_assessments: list[dict[str, Any]] = []
         self.last_control_proposal: dict[str, Any] | None = None
         self.last_control_settlement: dict[str, Any] | None = None
+        self.fast_policy_state: dict[str, Any] | None = None
         self.frame_shape: tuple[int, int] = (0, 0)
 
     def reset_episode(self) -> None:
@@ -354,6 +356,18 @@ class FrameSchemaObserver:
         effects, or pending predictions from an earlier arcade run.
         """
         self.__init__()
+
+    def advance_level(self) -> None:
+        """Clear situated bindings while retaining supported game mechanics."""
+        retained = {
+            "action_effects": self.action_effects,
+            "action_uses": self.action_uses,
+            "explanation_confirmations": self.explanation_confirmations,
+            "explanation_refutations": self.explanation_refutations,
+        }
+        self.__init__()
+        for name, value in retained.items():
+            setattr(self, name, value)
 
     @staticmethod
     def _semantic_explanation(explanation: dict[str, Any]) -> dict[str, Any]:
@@ -772,7 +786,7 @@ class FrameSchemaObserver:
             proposal = dict(raw); local_ref = str(proposal.get("local_ref", ""))
             components = tuple(dict.fromkeys(str(item) for item in proposal.get("component_schema_ids", ())))
             morphisms = tuple(dict(item) for item in proposal.get("morphisms", ()))[:6]
-            if not re.fullmatch(r"ab[0-9]{1,2}", local_ref):
+            if not re.fullmatch(r"composition_[0-9]{1,2}", local_ref):
                 self.last_rejected_abductions.append({"local_ref": local_ref, "reason": "invalid-local-ref"}); continue
             if not 2 <= len(components) <= 4 or any(item not in store.records for item in components):
                 self.last_rejected_abductions.append({"local_ref": local_ref, "reason": "unknown-or-unbounded-components"}); continue
@@ -1943,6 +1957,156 @@ class FrameSchemaObserver:
             "selection_rule": "hard gates: PROGRESS_ELIGIBLE > PROBE_ELIGIBLE > INELIGIBLE; then desired delta, least-used probe, no-change risk, stable action",
         }
 
+    def rank_authorized_policy(
+        self,
+        legal_actions: Sequence[int],
+        *,
+        authorization: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Evaluate an authorized policy from grounded effects without refitting.
+
+        This is state-conditioned and action-agnostic: every legal action with
+        an applicable supported effect is simulated, and the action producing
+        the greatest strictly preferred successor is selected.  Returning
+        ``None`` revokes the fast path and forces ordinary deliberation.
+        """
+        state = self.fast_policy_state
+        if not state or authorization.get("status") != "AUTHORIZED":
+            return None
+        template = deepcopy(state["template"])
+        actor = deepcopy(state["actor"])
+        target = deepcopy(state["target"])
+        goal = dict(template.get("goal", {}))
+        observable = str(goal.get("measure", ""))
+        direction = str(goal.get("direction", ""))
+        current = self._measure(observable, actor, target)
+        if current is None or direction not in {"decrease", "increase", "maintain"}:
+            return None
+        threshold = float(authorization.get("confidence", 1.0))
+        candidates: list[dict[str, Any]] = []
+        for action in sorted(set(int(item) for item in legal_actions)):
+            actor_model = self._effect_model(action, actor)
+            target_model = self._effect_model(action, target)
+            actor_delta = actor_model.get("delta")
+            target_delta = target_model.get("delta")
+            confidence = min(float(actor_model["confidence"]), float(target_model["confidence"]))
+            if actor_delta is None or target_delta is None or confidence < min(0.8, threshold):
+                continue
+            projected_actor, actor_status = self._simulate_translation(actor, actor_delta)
+            projected_target, target_status = self._simulate_translation(target, target_delta)
+            if projected_actor is None or projected_target is None:
+                continue
+            predicted = self._measure(observable, projected_actor, projected_target)
+            if predicted is None:
+                continue
+            improvement = (
+                float(current) - float(predicted) if direction == "decrease" else
+                float(predicted) - float(current) if direction == "increase" else
+                -abs(float(predicted) - float(current))
+            )
+            if improvement <= 0:
+                continue
+            candidates.append({
+                "action": action,
+                "progress": improvement,
+                "predicted": float(predicted),
+                "confidence": confidence,
+                "actor_delta": tuple(actor_delta),
+                "target_delta": tuple(target_delta),
+                "actor_model": actor_model,
+                "target_model": target_model,
+                "simulation_status": f"{actor_status}+{target_status}",
+            })
+        if not candidates:
+            return None
+        selected = max(candidates, key=lambda item: (
+            item["progress"], item["confidence"], -item["action"],
+        ))
+        ports = dict(template.get("ports", {}))
+        actor_binding = str(ports.get("actor"))
+        target_binding = str(ports.get("target"))
+        template["binding_id"] = E.stable_id("fast-policy-explanation", {
+            "authorization": authorization.get("signature"),
+            "actor": actor.get("cells"),
+            "target": target.get("cells"),
+            "action": selected["action"],
+        })
+        template["predecessor_binding_snapshots"] = {
+            actor_binding: self._region_snapshot(actor),
+            target_binding: self._region_snapshot(target),
+        }
+        template["goal"] = {**goal, "current": float(current)}
+        template["desired_delta"] = {
+            **dict(template.get("desired_delta", {})), "current": float(current),
+        }
+        template["mechanism"] = {
+            "actor": {**selected["actor_model"], "delta": list(selected["actor_delta"])},
+            "target": {**selected["target_model"], "delta": list(selected["target_delta"])},
+            "models_supported": True,
+            "simulation_status": "computed",
+        }
+        template["prediction"] = {
+            "action": selected["action"],
+            "actor_delta": list(selected["actor_delta"]),
+            "target_delta": list(selected["target_delta"]),
+            "residual_before": float(current),
+            "residual_after": selected["predicted"],
+            "expected_progress": float(selected["progress"]),
+            "actor_next_cells_hash": None,
+            "target_next_cells_hash": None,
+        }
+        template["epistemic_evaluation"] = {
+            **dict(template.get("epistemic_evaluation", {})),
+            "mechanism_confidence": round(float(selected["confidence"]), 3),
+        }
+        template["observable_checkpoint"] = {
+            "actor_correspondence": "UNIQUE",
+            "target_correspondence": "UNIQUE",
+            "measure": observable,
+            "predicted_value": selected["predicted"],
+        }
+        template["control_status"] = "PROGRESS_ELIGIBLE"
+        template["epistemic_status"] = "authorized-preferred-policy"
+        self.pending_prediction = template
+        top_actions = [{
+            "rank": index,
+            "action": item["action"],
+            "selected": index == 1,
+            "role": "authorized-policy",
+            "eligibility": "PROGRESS_ELIGIBLE",
+            "expected_progress": item["progress"],
+            "information_value": 0.0,
+            "risk": 0,
+            "explanation_binding_id": template["binding_id"] if index == 1 else None,
+        } for index, item in enumerate(sorted(
+            candidates,
+            key=lambda item: (-item["progress"], -item["confidence"], item["action"]),
+        )[:3], start=1)]
+        self.last_control_proposal = {
+            "proposal_id": E.stable_id("fast-policy-proposal", {
+                "explanation": template["binding_id"], "action": selected["action"],
+            }),
+            "mode": "FAST_PATH",
+            "status": "PROGRESS_ELIGIBLE",
+            "action": selected["action"],
+            "prediction": dict(template["prediction"]),
+            "invalidation_conditions": [
+                "prediction mismatch", "protected invariant violation",
+                "identity ambiguity", "successor not strictly preferred",
+                "policy applicability changed", "unexpected environment event",
+            ],
+        }
+        return {
+            "selected_action": selected["action"],
+            "top_actions": top_actions,
+            "explanations": [template],
+            "current_explanation": template,
+            "control_override": True,
+            "execution_authorized": True,
+            "control_proposal": self.last_control_proposal,
+            "selection_rule": "authorized state-conditioned evaluator; greatest strictly preferred grounded successor",
+        }
+
     def settle_action(self, action: int, before: Sequence[Sequence[int]], after: Sequence[Sequence[int]]) -> dict[str, Any]:
         """Settle identity before attributing a mechanism to controlling roles."""
         after_regions = _components(after)
@@ -2191,7 +2355,33 @@ class FrameSchemaObserver:
             "adjudication": adjudication, "actual_progress": actual_progress,
             "identity": identity_settlement, "mechanism": mechanism_settlement,
             "potential": potential_settlement, "learned_effects": learned,
+            "preferred_order": {
+                "advanced": actual_progress is not None and float(actual_progress) > 0.0,
+                "relation": (
+                    "strictly-preferred" if actual_progress is not None and float(actual_progress) > 0.0 else
+                    "equivalent" if actual_progress is not None and float(actual_progress) == 0.0 else
+                    "not-preferred"
+                ),
+            },
+            "protected_invariants": {
+                "hold": (
+                    identity_settlement.get("status") == "UNIQUE"
+                    and mechanism_settlement.get("status") != "REFUTED"
+                    and potential_settlement.get("status") == "OBSERVED"
+                ),
+                "identity": identity_settlement.get("status"),
+                "mechanism": mechanism_settlement.get("status"),
+                "potential": potential_settlement.get("status"),
+            },
         }
+        if prediction is not None and actor_after is not None and target_after is not None:
+            self.fast_policy_state = {
+                "template": deepcopy(prediction),
+                "actor": self._region_snapshot(actor_after),
+                "target": self._region_snapshot(target_after),
+            }
+        else:
+            self.fast_policy_state = None
         self.last_control_settlement = settlement
         return settlement
 
