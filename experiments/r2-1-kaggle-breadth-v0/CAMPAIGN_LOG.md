@@ -946,7 +946,7 @@ First-pass closure results (excluding the two later level-2 diagnostics):
   remained incomplete at their forced episode cutoff.
 
 The closure pass is mechanically clean but scoreless; it does not supersede the
-earlier five-minute score cohort. The authoritative campaign score result
+earlier five-minute-per-game score cohort. The authoritative campaign score result
 remains AR25's exact 17-action level clear; the same-state recovery is separate
 diagnostic evidence. The closure pass demonstrates that the final generic
 fixes ran across all 25 public games without reopening the discovered execution
@@ -1030,7 +1030,7 @@ not transfer at the observed successful boundary, and any structural backoff
 must remain probe-only until tested on an exact matched start.
 
 Final verification reran the dynamically loaded suites in isolated processes:
-68 v1.4 tests, 3 selected v1.9 passthrough tests, 14 v1.12 tests, 92 leaf
-contracts, 15 command and observation-envelope tests, 2 stored request-budget
-tests, and 18 breadth analyzer/click-shadow tests. All 212 passed; `git diff
---check` was clean.
+68 v1.4 tests, the full 16-test v1.9 suite, 14 v1.12 tests, 92 leaf contracts,
+15 command and observation-envelope tests, 2 stored request-budget tests, and
+18 breadth analyzer/click-shadow tests. All 225 passed; `git diff --check` was
+clean.
