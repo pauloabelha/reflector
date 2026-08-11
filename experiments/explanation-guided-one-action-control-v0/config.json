@@ -7,6 +7,7 @@
   "action_budget": 48,
   "continue_across_levels": true,
   "reset_action_budget_each_level": true,
+  "retry_game_over_with_reset": true,
   "qwen": {
     "context_window_tokens": 16384,
     "reserved_tokens": 2048,

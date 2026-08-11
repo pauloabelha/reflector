@@ -300,6 +300,49 @@ Parameterized repetition telemetry correction:
   present. Different click coordinates are distinct interventions even though
   they share `ACTION6`; simple actions retain action-ID identity.
 
+## Checkpoint 6 — scored GAME_OVER retry boundary
+
+Engine audit:
+
+- RESET is not advertised in any of the 25 game action spaces, but direct
+  post-action GAME_OVER audit states recover through engine action 0 in 25/25.
+- Every audited successor was playable, `full_reset=false`, and retained the
+  completed-level count. RESET is counted by the engine as an action/reset.
+
+Implementation candidate:
+
+- Only GAME_OVER may retry; WIN never resets. A retry is allowed only when one
+  slot remains in the same current-level committed-action budget.
+- Action 0 follows the exact durable pending/commit/replay chain with explicit
+  `game-over-retry-reset` boundary provenance and arbiter authority.
+- The successor fails closed unless it is playable, not a full reset, and
+  preserves completed levels.
+- Retry re-grounds situated state and clears pending prediction, bindings,
+  plans, no-change exclusions and fast path, while retaining game mechanics,
+  action-use evidence, recursive graph, and durable semantic note.
+- Action 0 bypasses ordinary controller/cognition effects and cross-board graph
+  correspondence, so RESET cannot become a learned motion mechanism.
+
+Verification before freeze:
+
+- Full selected suite passes, including budget/WIN gates, marker conflicts,
+  successor invariants, retry-only cognition hooks, and exact checkpoint replay.
+
+Status: contract-verified candidate; requires frozen real GAME_OVER evidence
+before promotion as a score-preserving control improvement.
+
+Parallel frozen LP85 diagnostic (`4b2932d`, ten-minute cap):
+
+- 24 exact click successors committed; 3 changed the frame and 21 did not.
+- No exact command/state no-change repetition and no decision/execution
+  mismatch occurred. Different click coordinates were correctly treated as
+  distinct interventions.
+- Identity recorded BROKEN evidence, mechanics remained UNKNOWN, only five
+  decisions were probe-eligible, and none was progress-eligible.
+- No level cleared. This is evidence that transport coverage alone is
+  insufficient: situated identity/mechanism grounding and selective click
+  exploration now dominate this trace.
+
 ## Promotion discipline
 
 A campaign intervention is promoted only after:

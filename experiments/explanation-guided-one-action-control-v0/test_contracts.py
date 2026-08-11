@@ -449,6 +449,58 @@ def test_r2_1_level_transition_retains_game_mechanics_but_clears_bindings():
     assert observer.role_trajectories == {}
 
 
+def test_r2_1_retry_boundary_retains_mechanics_but_clears_pending_state():
+    adapter = load("r2_1_retry_scope_adapter") if (HERE / "r2_1_retry_scope_adapter.py").exists() else load("r2_1_adapter")
+    observer = adapter.FrameSchemaObserver()
+    before, middle, _after = _three_alignment_frames()
+    observer.fit_frame(before, turn=0)
+    observer.rank_actions((1, 4), fallback_action=4, semantic_goal=_alignment_goal())
+    observer.settle_action(4, before, middle)
+    effects = observer.action_effects
+    uses = observer.action_uses
+    observer.pending_prediction = {"action": 4}
+
+    observer.retry_level()
+
+    assert observer.action_effects is effects and observer.action_effects
+    assert observer.action_uses is uses and observer.action_uses
+    assert observer.last_workspace is None
+    assert observer.pending_prediction is None
+    assert observer.fast_policy_state is None
+
+
+def test_controller_retry_does_not_learn_action_zero_and_clears_situated_control():
+    module = load("controller_retry_boundary") if (HERE / "controller_retry_boundary.py").exists() else load("controller")
+    pair = lambda *_args: SimpleNamespace(uses={})
+    live = SimpleNamespace(
+        ProspectiveWorkspaceController=BaseController,
+        PC=SimpleNamespace(fallback_plan=lambda plan, **_kwargs: plan),
+        Q0=SimpleNamespace(PairPotentialController=pair),
+    )
+    instance = module.controller_class(live)()
+    instance.records = []
+    instance.active_schema_ids = set()
+    instance.probe_decisions = 3
+    instance.control_decisions = 2
+    instance.last_plan_records = []
+    instance.no_change_attempts[("failed", 1)] = 2
+    instance.command_no_change[("failed", "command")] = 2
+    instance.pending_r2_prediction_id = "prediction"
+    before_uses = dict(instance.action_uses)
+
+    result = instance.observe_game_over_retry(((9,),), ((1,),))
+
+    assert result["retry_boundary"] is True
+    assert instance.action_uses == before_uses
+    assert 0 not in instance.action_uses
+    assert instance.no_change_attempts == {}
+    assert instance.command_no_change == {}
+    assert instance.pending_r2_prediction_id is None
+    assert instance.last_contract is None
+    assert instance.last_command is None
+    assert instance.fast_path.license is None
+
+
 def test_live_runtime_resets_only_per_level_action_counter_on_level_advance():
     runtime = load("runtime_level_scope") if (HERE / "runtime_level_scope.py").exists() else load("runtime")
     calls = []
@@ -469,6 +521,36 @@ def test_live_runtime_resets_only_per_level_action_counter_on_level_advance():
     assert state["level_turn"] == 0
     assert state["actions_remaining"] == 48
     assert state["level_transition"] is True
+
+
+def test_live_runtime_retry_counts_one_same_level_action_and_regrounds():
+    runtime = load("runtime_retry_scope") if (HERE / "runtime_retry_scope.py").exists() else load("runtime")
+    calls = []
+    observer = SimpleNamespace(
+        retry_level=lambda: calls.append("retry"),
+        fit_frame=lambda frame, turn: calls.append(("fit", turn)) or {"turn": turn},
+    )
+    live = runtime.LiveRuntime()
+    live.set_schema_observer(observer)
+    live.snapshot.update({
+        "turn": 7, "level_turn": 7, "levels_completed": 2,
+        "level_action_budget": 48,
+    })
+    controller = SimpleNamespace(
+        settlements=[{"outcome": "game-over-retry-reset"}],
+    )
+
+    live.after_retry_reset(
+        SimpleNamespace(frame=[[[1]]], levels_completed=2, win_levels=4), controller,
+    )
+
+    state = live.read()
+    assert calls == ["retry", ("fit", 8)]
+    assert state["turn"] == 8
+    assert state["level_turn"] == 8
+    assert state["actions_remaining"] == 40
+    assert state["retry_boundary"] is True
+    assert state["level_transition"] is False
 
 
 def test_live_runtime_skips_recursive_refit_during_authorized_fast_path():

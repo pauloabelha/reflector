@@ -307,3 +307,53 @@ Intervention:
   and falls back to action ID for simple controls.
 
 Status: contract-verified telemetry correction; no effect on controller choice.
+
+## I11 — GAME_OVER is a retry boundary, not a scored terminal or mechanic
+
+Observed:
+
+- The prior loop stopped on GAME_OVER exactly as on WIN, so a single death
+  ended the game even when action budget remained.
+- RESET is engine transport action 0 and is absent from all 25 advertised game
+  action spaces. In a controlled post-action GAME_OVER audit, 25/25 games
+  returned a playable same-level successor with `full_reset=false` and
+  preserved completed-level count.
+
+Intervention:
+
+- Retry GAME_OVER only, charge RESET to the same level budget, and persist an
+  explicit retry boundary through pending, commit, recovery, graph, and replay.
+- Re-ground the level without learning action 0 or terminal-to-initial screen
+  replacement as game mechanics. Fail closed on any full reset or score change.
+
+Inference:
+
+- This restores competition semantics without revealing a game rule. The
+  controller still has to infer how to avoid the failure; RESET merely permits
+  another evidence-bounded attempt when budget remains.
+
+Status: contract-verified candidate; real naturally reached GAME_OVER breadth
+evidence is required before promotion.
+
+## I12 — Click coverage exposes the next bottleneck rather than solving it
+
+Observed in frozen LP85:
+
+- R2 executed 24 grounded click commands in ten minutes. Three changed the
+  frame; 21 did not. It never repeated the same command at the same unchanged
+  predecessor and never diverged between published and executed selection.
+- Identity accumulated BROKEN evidence, all mechanism models stayed UNKNOWN,
+  only five decisions were probe-eligible, and none was progress-eligible.
+- No level cleared.
+
+Inference:
+
+- The former zero-action exclusion is genuinely removed, but broad coordinate
+  transport is not competent control. The current boundary is forming stable
+  situated identity/mechanics and selecting informative click targets before
+  the deadline, not merely issuing a click.
+- Because every executed command was distinct, suppressing repeated exact
+  probes would not improve this trace. A useful next intervention must improve
+  grounding or information selection without importing click semantics.
+
+Status: frozen diagnostic evidence; no new control intervention promoted.

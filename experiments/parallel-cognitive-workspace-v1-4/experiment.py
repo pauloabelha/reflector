@@ -417,6 +417,96 @@ def normalized_terminal_state(observation: Any) -> str | None:
     return normalized if normalized in {"WIN", "GAME_OVER"} else None
 
 
+ORDINARY_TRANSITION = "ordinary"
+LEVEL_ADVANCE_TRANSITION = "level-advance"
+GAME_OVER_RETRY_TRANSITION = "game-over-retry-reset"
+
+
+def transition_boundary_kind(
+    pending_payload: Mapping[str, Any],
+    committed_payload: Mapping[str, Any] | None,
+    before_record: Mapping[str, Any],
+    after_record: Mapping[str, Any],
+    *,
+    continue_across_levels: bool,
+) -> str:
+    """Resolve a durable boundary marker, retaining legacy level detection."""
+    pending_kind = pending_payload.get("boundary_kind")
+    committed_kind = None if committed_payload is None else committed_payload.get("boundary_kind")
+    if pending_kind is not None and committed_kind is not None and pending_kind != committed_kind:
+        raise RuntimeError("pending/committed transition boundary mismatch")
+    explicit = committed_kind if committed_kind is not None else pending_kind
+    if explicit is not None:
+        if explicit not in {
+            ORDINARY_TRANSITION, LEVEL_ADVANCE_TRANSITION, GAME_OVER_RETRY_TRANSITION
+        }:
+            raise RuntimeError(f"unsupported transition boundary: {explicit}")
+        return str(explicit)
+    if (
+        continue_across_levels
+        and int(after_record.get("levels_completed", 0))
+        > int(before_record.get("levels_completed", 0))
+    ):
+        return LEVEL_ADVANCE_TRANSITION
+    return ORDINARY_TRANSITION
+
+
+def current_level_action_count(
+    history: Sequence[Mapping[str, Any]], current_level: int, *, per_level: bool
+) -> int:
+    """Count committed actions using the campaign's existing budget semantics."""
+    if not per_level:
+        return len(history)
+    return sum(
+        int(item["before"].get("levels_completed", 0)) == int(current_level)
+        for item in history
+    )
+
+
+def game_over_retry_allowed(
+    terminal_state: str | None,
+    history: Sequence[Mapping[str, Any]],
+    *,
+    action_budget: int,
+    per_level: bool,
+    enabled: bool,
+) -> bool:
+    """Authorize RESET only when one same-budget action remains after GAME_OVER."""
+    if not enabled or terminal_state != "GAME_OVER" or not history:
+        return False
+    current_level = int(history[-1]["after"].get("levels_completed", 0))
+    return current_level_action_count(history, current_level, per_level=per_level) < int(action_budget)
+
+
+def assert_game_over_retry_successor(
+    before_record: Mapping[str, Any], after_record: Mapping[str, Any], successor: Any
+) -> None:
+    """Fail closed before committing a RESET that could erase scored progress."""
+    if normalized_terminal_state(successor) is not None:
+        raise RuntimeError("GAME_OVER retry RESET did not return a playable observation")
+    if bool(after_record.get("full_reset", True)):
+        raise RuntimeError("GAME_OVER retry unexpectedly performed a full reset")
+    if int(after_record.get("levels_completed", 0)) != int(before_record.get("levels_completed", 0)):
+        raise RuntimeError("GAME_OVER retry changed completed-level count")
+
+
+def observe_game_over_retry(
+    controller: Any,
+    cognition: Any,
+    before_grid: Grid,
+    after_grid: Grid,
+    successor: Any | None,
+) -> dict[str, Any]:
+    """Re-ground after RESET without learning an ordinary action-0 effect."""
+    observe_retry = getattr(controller, "observe_game_over_retry", None)
+    retry_level = getattr(cognition, "retry_level", None)
+    if not callable(observe_retry) or not callable(retry_level):
+        raise RuntimeError("GAME_OVER retry hooks are unavailable")
+    learning = observe_retry(before_grid, after_grid, successor)
+    retry_level(after_grid)
+    return dict(learning)
+
+
 def control_observation(
     observation: Any,
 ) -> tuple[str | None, dict[str, Any] | None, Grid | None]:
@@ -998,7 +1088,16 @@ def ingest_transition_graph(
     prospective_evidence: Mapping[str, Any] | None = None,
     evidence_dependency_ids: Sequence[str] = (),
     level_transition: bool = False,
+    boundary_kind: str | None = None,
 ) -> Any:
+    resolved_boundary = (
+        LEVEL_ADVANCE_TRANSITION if level_transition else ORDINARY_TRANSITION
+    ) if boundary_kind is None else str(boundary_kind)
+    if resolved_boundary not in {
+        ORDINARY_TRANSITION, LEVEL_ADVANCE_TRANSITION, GAME_OVER_RETRY_TRANSITION
+    }:
+        raise RuntimeError(f"unsupported transition boundary: {resolved_boundary}")
+    is_boundary = resolved_boundary != ORDINARY_TRANSITION
     before_pixel_digest = LEDGER.stable_hash(before_grid)
     before_frame = next(
         (
@@ -1028,7 +1127,8 @@ def ingest_transition_graph(
             "after_frame": after_frame,
             "intervention_ref": intervention_ref,
             "observation_changed": before_record.get("frame_sha256") != after_record.get("frame_sha256"),
-            "level_transition": bool(level_transition),
+            "level_transition": resolved_boundary == LEVEL_ADVANCE_TRANSITION,
+            "boundary_kind": resolved_boundary,
         },
         dependency_ids=transition_dependencies,
         event_key=f"transition:{transition_id}",
@@ -1041,7 +1141,7 @@ def ingest_transition_graph(
     }
     before_figures = V0.V0.select_figures(before_grid)
     after_figures = V0.V0.select_figures(after_grid)
-    correspondence = {} if level_transition else V0.V0.BASE.correspond(before_figures, after_figures)
+    correspondence = {} if is_boundary else V0.V0.BASE.correspond(before_figures, after_figures)
     before_local = {figure: f"f{index:02d}" for index, figure in enumerate(before_figures)}
     after_local = {figure: f"f{index:02d}" for index, figure in enumerate(after_figures)}
     pairs = [
@@ -1765,12 +1865,17 @@ def rebuild_controller(root: Path, initial_grid: Grid, legal: Sequence[int], con
             after_blob = LEDGER.read_blob(root, str(payload["after_blob"]))
             after_grid = grid_value(after_blob["grid"])
             action_id = int(pending_event["payload"]["action_id"])
-            level_transition = (
-                bool((config or {}).get("continue_across_levels", False))
-                and int(after_blob["record"].get("levels_completed", 0))
-                > int(before_blob["record"].get("levels_completed", 0))
+            boundary_kind = transition_boundary_kind(
+                pending_event["payload"], payload,
+                before_blob["record"], after_blob["record"],
+                continue_across_levels=bool((config or {}).get("continue_across_levels", False)),
             )
-            if level_transition and callable(getattr(controller, "observe_level_transition", None)):
+            if boundary_kind == GAME_OVER_RETRY_TRANSITION:
+                observe_game_over_retry(
+                    controller, cognition, current_grid, after_grid, None
+                )
+                activated.clear()
+            elif boundary_kind == LEVEL_ADVANCE_TRANSITION and callable(getattr(controller, "observe_level_transition", None)):
                 controller.observe_level_transition(action_id, current_grid, after_grid)
                 cognition.advance_level(after_grid)
                 activated.clear()
@@ -1810,7 +1915,9 @@ def reconcile_transition_graphs(
         str(item.identity.get("transition_id"))
         for item in EG.find_objects(state, kind="transition")
     }
-    for event in LEDGER.list_events(root):
+    ledger_events = LEDGER.list_events(root)
+    by_id = {str(item["event_id"]): item for item in ledger_events}
+    for event in ledger_events:
         if event["event_type"] != "TransitionCommitted" or event["event_id"] in materialized:
             continue
         payload = event["payload"]
@@ -1840,6 +1947,11 @@ def reconcile_transition_graphs(
             prospective_evidence=evidence,
             evidence_dependency_ids=tuple(
                 str(item) for item in payload.get("prospective_dependency_ids", ())
+            ),
+            boundary_kind=transition_boundary_kind(
+                by_id[str(payload["pending_event_id"])]["payload"], payload,
+                before["record"], after["record"],
+                continue_across_levels=True,
             ),
         )
         materialized.add(str(event["event_id"]))
@@ -2204,14 +2316,29 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
         if BASE.observation_record(observation)["digest"] != pending["payload"]["before_digest"]:
             arcade.close_scorecard()
             raise RuntimeError("pending predecessor mismatch")
-        successor = execute_action(environment, game, pending["payload"]["action_id"], pending["payload"].get("data", {}), "pending-recovery")
-        after_blob, after_record, after_grid = store_observation(root, successor)
-        level_transition = (
-            bool(config.get("continue_across_levels", False))
-            and int(after_record.get("levels_completed", 0))
-            > int(before["record"].get("levels_completed", 0))
+        recovery_reason = (
+            GAME_OVER_RETRY_TRANSITION
+            if pending["payload"].get("boundary_kind") == GAME_OVER_RETRY_TRANSITION
+            else "pending-recovery"
         )
-        if level_transition and callable(getattr(controller, "observe_level_transition", None)):
+        successor = execute_action(
+            environment, game, pending["payload"]["action_id"],
+            pending["payload"].get("data", {}), recovery_reason,
+        )
+        after_blob, after_record, after_grid = store_observation(root, successor)
+        boundary_kind = transition_boundary_kind(
+            pending["payload"], None, before["record"], after_record,
+            continue_across_levels=bool(config.get("continue_across_levels", False)),
+        )
+        if boundary_kind == GAME_OVER_RETRY_TRANSITION:
+            if int(pending["payload"]["action_id"]) != 0:
+                raise RuntimeError("GAME_OVER retry boundary must execute RESET action 0")
+            assert_game_over_retry_successor(before["record"], after_record, successor)
+            learning = observe_game_over_retry(
+                controller, cognition, grid_value(before["grid"]), after_grid, successor
+            )
+            activated.clear()
+        elif boundary_kind == LEVEL_ADVANCE_TRANSITION and callable(getattr(controller, "observe_level_transition", None)):
             learning = controller.observe_level_transition(
                 int(pending["payload"]["action_id"]), grid_value(before["grid"]), after_grid
             )
@@ -2269,6 +2396,7 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
                 "prospective_evidence_blob": prospective_evidence_blob,
                 "prospective_judgments": judgments,
                 "prospective_dependency_ids": evidence_dependencies,
+                "boundary_kind": boundary_kind,
             },
         )
         history = _history(LEDGER.list_events(root), root)
@@ -2291,9 +2419,10 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
             judgments=judgments,
             prospective_evidence=prospective_evidence,
             evidence_dependency_ids=tuple(evidence_dependencies),
-            level_transition=level_transition,
+            boundary_kind=boundary_kind,
         )
         observation = successor
+        terminal_state = normalized_terminal_state(observation)
 
     live_qwen = arm == "shared_live_qwen"
     if live_qwen and fifo is None:
@@ -2338,21 +2467,129 @@ def run_episode(payload: Mapping[str, Any], fifo: Any | None = None) -> dict[str
         while True:
             terminal_state, before_record, grid = control_observation(observation)
             if terminal_state is not None:
-                stop_reason = f"terminal-{terminal_state.lower().replace('_', '-')}"
-                break
+                retry_enabled = bool(config.get("retry_game_over_with_reset", False))
+                per_level_budget = bool(config.get("reset_action_budget_each_level", False))
+                if not game_over_retry_allowed(
+                    terminal_state, history,
+                    action_budget=int(config["action_budget"]),
+                    per_level=per_level_budget,
+                    enabled=retry_enabled,
+                ):
+                    stop_reason = f"terminal-{terminal_state.lower().replace('_', '-')}"
+                    break
+
+                # The terminal frame has already been committed as the prior
+                # action's successor.  Reuse that exact blob content: terminal
+                # observations may not expose a parseable visual frame.
+                retry_before_record = dict(history[-1]["after"])
+                retry_before_grid = grid_value(history[-1]["after_grid"])
+                terminal_result_record(observation, retry_before_record)
+                retry_before_blob = LEDGER.put_blob(
+                    root,
+                    {
+                        "record": retry_before_record,
+                        "grid": [list(row) for row in retry_before_grid],
+                    },
+                )
+                retry_decision = {
+                    "decision": {
+                        "action_id": 0,
+                        "reason": GAME_OVER_RETRY_TRANSITION,
+                        "boundary_kind": GAME_OVER_RETRY_TRANSITION,
+                    },
+                    "prospective_graph": {},
+                    "controller": {"decision_contract": None},
+                }
+                retry_decision_blob = LEDGER.put_blob(root, retry_decision)
+                LEDGER.append_event(
+                    root,
+                    workspace_id=workspace_id,
+                    event_type="ActionDecision",
+                    actor="arbiter",
+                    payload={
+                        "decision_blob": retry_decision_blob,
+                        "observation_digest": retry_before_record["digest"],
+                        "proposal_object_id": None,
+                        "graph_revision": state.revision,
+                        "boundary_kind": GAME_OVER_RETRY_TRANSITION,
+                    },
+                )
+                retry_pending = LEDGER.append_event(
+                    root,
+                    workspace_id=workspace_id,
+                    event_type="ActionPending",
+                    actor="arbiter",
+                    payload={
+                        "before_blob": retry_before_blob,
+                        "before_digest": retry_before_record["digest"],
+                        "action_id": 0,
+                        "data": {},
+                        "decision_blob": retry_decision_blob,
+                        "proposal_object_id": None,
+                        "graph_revision": state.revision,
+                        "boundary_kind": GAME_OVER_RETRY_TRANSITION,
+                    },
+                )
+                successor = execute_action(
+                    environment, game, 0, {}, GAME_OVER_RETRY_TRANSITION
+                )
+                retry_after_blob, retry_after_record, retry_after_grid = store_observation(
+                    root, successor
+                )
+                assert_game_over_retry_successor(
+                    retry_before_record, retry_after_record, successor
+                )
+                observe_game_over_retry(
+                    controller, cognition, retry_before_grid, retry_after_grid, successor
+                )
+                activated.clear()
+                retry_transition = LEDGER.append_event(
+                    root,
+                    workspace_id=workspace_id,
+                    event_type="TransitionCommitted",
+                    actor="environment",
+                    payload={
+                        "pending_event_id": retry_pending["event_id"],
+                        "before_blob": retry_before_blob,
+                        "after_blob": retry_after_blob,
+                        "before_digest": retry_before_record["digest"],
+                        "after_digest": retry_after_record["digest"],
+                        "action_id": 0,
+                        "data": {},
+                        "levels_completed": retry_after_record["levels_completed"],
+                        "prospective_evidence_blob": None,
+                        "prospective_judgments": [],
+                        "prospective_dependency_ids": [],
+                        "boundary_kind": GAME_OVER_RETRY_TRANSITION,
+                    },
+                )
+                state = ingest_transition_graph(
+                    root,
+                    workspace_id,
+                    state,
+                    cognition,
+                    transition_id=retry_transition["event_id"],
+                    before_grid=retry_before_grid,
+                    after_grid=retry_after_grid,
+                    before_record=retry_before_record,
+                    after_record=retry_after_record,
+                    legal=BASE.simple_legal_actions(environment, successor),
+                    intervention_ref=opaque_intervention(workspace_id, 0, {}),
+                    boundary_kind=GAME_OVER_RETRY_TRANSITION,
+                )
+                history = _history(LEDGER.list_events(root), root)
+                observation = successor
+                continue
             assert before_record is not None and grid is not None
             continue_across_levels = bool(config.get("continue_across_levels", False))
             if not continue_across_levels and int(before_record["levels_completed"]) >= 1:
                 stop_reason = "first-level-completed"
                 break
             current_level = int(before_record["levels_completed"])
-            if config.get("reset_action_budget_each_level", False):
-                level_actions = sum(
-                    int(item["before"].get("levels_completed", 0)) == current_level
-                    for item in history
-                )
-            else:
-                level_actions = len(history)
+            level_actions = current_level_action_count(
+                history, current_level,
+                per_level=bool(config.get("reset_action_budget_each_level", False)),
+            )
             if level_actions >= int(config["action_budget"]):
                 stop_reason = "level-action-budget" if config.get("reset_action_budget_each_level", False) else "action-budget"
                 break

@@ -593,6 +593,55 @@ def controller_class(
                 "level_transition": True,
             }
 
+        def observe_game_over_retry(
+            self, before_grid: Any, after_grid: Any, successor: Any | None = None
+        ) -> dict[str, Any]:
+            """Settle RESET as a retry boundary, never as action-0 mechanics."""
+            settlement = {
+                "action": 0,
+                "predecessor_digest": self.current_observation_digest,
+                "observation_changed": before_grid != after_grid,
+                "outcome": "game-over-retry-reset",
+                "prospective_adjudication": None,
+                "r2_1_explanation_adjudication": None,
+            }
+            self.settlements.append(settlement)
+
+            # Preserve game-scoped mechanics, but discard every failed-attempt
+            # controller object and pending prediction.
+            self.inner = live_controller.Q0.PairPotentialController((), "externally-proposed")
+            self.inner.uses.update(self.action_uses)
+            self.action_uses = self.inner.uses
+            self.records.clear()
+            self.active_schema_ids.clear()
+            self.probe_decisions = 0
+            self.control_decisions = 0
+            self.last_plan = None
+            self.last_plan_records.clear()
+            self.no_change_attempts.clear()
+            self.command_no_change.clear()
+            self.current_observation_digest = ""
+            self.last_contract = None
+            self.last_command = None
+            self.pending_r2_prediction_id = None
+            self.fast_path.revoke("game-over-retry-reset")
+
+            if runtime is not None:
+                after_retry = getattr(runtime, "after_retry_reset", None)
+                if callable(after_retry) and successor is not None:
+                    after_retry(successor, self)
+                else:
+                    rebuild_retry = getattr(runtime, "rebuild_retry_boundary", None)
+                    if callable(rebuild_retry):
+                        rebuild_retry(settlement)
+                    else:
+                        runtime.update(settlement=settlement)
+            return {
+                "prospective_adjudication": None,
+                "one_action_settlement": settlement,
+                "retry_boundary": True,
+            }
+
         def report(self) -> dict[str, Any]:
             return {
                 **super().report(),

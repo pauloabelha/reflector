@@ -395,6 +395,10 @@ class FrameSchemaObserver:
         for name, value in retained.items():
             setattr(self, name, value)
 
+    def retry_level(self) -> None:
+        """Clear failed-attempt grounding without learning RESET as mechanics."""
+        self.advance_level()
+
     @staticmethod
     def _semantic_explanation(explanation: dict[str, Any]) -> dict[str, Any]:
         """Loss-bounded projection of one executable explanation for Qwen."""

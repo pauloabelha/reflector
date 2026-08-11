@@ -337,6 +337,46 @@ class LiveRuntime:
             fast_path=(controller.fast_path.document() if hasattr(controller, "fast_path") else None),
         )
 
+    def after_retry_reset(self, successor: Any, controller: Any) -> None:
+        """Publish a same-level RESET without routing it through action learning."""
+        if self.reset_requested.is_set():
+            raise RuntimeError("arcade reset requested")
+        frame, observation_envelope = self.observation_surfaces(successor)
+        turn = int(self.snapshot.get("turn", 0)) + 1
+        retry = getattr(self.schema_observer, "retry_level", None)
+        if callable(retry):
+            retry()
+        scratchpad = sys.modules.get("one_action_scratchpad")
+        retry_context = getattr(scratchpad, "retry_level_context", None)
+        if callable(retry_context):
+            retry_context()
+        schema_stats = self.observe_schemas(frame, turn)
+        self.update(
+            status="observing",
+            frame=frame,
+            observation_envelope=observation_envelope,
+            turn=turn,
+            level_turn=int(self.snapshot.get("level_turn", 0)) + 1,
+            r2_1_schema_stats=schema_stats,
+            levels_completed=int(successor.levels_completed),
+            levels_total=int(successor.win_levels),
+            level_transition=False,
+            retry_boundary=True,
+            settlement=controller.settlements[-1] if controller.settlements else None,
+            fast_path=(controller.fast_path.document() if hasattr(controller, "fast_path") else None),
+        )
+
+    def rebuild_retry_boundary(self, settlement: Mapping[str, Any]) -> None:
+        """Apply retry scoping while reconstructing cognition from the ledger."""
+        retry = getattr(self.schema_observer, "retry_level", None)
+        if callable(retry):
+            retry()
+        scratchpad = sys.modules.get("one_action_scratchpad")
+        retry_context = getattr(scratchpad, "retry_level_context", None)
+        if callable(retry_context):
+            retry_context()
+        self.update(settlement=dict(settlement), retry_boundary=True)
+
 
 LIVE_RUNTIME: LiveRuntime | None = None
 
@@ -352,7 +392,8 @@ def install_action_hook(base: Any, runtime: LiveRuntime) -> None:
     def execute(environment: Any, game: str, action_id: int, data: Mapping[str, Any] | None = None, reasoning: Any = None) -> Any:
         controller = getattr(base, "_one_action_active_controller", None)
         live = controller is not None and not any(
-            marker in str(reasoning).lower() for marker in ("replay", "counterfactual")
+            marker in str(reasoning).lower()
+            for marker in ("replay", "counterfactual", "game-over-retry-reset")
         )
         if live:
             runtime.before_action(environment, controller)

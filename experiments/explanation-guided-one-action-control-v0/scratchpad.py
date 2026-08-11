@@ -279,6 +279,11 @@ def advance_level_context() -> None:
     _R2_TRANSITION_OBSERVATION = None
 
 
+def retry_level_context() -> None:
+    """Discard failed-attempt situated evidence, retaining the game note."""
+    advance_level_context()
+
+
 def alias_revision_due(state: Any, workspace_id: str, qc: Any) -> bool:
     """Request one semantic revision when a newly observed action lacks a gloss."""
     transition = _R2_TRANSITION_OBSERVATION or {}

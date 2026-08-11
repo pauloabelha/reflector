@@ -28,6 +28,22 @@ REPO = HERE.parents[1]
 R21_DIR = REPO / "experiments" / "explanation-guided-one-action-control-v0"
 R21_EXPERIMENT = R21_DIR / "experiment.py"
 ENVIRONMENTS = REPO / "environment_files"
+INHERITED_CONTROLLER_DIRS = (
+    REPO / "experiments" / "parallel-cognitive-workspace-v0",
+    *(REPO / "experiments" / f"parallel-cognitive-workspace-v1-{version}"
+      for version in range(4, 17)),
+)
+TRANSITIVE_BASE_SOURCES = (
+    REPO / "experiments" / "qwen-generic-explanation-priors-v0" / "experiment.py",
+    REPO / "experiments" / "prior-accelerated-relational-transfer-v0" / "experiment.py",
+)
+R2_CORE_SOURCES = tuple(
+    REPO / "src" / "reflector2" / name
+    for name in (
+        "__init__.py", "store.py", "visual_entities.py", "perception.py",
+        "runtime.py", "explanations.py", "raw_frame.py",
+    )
+)
 
 
 def atomic_json(path: Path, value: Any) -> None:
@@ -41,9 +57,47 @@ def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def controller_source_paths() -> tuple[Path, ...]:
+    """Return the production source/config closure loaded by an R2.1 worker."""
+
+    paths: set[Path] = {
+        REPO / "R2_1.md", *TRANSITIVE_BASE_SOURCES, *R2_CORE_SOURCES,
+    }
+    for directory in (R21_DIR, *INHERITED_CONTROLLER_DIRS):
+        paths.update(
+            path for path in directory.glob("*.py")
+            if not path.name.startswith("test_")
+        )
+        paths.add(directory / "config.json")
+    return tuple(sorted(paths))
+
+
 def r21_source_hashes() -> dict[str, str]:
-    paths = [*sorted(R21_DIR.glob("*.py")), R21_DIR / "config.json", REPO / "R2_1.md"]
+    paths = controller_source_paths()
     return {str(path.relative_to(REPO)): file_hash(path) for path in paths}
+
+
+def source_inventory_digest(hashes: dict[str, str]) -> str:
+    encoded = json.dumps(hashes, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def source_hash_diff(
+    frozen: dict[str, str], current: dict[str, str],
+) -> dict[str, dict[str, str | None]]:
+    differences: dict[str, dict[str, str | None]] = {}
+    for path in sorted(set(frozen) | set(current)):
+        before = frozen.get(path)
+        after = current.get(path)
+        if before == after:
+            continue
+        change = "added" if before is None else "deleted" if after is None else "modified"
+        differences[path] = {
+            "change": change,
+            "frozen_sha256": before,
+            "current_sha256": after,
+        }
+    return differences
 
 
 def partial_ledger_outcome(run_root: Path) -> dict[str, Any]:
@@ -185,6 +239,7 @@ def run_batch(args: argparse.Namespace) -> int:
     started_at = datetime.now(timezone.utc).isoformat()
     started = time.monotonic()
     finalization_at = started + args.global_seconds - args.reserve_seconds
+    frozen_source_hashes = r21_source_hashes()
     manifest = {
         "protocol": "r2.1-kaggle-breadth-v0",
         "run_id": run_id,
@@ -198,6 +253,9 @@ def run_batch(args: argparse.Namespace) -> int:
         "r2_1_document_sha256": file_hash(REPO / "R2_1.md"),
         "r2_1_experiment_sha256": file_hash(R21_EXPERIMENT),
         "r2_1_config_sha256": file_hash(R21_DIR / "config.json"),
+        "controller_source_freeze_protocol": "r2.1-transitive-source-freeze-v1",
+        "frozen_controller_source_hashes": frozen_source_hashes,
+        "frozen_controller_source_digest": source_inventory_digest(frozen_source_hashes),
         "source_revision": subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=REPO, text=True, capture_output=True, check=False
         ).stdout.strip(),
@@ -206,6 +264,7 @@ def run_batch(args: argparse.Namespace) -> int:
     atomic_json(root / "manifest.json", manifest)
     rows: list[dict[str, Any]] = []
     pass_index = 0
+    source_drift_stop: dict[str, Any] | None = None
     while time.monotonic() < finalization_at:
         pass_index += 1
         start_level = pass_index
@@ -214,8 +273,39 @@ def run_batch(args: argparse.Namespace) -> int:
             remaining = finalization_at - time.monotonic()
             if remaining < 30:
                 break
-            launched_this_pass += 1
             run_name = f"pass-{pass_index:02d}--{game}--level-{start_level:02d}"
+            try:
+                current_source_hashes = r21_source_hashes()
+                differences = source_hash_diff(frozen_source_hashes, current_source_hashes)
+            except OSError as error:
+                raw_path = getattr(error, "filename", None)
+                try:
+                    drift_path = str(Path(raw_path).resolve().relative_to(REPO)) if raw_path else "<source-inventory>"
+                except ValueError:
+                    drift_path = str(raw_path or "<source-inventory>")
+                differences = {
+                    drift_path: {
+                        "change": "unreadable",
+                        "frozen_sha256": frozen_source_hashes.get(drift_path),
+                        "current_sha256": None,
+                    }
+                }
+                current_source_hashes = {}
+            if differences:
+                source_drift_stop = {
+                    "stop_reason": "controller-source-drift",
+                    "detected_at": datetime.now(timezone.utc).isoformat(),
+                    "before_worker": run_name,
+                    "source_drift_paths": sorted(differences),
+                    "source_drift": differences,
+                    "frozen_controller_source_digest": source_inventory_digest(frozen_source_hashes),
+                    "current_controller_source_digest": (
+                        source_inventory_digest(current_source_hashes)
+                        if current_source_hashes else None
+                    ),
+                }
+                break
+            launched_this_pass += 1
             run_root = root / "episodes" / run_name
             result_path = root / "outcomes" / f"{run_name}.json"
             result_path.parent.mkdir(parents=True, exist_ok=True)
@@ -272,14 +362,18 @@ def run_batch(args: argparse.Namespace) -> int:
                 "levels_completed": row.get("levels_completed"),
                 "actions": row.get("actions"), "elapsed_s": row.get("worker_elapsed_s"),
             }, sort_keys=True), flush=True)
+        if source_drift_stop is not None:
+            break
         if launched_this_pass < len(games):
             break
     summary = aggregate(rows, run_id=run_id, started_at=started_at, deadline_s=args.global_seconds)
+    if source_drift_stop is not None:
+        summary.update(source_drift_stop)
     summary["finished_at"] = datetime.now(timezone.utc).isoformat()
     summary["wall_elapsed_s"] = round(time.monotonic() - started, 3)
     atomic_json(root / "summary.json", summary)
     print(json.dumps(summary, indent=2, sort_keys=True), flush=True)
-    return 0
+    return 2 if source_drift_stop is not None else 0
 
 
 def parse_args() -> argparse.Namespace:

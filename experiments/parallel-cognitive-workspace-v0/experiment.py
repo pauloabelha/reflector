@@ -198,6 +198,21 @@ class R2Cognition:
         self.grid = after_grid
         return {"status": "level-regrounded", "observation_version": self.version}
 
+    def retry_level(self, after_grid: Grid) -> dict[str, Any]:
+        """Re-ground the same level after a GAME_OVER reset boundary.
+
+        RESET is transport, not an ordinary game mechanic.  In particular we
+        must not learn a cross-board ``arc-action:0`` transition.
+        """
+        self.version += 1
+        after_batch = perceive_grid(
+            self.runtime.graph.terms, after_grid, f"cw:retry:{self.version}"
+        )
+        self.runtime.observe(after_batch)
+        self.batch = after_batch
+        self.grid = after_grid
+        return {"status": "retry-regrounded", "observation_version": self.version}
+
 
 @dataclass(slots=True)
 class Activation:

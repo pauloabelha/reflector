@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 
 HERE = Path(__file__).resolve().parent
@@ -190,6 +191,89 @@ def test_timeout_partial_outcome_counts_only_committed_successors(tmp_path):
         "uncommitted_pending_actions": 1,
         "partial_ledger_recovered": True,
     }
+
+
+def test_controller_source_inventory_covers_loaded_chain_and_excludes_tests():
+    runner = load_runner()
+    hashes = runner.r21_source_hashes()
+
+    assert "R2_1.md" in hashes
+    for required in (
+        "experiments/explanation-guided-one-action-control-v0/experiment.py",
+        "experiments/explanation-guided-one-action-control-v0/observation_envelope.py",
+        "experiments/explanation-guided-one-action-control-v0/config.json",
+        "experiments/parallel-cognitive-workspace-v0/workspace.py",
+        "experiments/parallel-cognitive-workspace-v1-4/ledger.py",
+        "experiments/parallel-cognitive-workspace-v1-9/evidence_revision.py",
+        "experiments/parallel-cognitive-workspace-v1-12/causal_packet.py",
+        "experiments/parallel-cognitive-workspace-v1-14/compiler_feedback.py",
+        "experiments/parallel-cognitive-workspace-v1-16/experiment.py",
+        "experiments/parallel-cognitive-workspace-v1-16/config.json",
+        "experiments/qwen-generic-explanation-priors-v0/experiment.py",
+        "experiments/prior-accelerated-relational-transfer-v0/experiment.py",
+        "src/reflector2/explanations.py",
+        "src/reflector2/perception.py",
+        "src/reflector2/runtime.py",
+    ):
+        assert required in hashes
+    assert not any(Path(path).name.startswith("test_") for path in hashes)
+
+
+def test_source_hash_diff_reports_added_deleted_and_modified_paths():
+    runner = load_runner()
+
+    assert runner.source_hash_diff(
+        {"deleted.py": "a", "modified.py": "b", "same.py": "c"},
+        {"added.py": "d", "modified.py": "e", "same.py": "c"},
+    ) == {
+        "added.py": {
+            "change": "added", "frozen_sha256": None, "current_sha256": "d",
+        },
+        "deleted.py": {
+            "change": "deleted", "frozen_sha256": "a", "current_sha256": None,
+        },
+        "modified.py": {
+            "change": "modified", "frozen_sha256": "b", "current_sha256": "e",
+        },
+    }
+
+
+def test_batch_stops_before_first_worker_and_finalizes_source_drift(tmp_path, monkeypatch):
+    runner = load_runner()
+    runner.HERE = tmp_path
+    frozen = {"R2_1.md": "a", "experiments/controller.py": "b"}
+    changed = {"R2_1.md": "a", "experiments/controller.py": "changed"}
+    snapshots = iter((frozen, changed))
+    monkeypatch.setattr(runner, "r21_source_hashes", lambda: next(snapshots))
+    monkeypatch.setattr(runner, "discover_games", lambda: ["aa00"])
+    monkeypatch.setattr(runner, "breadth_order", lambda games: list(games))
+    real_popen = runner.subprocess.Popen
+
+    def guarded_popen(command, *popen_args, **popen_kwargs):
+        if command[:2] == ["git", "rev-parse"]:
+            return real_popen(command, *popen_args, **popen_kwargs)
+        raise AssertionError("worker launched")
+
+    monkeypatch.setattr(runner.subprocess, "Popen", guarded_popen)
+    args = SimpleNamespace(
+        run_id="source-drift-test", global_seconds=120,
+        reserve_seconds=30, per_run_seconds=60,
+    )
+
+    assert runner.run_batch(args) == 2
+    root = tmp_path / "artifacts" / args.run_id
+    manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+    summary = json.loads((root / "summary.json").read_text(encoding="utf-8"))
+
+    assert manifest["frozen_controller_source_hashes"] == frozen
+    assert manifest["frozen_controller_source_digest"] == runner.source_inventory_digest(frozen)
+    assert summary["stop_reason"] == "controller-source-drift"
+    assert summary["before_worker"] == "pass-01--aa00--level-01"
+    assert summary["source_drift_paths"] == ["experiments/controller.py"]
+    assert summary["source_drift"]["experiments/controller.py"] == {
+        "change": "modified", "frozen_sha256": "b", "current_sha256": "changed",
+    }
+    assert summary["runs_started"] == 0
 
 
 def test_click_repetition_uses_exact_command_not_bare_action_id():
