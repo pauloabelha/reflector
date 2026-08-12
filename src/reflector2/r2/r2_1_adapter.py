@@ -41,6 +41,7 @@ from reflector2.r2.causal_entity import (
     causal_coverage_for,
 )
 from reflector2.r2.semantic_measure import SemanticMeasureHypothesis
+from reflector2.r2.affordance_frontier import build_affordance_frontier
 
 
 HERE = Path(__file__).resolve().parent
@@ -475,6 +476,24 @@ class FrameSchemaObserver:
         effects, or pending predictions from an earlier arcade run.
         """
         self.__init__(self.planner_config.document(), self.planner_backend)
+
+    def semantic_affordance_frontier(self) -> dict[str, Any]:
+        """Project current bindings into the one existing semantic channel.
+
+        This does not create a parallel workspace or semantic authority.  It
+        is merely a bounded, anonymous view of measurements already available
+        to R2's ordinary proposal compiler.
+        """
+
+        entities = [
+            region for region in self.last_regions
+            if region.get("kind") != "causal-entity-binding"
+            or (
+                region.get("epistemic_status") == "SUPPORTED"
+                and region.get("identity_status") == "UNIQUE"
+            )
+        ]
+        return build_affordance_frontier(entities)
 
     def advance_level(self) -> None:
         """Clear situated bindings while retaining supported game mechanics."""

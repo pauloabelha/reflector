@@ -518,3 +518,41 @@ unchanged missing historical artifact failure.
 claimed. Checkpoint 017 runs the unchanged architecture across structurally
 different games and measures whether diagnostic schema settlement improves
 later decisions.
+
+## Checkpoint 017
+
+**Observed:** Qwen had enough visual semantics to propose ideas such as align
+and enclosed-space complementarity, but the bridge below prose was brittle.
+It could mutate a cited measurement, duplicate terminal fields with conflicting
+meanings, lose compiler diagnostics to a later controller publication, or
+detach a schema when an algebraically commutative measurement was canonicalized.
+Those were interface failures, not evidence for a missing AR25 verb rule.
+
+**Implemented:** R2 now computes an anonymous provider-based affordance frontier
+before semantics and exposes exact, provenance-bound spatial-set measurement
+templates. Qwen remains free to coin verbs and relation families or propose a
+novel bounded measurement. R2 derives terminal relation/observable/direction,
+checks cited measurements modulo declared commutativity, retains compiler
+failure as a repair obligation in the one semantic projection, and uses the
+same canonical identity for dependent schemas. Structured schema claims cannot
+pre-bind situated frame aliases. No new semantic memory, policy authority, or
+game-specific rule was added.
+
+**Live evidence:** on fresh AR25, Qwen's `align` proposal grounded two actual
+45-cell entities. `ACTION_1` produced a uniquely tracked target translation of
+`[-3,0]`; the residual regressed 65 → 68, so R2 learned a mechanism but granted
+no goal support. In a subsequent unchanged run the canonical goal survived
+rejected Qwen writes, recovered 68 → 65 → 62 → 59, accumulated two strict
+progress confirmations, and became `PLAN_ELIGIBLE`. CAE retained a seven-member
+OPEN composite with action-conditioned motion. This is a complete
+language→measurement→entity→command→effect→settlement path, not a solved level.
+
+The focused semantic/runtime/planner/worker suite has 138 passes. The full
+suite passes every implementation test and retains the one unchanged failure
+caused by the absent historical
+`parallel-cognitive-workspace-v1-16/artifacts/SUMMARY.json`.
+
+**Limit:** no level completion, score increase, correct final semantic reading,
+or cross-game advantage is claimed. Checkpoint 018 freezes the new provider,
+prompt, compiler, grounder, and controller, then attempts to falsify them on
+structurally different games chosen before observation.

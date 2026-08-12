@@ -133,6 +133,7 @@ class SemanticMeasureHypothesis:
     comparison: str
     coordinate_frame: str = "scene"
     include_separation_gap: bool = False
+    basis_opportunity_ref: str | None = None
     protocol: str = SEMANTIC_MEASURE_PROTOCOL
 
     def __post_init__(self) -> None:
@@ -150,6 +151,11 @@ class SemanticMeasureHypothesis:
             raise ValueError("unsupported coordinate frame")
         if self.coordinate_frame == "intrinsic" and self.include_separation_gap:
             raise ValueError("intrinsic measurements cannot include scene separation")
+        if (
+            self.basis_opportunity_ref is not None
+            and not isinstance(self.basis_opportunity_ref, str)
+        ):
+            raise ValueError("affordance basis reference must be a string or null")
 
     @classmethod
     def compile(
@@ -160,7 +166,7 @@ class SemanticMeasureHypothesis:
             "right_feature", "comparison", "coordinate_frame",
             "include_separation_gap",
         }
-        if set(value) != expected:
+        if set(value) not in (expected, expected | {"basis_opportunity_ref"}):
             raise ValueError("semantic measurement fields do not match protocol")
         return cls(observable=str(observable), **dict(value))
 
@@ -178,6 +184,7 @@ class SemanticMeasureHypothesis:
             "comparison": self.comparison,
             "coordinate_frame": self.coordinate_frame,
             "include_separation_gap": self.include_separation_gap,
+            "basis_opportunity_ref": self.basis_opportunity_ref,
         }
 
     def evaluate(self, actor: Any, target: Any) -> float | None:

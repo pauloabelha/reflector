@@ -10,6 +10,14 @@ the R2.1 explanation-guided controller: the same runtime powers Agent Arcade
 and Kaggle breadth runs, and it can use either the resident local Qwen service
 or OpenAI models through `OPENAI_API_KEY`.
 
+The current glue branch's unified semantic-control architecture is specified in
+[`R2_3.md`](R2_3.md). It adds one pre-semantic affordance frontier inside the
+existing R2 projection, provenance-bound measurement selection, open model-
+named relation families with closed falsifiable dynamics, and a single-source
+Qwen semantic/goal contract. The executable remains labeled R2.2 until this
+boundary has cross-game evidence; the document is an architecture and current
+implementation description, not a score claim.
+
 > Current evidence is still limited. R2 has repeatedly cleared AR25 level 1
 > and has demonstrated grounded verbs, executable explanations, prediction
 > settlement, and explanation consolidation. It has not demonstrated broad
@@ -37,6 +45,17 @@ configured semantic model                         optional planning model
                            observes, scores, and settles
                                            |
                                            +---- evidence returns to R2
+```
+
+The model-facing path is one loop, not separate semantic subsystems:
+
+```text
+anonymous measurable opportunities + grounded R2/CAE evidence
+→ one r2_semantic_projection
+→ one Qwen prose state + structured goals/schema hypotheses
+→ strict compiler and recursive role grounding
+→ exact command effects and one-action control
+→ independent environment settlement
 ```
 
 The authority boundary is model-independent:

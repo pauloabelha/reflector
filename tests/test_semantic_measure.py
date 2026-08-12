@@ -17,9 +17,12 @@ from reflector2.r2.scratchpad import (
     _failed_semantic_state_repeated,
     _finish_semantic_revision,
     _goal_proposal_contract_error,
+    _goal_write_requires_compiler_repair,
     _merge_supported_goal_proposals,
+    _measurement_matches_template,
     _pending_semantic_revision_unsatisfied,
     _post_action_null_history_claim,
+    _record_semantic_compiler_feedback,
     _semantic_revision_is_substantive,
     _quarantine_goal_proposals,
     _quarantine_schema_hypotheses,
@@ -34,6 +37,10 @@ from reflector2.r2.semantic_measure import (
     SEMANTIC_MEASURE_PROTOCOL,
     SemanticMeasureHypothesis,
     spatial_feature,
+)
+from reflector2.r2.affordance_frontier import (
+    AFFORDANCE_FRONTIER_PROTOCOL,
+    build_affordance_frontier,
 )
 
 
@@ -72,7 +79,7 @@ def proposed_goal(**changes: object) -> dict:
         "local_terminal": {
             "observable": "proposed_spatial_completion_residual",
             "preferred_order": "decrease",
-            "relation": "equals",
+            "relation": "minimum",
             "target": 0.0,
         },
     }
@@ -107,6 +114,23 @@ def test_generated_control_goal_ports_are_canonical_binary_interfaces():
     assert "suggested" in GENERATED_ROLE_MODALITIES
 
 
+def test_typed_local_terminal_is_the_single_source_of_terminal_text():
+    raw = proposed_goal()
+    raw.pop("terminal_condition")
+    raw["local_terminal"] = {"target": 0.0}
+    accepted, _seen, rejected = _quarantine_goal_proposals([raw])
+    assert rejected == []
+    assert accepted[0]["local_terminal"] == {
+        "observable": "proposed_spatial_completion_residual",
+        "preferred_order": "decrease",
+        "relation": "minimum",
+        "target": 0.0,
+    }
+    assert accepted[0]["terminal_condition"] == (
+        "proposed_spatial_completion_residual=0"
+    )
+
+
 def ring() -> dict:
     return entity("ring", {
         (2, 2), (2, 3), (2, 4),
@@ -136,6 +160,187 @@ def test_empty_selected_feature_fails_open_instead_of_becoming_zero():
     )
     solid = entity("solid", {(2, 2), (2, 3), (3, 2), (3, 3)})
     assert hypothesis.evaluate(entity("candidate", {(2, 2)}), solid) is None
+
+
+def test_affordance_frontier_reports_geometry_without_naming_a_goal_or_binding():
+    exact = entity("exact-private-id", {(3, 3)})
+    distractor = entity("distractor-private-id", {(8, 8), (8, 9)})
+    frontier = build_affordance_frontier([ring(), exact, distractor])
+
+    assert frontier["protocol"] == AFFORDANCE_FRONTIER_PROTOCOL
+    assert frontier["authority"] == "observation-derived-attention-only"
+    assert frontier["control_authority"] is False
+    topology = next(
+        item for item in frontier["observations"]
+        if item["observation_family"] == "spatial_topology"
+    )
+    assert topology["entities_with_nonempty_feature"] == 1
+    complement = next(
+        item for item in frontier["observations"]
+        if item.get("left_feature") == "occupancy"
+        and item.get("right_feature") == "enclosed_negative_space"
+    )
+    assert complement["best_normalized_residual"] == 0.0
+    assert complement["measurable_pair_hypotheses"] == 2
+    serialized = json.dumps(frontier, sort_keys=True).lower()
+    assert "private-id" not in serialized
+    for imposed_semantics in ("fit", "insert", "hole", "align", "yellow", "blue"):
+        assert imposed_semantics not in serialized
+
+
+def test_affordance_frontier_fails_open_when_a_feature_is_not_observed():
+    solid_a = entity("a", {(0, 0), (0, 1)})
+    solid_b = entity("b", {(4, 4), (4, 5)})
+    frontier = build_affordance_frontier([solid_a, solid_b])
+    complement = next(
+        item for item in frontier["observations"]
+        if item.get("right_feature") == "enclosed_negative_space"
+    )
+    assert complement["measurable_pair_hypotheses"] == 0
+    assert complement["best_normalized_residual"] is None
+    assert complement["desired"] is None
+
+
+def test_affordance_frontier_is_palette_and_translation_invariant():
+    source = [
+        entity("first", {(2, 2), (2, 3), (3, 2)}),
+        entity("second", {(6, 6), (6, 7), (7, 6)}),
+    ]
+    translated = [
+        {**item, "binding_id": f"other-{index}", "value": 9 - index,
+         "cells": [(y + 5, x + 7) for y, x in item["cells"]]}
+        for index, item in enumerate(source)
+    ]
+    intrinsic = lambda frontier: next(
+        item for item in frontier["observations"]
+        if item.get("left_feature") == "occupancy"
+        and item.get("right_feature") == "occupancy"
+        and item.get("coordinate_frame") == "intrinsic"
+    )
+    assert intrinsic(build_affordance_frontier(source)) == intrinsic(
+        build_affordance_frontier(translated)
+    )
+
+
+def test_affordance_reference_binds_qwen_to_the_exact_observed_measurement():
+    frontier = build_affordance_frontier([ring(), entity("point", {(3, 3)})])
+    observation = next(
+        item for item in frontier["observations"]
+        if item.get("left_feature") == "occupancy"
+        and item.get("right_feature") == "enclosed_negative_space"
+        and item.get("coordinate_frame") == "scene"
+    )
+    templates = {
+        observation["opportunity_ref"]: observation["measurement_template"],
+    }
+    grounded = proposed_goal(
+        measurement_hypothesis=observation["measurement_template"],
+    )
+    accepted, _seen, rejected = _quarantine_goal_proposals(
+        [grounded], affordance_templates=templates,
+    )
+    assert len(accepted) == 1
+    assert rejected == []
+
+    mismatched = proposed_goal(measurement_hypothesis={
+        **observation["measurement_template"],
+        "right_feature": "occupancy",
+    })
+    accepted, _seen, rejected = _quarantine_goal_proposals(
+        [mismatched], affordance_templates=templates,
+    )
+    assert accepted == []
+    assert rejected[0]["detail"] == "affordance-measurement-template-mismatch"
+
+
+def test_affordance_template_quotients_only_commutative_operand_order():
+    frontier = build_affordance_frontier([ring(), entity("point", {(3, 3)})])
+    observation = next(
+        item for item in frontier["observations"]
+        if item.get("left_feature") == "occupancy"
+        and item.get("right_feature") == "enclosed_negative_space"
+        and item.get("comparison") == "symmetric_difference_size"
+    )
+    template = observation["measurement_template"]
+    swapped = {
+        **template,
+        "left_source": template["right_source"],
+        "left_feature": template["right_feature"],
+        "right_source": template["left_source"],
+        "right_feature": template["left_feature"],
+    }
+    assert _measurement_matches_template(swapped, template)
+    accepted, _seen, rejected = _quarantine_goal_proposals(
+        [proposed_goal(measurement_hypothesis=swapped)],
+        affordance_templates={observation["opportunity_ref"]: template},
+    )
+    assert rejected == []
+    assert accepted[0]["measurement_hypothesis"] == template
+
+    asymmetric = {**template, "comparison": "left_unmatched_size"}
+    asymmetric_template = {
+        **template, "comparison": "left_unmatched_size",
+    }
+    asymmetric_swapped = {
+        **asymmetric,
+        "left_source": asymmetric["right_source"],
+        "left_feature": asymmetric["right_feature"],
+        "right_source": asymmetric["left_source"],
+        "right_feature": asymmetric["left_feature"],
+    }
+    assert not _measurement_matches_template(
+        asymmetric_swapped, asymmetric_template,
+    )
+
+    raw_goal = proposed_goal(measurement_hypothesis=swapped)
+    accepted_goals, _seen, _rejected = _quarantine_goal_proposals(
+        [raw_goal],
+        affordance_templates={observation["opportunity_ref"]: template},
+    )
+    hypotheses, hypothesis_rejections = _quarantine_schema_hypotheses(
+        [schema_hypothesis()], [raw_goal], accepted_goals,
+        affordance_templates={observation["opportunity_ref"]: template},
+    )
+    assert len(hypotheses) == 1
+    assert hypothesis_rejections == []
+
+
+def test_scale_bands_preserve_larger_relations_when_singletons_tie():
+    small_a = entity("small-a", {(0, 0)})
+    small_b = entity("small-b", {(2, 2)})
+    large_a = entity("large-a", {(y, x) for y in range(5) for x in range(5)})
+    large_b = entity("large-b", {(y + 8, x + 8) for y in range(5) for x in range(5)})
+    frontier = build_affordance_frontier([small_a, small_b, large_a, large_b])
+    relation = next(
+        item for item in frontier["observations"]
+        if item.get("left_feature") == "occupancy"
+        and item.get("right_feature") == "occupancy"
+        and item.get("coordinate_frame") == "intrinsic"
+    )
+    assert {tuple(item["feature_support_range"]) for item in relation["scale_bands"]} >= {
+        (1, 4), (17, 64),
+    }
+
+
+def test_commutative_same_feature_frontier_quotients_reversed_pair():
+    horizontal_a = entity("a", {(0, 0), (0, 1)})
+    horizontal_b = entity("b", {(4, 4), (4, 5)})
+    corner = entity("c", {(8, 8), (9, 8), (9, 9)})
+    frontier = build_affordance_frontier([
+        horizontal_a, horizontal_b, corner,
+    ])
+    relation = next(
+        item for item in frontier["observations"]
+        if item.get("left_feature") == "occupancy"
+        and item.get("right_feature") == "occupancy"
+        and item.get("comparison") == "symmetric_difference_size"
+        and item.get("coordinate_frame") == "intrinsic"
+    )
+    assert relation["role_orientation"] == "quotiented-commutative"
+    assert relation["measurable_pair_hypotheses"] == 3
+    assert relation["best_normalized_residual"] == 0.0
+    assert relation["distinctiveness_margin"] > 0.0
+    assert relation["near_best_pair_count"] == 1
 
 
 @pytest.mark.parametrize("changes", [
@@ -191,6 +396,38 @@ def test_schema_hypothesis_confidence_compiles_only_as_attention_prior():
 
     projected = project_schema_hypotheses_to_goals(goals, hypotheses)
     assert projected[0]["_semantic_schema_hypotheses"] == hypotheses
+
+
+def test_qwen_may_name_a_new_relation_family_but_cannot_add_new_dynamics():
+    raw_goal = proposed_goal()
+    goals, _seen, _rejected = _quarantine_goal_proposals([raw_goal])
+    hypotheses, rejected = _quarantine_schema_hypotheses(
+        [schema_hypothesis(relation_family="spatial_complementarity")],
+        [raw_goal], goals,
+    )
+    assert rejected == []
+    assert hypotheses[0]["relation_family"] == "spatial_complementarity"
+
+    hypotheses, rejected = _quarantine_schema_hypotheses(
+        [schema_hypothesis(predicted_dynamics=["magic_success"])],
+        [raw_goal], goals,
+    )
+    assert hypotheses == []
+    assert rejected[0]["reason"] == "schema-hypothesis-prediction"
+
+
+def test_qwen_schema_ports_cannot_prebind_situated_entity_aliases():
+    raw_goal = proposed_goal()
+    goals, _seen, _rejected = _quarantine_goal_proposals([raw_goal])
+    hypotheses, rejected = _quarantine_schema_hypotheses(
+        [schema_hypothesis(claim="f01 and f03 form one coupled relation")],
+        [raw_goal], goals,
+    )
+    assert hypotheses == []
+    assert rejected == [{
+        "reason": "schema-hypothesis-situated-identity",
+        "hypothesis_index": 0,
+    }]
 
 
 def test_schema_hypothesis_must_reference_an_accepted_measurable_goal():
@@ -467,6 +704,12 @@ def test_dependent_contract_rejects_incoherent_roles_and_terminals():
         "observable": "centroid_distance", "preferred_order": "decrease",
         "relation": "minimum", "target": 0.0,
     })) == "local-terminal-observable-mismatch"
+    assert _goal_proposal_contract_error(proposed_goal(
+        terminal_class="maximum",
+    )) == "direction-terminal-class-mismatch"
+    assert _goal_proposal_contract_error(proposed_goal(local_terminal={
+        "target": 0.0, "relation": "maximum",
+    })) == "local-terminal-relation-mismatch"
 
 
 def test_malformed_goal_is_quarantined_without_losing_valid_siblings():
@@ -494,6 +737,19 @@ def test_malformed_goal_is_quarantined_without_losing_valid_siblings():
     ])
     assert len(accepted) == len(seen) == 1
     assert rejected == []
+
+
+def test_total_goal_compile_failure_is_not_semantic_abstention():
+    rejection = {"reason": "goal-proposal-dependent-contract"}
+    assert _goal_write_requires_compiler_repair([{"verb": "align"}], [], [
+        rejection,
+    ])
+    assert not _goal_write_requires_compiler_repair([], [], [])
+    assert not _goal_write_requires_compiler_repair(
+        [{"verb": "align"}, {"verb": "fit"}],
+        [proposed_goal()],
+        [rejection],
+    )
 
 
 def test_semantic_projection_keeps_rejection_feedback_over_raw_cae_geometry():
@@ -532,6 +788,44 @@ def test_semantic_projection_keeps_rejection_feedback_over_raw_cae_geometry():
     binding = projection["causal_entity_induction"]["bindings"][0]
     assert binding["member_count"] == 2
     assert binding["epistemic_status"] == "SUPPORTED"
+
+
+def test_compiler_repair_feedback_stays_in_one_projection_until_repaired():
+    reset_episode_context()
+    try:
+        record_r2_semantic_projection({
+            "protocol": "r2.1-semantic-projection-v1",
+            "frame_digest": "frame-a",
+        })
+        _record_semantic_compiler_feedback([{
+            "reason": "goal-proposal-dependent-contract",
+            "proposal_index": 0,
+            "detail": "affordance-measurement-template-mismatch",
+        }])
+        same_frame = record_r2_semantic_projection({
+            "protocol": "r2.1-semantic-projection-v1",
+            "frame_digest": "frame-a",
+            "active_explanation": {},
+            # Projection compaction may materialize an absent optional field
+            # as null. Only the compiler itself may clear live diagnostics.
+            "semantic_compiler_feedback": None,
+        })
+        feedback = same_frame["semantic_compiler_feedback"]
+        assert feedback["status"] == "repair-required"
+        assert feedback["diagnostics"][0]["detail"] == (
+            "affordance-measurement-template-mismatch"
+        )
+        assert feedback["repair_contract"]["novel_measurement"] == (
+            "set-basis_opportunity_ref-null"
+        )
+
+        next_frame = record_r2_semantic_projection({
+            "protocol": "r2.1-semantic-projection-v1",
+            "frame_digest": "frame-b",
+        })
+        assert next_frame["semantic_compiler_feedback"] == feedback
+    finally:
+        reset_episode_context()
 
 
 def test_repeated_nonprogress_revises_goal_without_refuting_mechanism():
@@ -727,7 +1021,7 @@ def test_supported_plateau_merge_preserves_prior_and_adds_only_distinct_goals():
         local_terminal={
             "observable": "proposed_containment_residual",
             "preferred_order": "decrease",
-            "relation": "equals",
+            "relation": "minimum",
             "target": 0.0,
         },
     )

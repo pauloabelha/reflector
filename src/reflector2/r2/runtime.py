@@ -95,7 +95,28 @@ class LiveRuntime:
         if self.schema_observer is None or not frame:
             return None
         try:
-            return self.schema_observer.fit_frame(frame, turn=turn)
+            stats = self.schema_observer.fit_frame(frame, turn=turn)
+            frontier_builder = getattr(
+                self.schema_observer, "semantic_affordance_frontier", None,
+            )
+            if callable(frontier_builder):
+                frontier = frontier_builder()
+                # There is intentionally one Qwen/R2 semantic surface.  Frame
+                # observations seed it before the first Qwen call; controller
+                # grounding later enriches the same projection.
+                scratchpad = sys.modules.get("one_action_scratchpad")
+                if scratchpad is None:
+                    from reflector2.r2 import scratchpad
+                publish = getattr(scratchpad, "record_r2_semantic_projection")
+                projection = publish({
+                    "protocol": "r2-recursive-semantic-projection-v0",
+                    "authority": "read-only-attention-projection",
+                    "frame_digest": stats.get("frame_digest"),
+                    "affordance_frontier": frontier,
+                })
+                with self.condition:
+                    self.snapshot["r2_semantic_projection"] = projection
+            return stats
         except Exception as error:
             # Epistemic telemetry must remain inspectable without masking the
             # underlying environment/controller failure mode.

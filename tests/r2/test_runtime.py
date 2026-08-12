@@ -333,6 +333,31 @@ def test_live_runtime_keeps_exact_workspace_separate_from_ui_traces():
     assert snapshot["scratchpad"]["r2_action_traces"] == ["observed action"]
 
 
+def test_live_runtime_seeds_the_existing_semantic_projection_on_frame_zero():
+    from reflector2.r2.runtime import LiveRuntime
+    from reflector2.r2.scratchpad import reset_episode_context
+
+    class Observer:
+        def fit_frame(self, frame, *, turn=0):
+            return {"turn": turn, "frame_digest": "frame-zero"}
+
+        def semantic_affordance_frontier(self):
+            return {
+                "protocol": "r2-observation-affordance-frontier-v0",
+                "authority": "observation-derived-attention-only",
+                "observations": [],
+            }
+
+    reset_episode_context()
+    runtime = LiveRuntime()
+    runtime.set_schema_observer(Observer())
+    runtime.update(frame=[[0, 1]], turn=0)
+    projection = runtime.read()["r2_semantic_projection"]
+    assert projection["frame_digest"] == "frame-zero"
+    assert projection["affordance_frontier"]["observations"] == []
+    assert "semantic_affordances" not in runtime.read()
+
+
 def test_live_runtime_publishes_successor_and_settlement_atomically():
     from reflector2.r2.runtime import LiveRuntime
 

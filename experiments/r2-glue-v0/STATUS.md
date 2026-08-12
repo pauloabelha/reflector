@@ -2,10 +2,10 @@
 
 ## Current state
 
-- Phase: failed-goal authority suspended; cross-game control-efficiency audit active.
-- Branch: `glue` at baseline `75600da`.
+- Phase: unified semantic-affordance bridge complete; cross-game falsification active.
+- Branch: `glue` after checkpoint 016 commit `1316d80`.
 - Production baseline: pushed to `origin/main`.
-- Focused baseline verification: 123 tests passed.
+- Focused semantic/runtime/planner/worker verification: 138 tests passed.
 - Live starting case: AR25, with no claim of transfer or score improvement.
 
 ## Checkpoints
@@ -29,20 +29,24 @@
 | 014 | complete | Supported-goal frontier plateau requests one bounded complementary repair without losing proven control |
 | 015 | complete | Goal-frontier progress and action-mechanism evidence settle independently |
 | 016 | complete | Novel Qwen relations/dynamics project into zero-support entity/action schemas and settle independently |
-| 017 | active | Falsify semantic schema projection and diagnostic settlement across structurally different games |
+| 017 | complete | Anonymous affordances, provenance-bound semantic measurements, single-source terminals, and durable compiler repair close one language-to-control loop |
+| 018 | active | Falsify the unchanged unified loop across structurally different games and measure environment-level utility |
 
 ## Current hypothesis
 
-The language-to-epistemic boundary now has one complete vertical slice: a novel
-Qwen relation/dynamic compiles at zero support, grounds over primitive or CAE
-spatial entities, projects onto exact legal commands, and receives its own
-environment settlement. The next uncertainty is empirical: whether varied
-games elicit useful competing hypotheses and whether R2 reaches diagnostic
-interventions efficiently enough for schema evidence to improve later control.
+The language-to-epistemic boundary now has one explicit closed loop. A neutral
+provider exposes anonymous measurable spatial opportunities; Qwen may interpret
+them with broad prior concepts and propose a verb, measurement, and schema; the
+compiler checks provenance and resets authority; R2 grounds abstract ports over
+primitive or CAE entities, selects an exact legal command, learns its effect,
+and returns settlement through the same bounded projection. Compiler failures
+remain visible repair obligations rather than silently erasing the prior goal.
+The next uncertainty is empirical utility across games, not whether these
+layers can communicate.
 
 ## Next evidence
 
-1. Run the unchanged build and prompt on structurally different games selected
+1. Run the unchanged checkpoint-017 build and prompt on structurally different games selected
    before observation.
 2. Compare hypothesis diversity, grounding, diagnostic-command rate,
    schema-specific support/refutation, revision behavior, and action efficiency.

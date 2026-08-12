@@ -29,11 +29,7 @@ GENERATED_ROLE_MODALITIES = ("suggested", "anti-clue", "unknown")
 SCHEMA_HYPOTHESIS_KINDS = (
     "relational", "dynamic", "relational_dynamic",
 )
-SCHEMA_RELATION_FAMILIES = (
-    "alignment", "connection", "contact", "containment", "correspondence",
-    "coupling", "ordering", "separation", "symmetry", "transformation",
-    "unknown",
-)
+SCHEMA_RELATION_FAMILY_PATTERN = r"^[a-z][a-z0-9_]{0,39}$"
 SCHEMA_PREDICTED_DYNAMICS = (
     "changes_component_count", "changes_contact_state",
     "changes_containment_state", "changes_relative_position",
@@ -89,8 +85,11 @@ goal, or expectation. The game objective may remain unchanged if it is still
 open and plausible. Do not describe a post-action frame as having no prior
 state. In workspace_write, revise or replace the failed action-free goal schema,
 or return no goal proposal when the evidence does not support one. Never repeat
-the exact failed proposal set. Keep summary and objective_hypothesis consistent
-with the revised scratchpad.
+the exact failed proposal set.
+
+The structured workspace write does not repeat scratchpad prose: its summary
+and objective claim are derived from scratchpad.explanation and
+scratchpad.game_objective by R2.
 
 If semantic_revision_task.revision_mode is supported-goal-plateau, the prior
 goal has real progress support and is not refuted. Preserve it as a candidate;
@@ -172,6 +171,9 @@ NULL_HISTORY_CLAIM = re.compile(
     r"(?:state|frame|observation|history|evidence)\b",
     re.IGNORECASE,
 )
+SITUATED_ENTITY_ALIAS = re.compile(
+    r"(?<![a-z0-9_])f[0-9]{2,}(?![a-z0-9_])", re.IGNORECASE,
+)
 
 
 def canonical_model_scratchpad(value: Any) -> dict[str, str]:
@@ -245,6 +247,51 @@ def _pending_semantic_revision_unsatisfied(
 def _finish_semantic_revision() -> None:
     global _PENDING_SEMANTIC_REVISION
     _PENDING_SEMANTIC_REVISION = None
+
+
+def _record_semantic_compiler_feedback(
+    rejections: Sequence[Mapping[str, Any]],
+) -> None:
+    """Return a failed executable write through the one R2 projection.
+
+    Diagnostics are transient compiler evidence, not a second semantic memory.
+    They remain attached to the current frame projection until a coherent
+    semantic write succeeds or the frame changes.
+    """
+
+    global _R2_SEMANTIC_PROJECTION
+    projection = copy.deepcopy(_R2_SEMANTIC_PROJECTION or {})
+    diagnostics = [
+        {
+            key: copy.deepcopy(item[key])
+            for key in ("reason", "proposal_index", "detail")
+            if key in item
+        }
+        for item in rejections[:4]
+        if isinstance(item, Mapping)
+    ]
+    projection["semantic_compiler_feedback"] = {
+        "status": "repair-required",
+        "frame_digest": projection.get("frame_digest"),
+        "diagnostics": diagnostics,
+        "repair_contract": {
+            "referenced_affordance": (
+                "copy-its-measurement-template-exactly"
+            ),
+            "novel_measurement": "set-basis_opportunity_ref-null",
+            "terminal": (
+                "supply-target-only; relation-is-derived-from-terminal-class"
+            ),
+            "authority": "no-semantic-write-accepted",
+        },
+    }
+    _R2_SEMANTIC_PROJECTION = projection
+
+
+def _clear_semantic_compiler_feedback() -> None:
+    global _R2_SEMANTIC_PROJECTION
+    if isinstance(_R2_SEMANTIC_PROJECTION, dict):
+        _R2_SEMANTIC_PROJECTION.pop("semantic_compiler_feedback", None)
 
 
 def control_goal_proposals(value: Any) -> Any:
@@ -428,19 +475,62 @@ def _canonical_action_id(value: Any) -> str | None:
     return None
 
 
+def _canonical_local_terminal_relation(terminal_class: Any) -> str:
+    """Derive terminal ordering from the proposal's single typed source."""
+
+    if terminal_class == "minimum":
+        return "minimum"
+    if terminal_class == "maximum":
+        return "maximum"
+    return "equals"
+
+
 def _normalize_goal_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
     """Apply only compiler-owned defaults used in storage and identity."""
 
     normalized = dict(proposal)
-    normalized.setdefault("local_terminal", {
-        "observable": proposal.get("observable", "unknown"),
-        "preferred_order": proposal.get("direction", "maintain"),
-        "relation": (
-            "minimum" if proposal.get("terminal_class") == "minimum" else
-            "maximum" if proposal.get("terminal_class") == "maximum" else "equals"
-        ),
-        "target": 0.0 if proposal.get("terminal_class") == "minimum" else None,
-    })
+    raw_local_terminal = proposal.get("local_terminal")
+    if isinstance(raw_local_terminal, Mapping):
+        normalized["local_terminal"] = {
+            **dict(raw_local_terminal),
+            "observable": raw_local_terminal.get(
+                "observable", proposal.get("observable", "unknown")
+            ),
+            "preferred_order": raw_local_terminal.get(
+                "preferred_order", proposal.get("direction", "maintain")
+            ),
+            "relation": raw_local_terminal.get(
+                "relation",
+                _canonical_local_terminal_relation(
+                    proposal.get("terminal_class")
+                ),
+            ),
+        }
+    else:
+        normalized["local_terminal"] = {
+            "observable": proposal.get("observable", "unknown"),
+            "preferred_order": proposal.get("direction", "maintain"),
+            "relation": _canonical_local_terminal_relation(
+                proposal.get("terminal_class")
+            ),
+            "target": 0.0 if proposal.get("terminal_class") == "minimum" else None,
+        }
+    if "terminal_condition" not in normalized:
+        local_terminal = normalized["local_terminal"]
+        observable = str(local_terminal.get("observable", "unknown"))
+        relation = str(local_terminal.get("relation", "equals"))
+        target = local_terminal.get("target")
+        if target is not None:
+            rendered_target = (
+                str(int(target))
+                if isinstance(target, (int, float)) and float(target).is_integer()
+                else str(target)
+            )
+            normalized["terminal_condition"] = (
+                f"{observable}={rendered_target}"
+            )
+        else:
+            normalized["terminal_condition"] = relation
     if "goal_contract" not in normalized:
         normalized["goal_contract"] = None
         normalized["goal_contract_reason"] = (
@@ -455,10 +545,27 @@ def _normalize_goal_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
     return normalized
 
 
-def _canonical_goal_proposal_key(value: Any) -> str:
+def _canonical_goal_proposal_key(
+    value: Any,
+    *,
+    affordance_templates: Mapping[str, Mapping[str, Any]] | None = None,
+) -> str:
     """Canonicalize semantic identity across raw and stored forms."""
 
     if isinstance(value, Mapping):
+        value = dict(value)
+        measurement = value.get("measurement_hypothesis")
+        basis_ref = (
+            measurement.get("basis_opportunity_ref")
+            if isinstance(measurement, Mapping) else None
+        )
+        template = (affordance_templates or {}).get(str(basis_ref))
+        if (
+            isinstance(measurement, Mapping)
+            and isinstance(template, Mapping)
+            and _measurement_matches_template(measurement, template)
+        ):
+            value["measurement_hypothesis"] = dict(template)
         value = _normalize_goal_proposal(value)
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
@@ -508,17 +615,43 @@ def _goal_proposal_contract_error(proposal: Any) -> str | None:
     elif raw_measurement is not None:
         return "built-in-observable-must-not-carry-measurement-hypothesis"
 
+    direction = str(proposal.get("direction", ""))
+    terminal_class = str(proposal.get("terminal_class", ""))
+    expected_terminal_class = {
+        "decrease": "minimum",
+        "increase": "maximum",
+        "maintain": "invariant",
+        "unknown": "open",
+    }.get(direction)
+    if expected_terminal_class != terminal_class:
+        return "direction-terminal-class-mismatch"
+
     local_terminal = proposal.get("local_terminal")
     if isinstance(local_terminal, Mapping):
-        if str(local_terminal.get("observable", "")) != observable:
+        if (
+            "observable" in local_terminal
+            and str(local_terminal.get("observable", "")) != observable
+        ):
             return "local-terminal-observable-mismatch"
-        if str(local_terminal.get("preferred_order", "")) != str(proposal.get("direction", "")):
+        if (
+            "preferred_order" in local_terminal
+            and str(local_terminal.get("preferred_order", ""))
+            != str(proposal.get("direction", ""))
+        ):
             return "local-terminal-direction-mismatch"
+        if (
+            "relation" in local_terminal
+            and str(local_terminal.get("relation", ""))
+            != _canonical_local_terminal_relation(terminal_class)
+        ):
+            return "local-terminal-relation-mismatch"
     return None
 
 
 def _quarantine_goal_proposals(
     proposals: Any,
+    *,
+    affordance_templates: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], set[str], list[dict[str, Any]]]:
     """Normalize coherent proposals and isolate malformed siblings."""
 
@@ -526,7 +659,28 @@ def _quarantine_goal_proposals(
     seen: set[str] = set()
     rejected: list[dict[str, Any]] = []
     for proposal_index, proposal in enumerate(proposals):
+        proposal = dict(proposal) if isinstance(proposal, Mapping) else proposal
         proposal_error = _goal_proposal_contract_error(proposal)
+        measurement = (
+            proposal.get("measurement_hypothesis")
+            if isinstance(proposal, Mapping) else None
+        )
+        basis_ref = (
+            measurement.get("basis_opportunity_ref")
+            if isinstance(measurement, Mapping) else None
+        )
+        if proposal_error is None and basis_ref is not None:
+            template = (affordance_templates or {}).get(str(basis_ref))
+            if template is None:
+                proposal_error = "unknown-affordance-opportunity-reference"
+            elif not _measurement_matches_template(measurement, template):
+                proposal_error = "affordance-measurement-template-mismatch"
+            else:
+                # Store one representative of an algebraically equivalent
+                # measurement. This keeps proposal identity stable without
+                # treating left/right syntax as meaning for commutative set
+                # comparisons.
+                proposal["measurement_hypothesis"] = dict(template)
         if proposal_error is not None:
             rejected.append({
                 "reason": "goal-proposal-dependent-contract",
@@ -543,10 +697,70 @@ def _quarantine_goal_proposals(
     return accepted, seen, rejected
 
 
+def _measurement_matches_template(
+    measurement: Mapping[str, Any], template: Mapping[str, Any],
+) -> bool:
+    """Compare measurements modulo declared algebraic symmetries only."""
+
+    left = dict(measurement)
+    right = dict(template)
+    if left == right:
+        return True
+    if (
+        left.get("comparison") not in {
+            "symmetric_difference_size", "overlap_deficit",
+        }
+        or left.get("comparison") != right.get("comparison")
+    ):
+        return False
+    for field in (
+        "protocol", "comparison", "coordinate_frame",
+        "include_separation_gap", "basis_opportunity_ref",
+    ):
+        if left.get(field) != right.get(field):
+            return False
+    left_operands = Counter((
+        (left.get("left_source"), left.get("left_feature")),
+        (left.get("right_source"), left.get("right_feature")),
+    ))
+    right_operands = Counter((
+        (right.get("left_source"), right.get("left_feature")),
+        (right.get("right_source"), right.get("right_feature")),
+    ))
+    return left_operands == right_operands
+
+
+def _affordance_measurement_templates(
+    semantic_projection: Mapping[str, Any] | None,
+) -> dict[str, dict[str, Any]]:
+    frontier = (semantic_projection or {}).get("affordance_frontier") or {}
+    output: dict[str, dict[str, Any]] = {}
+    for observation in frontier.get("observations", ()):
+        if not isinstance(observation, Mapping):
+            continue
+        reference = observation.get("opportunity_ref")
+        template = observation.get("measurement_template")
+        if isinstance(reference, str) and isinstance(template, Mapping):
+            output[reference] = dict(template)
+    return output
+
+
+def _goal_write_requires_compiler_repair(
+    raw_proposals: Any,
+    accepted: Sequence[Mapping[str, Any]],
+    rejected: Sequence[Mapping[str, Any]],
+) -> bool:
+    """Distinguish explicit abstention from total executable-write failure."""
+
+    return bool(raw_proposals and not accepted and rejected)
+
+
 def _quarantine_schema_hypotheses(
     hypotheses: Any,
     raw_goal_proposals: Sequence[Mapping[str, Any]],
     accepted_goal_proposals: Sequence[Mapping[str, Any]],
+    *,
+    affordance_templates: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Compile model abductions as zero-authority schema projections.
 
@@ -557,7 +771,9 @@ def _quarantine_schema_hypotheses(
     """
 
     accepted_by_key = {
-        _canonical_goal_proposal_key(item): index
+        _canonical_goal_proposal_key(
+            item, affordance_templates=affordance_templates,
+        ): index
         for index, item in enumerate(accepted_goal_proposals)
     }
     exact_fields = {
@@ -589,7 +805,13 @@ def _quarantine_schema_hypotheses(
                 reason = "schema-hypothesis-local-ref"
             elif item.get("kind") not in SCHEMA_HYPOTHESIS_KINDS:
                 reason = "schema-hypothesis-kind"
-            elif item.get("relation_family") not in SCHEMA_RELATION_FAMILIES:
+            elif (
+                not isinstance(item.get("relation_family"), str)
+                or re.fullmatch(
+                    SCHEMA_RELATION_FAMILY_PATTERN,
+                    item["relation_family"],
+                ) is None
+            ):
                 reason = "schema-hypothesis-relation"
             elif item.get("roles") != list(CONTROL_GOAL_ROLES):
                 reason = "schema-hypothesis-role-interface"
@@ -603,6 +825,8 @@ def _quarantine_schema_hypotheses(
                 or len(claim) > 160
             ):
                 reason = "schema-hypothesis-claim"
+            elif SITUATED_ENTITY_ALIAS.search(claim):
+                reason = "schema-hypothesis-situated-identity"
             elif (
                 not isinstance(predicted, list) or not predicted
                 or len(predicted) > 4 or len(predicted) != len(set(predicted))
@@ -622,7 +846,8 @@ def _quarantine_schema_hypotheses(
                 reason = "schema-hypothesis-confidence-basis"
             else:
                 goal_key = _canonical_goal_proposal_key(
-                    raw_goal_proposals[goal_index]
+                    raw_goal_proposals[goal_index],
+                    affordance_templates=affordance_templates,
                 )
                 accepted_goal_index = accepted_by_key.get(goal_key)
                 if accepted_goal_index is None:
@@ -1423,6 +1648,27 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
     """Publish a bounded read-only attention cut for Semantic Qwen."""
     global _R2_SEMANTIC_PROJECTION
     candidate = copy.deepcopy(dict(projection))
+    # Frame parsing and controller grounding enrich one projection at
+    # different times. Preserve the current frame's anonymous affordance view
+    # when the controller publishes its grounded cut; never carry it across a
+    # frame digest.
+    previous = _R2_SEMANTIC_PROJECTION or {}
+    if (
+        "affordance_frontier" not in candidate
+        and candidate.get("frame_digest")
+        and candidate.get("frame_digest") == previous.get("frame_digest")
+        and isinstance(previous.get("affordance_frontier"), Mapping)
+    ):
+        candidate["affordance_frontier"] = copy.deepcopy(
+            previous["affordance_frontier"]
+        )
+    if (
+        not isinstance(candidate.get("semantic_compiler_feedback"), Mapping)
+        and isinstance(previous.get("semantic_compiler_feedback"), Mapping)
+    ):
+        candidate["semantic_compiler_feedback"] = copy.deepcopy(
+            previous["semantic_compiler_feedback"]
+        )
 
     # Causal entities can own thousands of cells. Semantic Qwen needs their
     # induced membership, status, and action-conditioned transformations—not a
@@ -1510,6 +1756,7 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
             "protocol": candidate.get("protocol"),
             "authority": candidate.get("authority"),
             "frame_digest": candidate.get("frame_digest"),
+            "affordance_frontier": candidate.get("affordance_frontier"),
             "active_explanation": {
                 **{
                     key: active.get(key)
@@ -1545,6 +1792,9 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
             "rejected_semantic_proposals": candidate.get(
                 "rejected_semantic_proposals", []
             )[:2],
+            "semantic_compiler_feedback": candidate.get(
+                "semantic_compiler_feedback"
+            ),
             "causal_entity_induction": candidate.get("causal_entity_induction"),
             "causal_scope_residual": candidate.get("causal_scope_residual"),
             "schema_summary": candidate.get("schema_summary"),
@@ -1823,7 +2073,14 @@ feedback. State what the latest observation established, contradicted, or left
 open. Read model_scratchpad as the exact prior shared state, then revise it in
 place. Do not repeat the frame-0 description or copy fields unchanged when new
 evidence requires a revision.
-2. workspace_write is a compact structured, cited, defeasible explanation.
+If r2_semantic_projection.semantic_compiler_feedback has status
+repair-required, its diagnostics are authoritative interface feedback. Repair
+the structured proposal under its repair_contract; do not erase the prior
+hypothesis merely because its serialization was rejected.
+2. workspace_write is the compact structured, cited, defeasible part of that
+same explanation. Do not repeat prose from scratchpad in workspace_write: R2
+derives the stored summary and objective claim from scratchpad.explanation and
+scratchpad.game_objective.
 R2 alone owns formal schema binding and action selection. Propose one to three
 action-free prospective verb schemas through goal_proposals. Each proposal
 names a reusable verb such as fit, touch, collect, avoid, reveal, or another
@@ -1884,6 +2141,10 @@ SEMANTIC COHERENCE:
   a residual toward minimum/zero. Select a measurement because its declared
   geometry tests the current hypothesis, never because a verb name mandates it.
 - The preferred direction must move the named observable toward the terminal.
+- State only the numeric/null terminal target in local_terminal. R2 derives
+  its relation from terminal_class, attaches the goal's observable and
+  direction, and derives canonical terminal_condition; do not restate those
+  fields.
 - direction=decrease requires terminal_class=minimum; increase requires
   maximum; maintain requires invariant. Use open only with direction=unknown.
 - Existing verbs and built-in observables are defeasible priors, not fixed
@@ -1913,6 +2174,12 @@ MEASUREMENT HYPOTHESES:
   symmetric_difference_size, left_unmatched_size, right_unmatched_size, and
   overlap_deficit. coordinate_frame is scene or intrinsic. A scene residual may
   add include_separation_gap=true to retain a gradient before contact.
+- When affordance_frontier supplies an opportunity_ref and
+  measurement_template that expresses your hypothesis, copy that template
+  exactly, including basis_opportunity_ref. This binds the semantic abduction
+  to the typed observation R2 actually reported. Do not change one field while
+  retaining its reference. For a genuinely new measurement not represented in
+  the frontier, declare the full measurement and set basis_opportunity_ref=null.
 - Choose features from the observation and competing explanation, not from a
   memorized game, color, shape, action, route, or assumed solution. R2 will
   reject empty, conflicting, malformed, or unmeasurable proposals.
@@ -1931,6 +2198,17 @@ R2.2 FEEDBACK:
 - r2_semantic_projection is a read-only, bounded report from R2's recursive
   workspace. Treat its grounded roles, causal status, prediction settlements,
   and open shadows as inputs to semantic revision.
+- Its affordance_frontier is an anonymous pre-semantic summary of relations
+  that R2 can currently measure. It is neither an ontology nor a list of
+  desired goals. Compare its alternatives with the visual and transition
+  evidence, then use your broad semantic prior to name or compose a concept
+  only when that interpretation yields a measurable goal and falsifiable
+  dynamics. You may propose a concept absent from the frontier; the frontier
+  routes attention but does not bound semantic imagination.
+- best residual means only closest among current candidates under that one
+  declared measurement. It does not mean correct, desirable, or controllable.
+  semantic_label=null and desired=null are intentional. Never copy a current
+  entity identity from this attention surface into a proposal.
 - Preserve a useful grounded verb when only its mechanism failed. Revise or
   replace proposals when their grounding repeatedly fails or their predictions
   are refuted. Open shadows are explicit unresolved questions.
@@ -2179,6 +2457,7 @@ CAUSAL VISUAL UNIT:
         cited_item = {"enum": visible_ids} if visible_ids else {"type": "string", "maxLength": 0}
         abstract_roles = ["actor", "target", "reference", "item", "container", "hazard", "occluder", "hidden", "source", "destination"]
         feedback = turn.document.get("scratchpad_context", {}).get("r2_semantic_projection") or {}
+        affordance_refs = sorted(_affordance_measurement_templates(feedback))
         action_evidence = dict(list(_action_evidence_refs(turn.document).items())[:8])
         stable_schema_ids = set()
         active = feedback.get("active_explanation") or {}
@@ -2228,7 +2507,7 @@ CAUSAL VISUAL UNIT:
             "required": [
                 "protocol", "left_source", "left_feature", "right_source",
                 "right_feature", "comparison", "coordinate_frame",
-                "include_separation_gap",
+                "include_separation_gap", "basis_opportunity_ref",
             ],
             "properties": {
                 "protocol": {"const": "r2-spatial-set-residual-v0"},
@@ -2248,6 +2527,9 @@ CAUSAL VISUAL UNIT:
                 ]},
                 "coordinate_frame": {"enum": ["scene", "intrinsic"]},
                 "include_separation_gap": {"type": "boolean"},
+                "basis_opportunity_ref": {
+                    "enum": [None, *affordance_refs],
+                },
             },
         }
         measurement_hypothesis = {
@@ -2255,7 +2537,7 @@ CAUSAL VISUAL UNIT:
         }
         verb_schema = {
             "type": "object", "additionalProperties": False,
-            "required": ["verb", "schema_name", "goal_family", "roles", "role_constraints", "potential_roles", "observable", "measurement_hypothesis", "direction", "terminal_class", "terminal_condition"],
+            "required": ["verb", "schema_name", "goal_family", "roles", "role_constraints", "potential_roles", "observable", "measurement_hypothesis", "direction", "terminal_class", "local_terminal"],
             "properties": {
                 "verb": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$"},
                 "schema_name": {"type": "string", "maxLength": 80},
@@ -2269,14 +2551,10 @@ CAUSAL VISUAL UNIT:
                 "measurement_hypothesis": measurement_hypothesis,
                 "direction": {"enum": ["decrease", "increase", "maintain", "unknown"]},
                 "terminal_class": {"enum": ["minimum", "maximum", "invariant", "open"]},
-                "terminal_condition": {"type": "string", "maxLength": 120},
                 "local_terminal": {
                     "type": "object", "additionalProperties": False,
-                    "required": ["observable", "preferred_order", "relation", "target"],
+                    "required": ["target"],
                     "properties": {
-                        "observable": observable_symbol,
-                        "preferred_order": {"enum": ["decrease", "increase", "maintain"]},
-                        "relation": {"enum": ["equals", "minimum", "maximum"]},
                         "target": {"type": ["number", "null"]},
                     },
                 },
@@ -2354,7 +2632,13 @@ CAUSAL VISUAL UNIT:
                     "pattern": "^schema_hypothesis_[0-9]{1,2}$",
                 },
                 "kind": {"enum": list(SCHEMA_HYPOTHESIS_KINDS)},
-                "relation_family": {"enum": list(SCHEMA_RELATION_FAMILIES)},
+                # Qwen supplies the semantic family from its broad prior. R2
+                # validates only a canonical symbol; the closed dynamics and
+                # countercondition vocabularies below provide testability.
+                "relation_family": {
+                    "type": "string",
+                    "pattern": SCHEMA_RELATION_FAMILY_PATTERN,
+                },
                 "claim": {
                     "type": "string", "minLength": 1, "maxLength": 160,
                 },
@@ -2404,10 +2688,8 @@ CAUSAL VISUAL UNIT:
                 {"type": "object", "additionalProperties": False, "maxProperties": 0}
             ),
         }
-        required = ["summary", "objective_hypothesis", "goal_proposals", "schema_hypotheses", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"]
+        required = ["goal_proposals", "schema_hypotheses", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"]
         properties = {
-                "summary": {"type": "string", "maxLength": 360},
-                "objective_hypothesis": {"type": "string", "maxLength": 240},
                 "goal_proposals": {
                     "type": "array", "minItems": 1,
                     "maxItems": 2 if len(stable_schema_ids) >= 2 else 3,
@@ -2512,8 +2794,7 @@ CAUSAL VISUAL UNIT:
             # constrained response.  The compiler materializes those absent
             # working-note fields as empty, never as inferred content.
             required = [
-                "summary", "objective_hypothesis", "goal_proposals",
-                "cited_ids", "explanation_consolidation",
+                "goal_proposals", "cited_ids", "explanation_consolidation",
             ]
             properties = {
                 key: value for key, value in properties.items()
@@ -2522,12 +2803,6 @@ CAUSAL VISUAL UNIT:
             properties["goal_proposals"] = {
                 **properties["goal_proposals"], "minItems": 0,
                 "maxItems": MAX_CONSOLIDATION_PROPOSALS,
-            }
-            properties["summary"] = {
-                **properties["summary"], "maxLength": 240,
-            }
-            properties["objective_hypothesis"] = {
-                **properties["objective_hypothesis"], "maxLength": 160,
             }
         return {
             "type": "object",
@@ -2799,13 +3074,12 @@ CAUSAL VISUAL UNIT:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "workspace-write-missing"}]}
         consolidation_task = turn.document.get("explanation_consolidation_task")
         ordinary_required = {
-            "summary", "objective_hypothesis", "goal_proposals",
+            "goal_proposals",
             "schema_hypotheses", "abductive_compositions", "action_aliases",
             "open_questions", "cited_ids",
         }
         consolidation_required = {
-            "summary", "objective_hypothesis", "goal_proposals",
-            "cited_ids", "explanation_consolidation",
+            "goal_proposals", "cited_ids", "explanation_consolidation",
         }
         required = (
             consolidation_required
@@ -2814,6 +3088,14 @@ CAUSAL VISUAL UNIT:
         )
         if not isinstance(note, Mapping) or set(note) != required:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "working-note-contract"}]}
+        # There is one semantic prose state. The structured write contributes
+        # types, predictions, and citations; it cannot contradict a duplicate
+        # free-text summary or objective because those are compiler-derived.
+        note = {
+            **dict(note),
+            "summary": scratchpad["explanation"],
+            "objective_hypothesis": scratchpad["game_objective"],
+        }
         if isinstance(consolidation_task, Mapping):
             note = {
                 **dict(note),
@@ -2887,8 +3169,32 @@ CAUSAL VISUAL UNIT:
         # Goal proposals are independent, authority-free candidates. Quarantine
         # malformed candidates without discarding valid semantic context.
         unique_proposals, seen_proposals, proposal_rejections = (
-            _quarantine_goal_proposals(note["goal_proposals"])
+            _quarantine_goal_proposals(
+                note["goal_proposals"],
+                affordance_templates=_affordance_measurement_templates(
+                    turn.document.get("scratchpad_context", {}).get(
+                        "r2_semantic_projection"
+                    )
+                ),
+            )
         )
+        if _goal_write_requires_compiler_repair(
+            note["goal_proposals"], unique_proposals, proposal_rejections,
+        ):
+            # A malformed nonempty executable write is not semantic
+            # abstention. Fail the write atomically so the previous shared
+            # hypothesis remains canonical and the next turn can repair the
+            # compiler diagnostic instead of silently losing control intent.
+            _record_semantic_compiler_feedback(proposal_rejections)
+            return {
+                **compilation,
+                "accepted": [],
+                "rejected": [
+                    *compilation.get("rejected", ()),
+                    *proposal_rejections,
+                    {"reason": "semantic-write-repair-required"},
+                ],
+            }
         revision_task = turn.document.get("semantic_revision_task")
         if (
             isinstance(revision_task, Mapping)
@@ -3139,14 +3445,19 @@ CAUSAL VISUAL UNIT:
             # scratchpad, alias, and abductive update in this response.
             unique_proposals = []
             seen_proposals = set()
+        feedback = (
+            turn.document.get("scratchpad_context", {})
+            .get("r2_semantic_projection") or {}
+        )
+        affordance_templates = _affordance_measurement_templates(feedback)
         schema_hypotheses, schema_hypothesis_rejections = (
             _quarantine_schema_hypotheses(
                 note["schema_hypotheses"],
                 note["goal_proposals"],
                 unique_proposals,
+                affordance_templates=affordance_templates,
             )
         )
-        feedback = turn.document.get("scratchpad_context", {}).get("r2_semantic_projection") or {}
         available_schema_ids = {
             str(item.get("schema_id"))
             for field in ("categorical_comparisons", "grounded_abductions")
@@ -3238,6 +3549,7 @@ CAUSAL VISUAL UNIT:
         ):
             _acknowledge_semantic_plateau(turn.document)
         _finish_semantic_revision()
+        _clear_semantic_compiler_feedback()
         return {
             **compilation,
             "accepted": accepted,
