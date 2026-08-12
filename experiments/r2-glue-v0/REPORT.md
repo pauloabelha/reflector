@@ -217,6 +217,37 @@ intervention, not independent transition trials. Per-transition pooling avoids
 pseudo-replication and turns within-type heterogeneity into an explicit demand
 for a missing role or context factor.
 
-**Prospective:** checkpoint 008 will add such a factor only after repeated
+**Prospective:** context induction remains warranted only after repeated
 identical command scopes reproduce heterogeneous rigid outcomes with an
-observable discriminator. No game-specific state or action meaning is allowed.
+observable discriminator. The live DC22 semantic-admission failure below took
+priority; context induction moved to checkpoint 009. No game-specific state or
+action meaning is allowed.
+
+## Checkpoint 008
+
+**Observed:** on DC22, Qwen copied the frame-0 scratchpad after Actions 1–3,
+including the assertion that there was no prior state, while separately citing
+the new transition traces. Once R2 reported two uniquely grounded nonprogress
+observations, the existing guard retired the repeated goal proposal but still
+accepted the stale explanation. A first rejection also proved transient: after
+the failed candidate disappeared, the next retry could admit the same semantic
+state under a fresh evidence reference.
+
+**Implemented:** an explicit R2 semantic failure plus new environment evidence
+now starts a durable semantic-revision obligation. It survives rejected retries
+and candidate retirement, and clears only after a valid five-field scratchpad
+changes both its assessment (`notes`) and at least one explanatory field
+(`explanation`, `goal`, or `expectation`). Stable hypotheses remain admissible
+when no explicit failure exists. The obligation resets at episode and level
+boundaries and contains no game, palette, geometry, action, or verb rule.
+
+**Live evidence:** exact DC22 replay rejected call 4 with
+`evidence-stale-semantic-state-repetition`. Later retries, including call 7,
+remained rejected with `evidence-stale-semantic-revision-pending`; grounded R2
+exploration continued. The focused suite has 135 passes; the full suite has 246
+passes and the unchanged missing historical artifact failure. No DC22
+completion or score gain is claimed.
+
+**Prospective:** checkpoint 009 returns to context induction, but only if
+repeated identical command scopes reproduce heterogeneous rigid outcomes with
+an observable discriminator.

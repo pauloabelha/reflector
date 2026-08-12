@@ -10,7 +10,12 @@ from reflector2.r2.goal_contract import canonicalize_goal_proposals
 from reflector2.r2.r2_1_adapter import FrameSchemaObserver
 from reflector2.r2.scratchpad import (
     _action_evidence_refs,
+    _begin_semantic_revision,
+    _failed_semantic_state_repeated,
+    _finish_semantic_revision,
     _goal_proposal_contract_error,
+    _pending_semantic_revision_unsatisfied,
+    _semantic_revision_is_substantive,
     _quarantine_goal_proposals,
     _semantic_failure_signals,
     record_r2_semantic_projection,
@@ -323,6 +328,83 @@ def test_repeated_nonprogress_revises_goal_without_refuting_mechanism():
         "progress_confirmations": 1,
     }]
     assert _semantic_failure_signals(mixed) == ()
+
+
+def test_exact_semantic_state_repetition_is_stale_only_on_evidenced_failure():
+    prior_scratchpad = {
+        "game_objective": "Infer completion",
+        "explanation": "One relation may matter",
+        "goal": "Test the relation",
+        "expectation": "The residual may decrease",
+        "notes": "Uncertain",
+    }
+    document = {
+        "model_scratchpad": prior_scratchpad,
+        "prior_working_note": {
+            "transition_evidence_ref": "r2-transition:old",
+        },
+        "scratchpad_context": {
+            "r2_transition_observation": {
+                "evidence_ref": "r2-transition:new",
+            },
+            "r2_semantic_projection": {
+                "active_explanation": {
+                    "control_status": "PROBE_ELIGIBLE",
+                    "progress_confirmations": 0,
+                    "nonprogress_observations": 2,
+                },
+                "competing_explanations": [],
+                "rejected_semantic_proposals": [],
+            },
+        },
+    }
+
+    assert _failed_semantic_state_repeated(document, prior_scratchpad)
+    notes_only = {**prior_scratchpad, "notes": "The latest probe did not progress"}
+    assert _failed_semantic_state_repeated(document, notes_only)
+    revised = {
+        **notes_only,
+        "expectation": "A different relation must now predict progress",
+    }
+    assert _semantic_revision_is_substantive(prior_scratchpad, revised)
+    assert not _failed_semantic_state_repeated(document, revised)
+
+    no_failure = json.loads(json.dumps(document))
+    no_failure["scratchpad_context"]["r2_semantic_projection"][
+        "active_explanation"
+    ]["nonprogress_observations"] = 1
+    assert not _failed_semantic_state_repeated(no_failure, prior_scratchpad)
+
+    no_new_evidence = json.loads(json.dumps(document))
+    no_new_evidence["prior_working_note"][
+        "transition_evidence_ref"
+    ] = "r2-transition:new"
+    assert not _failed_semantic_state_repeated(no_new_evidence, prior_scratchpad)
+
+
+def test_evidenced_semantic_revision_obligation_survives_transient_signal():
+    scratchpad = {
+        "game_objective": "Infer completion",
+        "explanation": "One relation may matter",
+        "goal": "Test the relation",
+        "expectation": "The residual may decrease",
+        "notes": "Uncertain",
+    }
+    signals = ({"kind": "r2-goal-potential-nonprogress", "count": 1},)
+    _finish_semantic_revision()
+    try:
+        _begin_semantic_revision(scratchpad, "r2-transition:trigger", signals)
+        assert _pending_semantic_revision_unsatisfied(scratchpad)
+        cosmetic = {**scratchpad, "explanation": "A relation may still matter"}
+        assert _pending_semantic_revision_unsatisfied(cosmetic)
+        revised = {
+            **cosmetic,
+            "notes": "The latest probe did not progress",
+        }
+        assert not _pending_semantic_revision_unsatisfied(revised)
+    finally:
+        _finish_semantic_revision()
+    assert not _pending_semantic_revision_unsatisfied(scratchpad)
 
 
 def test_action_alias_evidence_uses_single_canonical_prior_note_projection():

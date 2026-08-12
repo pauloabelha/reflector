@@ -20,7 +20,8 @@
 | 005 | complete | Semantic request duplication removed; CD82 crossed prior turn-9 context crash |
 | 006 | complete | Goal-independent mutual-unique effects learned and handed to later semantic control |
 | 007 | complete | Same-transition type evidence pooled; heterogeneous outcomes fail closed |
-| 008 | active | Induce context only from repeated identical-scope heterogeneous rigid outcomes |
+| 008 | complete | Erupted semantic failure creates a durable, substantive revision obligation |
+| 009 | active | Induce context only from repeated identical-scope heterogeneous rigid outcomes |
 
 ## Current hypothesis
 

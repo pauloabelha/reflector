@@ -61,6 +61,7 @@ MANDATORY_NUISANCE_DIMENSIONS = (
 _R2_ACTION_TRACES: list[str] = []
 _R2_SEMANTIC_PROJECTION: dict[str, Any] | None = None
 _R2_TRANSITION_OBSERVATION: dict[str, Any] | None = None
+_PENDING_SEMANTIC_REVISION: dict[str, Any] | None = None
 CONTROL_PAYLOAD_KINDS = frozenset({"action_proposal", "action_settlement", "action_trace", "transition"})
 ACTION_PROPOSAL = re.compile(
     r"\b(?:action\s*(?:#?\d+|id\b)|button|press|click|execute\s+(?:an?\s+)?action|"
@@ -109,6 +110,50 @@ def model_scratchpad_text(value: Any) -> str:
         separators=(",", ":"),
         ensure_ascii=False,
     )
+
+
+def _begin_semantic_revision(
+    scratchpad: Mapping[str, str], evidence_ref: str | None,
+    signals: tuple[dict[str, Any], ...],
+) -> None:
+    """Keep an evidenced revision obligation alive across rejected retries."""
+
+    global _PENDING_SEMANTIC_REVISION
+    _PENDING_SEMANTIC_REVISION = {
+        "prior_scratchpad": dict(scratchpad),
+        "trigger_evidence_ref": evidence_ref,
+        "explicit_failure_signals": [dict(item) for item in signals],
+    }
+
+
+def _semantic_revision_is_substantive(
+    prior: Mapping[str, str], candidate: Mapping[str, str],
+) -> bool:
+    """Require an updated assessment plus one updated explanatory field."""
+
+    changed = {
+        field for field in MODEL_SCRATCHPAD_FIELDS
+        if candidate.get(field) != prior.get(field)
+    }
+    return bool(
+        "notes" in changed
+        and changed.intersection({"explanation", "goal", "expectation"})
+    )
+
+
+def _pending_semantic_revision_unsatisfied(
+    scratchpad: Mapping[str, str],
+) -> bool:
+    prior = (_PENDING_SEMANTIC_REVISION or {}).get("prior_scratchpad")
+    return bool(
+        isinstance(prior, Mapping)
+        and not _semantic_revision_is_substantive(prior, scratchpad)
+    )
+
+
+def _finish_semantic_revision() -> None:
+    global _PENDING_SEMANTIC_REVISION
+    _PENDING_SEMANTIC_REVISION = None
 
 
 def has_transport_metadata_leak(value: Any) -> bool:
@@ -906,6 +951,31 @@ def _semantic_failure_signals(document: Mapping[str, Any]) -> tuple[dict[str, An
     return tuple(signals)
 
 
+def _failed_semantic_state_repeated(
+    document: Mapping[str, Any], scratchpad: Mapping[str, str],
+) -> bool:
+    """Detect an unchanged semantic state only when revision is evidenced.
+
+    An unchanged hypothesis is ordinarily legitimate.  Revision becomes
+    mandatory only when a new settlement is present and R2 has emitted an
+    explicit unsupported semantic-failure signal.  The assessment plus one
+    explanatory field must then change.  The evidence and failure gates keep
+    this independent of games, colors, verbs, and elapsed turns.
+    """
+
+    prior = document.get("prior_working_note") or {}
+    current_evidence_ref = _transition_evidence_ref(document)
+    prior_evidence_ref = prior.get("transition_evidence_ref")
+    prior_scratchpad = document.get("model_scratchpad")
+    return bool(
+        current_evidence_ref
+        and current_evidence_ref != prior_evidence_ref
+        and _semantic_failure_signals(document)
+        and isinstance(prior_scratchpad, Mapping)
+        and not _semantic_revision_is_substantive(prior_scratchpad, scratchpad)
+    )
+
+
 def _minimal_support_fields(explanation: Mapping[str, Any]) -> dict[str, Any]:
     """Retain only the fields that prevent false semantic-failure routing."""
 
@@ -1190,6 +1260,7 @@ def reset_episode_context() -> None:
     _R2_ACTION_TRACES.clear()
     _R2_SEMANTIC_PROJECTION = None
     _R2_TRANSITION_OBSERVATION = None
+    _finish_semantic_revision()
 
 
 def advance_level_context() -> None:
@@ -1198,6 +1269,7 @@ def advance_level_context() -> None:
     _R2_ACTION_TRACES.clear()
     _R2_SEMANTIC_PROJECTION = None
     _R2_TRANSITION_OBSERVATION = None
+    _finish_semantic_revision()
 
 
 def retry_level_context() -> None:
@@ -1265,7 +1337,7 @@ def semantic_failure_revision_due() -> bool:
             "r2_transition_observation": _R2_TRANSITION_OBSERVATION,
         }
     }
-    return bool(_semantic_failure_signals(document))
+    return bool(_PENDING_SEMANTIC_REVISION or _semantic_failure_signals(document))
 
 
 def semantic_control_projection(kind: str, payload: Mapping[str, Any], digest: str) -> tuple[dict[str, Any], list[str]] | None:
@@ -1553,7 +1625,8 @@ CAUSAL VISUAL UNIT:
             })
         else:
             failure_signals = ()
-        if failure_signals:
+        pending_revision = _PENDING_SEMANTIC_REVISION
+        if failure_signals or pending_revision:
             prior_keys = sorted({
                 _canonical_goal_proposal_key(item)
                 for item in prior.payload.get("goal_proposals", ())
@@ -1566,10 +1639,19 @@ CAUSAL VISUAL UNIT:
                     hashlib.sha256(item.encode("utf-8")).hexdigest()[:20]
                     for item in prior_keys
                 ],
-                "explicit_failure_signals": [dict(item) for item in failure_signals],
+                "explicit_failure_signals": (
+                    [dict(item) for item in failure_signals]
+                    or list((pending_revision or {}).get("explicit_failure_signals", ()))
+                ),
+                "revision_pending_from_evidence_ref": (
+                    (pending_revision or {}).get("trigger_evidence_ref")
+                ),
                 "instruction": (
-                    "R2 or environment failure evidence is available; do not return "
-                    "the exact same canonical goal_proposal set"
+                    "R2 or environment failure evidence is available. Revise the "
+                    "semantic state from the latest transition. Rewrite notes to "
+                    "state the changed assessment, and also revise at least one of "
+                    "explanation, goal, or expectation. Do not return the exact same "
+                    "canonical goal_proposal set"
                 ),
                 "authority": "qwen-must-revise-or-replace; r2-still-grounds-and-controls",
             }
@@ -2068,6 +2150,39 @@ CAUSAL VISUAL UNIT:
                     },
                 ],
             }
+        if _pending_semantic_revision_unsatisfied(scratchpad):
+            return {
+                **compilation,
+                "rejected": [
+                    *compilation.get("rejected", ()),
+                    {
+                        "reason": "evidence-stale-semantic-revision-pending",
+                        "trigger_evidence_ref": (
+                            (_PENDING_SEMANTIC_REVISION or {})
+                            .get("trigger_evidence_ref")
+                        ),
+                    },
+                ],
+            }
+        if _failed_semantic_state_repeated(turn.document, scratchpad):
+            failure_signals = _semantic_failure_signals(turn.document)
+            _begin_semantic_revision(
+                scratchpad, turn_evidence_ref, failure_signals,
+            )
+            return {
+                **compilation,
+                "rejected": [
+                    *compilation.get("rejected", ()),
+                    {
+                        "reason": "evidence-stale-semantic-state-repetition",
+                        "new_transition_evidence_ref": turn_evidence_ref,
+                        "prior_transition_evidence_ref": (
+                            (turn.document.get("prior_working_note") or {})
+                            .get("transition_evidence_ref")
+                        ),
+                    },
+                ],
+            }
         prior_projection = turn.document.get("prior_working_note") or {}
         if note is None:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "workspace-write-missing"}]}
@@ -2438,6 +2553,7 @@ CAUSAL VISUAL UNIT:
         if consolidation_write is not None:
             accepted.append(consolidation_write)
         accepted.append(write)
+        _finish_semantic_revision()
         return {
             **compilation,
             "accepted": accepted,
