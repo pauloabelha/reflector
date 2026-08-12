@@ -172,7 +172,15 @@ class SemanticMeasureHypothesis:
 
     @property
     def fingerprint(self) -> str:
-        return sha256(_canonical(self.document()).encode()).hexdigest()[:24]
+        return sha256(_canonical(self.semantic_document()).encode()).hexdigest()[:24]
+
+    def semantic_document(self) -> dict[str, Any]:
+        """Return the measured function, excluding nonsemantic provenance."""
+
+        return {
+            key: value for key, value in self.document().items()
+            if key != "basis_opportunity_ref"
+        }
 
     def document(self) -> dict[str, Any]:
         return {

@@ -255,8 +255,8 @@ def _record_semantic_compiler_feedback(
     """Return a failed executable write through the one R2 projection.
 
     Diagnostics are transient compiler evidence, not a second semantic memory.
-    They remain attached to the current frame projection until a coherent
-    semantic write succeeds or the frame changes.
+    They remain attached to the projection across frame publications until a
+    coherent semantic write succeeds.
     """
 
     global _R2_SEMANTIC_PROJECTION
@@ -281,6 +281,9 @@ def _record_semantic_compiler_feedback(
             "novel_measurement": "set-basis_opportunity_ref-null",
             "terminal": (
                 "supply-target-only; relation-is-derived-from-terminal-class"
+            ),
+            "observable_identity": (
+                "preserve-its-measurement-function-or-coin-a-new-proposed-symbol"
             ),
             "authority": "no-semantic-write-accepted",
         },
@@ -652,6 +655,7 @@ def _quarantine_goal_proposals(
     proposals: Any,
     *,
     affordance_templates: Mapping[str, Mapping[str, Any]] | None = None,
+    existing_measurements: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], set[str], list[dict[str, Any]]]:
     """Normalize coherent proposals and isolate malformed siblings."""
 
@@ -681,6 +685,31 @@ def _quarantine_goal_proposals(
                 # treating left/right syntax as meaning for commutative set
                 # comparisons.
                 proposal["measurement_hypothesis"] = dict(template)
+                measurement = proposal["measurement_hypothesis"]
+        observable = (
+            str(proposal.get("observable", ""))
+            if isinstance(proposal, Mapping) else ""
+        )
+        prior_measurement = (existing_measurements or {}).get(observable)
+        if (
+            proposal_error is None
+            and isinstance(measurement, Mapping)
+            and isinstance(prior_measurement, Mapping)
+        ):
+            try:
+                current_function = SemanticMeasureHypothesis.compile(
+                    observable, measurement,
+                )
+                prior_function = SemanticMeasureHypothesis.compile(
+                    observable, prior_measurement,
+                )
+            except (TypeError, ValueError):
+                # The normal dependent contract owns malformed current
+                # measurements. Canonical history is expected to be valid.
+                pass
+            else:
+                if current_function.fingerprint != prior_function.fingerprint:
+                    proposal_error = "observable-measurement-redefinition"
         if proposal_error is not None:
             rejected.append({
                 "reason": "goal-proposal-dependent-contract",
@@ -2168,6 +2197,10 @@ MEASUREMENT HYPOTHESES:
   observable whose name starts with proposed_ and one bounded
   measurement_hypothesis. This is a declarative hypothesis, not code or
   evidence.
+- A proposed observable symbol names one measurement function for its lifetime.
+  Preserve the function when preserving its symbol; provenance may be added or
+  removed. If the features, comparison, coordinate frame, or gap semantics
+  change, coin a new `proposed_...` symbol.
 - The protocol r2-spatial-set-residual-v0 compares one allowlisted spatial set
   from actor or target with another. Features are occupancy, boundary,
   enclosed_negative_space, and envelope_negative_space. Comparisons are
@@ -3168,6 +3201,12 @@ CAUSAL VISUAL UNIT:
             ][:8]
         # Goal proposals are independent, authority-free candidates. Quarantine
         # malformed candidates without discarding valid semantic context.
+        existing_measurements = {
+            str(item.get("observable")): dict(item["measurement_hypothesis"])
+            for item in prior_projection.get("goal_proposals", ())
+            if isinstance(item, Mapping)
+            and isinstance(item.get("measurement_hypothesis"), Mapping)
+        }
         unique_proposals, seen_proposals, proposal_rejections = (
             _quarantine_goal_proposals(
                 note["goal_proposals"],
@@ -3176,6 +3215,7 @@ CAUSAL VISUAL UNIT:
                         "r2_semantic_projection"
                     )
                 ),
+                existing_measurements=existing_measurements,
             )
         )
         if _goal_write_requires_compiler_repair(

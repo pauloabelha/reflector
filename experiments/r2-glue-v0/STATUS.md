@@ -5,7 +5,7 @@
 - Phase: unified semantic-affordance bridge complete; cross-game falsification active.
 - Branch: `glue` after checkpoint 016 commit `1316d80`.
 - Production baseline: pushed to `origin/main`.
-- Focused semantic/runtime/planner/worker verification: 138 tests passed.
+- Focused semantic/runtime/planner/worker verification: 139 tests passed.
 - Live starting case: AR25, with no claim of transfer or score improvement.
 
 ## Checkpoints

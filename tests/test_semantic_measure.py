@@ -253,6 +253,41 @@ def test_affordance_reference_binds_qwen_to_the_exact_observed_measurement():
     assert rejected[0]["detail"] == "affordance-measurement-template-mismatch"
 
 
+def test_observable_identity_is_functional_and_provenance_is_not():
+    observable = "proposed_spatial_completion_residual"
+    without_provenance = SemanticMeasureHypothesis.compile(
+        observable, negative_space_measure(),
+    )
+    with_provenance = SemanticMeasureHypothesis.compile(
+        observable,
+        negative_space_measure(
+            basis_opportunity_ref="affordance_prior_observation",
+        ),
+    )
+    assert without_provenance.fingerprint == with_provenance.fingerprint
+
+    accepted, _seen, rejected = _quarantine_goal_proposals(
+        [proposed_goal(measurement_hypothesis=negative_space_measure(
+            basis_opportunity_ref=None,
+        ))],
+        existing_measurements={
+            observable: with_provenance.document(),
+        },
+    )
+    assert len(accepted) == 1
+    assert rejected == []
+
+    redefined = negative_space_measure(comparison="overlap_deficit")
+    accepted, _seen, rejected = _quarantine_goal_proposals(
+        [proposed_goal(measurement_hypothesis=redefined)],
+        existing_measurements={
+            observable: without_provenance.document(),
+        },
+    )
+    assert accepted == []
+    assert rejected[0]["detail"] == "observable-measurement-redefinition"
+
+
 def test_affordance_template_quotients_only_commutative_operand_order():
     frontier = build_affordance_frontier([ring(), entity("point", {(3, 3)})])
     observation = next(
@@ -817,6 +852,9 @@ def test_compiler_repair_feedback_stays_in_one_projection_until_repaired():
         )
         assert feedback["repair_contract"]["novel_measurement"] == (
             "set-basis_opportunity_ref-null"
+        )
+        assert feedback["repair_contract"]["observable_identity"] == (
+            "preserve-its-measurement-function-or-coin-a-new-proposed-symbol"
         )
 
         next_frame = record_r2_semantic_projection({

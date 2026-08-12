@@ -527,6 +527,9 @@ It could mutate a cited measurement, duplicate terminal fields with conflicting
 meanings, lose compiler diagnostics to a later controller publication, or
 detach a schema when an algebraically commutative measurement was canonicalized.
 Those were interface failures, not evidence for a missing AR25 verb rule.
+The final audit also caught one late-bound symbol error: Qwen reused an existing
+observable name after changing its comparison function, so the grounder—not the
+semantic compiler—was the first layer to reject it.
 
 **Implemented:** R2 now computes an anonymous provider-based affordance frontier
 before semantics and exposes exact, provenance-bound spatial-set measurement
@@ -535,7 +538,9 @@ novel bounded measurement. R2 derives terminal relation/observable/direction,
 checks cited measurements modulo declared commutativity, retains compiler
 failure as a repair obligation in the one semantic projection, and uses the
 same canonical identity for dependent schemas. Structured schema claims cannot
-pre-bind situated frame aliases. No new semantic memory, policy authority, or
+pre-bind situated frame aliases. Proposed observable/function identity is now
+checked by the semantic compiler, while provenance is excluded from the
+function fingerprint. No new semantic memory, policy authority, or
 game-specific rule was added.
 
 **Live evidence:** on fresh AR25, Qwen's `align` proposal grounded two actual
@@ -547,7 +552,7 @@ progress confirmations, and became `PLAN_ELIGIBLE`. CAE retained a seven-member
 OPEN composite with action-conditioned motion. This is a complete
 language→measurement→entity→command→effect→settlement path, not a solved level.
 
-The focused semantic/runtime/planner/worker suite has 138 passes. The full
+The focused semantic/runtime/planner/worker suite has 139 passes. The full
 suite passes every implementation test and retains the one unchanged failure
 caused by the absent historical
 `parallel-cognitive-workspace-v1-16/artifacts/SUMMARY.json`.
