@@ -561,3 +561,34 @@ caused by the absent historical
 or cross-game advantage is claimed. Checkpoint 018 freezes the new provider,
 prompt, compiler, grounder, and controller, then attempts to falsify them on
 structurally different games chosen before observation.
+
+## Checkpoint 018
+
+**Observed:** a fresh unchanged AR25 trace independently produced a Qwen `fit`
+proposal grounded to an exact boundary-gap measurement. Environment settlement
+advanced the best residual 96 → 93 → 90 → 87 → 84 → 81 → 78 → 75 → 69, for
+nine strict confirmations. CAE retained a supported composite and exact
+action-conditioned translations. Semantic call 11 then failed context
+admission by 201 tokens. The configured bounded planner had remained
+`mode=fallback` with no predictions or discrimination pairs; improving control
+came from one-step causal factorization, not a multi-step route.
+
+**Implemented:** the Qwen-facing affordance frontier now removes only fields
+that are exactly duplicated by its retained typed measurement templates. Every
+opportunity reference, exact template, measurability statistic,
+distinctiveness statistic, feature support, and scale band survives. Canonical
+state, compiler basis, evidence, prompt semantics, and action authority are
+unchanged. On the failed frontier this reduced serialization from 10,123 to
+8,160 bytes, saving 1,963 bytes or 19.4% without deleting a semantic choice.
+
+**Verified:** 116 focused semantic-measurement, Qwen-worker, and runtime tests
+pass. The full suite has 277 passes and only the unchanged absent historical
+`SUMMARY.json` fixture failure. A fresh repaired run completed semantic calls
+11 and 12, reached turn 12 with call 13 in progress, improved the same residual
+to 68 with nine strict confirmations, and retained a SUPPORTED CAE composite
+with support 12. No context or runtime error occurred.
+
+**Limit:** this repairs a generic transport liveness defect. It does not prove
+level completion, score gain, semantic correctness, transfer, or multi-step
+planning. Checkpoint 019 composes supported effects into certified bounded
+plans and tests the unchanged loop across games.

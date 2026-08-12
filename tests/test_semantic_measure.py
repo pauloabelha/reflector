@@ -12,6 +12,7 @@ from reflector2.r2.scratchpad import (
     CONTROL_GOAL_ROLES,
     GENERATED_ROLE_MODALITIES,
     _action_evidence_refs,
+    _compact_affordance_frontier_for_transport,
     _acknowledge_semantic_plateau,
     _begin_semantic_revision,
     _failed_semantic_state_repeated,
@@ -220,6 +221,28 @@ def test_affordance_frontier_is_palette_and_translation_invariant():
     assert intrinsic(build_affordance_frontier(source)) == intrinsic(
         build_affordance_frontier(translated)
     )
+
+
+def test_affordance_transport_compaction_preserves_choice_and_drops_duplicates():
+    frontier = build_affordance_frontier([ring(), entity("point", {(3, 3)})])
+    compact = _compact_affordance_frontier_for_transport(frontier)
+    raw_relation = next(
+        item for item in frontier["observations"]
+        if isinstance(item.get("measurement_template"), dict)
+    )
+    relation = next(
+        item for item in compact["observations"]
+        if item.get("opportunity_ref") == raw_relation["opportunity_ref"]
+    )
+    assert relation["measurement_template"] == raw_relation["measurement_template"]
+    assert relation["best_normalized_residual"] == raw_relation[
+        "best_normalized_residual"
+    ]
+    assert relation["scale_bands"] == raw_relation["scale_bands"]
+    assert "left_feature" not in relation
+    assert "comparison" not in relation
+    assert "semantic_label" not in relation
+    assert len(json.dumps(compact)) < len(json.dumps(frontier))
 
 
 def test_affordance_reference_binds_qwen_to_the_exact_observed_measurement():

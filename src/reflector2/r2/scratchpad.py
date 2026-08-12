@@ -774,6 +774,73 @@ def _affordance_measurement_templates(
     return output
 
 
+def _compact_affordance_frontier_for_transport(value: Any) -> Any:
+    """Remove duplicated display fields while preserving semantic choices.
+
+    The canonical projection remains untouched. Qwen keeps every exact
+    measurement template and the statistics needed to judge measurability,
+    distinctiveness, and scale; fields derivable from the template and null
+    anti-authority sentinels need not consume its context window repeatedly.
+    """
+
+    if not isinstance(value, Mapping):
+        return value
+    observations = []
+    for raw in value.get("observations", ()):
+        if not isinstance(raw, Mapping):
+            continue
+        if isinstance(raw.get("measurement_template"), Mapping):
+            observations.append({
+                key: copy.deepcopy(raw[key])
+                for key in (
+                    "observation_family", "opportunity_ref",
+                    "measurement_template", "role_orientation",
+                    "measurable_pair_hypotheses",
+                    "unmeasurable_pair_hypotheses",
+                    "best_normalized_residual",
+                    "runner_up_normalized_residual",
+                    "distinctiveness_margin", "near_best_pair_count",
+                    "best_feature_support", "scale_bands",
+                )
+                if key in raw
+            })
+        else:
+            observations.append({
+                key: copy.deepcopy(raw[key])
+                for key in (
+                    "observation_family", "feature", "entities_measured",
+                    "entities_with_nonempty_feature",
+                    "maximum_feature_support", "total_feature_support",
+                )
+                if key in raw
+            })
+    return {
+        key: copy.deepcopy(value[key])
+        for key in (
+            "protocol", "authority", "semantic_status",
+            "control_authority", "entity_identities_exposed",
+            "provider_names",
+        )
+        if key in value
+    } | {
+        "observations": observations,
+        "transport_compaction": "lossless-for-semantic-measurement-choice",
+    }
+
+
+def _compact_semantic_projection_for_transport(value: Any) -> Any:
+    if not isinstance(value, Mapping):
+        return value
+    output = copy.deepcopy(dict(value))
+    if "affordance_frontier" in output:
+        output["affordance_frontier"] = (
+            _compact_affordance_frontier_for_transport(
+                output["affordance_frontier"]
+            )
+        )
+    return output
+
+
 def _goal_write_requires_compiler_repair(
     raw_proposals: Any,
     accepted: Sequence[Mapping[str, Any]],
@@ -2956,6 +3023,15 @@ CAUSAL VISUAL UNIT:
                 "authority": "canonical-turn-retained-for-response-validation",
                 "semantic_view": "focused-failure-repair",
             }
+        context = compact_document.get("scratchpad_context")
+        if isinstance(context, Mapping) and "r2_semantic_projection" in context:
+            context = copy.deepcopy(dict(context))
+            context["r2_semantic_projection"] = (
+                _compact_semantic_projection_for_transport(
+                    context["r2_semantic_projection"]
+                )
+            )
+            compact_document["scratchpad_context"] = context
         omitted = []
         for field in (
             "full_materialization", "object_index", "ordered_lossless_deltas",
