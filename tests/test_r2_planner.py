@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import subprocess
 
+import pytest
+
 from reflector2.planner import (
     BoundedBestFirstPlanner,
     ControlProblem,
@@ -21,7 +23,12 @@ from reflector2.planner import (
     search,
     settle_plan_certificate,
 )
-from reflector2.r2.planner_wiring import QwenCliInvoker, build_planner_backend
+from reflector2.r2.planner_wiring import (
+    QwenCliInvoker,
+    browser_options,
+    build_planner_backend,
+    resolve_browser_selection,
+)
 from reflector2.r2.r2_1_adapter import FrameSchemaObserver
 from reflector2.r2.controller import FastPathAuthority
 
@@ -266,6 +273,29 @@ def test_r2_wiring_builds_qwen_and_luna_model_planners_without_network():
     assert isinstance(qwen.model, QwenPlanningModel)
     assert isinstance(luna, ModelPlanner)
     assert isinstance(luna.model, LunaPlanningModel)
+
+
+def test_arcade_planner_options_default_to_deterministic_and_are_allowlisted():
+    base = {"backend": "bounded-best-first-v0", "max_depth": 8}
+    options = browser_options(base)
+    assert options["active"] == "bounded-best-first-v0"
+    assert [item["id"] for item in options["choices"]] == [
+        "bounded-best-first-v0", "fallback-only-v0", "model-selected",
+    ]
+    deterministic = resolve_browser_selection(
+        base, {"backend": "bounded-best-first-v0"}, {"provider": "openai"}
+    )
+    assert deterministic == {**base, "enabled": True}
+    assert resolve_browser_selection(
+        base, {"backend": "model-selected"}, {"provider": "openai"}
+    )["backend"] == "model-luna"
+    assert resolve_browser_selection(
+        base, {"backend": "model-selected"}, {"provider": "openai-compatible"}
+    )["backend"] == "model-qwen"
+    with pytest.raises(ValueError, match="unknown planner selection"):
+        resolve_browser_selection(
+            base, {"backend": "untrusted"}, {"provider": "openai"}
+        )
 
 
 def test_qwen_cli_invoker_uses_argv_and_extracts_only_structured_output(tmp_path):

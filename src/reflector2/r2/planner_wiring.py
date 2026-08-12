@@ -23,6 +23,54 @@ Poster = Callable[[str, Any, float], Mapping[str, Any]]
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
 
+def browser_options(planner_config: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the small, server-owned planner surface exposed by Arcade."""
+
+    active = str(
+        planner_config.get("backend") or "bounded-best-first-v0"
+    ).strip().lower()
+    return {
+        "active": active,
+        "choices": [
+            {
+                "id": "bounded-best-first-v0",
+                "label": "Deterministic search (default)",
+                "selection": {"backend": "bounded-best-first-v0"},
+            },
+            {
+                "id": "fallback-only-v0",
+                "label": "Original one-step R2",
+                "selection": {"backend": "fallback-only-v0"},
+            },
+            {
+                "id": "model-selected",
+                "label": "Model-validated (selected model)",
+                "selection": {"backend": "model-selected"},
+            },
+        ],
+    }
+
+
+def resolve_browser_selection(
+    planner_config: Mapping[str, Any],
+    selection: Mapping[str, Any],
+    serving_model_config: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate one Arcade planner choice and return its effective config."""
+
+    if not isinstance(selection, Mapping) or set(selection) != {"backend"}:
+        raise ValueError("planner selection must contain only backend")
+    selected = str(selection.get("backend") or "").strip().lower()
+    if selected not in {
+        "bounded-best-first-v0", "fallback-only-v0", "model-selected",
+    }:
+        raise ValueError(f"unknown planner selection: {selected!r}")
+    if selected == "model-selected":
+        provider = str(serving_model_config.get("provider") or "").strip().lower()
+        selected = "model-luna" if provider == "openai" else "model-qwen"
+    return {**dict(planner_config), "enabled": True, "backend": selected}
+
+
 @dataclass(slots=True)
 class StructuredPosterInvoker:
     """Normalize R2's existing provider-neutral poster to a model callable."""

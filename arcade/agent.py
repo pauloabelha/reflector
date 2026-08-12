@@ -29,6 +29,21 @@ def resolve_model_choice(
     return dict(matches[0]["selection"])
 
 
+def resolve_planner_choice(
+    planner_options: Mapping[str, Any], choice: Any
+) -> dict[str, Any]:
+    """Resolve one exact server-declared planner choice."""
+
+    requested = str(choice or "")
+    matches = [
+        item for item in planner_options.get("choices", ())
+        if isinstance(item, Mapping) and item.get("id") == requested
+    ]
+    if len(matches) != 1 or not isinstance(matches[0].get("selection"), Mapping):
+        raise ValueError("unknown planner choice")
+    return dict(matches[0]["selection"])
+
+
 def _read_json(path: Path, default: Any = None) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -434,11 +449,11 @@ PAGE = PAGE.replace(
 )
 PAGE = PAGE.replace(
     "$('#start').onclick=async()=>{replay=null;await api('/api/start',{game:$('#game').value,level:+$('#level').value})};",
-    "$('#start').onclick=async()=>{replay=null;await api('/api/start',{game:$('#game').value,level:+$('#level').value,model_choice:$('#model-choice').value})};$('#reset').onclick=async()=>{replay=null;clearInterval(timer);data=await api('/api/reset',{});render()};",
+    "$('#start').onclick=async()=>{replay=null;await api('/api/start',{game:$('#game').value,level:+$('#level').value,model_choice:$('#model-choice').value,planner_choice:$('#planner-choice').value})};$('#reset').onclick=async()=>{replay=null;clearInterval(timer);data=await api('/api/reset',{});render()};",
 )
 PAGE = PAGE.replace(
     '<label>GAME <select id=game></select></label>',
-    '<label>GAME <select id=game></select></label><label>MODEL <select id=model-choice></select></label><small id=model-note>Safe defaults are frozen for this run.</small>',
+    '<label>GAME <select id=game></select></label><label>MODEL <select id=model-choice></select></label><label>PLANNER <select id=planner-choice></select></label><small id=model-note>Safe defaults are frozen for this run.</small>',
 )
 PAGE = PAGE.replace(
     '<h2>PLAYBACK</h2><div class=bar><select id=runs><option>No stored runs</option></select><button id=load>LOAD</button></div>',
@@ -454,6 +469,7 @@ PAGE = PAGE.replace(
 async function refreshModelPicker(){
   const options=await api('/api/options');
   $('#model-choice').innerHTML=options.models.choices.map(x=>`<option value="${esc(x.id)}">${esc(x.label)}</option>`).join('');
+  $('#planner-choice').innerHTML=options.planners.choices.map(x=>`<option value="${esc(x.id)}">${esc(x.label)}</option>`).join('');
 }
 refreshModelPicker().catch(error=>{$('#model-note').textContent=error.message});
 </script></body>""",
@@ -632,22 +648,29 @@ PAGE = PAGE.replace(
 
 def serve(
     runtime: Any,
-    start_agent: Callable[[str, int, Mapping[str, Any]], None],
+    start_agent: Callable[[str, int, Mapping[str, Any], Mapping[str, Any]], None],
     *,
     games: Sequence[str],
     runs_root: Path,
     model_options: Mapping[str, Any],
+    planner_options: Mapping[str, Any],
     validate_model: Callable[[Mapping[str, Any]], Any],
+    validate_planner: Callable[[Mapping[str, Any]], Any],
     host: str = "127.0.0.1",
     port: int = 8767,
 ) -> None:
     lock = threading.Lock(); started = False; store = ReplayStore(runs_root)
     allowed_games = tuple(sorted(set(str(item) for item in games)))
 
-    def run_agent(game: str, level: int, selection: Mapping[str, Any]) -> None:
+    def run_agent(
+        game: str,
+        level: int,
+        model_selection: Mapping[str, Any],
+        planner_selection: Mapping[str, Any],
+    ) -> None:
         nonlocal started
         try:
-            start_agent(game, level, selection)
+            start_agent(game, level, model_selection, planner_selection)
         finally:
             runtime.finish_reset()
             with lock:
@@ -667,7 +690,7 @@ def serve(
                 if parsed.path in {"/", "/arcade"}:
                     body = PAGE.encode(); self.send_response(200); self.send_header("Content-Type", "text/html; charset=utf-8"); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(body))); self.end_headers(); self.wfile.write(body)
                 elif parsed.path == "/api/agent": self.send_json({**runtime.read(), "arcade_ui_version": ARCADE_UI_VERSION})
-                elif parsed.path == "/api/options": self.send_json({"games": allowed_games, "runs": store.runs(), "models": model_options})
+                elif parsed.path == "/api/options": self.send_json({"games": allowed_games, "runs": store.runs(), "models": model_options, "planners": planner_options})
                 elif parsed.path == "/api/replay": self.send_json(store.replay(parse_qs(parsed.query).get("run", [""])[0]))
                 else: self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
             except (ValueError, TypeError) as error: self.send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)
@@ -688,9 +711,14 @@ def serve(
                     choice = str(body.get("model_choice") or "")
                     selection = resolve_model_choice(model_options, choice)
                     validate_model(selection)
+                    planner_choice = str(body.get("planner_choice") or "")
+                    planner_selection = resolve_planner_choice(
+                        planner_options, planner_choice
+                    )
+                    validate_planner(planner_selection)
                     with lock:
                         if started: raise ValueError("this server already has a live session; restart it for another fresh run")
-                        started = True; threading.Thread(target=run_agent, args=(game, level, dict(selection)), name="one-action-agent", daemon=True).start()
+                        started = True; threading.Thread(target=run_agent, args=(game, level, dict(selection), dict(planner_selection)), name="one-action-agent", daemon=True).start()
                     self.send_json(runtime.read()); return
                 self.send_json({"error": "not found"}, HTTPStatus.NOT_FOUND)
             except (ValueError, TypeError, json.JSONDecodeError) as error: self.send_json({"error": str(error)}, HTTPStatus.BAD_REQUEST)

@@ -256,9 +256,18 @@ def active_runtime(runtime: Any | None = None) -> Any:
     return runtime
 
 
-def run_game(game: str = "ar25", *, level: int = 1, runtime: Any | None = None, artifact_root: Path = ARTIFACTS) -> dict[str, Any]:
+def run_game(
+    game: str = "ar25", *, level: int = 1, runtime: Any | None = None,
+    artifact_root: Path = ARTIFACTS,
+    planner_config_override: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     runtime = active_runtime(runtime)
     config = configure_base(artifact_root)
+    if planner_config_override is not None:
+        config["control"] = {
+            **dict(config.get("control", {})),
+            "planner": dict(planner_config_override),
+        }
     MODEL_BACKEND.require_credentials(config["model"])
     config["start_level"] = int(level)
     install(runtime)
@@ -354,11 +363,39 @@ def main(argv: Sequence[str] | None = None) -> int:
         def validate_model(selection: Mapping[str, Any]) -> None:
             MODEL_BACKEND.validate_browser_selection(arcade_config, selection)
 
-        def start(game: str, level: int, selection: Mapping[str, Any]) -> None:
+        default_planner_config = arcade_config.get("control", {}).get("planner", {})
+
+        def validate_planner(selection: Mapping[str, Any]) -> None:
+            PLANNER_WIRING.resolve_browser_selection(
+                default_planner_config, selection, arcade_config["model"]
+            )
+
+        def start(
+            game: str,
+            level: int,
+            selection: Mapping[str, Any],
+            planner_selection: Mapping[str, Any],
+        ) -> None:
             try:
                 with MODEL_BACKEND.browser_model_environment(arcade_config, selection):
+                    selected_config = load_config()
+                    planner_config = PLANNER_WIRING.resolve_browser_selection(
+                        default_planner_config,
+                        planner_selection,
+                        selected_config["model"],
+                    )
+                    runtime.set_schema_observer(R2_1.FrameSchemaObserver(
+                        planner_config,
+                        PLANNER_WIRING.build_planner_backend(
+                            planner_config, selected_config["model"],
+                        ),
+                    ))
                     run_root = ARTIFACTS / "arcade-runs" / f"run-{time.time_ns()}"
-                    run_game(game, level=level, runtime=runtime, artifact_root=run_root)
+                    run_game(
+                        game, level=level, runtime=runtime,
+                        artifact_root=run_root,
+                        planner_config_override=planner_config,
+                    )
             except Exception:
                 if not runtime.reset_requested.is_set():
                     traceback.print_exc()
@@ -374,7 +411,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             games=games,
             runs_root=ARTIFACTS / "arcade-runs",
             model_options=MODEL_BACKEND.browser_options(arcade_config),
+            planner_options=PLANNER_WIRING.browser_options(default_planner_config),
             validate_model=validate_model,
+            validate_planner=validate_planner,
             host=args.host,
             port=args.port,
         )

@@ -199,7 +199,10 @@ set +a
 
 The browser picker intentionally offers only **Qwen (local)** and **GPT-5.6
 Luna**, with server-owned safe defaults. The game, level, and model selectors
-share the run-control row. The full right-hand Workspace panel presents goal
+share the run-control row with a planner selector. Deterministic bounded search
+is selected by default; original one-step R2 and model-validated planning with
+the selected Qwen/Luna model are explicit alternatives. The full right-hand
+Workspace panel presents goal
 proposals, abductive compositions, open questions, aliases, citations, and the
 exact model scratchpad; raw JSON remains available for audit.
 
