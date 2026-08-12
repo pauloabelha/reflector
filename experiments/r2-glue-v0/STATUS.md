@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase: cross-game safety transfer verified; control-efficiency audit active.
+- Phase: cross-game semantic revision verified; control-efficiency audit active.
 - Branch: `glue` at baseline `75600da`.
 - Production baseline: pushed to `origin/main`.
 - Focused baseline verification: 123 tests passed.
@@ -16,7 +16,8 @@
 | 001 | complete | Generic semantic measurement proposal and compiler; 135 focused tests pass |
 | 002 | complete | Malformed goals quarantined; CAE feedback retained; stale failed goals retired |
 | 003 | complete | bp35 selected independently; semantic probe grounded and settled without false authority |
-| 004 | active | Mechanism/goal evidence split implemented; BP35/CD82 live transfer audit continues |
+| 004 | complete | Fresh settlement feedback and grounded nonprogress revision verified on CD82 |
+| 005 | active | Diagnose sequence context and equivalent-role probe efficiency without game-specific rules |
 
 ## Current hypothesis
 
@@ -29,9 +30,10 @@ grounding and settlement authority.
 
 ## Next evidence
 
-1. Complete the repeated uniquely grounded BP35 nonprogress sequence and verify
-   that the semantic proposal is revised while its learned effect remains.
-2. Run `cd82`, predeclared as the next lexical game, without an intervening code
-   change; treat it as a falsification test, not a tuning case.
-3. Determine whether equivalent-role ambiguity can be quotiented by generic
+1. Determine whether equivalent-role ambiguity can be quotiented by generic
    symmetry and intervention evidence without losing causal alternatives.
+2. Test whether stationary single-action effects conceal an interaction state
+   established by the preceding command, using transition evidence rather than
+   action-token semantics.
+3. Require environment-confirmed potential progress before any score or control
+   improvement claim.

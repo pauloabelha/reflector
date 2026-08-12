@@ -169,6 +169,13 @@ pre-existing missing historical experiment artifact
 `parallel-cognitive-workspace-v1-16/artifacts/SUMMARY.json`. See the detailed
 evidence boundary in [`R2_2.md`](R2_2.md).
 
+A no-code-change CD82 transfer trace exercised this boundary live: a grounded
+candidate's zero-progress count appeared immediately at 1, 2, and 3; Qwen
+replaced the failed outline hypothesis with a distinct interior-compatible
+alternative and ultimately retired the goal list when that alternative gained
+no support. The level was not completed, so this is evidence of causal hygiene
+and liveness, not competence or score.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

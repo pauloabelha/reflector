@@ -24,13 +24,18 @@ The repair uses no game ID, action ID, coordinate, color, shape, verb mapping,
 or solution rule. The threshold and supported-competitor guard apply to every
 measurable goal proposal.
 
-## Verification so far
+## Verification
 
 - 43 targeted semantic, planner, and Qwen tests pass.
 - The full suite has 239 passes and one unchanged missing historical artifact.
 - Fresh BP35 play grounded a normalized-boundary alignment proposal as
   `PROBE_ELIGIBLE`; an identity-broken settlement did not increment
   nonprogress, as required.
+- With no intervening code change, CD82 grounded a boundary residual as
+  `PROBE_ELIGIBLE`. The same candidate exposed zero-progress counts 1, 2, and 3
+  immediately after settlement. Semantic revision first retained a structurally
+  distinct interior-compatible alternative, then retired the goal list to
+  empty by turn 7 after the alternative failed to acquire support.
 
-The live threshold/revision sequence and the predeclared CD82 transfer run
-remain open. No performance or completion claim is made.
+The live trace verifies the feedback and revision boundary, not performance:
+CD82 was not completed and no score or useful-control claim is made.

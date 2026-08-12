@@ -96,7 +96,7 @@ level completion, or score gain.
 frontier enough to yield a supported effect and useful control. Checkpoint 004
 must measure that rather than infer it from a single successful probe.
 
-## Checkpoint 004 (active)
+## Checkpoint 004
 
 **Implemented:** mechanism confirmation and positive goal-progress
 confirmation are now distinct evidence channels. Repeated uniquely grounded
@@ -109,12 +109,23 @@ note-wide retirement.
 suite has 239 passes and the unchanged missing historical `SUMMARY.json`
 failure. In fresh BP35 play, Qwen again proposed a generic alignment objective,
 R2 grounded it as probe-only, and the first attempted settlement broke identity;
-it correctly contributed no nonprogress evidence.
+it correctly contributed no nonprogress evidence. With no intervening code
+change, CD82 grounded a custom boundary residual as probe-only. Its same
+grounded candidate accumulated zero-progress observations 1, 2, and 3 in the
+immediately published semantic projection. Qwen revised the proposal set from
+outline compatibility to a distinct interior-compatible alternative; after
+that alternative also lacked support, the goal list retired to empty by turn 7.
 
 **Inferred:** the earlier bp35 failure was not only a weak semantic proposal.
 R2 conflated evidence for an action mechanism with evidence for the usefulness
 of the goal and projected settlement counters from a stale candidate snapshot.
 
-**Prospective:** a repeated uniquely grounded zero-progress sequence will cause
-proposal revision while preserving mechanism support. This still requires live
-verification. `cd82` is fixed as the next no-code-change transfer case.
+**Observed architectural boundary:** repeated grounded zero progress now causes
+semantic revision and eventual retirement without converting a stationary
+mechanism observation into goal support. The trace does not demonstrate useful
+control or completion.
+
+**Prospective:** checkpoint 005 will test whether the remaining inefficiency is
+explained by observationally equivalent role hypotheses and latent interaction
+context across command sequences. Neither representation may contain game or
+action-token semantics.
