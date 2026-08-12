@@ -1846,6 +1846,80 @@ class FrameSchemaObserver:
             ),
         }
 
+    def _learn_unassigned_atomic_effects(
+        self,
+        action: Any,
+        predecessors: Sequence[dict[str, Any]],
+        successors: Sequence[dict[str, Any]],
+        *,
+        excluded_binding_ids: set[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Learn goal-independent effects from mutual unique identity only.
+
+        Exploration must be able to teach mechanics before Semantic Qwen has a
+        useful goal.  This path therefore has no actor/target role semantics.
+        It accepts a transition only when the ordinary correspondence gate is
+        UNIQUE in both directions and both fits select each other.  Goal-bound
+        roles are excluded because their stricter settlement path records them
+        below.
+        """
+
+        excluded = set(excluded_binding_ids or ())
+        effect_scope = self._command_scope(action)
+        learned: list[dict[str, Any]] = []
+        for source in predecessors:
+            source_id = str(source.get("binding_id", ""))
+            if not source_id or source_id in excluded:
+                continue
+            forward = self._correspondence(source, successors)
+            best = forward.get("best")
+            successor = best.get("region") if isinstance(best, Mapping) else None
+            if forward.get("status") != "UNIQUE" or successor is None:
+                continue
+            reverse = self._correspondence(successor, predecessors)
+            reverse_best = reverse.get("best")
+            reverse_source = (
+                reverse_best.get("region")
+                if isinstance(reverse_best, Mapping) else None
+            )
+            if reverse.get("status") != "UNIQUE" or reverse_source is not source:
+                continue
+            forward_components = best.get("components", {})
+            reverse_components = (
+                reverse_best.get("components", {})
+                if isinstance(reverse_best, Mapping) else {}
+            )
+            rigid_dimensions = ("shape", "area", "outline", "value")
+            if any(
+                float(components.get(dimension, 1.0)) != 0.0
+                for components in (forward_components, reverse_components)
+                for dimension in rigid_dimensions
+            ):
+                # Unique identity can survive deformation, but the current
+                # effect simulator implements rigid translation/invariance
+                # only. Preserve the transition elsewhere without lying about
+                # a translation parameter.
+                continue
+            delta = (
+                (float(successor["center2"][0]) - float(source["center2"][0])) / 2.0,
+                (float(successor["center2"][1]) - float(source["center2"][1])) / 2.0,
+            )
+            region_key = self._region_key(source)
+            self.action_effects[(effect_scope, region_key)][delta] += 1
+            self.level_action_effects[(effect_scope, region_key)][delta] += 1
+            learned.append({
+                "trajectory_id": E.stable_id("unassigned-entity-transition", {
+                    "scope": effect_scope,
+                    "source": source_id,
+                    "successor": successor.get("binding_id"),
+                }),
+                "role": "unassigned-entity",
+                "region_type": E.stable_id("region-type", region_key),
+                "delta": list(delta),
+                "support_kind": "mutual-unique-entity-correspondence",
+            })
+        return learned
+
     @staticmethod
     def _potential_orientation(direction: str, progress: float | None) -> str | None:
         if progress is None:
@@ -1869,7 +1943,8 @@ class FrameSchemaObserver:
         self, *, action: Any, explanation_binding_id: str, observable: str,
         direction: str, residual: float, predicted: float | None,
         progress: float | None, actor_delta: Any, target_delta: Any,
-        models_supported: bool, simulation_status: str,
+        models_supported: bool, identities_unique: bool,
+        simulation_status: str,
     ) -> dict[str, Any]:
         """Project a bounded, ordinary horizon-1 explanatory frontier.
 
@@ -1968,7 +2043,7 @@ class FrameSchemaObserver:
             for item in alternatives
         }
         probe_eligible = (
-            not models_supported
+            (not models_supported or not identities_unique)
             and len(alternatives) >= 2
             and len(signatures) >= 2
         )
@@ -2331,6 +2406,7 @@ class FrameSchemaObserver:
             or chain.get("causal_effect_binding_id")
             or situated["preferred_completion_binding_id"]
         )
+        identities_unique = actor_identity["status"] == "UNIQUE" and target_identity["status"] == "UNIQUE"
         successor_projection = self._successor_projection(
             action=action,
             explanation_binding_id=binding_id,
@@ -2342,9 +2418,9 @@ class FrameSchemaObserver:
             actor_delta=delta,
             target_delta=target_delta,
             models_supported=models_supported,
+            identities_unique=identities_unique,
             simulation_status=simulation_status,
         )
-        identities_unique = actor_identity["status"] == "UNIQUE" and target_identity["status"] == "UNIQUE"
         active = (
             identities_unique and models_supported and simulation_status == "computed"
             and progress is not None and progress > 0 and "explanation_binding_id" in chain
@@ -2953,7 +3029,6 @@ class FrameSchemaObserver:
             probe_candidates = [
                 item for item in candidates
                 if not repeated_same_state
-                and not item["mechanism"]["models_supported"]
                 and item.get("successor_projection", {}).get(
                     "discrimination", {},
                 ).get("probe_eligible") is True
@@ -3382,11 +3457,13 @@ class FrameSchemaObserver:
             ]
         predicted_changed_ids: set[str] = set()
         predicted_invariant_ids: set[str] = set()
+        goal_tracked_binding_ids: set[str] = set()
         if prediction is not None:
             snapshots = dict(prediction.get("predecessor_binding_snapshots", {}))
             for port_name, delta_name in (("actor", "actor_delta"), ("target", "target_delta")):
                 binding_id = str(prediction.get("ports", {}).get(port_name, ""))
                 snapshot = snapshots.get(binding_id, {})
+                goal_tracked_binding_ids.add(binding_id)
                 support_ids = self._primitive_support_ids(
                     snapshot if isinstance(snapshot, Mapping) else {"binding_id": binding_id}
                 )
@@ -3399,6 +3476,12 @@ class FrameSchemaObserver:
                     else predicted_changed_ids
                 )
                 bucket.update(support_ids)
+        learned.extend(self._learn_unassigned_atomic_effects(
+            action,
+            predecessor_entities,
+            after_regions,
+            excluded_binding_ids=goal_tracked_binding_ids,
+        ))
         transition_evidence_ref = E.stable_id("causal-scope-transition", {
             "before": before_digest,
             "after": after_digest, "command": command_id,

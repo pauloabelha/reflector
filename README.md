@@ -181,8 +181,18 @@ working note across three transport fields and could overflow local Qwen's
 context even at the mandatory graph closure. The request now contains one exact
 model scratchpad plus a compact structured prior for validation. An exact CD82
 rerun crossed the old turn-9 crash, completed Qwen call 10, settled action 10,
-and began call 11. Current verification is 240 full-suite passes plus the one
+and began call 11. At that checkpoint, 240 full-suite tests passed plus the one
 pre-existing missing historical score artifact failure.
+
+Exploration also learns ordinary atomic mechanics before Qwen has a useful
+goal. Effects enter the model only through mutual UNIQUE correspondence; an
+ambiguous duplicate contributes nothing. When a later semantic proposal binds
+to a prelearned effect, R2 first authorizes an identity-only probe and grants
+progress/planner eligibility only after UNIQUE settlement. On predeclared
+CN04, this learned rigid atomic effects before any active semantic explanation
+while CAE independently retained a coherent three-member candidate. The full
+suite now has 244 passes plus the same historical artifact failure; no CN04
+completion or score improvement is claimed.
 
 ## Shared semantic workspace
 

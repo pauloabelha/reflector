@@ -156,3 +156,39 @@ authoritative ledger and all current settlement evidence.
 
 **Prospective:** checkpoint 006 returns to sequence-conditioned mechanisms and
 equivalent-role efficiency. No competence or score gain is claimed.
+
+## Checkpoint 006
+
+**Implemented:** atomic action effects no longer require a pre-existing Qwen
+goal. Every transition attempts ordinary correspondence for unassigned
+entities, but records an effect only when predecessor-to-successor and
+successor-to-predecessor fits are both UNIQUE and select each other. Entities
+already tracked by a goal remain owned by the stricter role settlement path.
+Ambiguous duplicates, disappearance, broken identity, and deformation add no
+rigid effect.
+
+A later semantic goal with a supported exploration-learned mechanism but open
+role identity is now eligible for an identity-discriminating probe. It cannot
+receive progress authority until that probe settles required correspondences as
+UNIQUE. Once settled, the ordinary one-step/planner gates consume the same
+effect model.
+
+**Observed:** CN04 was predeclared as the next lexical transfer game. Before an
+active semantic explanation, action 2 produced mutually unique rigid effects,
+including a 3-cell translation and invariant entities, while adjudication stayed
+`untested-open-mechanism`. CAE independently retained a three-member coherent
+motion candidate from the same transition. Synthetic integration verifies the
+complete handoff: unguided effect learning, identity-only probe, UNIQUE
+settlement, then positive progress/plan eligibility. The focused suite has 132
+passes; the full suite has 244 passes and the unchanged missing historical
+artifact failure.
+
+**Inferred:** causal learning had been incorrectly downstream of semantic goal
+selection. Separating mechanics acquisition from telic interpretation lets
+exploration remain useful when Qwen abstains or is wrong, while preserving all
+identity and authority gates.
+
+**Prospective:** checkpoint 007 tests whether remaining contradictory effects
+require observable state or predecessor-command context. Context will be added
+only for repeated identical command scopes and entity types with genuinely
+different mutually unique outcomes.

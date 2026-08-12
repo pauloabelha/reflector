@@ -461,6 +461,86 @@ def test_settlement_projection_exposes_fresh_nonprogress_without_lag():
     assert initial["current_explanation"]["epistemic_evaluation"]["nonprogress_observations"] == 0
 
 
+def test_exploration_learns_atomic_effect_without_a_semantic_goal():
+    before = [[0, 0, 0, 0, 0], [0, 2, 2, 0, 0], [0, 0, 0, 0, 0]]
+    after = [[0, 0, 0, 0, 0], [0, 0, 2, 2, 0], [0, 0, 0, 0, 0]]
+    observer = FrameSchemaObserver()
+    observer.fit_frame(before, turn=0)
+    settlement = observer.settle_action(4, before, after)
+
+    assert settlement["adjudication"] == "untested-open-mechanism"
+    assert settlement["learned_effects"][0]["role"] == "unassigned-entity"
+    assert settlement["learned_effects"][0]["delta"] == [0.0, 1.0]
+    observer.fit_frame(after, turn=1)
+    model = observer._effect_model(4, observer.last_regions[0])
+    assert model["status"] == "SUPPORTED"
+    assert model["delta"] == (0.0, 1.0)
+
+
+def test_exploration_does_not_learn_through_ambiguous_identical_entities():
+    before = [[0, 0, 0, 0, 0], [0, 2, 0, 2, 0], [0, 0, 0, 0, 0]]
+    after = [[0, 0, 0, 0, 0], [2, 0, 2, 0, 0], [0, 0, 0, 0, 0]]
+    observer = FrameSchemaObserver()
+    observer.fit_frame(before, turn=0)
+    settlement = observer.settle_action(4, before, after)
+
+    assert settlement["learned_effects"] == []
+    assert observer.action_effects == {}
+
+
+def test_exploration_does_not_encode_deformation_as_translation():
+    before = [[0, 0, 0, 0], [0, 2, 2, 0], [0, 0, 0, 0]]
+    after = [[0, 0, 0, 0], [0, 2, 0, 0], [0, 2, 0, 0]]
+    observer = FrameSchemaObserver()
+    observer.fit_frame(before, turn=0)
+    settlement = observer.settle_action(4, before, after)
+
+    assert settlement["learned_effects"] == []
+    assert observer.action_effects == {}
+
+
+def test_later_goal_probes_identity_then_uses_exploration_learned_effect():
+    before = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 2, 2, 0, 0, 0, 0, 3, 0],
+        [0, 0, 0, 0, 0, 0, 0, 3, 0],
+    ]
+    middle = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 2, 2, 0, 0, 0, 3, 0],
+        [0, 0, 0, 0, 0, 0, 0, 3, 0],
+    ]
+    after = [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 2, 2, 0, 0, 3, 0],
+        [0, 0, 0, 0, 0, 0, 0, 3, 0],
+    ]
+    goal = {
+        "verb": "approach", "schema_name": "compatible entities approach",
+        "goal_family": "alignment", "observable": "centroid_distance",
+        "direction": "decrease", "terminal_condition": "minimum",
+        "role_constraints": ["two distinct visible entities"],
+    }
+    observer = FrameSchemaObserver()
+    observer.fit_frame(before, turn=0)
+    observer.settle_action(4, before, middle)
+    observer.fit_frame(middle, turn=1)
+
+    probe = observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
+    assert probe["current_explanation"]["mechanism"]["models_supported"] is True
+    assert probe["current_explanation"]["identity"]["control_eligible"] is False
+    assert probe["current_explanation"]["control_status"] == "PROBE_ELIGIBLE"
+    observer.settle_action(4, middle, after)
+    observer.fit_frame(after, turn=2)
+
+    progress = observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
+    assert progress["current_explanation"]["identity"]["control_eligible"] is True
+    assert progress["current_explanation"]["control_status"] in {
+        "PROGRESS_ELIGIBLE", "PLAN_ELIGIBLE",
+    }
+    assert progress["current_explanation"]["prediction"]["expected_progress"] > 0
+
+
 def test_settled_plan_edges_can_earn_fresh_fast_path_authority_without_route_reuse():
     authority = FastPathAuthority({"minimum_confirmations": 2})
     explanation = {
