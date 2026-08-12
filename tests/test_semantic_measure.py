@@ -700,6 +700,19 @@ def test_measurement_definition_is_part_of_control_identity():
     assert len(canonicalize_goal_proposals([first, second])) == 2
 
 
+def test_measurement_provenance_is_not_part_of_control_identity():
+    uncited = proposed_goal()
+    cited = proposed_goal(
+        verb="match",
+        measurement_hypothesis=negative_space_measure(
+            basis_opportunity_ref="affordance_observation_only",
+        ),
+    )
+    canonical = canonicalize_goal_proposals([uncited, cited])
+    assert len(canonical) == 1
+    assert canonical[0]["semantic_aliases"] == ("complete", "match")
+
+
 def test_dependent_contract_separates_builtin_and_proposed_measurements():
     builtin = proposed_goal(
         observable="centroid_distance",

@@ -80,6 +80,18 @@ def _stable_id(value: Mapping[str, Any]) -> str:
     return f"goal-contract:{sha256(body.encode('utf-8')).hexdigest()}"
 
 
+def _measurement_fingerprint(value: Mapping[str, Any] | None) -> str | None:
+    """Hash the measured function, never its observational provenance."""
+
+    if value is None:
+        return None
+    semantic = dict(value)
+    semantic.pop("basis_opportunity_ref", None)
+    return sha256(json.dumps(
+        semantic, sort_keys=True, separators=(",", ":"),
+    ).encode()).hexdigest()[:24]
+
+
 @dataclass(frozen=True, slots=True)
 class GoalContract:
     """One falsifiable relation from a grounded verb terminal to the world."""
@@ -201,11 +213,8 @@ def compile_goal_contract(
         terminal_relation=local_terminal.relation,
         terminal_target=local_terminal.target,
         required_invariants=tuple(sorted(str(item) for item in required_invariants)),
-        measurement_fingerprint=(
-            None if measurement_hypothesis is None
-            else sha256(json.dumps(
-                dict(measurement_hypothesis), sort_keys=True, separators=(",", ":"),
-            ).encode()).hexdigest()[:24]
+        measurement_fingerprint=_measurement_fingerprint(
+            measurement_hypothesis,
         ),
     )
     identity = {
@@ -252,12 +261,10 @@ def goal_control_signature(
         tuple(str(item) for item in role_interfaces), terminal.observable,
         terminal.preferred_order, terminal.relation, terminal.target,
         tuple(sorted(str(item) for item in required_invariants)),
-        (
-            None if not isinstance(proposal.get("measurement_hypothesis"), Mapping)
-            else sha256(json.dumps(
-                dict(proposal["measurement_hypothesis"]),
-                sort_keys=True, separators=(",", ":"),
-            ).encode()).hexdigest()[:24]
+        _measurement_fingerprint(
+            proposal.get("measurement_hypothesis")
+            if isinstance(proposal.get("measurement_hypothesis"), Mapping)
+            else None
         ),
     )
 

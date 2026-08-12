@@ -24,7 +24,8 @@ route, or privileged object identity?
    It supplies only a terminal target; R2 derives relation, observable,
    direction, and canonical terminal text from their single typed sources.
    Each proposed observable names one immutable measurement function;
-   provenance is audited separately and does not alter the function fingerprint.
+   provenance is audited separately and alters neither the function fingerprint
+   nor the structural GoalControlSignature.
 5. A total nonempty goal-write failure is not treated as abstention. The prior
    semantic state remains canonical and a bounded compiler diagnostic persists
    in the same R2 projection until a coherent write clears it.
@@ -56,7 +57,7 @@ commutative operand swap.
 
 ## Verification
 
-- 139 focused semantic, runtime, planner, and worker tests pass.
+- 172 focused semantic, CAE, runtime, planner, and worker tests pass.
 - The full suite passes all implementation tests.
 - Its sole failure is the unchanged historical documentation test whose
   expected `experiments/parallel-cognitive-workspace-v1-16/artifacts/SUMMARY.json`

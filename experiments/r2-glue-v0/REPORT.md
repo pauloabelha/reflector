@@ -540,7 +540,7 @@ failure as a repair obligation in the one semantic projection, and uses the
 same canonical identity for dependent schemas. Structured schema claims cannot
 pre-bind situated frame aliases. Proposed observable/function identity is now
 checked by the semantic compiler, while provenance is excluded from the
-function fingerprint. No new semantic memory, policy authority, or
+function fingerprint and GoalControlSignature. No new semantic memory, policy authority, or
 game-specific rule was added.
 
 **Live evidence:** on fresh AR25, Qwen's `align` proposal grounded two actual
@@ -552,7 +552,7 @@ progress confirmations, and became `PLAN_ELIGIBLE`. CAE retained a seven-member
 OPEN composite with action-conditioned motion. This is a complete
 language→measurement→entity→command→effect→settlement path, not a solved level.
 
-The focused semantic/runtime/planner/worker suite has 139 passes. The full
+The focused semantic/CAE/runtime/planner/worker suite has 172 passes. The full
 suite passes every implementation test and retains the one unchanged failure
 caused by the absent historical
 `parallel-cognitive-workspace-v1-16/artifacts/SUMMARY.json`.
