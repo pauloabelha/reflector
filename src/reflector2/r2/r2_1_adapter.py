@@ -40,6 +40,7 @@ from reflector2.r2.causal_entity import (
     TransformSignature,
     causal_coverage_for,
 )
+from reflector2.r2.semantic_measure import SemanticMeasureHypothesis
 
 
 HERE = Path(__file__).resolve().parent
@@ -424,6 +425,7 @@ class FrameSchemaObserver:
         self.last_settled_successor_regions: list[dict[str, Any]] = []
         self.last_region_descriptors: dict[str, dict[str, Any]] = {}
         self.last_relation_bindings: dict[tuple[str, tuple[str, ...]], str] = {}
+        self.semantic_measurements: dict[str, SemanticMeasureHypothesis] = {}
         self.action_effects: dict[tuple[Any, tuple[Any, ...]], Counter[tuple[float, float]]] = defaultdict(Counter)
         # Current-context effects are deliberately not retained by
         # ``advance_level``.  Explanation-consolidation schemas may reuse a
@@ -495,6 +497,7 @@ class FrameSchemaObserver:
         preferred_order: str = "decrease",
         role_interfaces: Sequence[str] = ("SpatialEntity", "SpatialEntity"),
         required_invariants: Sequence[str] = (),
+        measurement_hypothesis: Mapping[str, Any] | None = None,
     ) -> GoalContract:
         """Compile a semantic proposal without granting it empirical support."""
 
@@ -508,6 +511,7 @@ class FrameSchemaObserver:
             preferred_order=preferred_order,
             role_interfaces=role_interfaces,
             required_invariants=required_invariants,
+            measurement_hypothesis=measurement_hypothesis,
         )
         existing = self.goal_contracts.get(candidate.contract_id)
         contract = existing or candidate
@@ -1228,18 +1232,18 @@ class FrameSchemaObserver:
             local_terminal = goal.get("local_terminal")
             minimizing_terminal = any(token in terminal for token in ("<", "minimum", "minimal", "==0", "=0", "zero"))
             maximizing_terminal = any(token in terminal for token in (">", "maximum", "maximal"))
-            expected_by_verb = {
-                "fit": {
-                    "fit_residual": "decrease", "centroid_distance": "decrease", "boundary_gap": "decrease",
-                    "containment_violation": "decrease", "symmetry_residual": "decrease",
-                    "overlap_deficit": "decrease", "overlap_area": "increase",
-                },
-                "touch": {"centroid_distance": "decrease", "boundary_gap": "decrease"},
-                "avoid": {"centroid_distance": "increase", "boundary_gap": "increase", "overlap_area": "decrease"},
-                "collect": {"centroid_distance": "decrease", "boundary_gap": "decrease", "component_count": "decrease"},
-                "reveal": {"component_count": "increase"},
-            }.get(verb, {})
             rejection = None
+            proposed_measurement = None
+            raw_measurement = goal.get("measurement_hypothesis")
+            if isinstance(raw_measurement, Mapping):
+                try:
+                    proposed_measurement = SemanticMeasureHypothesis.compile(
+                        observable, raw_measurement,
+                    )
+                except (TypeError, ValueError) as error:
+                    rejection = f"invalid measurement hypothesis: {error}"
+            elif observable.startswith("proposed_"):
+                rejection = "model-defined observable requires measurement_hypothesis"
             if isinstance(local_terminal, Mapping) and str(local_terminal.get("observable", "")) != observable:
                 rejection = "local terminal observable must equal the measurable potential"
             elif (
@@ -1249,17 +1253,22 @@ class FrameSchemaObserver:
                 rejection = "terminal condition names an unrelated observable"
             elif terminal_class != self._terminal_class(direction):
                 rejection = f"{direction} requires terminal_class={self._terminal_class(direction)}"
-            elif verb == "fit" and str(goal.get("goal_family")) == "separation":
-                rejection = "fit cannot use a separation goal family"
             elif direction == "increase" and minimizing_terminal:
                 rejection = "preferred direction moves away from minimizing terminal"
             elif direction == "decrease" and maximizing_terminal:
                 rejection = "preferred direction moves away from maximizing terminal"
-            elif observable in expected_by_verb and direction != expected_by_verb[observable]:
-                rejection = f"{verb} requires {expected_by_verb[observable]}({observable})"
+            existing_measurement = self.semantic_measurements.get(observable)
+            if (
+                rejection is None and proposed_measurement is not None
+                and existing_measurement is not None
+                and existing_measurement.fingerprint != proposed_measurement.fingerprint
+            ):
+                rejection = "observable name conflicts with a different measurement hypothesis"
             if rejection is not None:
                 self.last_rejected_goals.append({**goal, "verb": verb, "r2_grounding_status": "rejected-incoherent", "reason": rejection})
                 continue
+            if proposed_measurement is not None:
+                self.semantic_measurements[observable] = proposed_measurement
             roles = tuple(dict.fromkeys(str(role) for role in goal.get("roles", ())))
             potential_roles = tuple(str(role) for role in goal.get("potential_roles", ()))
             if not roles or len(potential_roles) != 2 or not set(potential_roles).issubset(roles):
@@ -1707,17 +1716,12 @@ class FrameSchemaObserver:
     ) -> dict[str, Any] | None:
         observable = str(goal.get("observable", "unknown"))
         direction = str(goal.get("direction", "unknown"))
-        measure = observable
-        if str(goal.get("verb", "")) == "fit" and observable == "fit_residual":
-            gap = self._measure("boundary_gap", actor, target)
-            measure = "boundary_gap" if gap is not None and gap > 0 else "overlap_deficit"
-            direction = "decrease"
-        current = self._measure(measure, actor, target)
+        current = self._measure(observable, actor, target)
         if current is None or direction not in {"decrease", "increase", "maintain"}:
             return None
         return {
-            "measure": measure, "current": float(current), "direction": direction,
-            "completion": f"{measure}=0" if direction == "decrease" else f"{measure}:{direction}",
+            "measure": observable, "current": float(current), "direction": direction,
+            "completion": f"{observable}=0" if direction == "decrease" else f"{observable}:{direction}",
         }
 
     def _simulate_translation(
@@ -1735,8 +1739,10 @@ class FrameSchemaObserver:
             ),
         }, "computed-translation"
 
-    @staticmethod
-    def _measure(observable: str, actor: dict[str, Any], target: dict[str, Any]) -> float | None:
+    def _measure(self, observable: str, actor: dict[str, Any], target: dict[str, Any]) -> float | None:
+        proposed = self.semantic_measurements.get(observable)
+        if proposed is not None:
+            return proposed.evaluate(actor, target)
         if observable == "centroid_distance":
             return abs(float(actor["center2"][0]) - float(target["center2"][0])) / 2 + abs(float(actor["center2"][1]) - float(target["center2"][1])) / 2
         if observable == "boundary_gap":
@@ -2844,6 +2850,11 @@ class FrameSchemaObserver:
                     preferred_order=direction,
                     role_interfaces=tuple("SpatialEntity" for _role in goal.get("potential_roles", ("actor", "target"))),
                     required_invariants=("role-identity", "topology", "mechanism-applicability"),
+                    measurement_hypothesis=(
+                        dict(goal["measurement_hypothesis"])
+                        if isinstance(goal.get("measurement_hypothesis"), Mapping)
+                        else None
+                    ),
                 )
                 goal["r2_goal_contract_id"] = contract.contract_id
             prepared_goals.append(goal)

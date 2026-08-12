@@ -48,6 +48,7 @@ class GoalControlSignature:
     terminal_relation: str
     terminal_target: float | str | bool | None
     required_invariants: tuple[str, ...] = ()
+    measurement_fingerprint: str | None = None
 
     @property
     def signature_id(self) -> str:
@@ -61,6 +62,7 @@ class GoalControlSignature:
             "terminal_relation": self.terminal_relation,
             "terminal_target": self.terminal_target,
             "required_invariants": list(self.required_invariants),
+            "measurement_fingerprint": self.measurement_fingerprint,
         }
 
 
@@ -141,6 +143,7 @@ def compile_goal_contract(
     role_interfaces: Sequence[str] = ("SpatialEntity", "SpatialEntity"),
     preferred_order: str = "decrease",
     required_invariants: Sequence[str] = (),
+    measurement_hypothesis: Mapping[str, Any] | None = None,
 ) -> GoalContract:
     """Compile model structure as OPEN; proposal text can never support it."""
 
@@ -189,6 +192,12 @@ def compile_goal_contract(
         terminal_relation=local_terminal.relation,
         terminal_target=local_terminal.target,
         required_invariants=tuple(sorted(str(item) for item in required_invariants)),
+        measurement_fingerprint=(
+            None if measurement_hypothesis is None
+            else sha256(json.dumps(
+                dict(measurement_hypothesis), sort_keys=True, separators=(",", ":"),
+            ).encode()).hexdigest()[:24]
+        ),
     )
     identity = {
         "environment_terminal": environment_terminal,
@@ -234,6 +243,13 @@ def goal_control_signature(
         tuple(str(item) for item in role_interfaces), terminal.observable,
         terminal.preferred_order, terminal.relation, terminal.target,
         tuple(sorted(str(item) for item in required_invariants)),
+        (
+            None if not isinstance(proposal.get("measurement_hypothesis"), Mapping)
+            else sha256(json.dumps(
+                dict(proposal["measurement_hypothesis"]),
+                sort_keys=True, separators=(",", ":"),
+            ).encode()).hexdigest()[:24]
+        ),
     )
 
 

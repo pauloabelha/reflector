@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase: baseline frozen; first semantic-abduction intervention being designed.
+- Phase: first semantic-abduction intervention implemented and awaiting live evaluation.
 - Branch: `glue` at baseline `75600da`.
 - Production baseline: pushed to `origin/main`.
 - Focused baseline verification: 123 tests passed.
@@ -13,7 +13,7 @@
 | ID | State | Result |
 |---|---|---|
 | 000 | complete | Main architecture promoted; live semantic-to-control seam isolated |
-| 001 | pending | Generic semantic measurement proposal and compiler |
+| 001 | complete | Generic semantic measurement proposal and compiler; 135 focused tests pass |
 | 002 | pending | Live AR25 observation after intervention |
 | 003 | pending | Cross-case/non-overfit audit |
 
@@ -28,11 +28,9 @@ grounding and settlement authority.
 
 ## Next evidence
 
-1. Freeze a generic protocol for proposed spatial measurements.
-2. Add positive, ambiguous, invalid, and unrelated-shape tests.
-3. Verify that old built-in verbs remain valid priors but lose privileged prompt
-   status.
-4. Run live AR25 and inspect whether Qwen proposes a better explanation, whether
+1. Run live AR25 and inspect whether Qwen proposes a better explanation, whether
    R2 compiles it, and whether it changes grounded action predictions.
-5. Reject the intervention if it merely improves language while leaving control
+2. Run at least one additional game/capability case selected independently of
+   whether it favors spatial-set measurements.
+3. Reject the intervention if it merely improves language while leaving control
    unchanged.

@@ -1166,37 +1166,44 @@ SEMANTIC COHERENCE:
   terms into scratchpad or workspace_write. Reason only from the observations
   and epistemic content they carry.
 - Express telic quantities as residuals whenever possible: progress decreases
-  a residual toward minimum/zero. FIT should use fit_residual, which composes
-  boundary_gap + overlap_deficit and therefore has a gradient before contact.
-  Never use raw overlap_area.
+  a residual toward minimum/zero. Select a measurement because its declared
+  geometry tests the current hypothesis, never because a verb name mandates it.
 - The preferred direction must move the named observable toward the terminal.
 - direction=decrease requires terminal_class=minimum; increase requires
   maximum; maintain requires invariant. Use open only with direction=unknown.
-- Fit normally decreases fit_residual. Touch decreases boundary gap. Avoid decreases a hazard
-  violation residual rather than maximizing an unbounded distance.
-- Collect approaches a candidate item before any disappearance or merger can
-  be observed. Reveal increases stable visible structure.
+- Existing verbs and built-in observables are defeasible priors, not fixed
+  pairings. Available built-ins include fit_residual, centroid_distance,
+  boundary_gap, overlap_deficit, containment_violation, component_count, and
+  symmetry_residual. Use one only when its declared quantity expresses the
+  proposed relation.
 - If evidence supports several verbs, retain up to three competing proposals
   rather than forcing one premature interpretation.
 - Never repeat an identical proposal. Every role_constraint argument must be
   a member of that proposal's roles array, and a binary constraint must use
   two different roles. Prefer actor/target unless a third role is necessary.
-- A verb's universal definition must stay weak. FIT requires only two spatial
-  roles and a measurable fit_residual; sameness, difference, area, value,
-  interior, and outline relations are evidence about a situated binding, not
-  universal FIT requirements.
+- A verb's universal definition must stay weak. Sameness, difference, area,
+  value, interior, and outline relations are evidence about a situated binding,
+  not universal requirements imposed by a lexical label.
 
-ROLE-GRAPH FORM (use abstract role names in every constraint, never f00,
-object IDs, colors, or current entities):
-roles: [actor, target]
-potential_roles: [actor, target]
-role_constraints:
-- suggested same_outline(actor, target)
-- suggested same_interior(actor, target)
-- suggested different_value(actor, target)
-observable: fit_residual
-direction: decrease
-terminal_class: minimum
+MEASUREMENT HYPOTHESES:
+- A built-in observable is a prior supplied by R2; set measurement_hypothesis
+  to null. No built-in is privileged by a verb.
+- When no built-in expresses the visually motivated relation, propose one
+  observable whose name starts with proposed_ and one bounded
+  measurement_hypothesis. This is a declarative hypothesis, not code or
+  evidence.
+- The protocol r2-spatial-set-residual-v0 compares one allowlisted spatial set
+  from actor or target with another. Features are occupancy, boundary,
+  enclosed_negative_space, and envelope_negative_space. Comparisons are
+  symmetric_difference_size, left_unmatched_size, right_unmatched_size, and
+  overlap_deficit. coordinate_frame is scene or intrinsic. A scene residual may
+  add include_separation_gap=true to retain a gradient before contact.
+- Choose features from the observation and competing explanation, not from a
+  memorized game, color, shape, action, route, or assumed solution. R2 will
+  reject empty, conflicting, malformed, or unmeasurable proposals.
+- Use abstract role names in constraints, never visible object IDs, colors, or
+  current entities. Constraints are defeasible compatibility clues; the
+  potential carries the proposed spatial relation.
 Every role constraint has a modality: required, suggested, anti-clue, or
 unknown. Use required only when violating it makes the verb semantically
 ill-typed; ordinary visual guesses must be suggested. Role constraints
@@ -1416,16 +1423,47 @@ CAUSAL VISUAL UNIT:
                 "open_questions": {"type": "array", "maxItems": 1, "items": {"type": "string", "maxLength": 160}},
             },
         }
+        observable_symbol = {
+            "type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$",
+        }
+        measurement_hypothesis = {"anyOf": [{"type": "null"}, {
+            "type": "object", "additionalProperties": False,
+            "required": [
+                "protocol", "left_source", "left_feature", "right_source",
+                "right_feature", "comparison", "coordinate_frame",
+                "include_separation_gap",
+            ],
+            "properties": {
+                "protocol": {"const": "r2-spatial-set-residual-v0"},
+                "left_source": {"enum": ["actor", "target"]},
+                "left_feature": {"enum": [
+                    "occupancy", "boundary", "enclosed_negative_space",
+                    "envelope_negative_space",
+                ]},
+                "right_source": {"enum": ["actor", "target"]},
+                "right_feature": {"enum": [
+                    "occupancy", "boundary", "enclosed_negative_space",
+                    "envelope_negative_space",
+                ]},
+                "comparison": {"enum": [
+                    "symmetric_difference_size", "left_unmatched_size",
+                    "right_unmatched_size", "overlap_deficit",
+                ]},
+                "coordinate_frame": {"enum": ["scene", "intrinsic"]},
+                "include_separation_gap": {"type": "boolean"},
+            },
+        }]}
         verb_schema = {
             "type": "object", "additionalProperties": False,
-            "required": ["verb", "schema_name", "goal_family", "roles", "role_constraints", "potential_roles", "observable", "direction", "terminal_class", "terminal_condition"],
+            "required": ["verb", "schema_name", "goal_family", "roles", "role_constraints", "potential_roles", "observable", "measurement_hypothesis", "direction", "terminal_class", "terminal_condition"],
             "properties": {
                 "verb": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$"},
                 "schema_name": {"type": "string", "maxLength": 80},
                 "goal_family": {"enum": ["alignment", "containment", "contact", "separation", "ordering", "symmetry", "multiplicity", "transformation", "unknown"]},
                 "roles": {"type": "array", "minItems": 2, "maxItems": 4, "uniqueItems": True, "items": {"enum": abstract_roles}},
                 "potential_roles": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"enum": abstract_roles}},
-                "observable": {"enum": ["fit_residual", "centroid_distance", "boundary_gap", "overlap_deficit", "containment_violation", "component_count", "symmetry_residual", "unknown"]},
+                "observable": observable_symbol,
+                "measurement_hypothesis": measurement_hypothesis,
                 "direction": {"enum": ["decrease", "increase", "maintain", "unknown"]},
                 "terminal_class": {"enum": ["minimum", "maximum", "invariant", "open"]},
                 "terminal_condition": {"type": "string", "maxLength": 120},
@@ -1433,7 +1471,7 @@ CAUSAL VISUAL UNIT:
                     "type": "object", "additionalProperties": False,
                     "required": ["observable", "preferred_order", "relation", "target"],
                     "properties": {
-                        "observable": {"enum": ["fit_residual", "centroid_distance", "boundary_gap", "overlap_deficit", "containment_violation", "component_count", "symmetry_residual", "unknown"]},
+                        "observable": observable_symbol,
                         "preferred_order": {"enum": ["decrease", "increase", "maintain"]},
                         "relation": {"enum": ["equals", "minimum", "maximum"]},
                         "target": {"type": ["number", "null"]},
