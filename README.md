@@ -18,18 +18,25 @@ or OpenAI models through `OPENAI_API_KEY`.
 ## Current architecture
 
 ```text
-configured semantic model
-    proposes concepts, verb schemas, abductive compositions, and working state
-                         |
-                         v
-R2 recursive workspace
-    validates -> grounds -> explains -> ranks -> authorizes one action
-                         |
-                         v
-ARC environment
-    observes -> transitions -> scores -> settles predictions
-                         |
-                         +------ evidence returns to R2 and the model
+configured semantic model                         optional planning model
+    proposes concepts, verb schemas,              proposes bounded command IDs
+    abductive compositions, and working state               |
+                         |                                  v
+                         +------> R2 recursive workspace <---+
+                                  validates and grounds
+                                           |
+                                           v
+                            controller-neutral planner boundary
+                       fallback-only | bounded search | model-validated
+                                           |
+                                           v
+                            R2 authorizes exactly one command
+                                           |
+                                           v
+                                    ARC environment
+                           observes, scores, and settles
+                                           |
+                                           +---- evidence returns to R2
 ```
 
 The authority boundary is model-independent:
@@ -60,7 +67,8 @@ grounded verb + bound roles + measurable potential
 R2 ranks actions through a hard epistemic gate:
 
 ```text
-PROGRESS_ELIGIBLE > discriminating PROBE_ELIGIBLE > INELIGIBLE
+validated PLAN_ELIGIBLE > PROGRESS_ELIGIBLE
+                        > discriminating PROBE_ELIGIBLE > INELIGIBLE
 ```
 
 Every authorized action is observed and settled before the next one. Confirmed
@@ -68,6 +76,36 @@ explanations may enter a bounded fast path; contradiction revokes that
 authority. Deep consolidation can derive reusable schemas at a level boundary,
 but transferred schemas begin with zero empirical authority and must bind and
 earn support again.
+
+## Pluggable control factorization
+
+Planning is a replaceable component, not part of R2's ontology. The independent
+[`reflector2.planner`](src/reflector2/planner/README.md) package imports no R2
+modules. R2 adapts grounded explanations and supported command-scoped effects
+into a `ControlProblem`, injects any `PlannerBackend`, and remains the sole
+owner of evidence, settlement, and external action authority.
+
+Three backends implement the contract:
+
+- `NoPlanPlanner` preserves the original one-step controller;
+- `BoundedBestFirstPlanner` searches supported causal effects under explicit
+  depth, frontier, expansion, confidence, and milestone budgets;
+- `ModelPlanner` accepts either `QwenPlanningModel` or `LunaPlanningModel`
+  through one structured model interface, then deterministically replays and
+  validates every proposed edge.
+
+A plan is a prospective causal factorization, never empirical evidence. Its
+certificate can authorize only the first exact `ActionCommand`. The real
+successor is then observed, the whole continuation is invalidated, and R2
+replans. Only a settled positive edge may contribute fresh support to the
+existing bounded fast path, with the route and certificate removed.
+
+The matched AR25 experiment validates the modularity and safety semantics but
+does not show a stronger controller: bounded deterministic planning matched the
+original R2 action-for-action, while Qwen produced one causally matched but
+worse divergence and was much slower. See the
+[`AR25 planner results`](experiments/r2-2-planner-ar25-v0/RESULTS.md) and the
+[`planner architecture note`](docs/R2_2_PLANNER_REPOSITORY_UNDERSTANDING.md).
 
 The current system connects situated verbs strongly to local predicted
 progress. Its remaining goal-level gap is explicit: the model's inferred
@@ -224,6 +262,9 @@ policy.
 ```text
 src/reflector2/r2/   canonical R2.2 controller, workspace, model transport,
                     schema adapter, Arcade entrypoint, and Kaggle runner
+src/reflector2/planner/
+                    controller-neutral planner contracts, deterministic
+                    search, plan certificates, and Qwen/Luna model adapters
 arcade/              presentation, playback, and human-controller surfaces;
                     no agent policy or model backend
 src/reflector2/      core sparse schema runtime and older evaluation tools

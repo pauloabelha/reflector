@@ -84,6 +84,16 @@
     "reobserve_after_every_action": true,
     "selection_objectives": ["goal-progress", "decision-relevant-information"],
     "retain_no_visible_change": true,
+    "planner": {
+      "enabled": true,
+      "backend": "bounded-best-first-v0",
+      "max_depth": 8,
+      "max_frontier": 64,
+      "max_expansions": 256,
+      "max_milestones": 4,
+      "minimum_effect_support": 1,
+      "minimum_effect_confidence": 0.6
+    },
     "fast_path": {
       "enabled": true,
       "minimum_confirmations": 2,

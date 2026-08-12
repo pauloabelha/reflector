@@ -18,6 +18,17 @@ import sys
 import time
 from typing import Any, Mapping, Sequence
 
+from reflector2.planner import (
+    ControlProblem,
+    PlannerBackend,
+    PlannerConfig,
+    SupportedCausalEffect,
+    derive_milestones,
+    plan_certificate,
+    require_backend,
+    settle_plan_certificate,
+)
+
 
 HERE = Path(__file__).resolve().parent
 ENGINE_PATH = (
@@ -347,7 +358,13 @@ class FrameSchemaObserver:
         "AlignedHorizontal", "AlignedVertical", "Disjoint", "Touches",
     )
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        planner_config: Mapping[str, Any] | None = None,
+        planner_backend: PlannerBackend | None = None,
+    ) -> None:
+        self.planner_config = PlannerConfig.from_mapping(planner_config)
+        self.planner_backend = require_backend(planner_backend)
         self.last_digest: str | None = None
         self.last_stats: dict[str, Any] | None = None
         self.last_regions: list[dict[str, Any]] = []
@@ -381,6 +398,9 @@ class FrameSchemaObserver:
         self.last_control_settlement: dict[str, Any] | None = None
         self.fast_policy_state: dict[str, Any] | None = None
         self.frame_shape: tuple[int, int] = (0, 0)
+        self.last_plan_certificate: dict[str, Any] | None = None
+        self.last_planner_result: dict[str, Any] | None = None
+        self.planner_metrics: Counter[str] = Counter()
 
     def reset_episode(self) -> None:
         """Start with a genuinely fresh epistemic workspace.
@@ -389,7 +409,7 @@ class FrameSchemaObserver:
         make an identical first frame reuse bindings, shadows, learned action
         effects, or pending predictions from an earlier arcade run.
         """
-        self.__init__()
+        self.__init__(self.planner_config.document(), self.planner_backend)
 
     def advance_level(self) -> None:
         """Clear situated bindings while retaining supported game mechanics."""
@@ -399,7 +419,7 @@ class FrameSchemaObserver:
             "explanation_confirmations": self.explanation_confirmations,
             "explanation_refutations": self.explanation_refutations,
         }
-        self.__init__()
+        self.__init__(self.planner_config.document(), self.planner_backend)
         for name, value in retained.items():
             setattr(self, name, value)
 
@@ -2071,6 +2091,7 @@ class FrameSchemaObserver:
             "claim": str(semantic_goal.get("schema_name", "semantic goal proposal")),
             "goal": {
                 "family": semantic_goal.get("goal_family"), "measure": observable,
+                "terminal_observable": semantic_goal.get("observable", observable),
                 "current": residual, "direction": direction,
                 "terminal": desired["completion"],
                 "terminal_class": self._terminal_class(direction),
@@ -2116,6 +2137,304 @@ class FrameSchemaObserver:
             },
             "open_questions": ([] if models_supported else [f"What transformations does command {self._command_id(action)} induce for these tracked roles?"]),
         }
+
+    def _search_control_factorizations(
+        self,
+        candidates_by_action: Mapping[str, Sequence[dict[str, Any]]],
+    ) -> dict[str, Any] | None:
+        """Compose supported candidate effects without changing empirical state."""
+
+        self.last_plan_certificate = None
+        self.planner_metrics["invocations"] += 1
+        if not self.planner_config.enabled:
+            self.last_planner_result = {
+                "status": "DISABLED", "backend": self.planner_backend.name,
+                "limits": self.planner_config.document(),
+            }
+            return None
+
+        groups: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+        for candidates in candidates_by_action.values():
+            for candidate in candidates:
+                ports = candidate.get("ports", {})
+                groups[(
+                    str(candidate.get("control_goal_key", "")),
+                    str(ports.get("actor", "")),
+                    str(ports.get("target", "")),
+                )].append(candidate)
+
+        def group_priority(item: tuple[tuple[str, str, str], list[dict[str, Any]]]) -> tuple[Any, ...]:
+            group_key, values = item
+            best = max(
+                values,
+                key=lambda candidate: (
+                    candidate.get("control_status") == "PROGRESS_ELIGIBLE",
+                    float(candidate.get("prediction", {}).get("expected_progress") or 0.0),
+                    float(candidate.get("mechanism", {}).get("confidence") or 0.0),
+                ),
+            )
+            return (
+                best.get("control_status") == "PROGRESS_ELIGIBLE",
+                float(best.get("prediction", {}).get("expected_progress") or 0.0),
+                float(best.get("mechanism", {}).get("confidence") or 0.0),
+                group_key,
+            )
+
+        planned: list[dict[str, Any]] = []
+        search_attempts: list[dict[str, Any]] = []
+        attempted_problems = 0
+        backend_problem_limit = max(
+            1, int(getattr(self.planner_backend, "max_problems_per_decision", len(groups))),
+        )
+        for group_key, candidates in sorted(
+            groups.items(), key=group_priority, reverse=True,
+        ):
+            seed = min(candidates, key=lambda item: str(item.get("binding_id", "")))
+            identity = seed.get("identity", {})
+            if identity.get("control_eligible") is not True:
+                continue
+            actor_id = str(seed.get("ports", {}).get("actor", ""))
+            target_id = str(seed.get("ports", {}).get("target", ""))
+            snapshots = seed.get("predecessor_binding_snapshots", {})
+            actor = deepcopy(snapshots.get(actor_id))
+            target = deepcopy(snapshots.get(target_id))
+            if not isinstance(actor, dict) or not isinstance(target, dict):
+                continue
+
+            effects: list[SupportedCausalEffect] = []
+            candidate_by_command: dict[str, dict[str, Any]] = {}
+            for candidate in sorted(
+                candidates,
+                key=lambda item: str(item.get("prediction", {}).get("command_id", "")),
+            ):
+                mechanism = candidate.get("mechanism", {})
+                actor_model = mechanism.get("actor", {})
+                target_model = mechanism.get("target", {})
+                prediction = candidate.get("prediction", {})
+                actor_delta = actor_model.get("delta")
+                target_delta = target_model.get("delta")
+                command_id = str(prediction.get("command_id", ""))
+                if (
+                    mechanism.get("models_supported") is not True
+                    or actor_delta is None or target_delta is None or not command_id
+                ):
+                    continue
+                effect = SupportedCausalEffect(
+                    command_id=command_id,
+                    command=dict(prediction.get("command") or {}),
+                    actor_delta=tuple(float(item) for item in actor_delta),
+                    target_delta=tuple(float(item) for item in target_delta),
+                    support=min(int(actor_model.get("support", 0)), int(target_model.get("support", 0))),
+                    contradictions=max(
+                        int(actor_model.get("contradictions", 0)),
+                        int(target_model.get("contradictions", 0)),
+                    ),
+                    confidence=min(
+                        float(actor_model.get("confidence", 0.0)),
+                        float(target_model.get("confidence", 0.0)),
+                    ),
+                )
+                effects.append(effect)
+                candidate_by_command[command_id] = candidate
+            if not effects:
+                continue
+
+            controlled_ids = {actor_id, target_id}
+            static_cells = frozenset(
+                tuple(cell)
+                for region in self.last_regions
+                if str(region.get("binding_id")) not in controlled_ids
+                for cell in region.get("cells", ())
+            )
+            initial_state = {
+                "actor": actor,
+                "target": target,
+                "static_cells": static_cells,
+                "frame_shape": self.frame_shape,
+            }
+
+            def translate(region: dict[str, Any], delta: tuple[float, float]) -> dict[str, Any] | None:
+                cells = tuple((y + delta[0], x + delta[1]) for y, x in region["cells"])
+                height, width = self.frame_shape
+                if any(y < 0 or x < 0 or y >= height or x >= width for y, x in cells):
+                    return None
+                return {
+                    **region,
+                    "cells": cells,
+                    "center2": (
+                        float(region["center2"][0]) + 2.0 * delta[0],
+                        float(region["center2"][1]) + 2.0 * delta[1],
+                    ),
+                }
+
+            def transition(state: dict[str, Any], effect: SupportedCausalEffect) -> dict[str, Any] | None:
+                projected_actor = translate(state["actor"], effect.actor_delta)
+                projected_target = translate(state["target"], effect.target_delta)
+                if projected_actor is None or projected_target is None:
+                    return None
+                occupied = state["static_cells"]
+                if set(projected_actor["cells"]) & occupied or set(projected_target["cells"]) & occupied:
+                    return None
+                return {
+                    **state, "actor": projected_actor, "target": projected_target,
+                }
+
+            def measure(state: dict[str, Any], observable: str) -> float | None:
+                return self._measure(observable, state["actor"], state["target"])
+
+            def invariants_hold(state: dict[str, Any]) -> bool:
+                return (
+                    int(state["actor"]["area"]) == int(actor["area"])
+                    and tuple(state["actor"]["shape"]) == tuple(actor["shape"])
+                    and int(state["target"]["area"]) == int(target["area"])
+                    and tuple(state["target"]["shape"]) == tuple(target["shape"])
+                )
+
+            def state_key(state: dict[str, Any]) -> str:
+                return E.stable_id("prospective-control-state", {
+                    "actor": tuple(state["actor"]["cells"]),
+                    "target": tuple(state["target"]["cells"]),
+                })
+
+            def cell_runs(cells: Sequence[tuple[float, float]]) -> list[list[float]]:
+                rows: dict[float, list[float]] = defaultdict(list)
+                for y, x in cells:
+                    rows[float(y)].append(float(x))
+                runs: list[list[float]] = []
+                for y in sorted(rows):
+                    values = sorted(set(rows[y]))
+                    if not values:
+                        continue
+                    start = previous = values[0]
+                    for value in values[1:]:
+                        if abs(value - previous - 1.0) <= 0.01:
+                            previous = value
+                            continue
+                        runs.append([y, start, previous])
+                        start = previous = value
+                    runs.append([y, start, previous])
+                return runs
+
+            def model_region(region: Mapping[str, Any]) -> dict[str, Any]:
+                return {
+                    "area": int(region["area"]),
+                    "center2": list(region["center2"]),
+                    "cell_runs_y_x0_x1": cell_runs(region["cells"]),
+                }
+
+            goal = seed.get("goal", {})
+            active_observable = str(goal.get("measure", ""))
+            terminal_observable = str(goal.get("terminal_observable") or active_observable)
+            direction = str(goal.get("direction", ""))
+            initial_value = measure(initial_state, active_observable)
+            if initial_value is None:
+                continue
+            milestones = derive_milestones(
+                explanation_id=str(seed.get("binding_id", "")),
+                active_observable=active_observable,
+                preferred_direction=direction,
+                terminal_observable=terminal_observable,
+                terminal_value=0.0 if direction == "decrease" else None,
+                max_milestones=self.planner_config.max_milestones,
+                preserves=(
+                    "actor-role-identity", "target-role-identity",
+                    "actor-topology", "target-topology", "mechanism-applicability",
+                ),
+            )
+            problem = ControlProblem(
+                explanation_id=str(seed.get("binding_id", "")),
+                verb=str(seed.get("verb", "")),
+                initial_state=initial_state,
+                active_observable=active_observable,
+                preferred_direction=direction,
+                initial_value=float(initial_value),
+                effects=tuple(effects),
+                milestones=milestones,
+                transition=transition,
+                measure=measure,
+                invariants_hold=invariants_hold,
+                state_key=state_key,
+                protected_invariants=(
+                    "actor-role-identity", "target-role-identity",
+                    "actor-topology", "target-topology", "mechanism-applicability",
+                ),
+                model_view={
+                    "actor": model_region(actor),
+                    "target": model_region(target),
+                    "static_cell_runs_y_x0_x1": cell_runs(tuple(static_cells)),
+                    "frame_shape": list(self.frame_shape),
+                },
+            )
+            if attempted_problems >= backend_problem_limit:
+                break
+            attempted_problems += 1
+            result = self.planner_backend.search(problem, self.planner_config)
+            search_attempts.append({
+                "explanation": problem.explanation_id,
+                "status": result.status,
+                "reason": result.reason,
+                "expansions": result.expansions,
+                "generated": result.generated,
+                "maximum_depth_reached": result.maximum_depth_reached,
+            })
+            self.planner_metrics["expansions"] += result.expansions
+            self.planner_metrics["generated"] += result.generated
+            if result.factorization is None:
+                continue
+            first_command_id = str(result.factorization.first_command.get("command_id", ""))
+            first_candidate = candidate_by_command.get(first_command_id)
+            if first_candidate is None:
+                continue
+            certificate = plan_certificate(
+                problem, result,
+                first_successor_prediction=first_candidate.get("prediction", {}),
+            )
+            final_value = result.factorization.steps[-1].potential_after
+            progress = (
+                float(initial_value) - float(final_value)
+                if final_value is not None and direction == "decrease" else
+                float(final_value) - float(initial_value)
+                if final_value is not None and direction == "increase" else
+                -abs(float(final_value) - float(initial_value))
+                if final_value is not None else float("-inf")
+            )
+            planned.append({
+                "result": result,
+                "certificate": certificate,
+                "candidate": first_candidate,
+                "command_id": first_command_id,
+                "rank": (
+                    1 if result.factorization.terminal_reached else 0,
+                    1 if result.factorization.useful_milestone_reached else 0,
+                    progress,
+                    -len(result.factorization.steps),
+                    first_command_id,
+                ),
+            })
+
+        if not planned:
+            self.planner_metrics["no_plan"] += 1
+            self.last_planner_result = {
+                "status": "NO_PLAN", "backend": self.planner_backend.name,
+                "limits": self.planner_config.document(),
+                "attempts": search_attempts,
+            }
+            return None
+        selected = max(planned, key=lambda item: item["rank"])
+        result = selected["result"]
+        self.planner_metrics["success"] += 1
+        self.last_plan_certificate = selected["certificate"]
+        self.last_planner_result = {
+            "status": result.status,
+            "backend": self.planner_backend.name,
+            "expansions": result.expansions,
+            "generated": result.generated,
+            "frontier_peak": result.frontier_peak,
+            "maximum_depth_reached": result.maximum_depth_reached,
+            "elapsed_ms": result.elapsed_ms,
+            "limits": result.config.document(),
+        }
+        return selected
 
     def rank_actions(
         self, legal_actions: Sequence[int], *, fallback_action: int,
@@ -2271,6 +2590,29 @@ class FrameSchemaObserver:
                 "expected_progress": progress, "information_value": round(information, 3), "risk": risk,
                 "explanation": best,
             })
+        planner_selection = self._search_control_factorizations(candidates_by_action)
+        if planner_selection is not None:
+            planned_command_id = str(planner_selection["command_id"])
+            for item in ranked:
+                if self._command_id(item["command"]) != planned_command_id:
+                    continue
+                planned_explanation = planner_selection["candidate"]
+                planned_explanation["plan_certificate"] = planner_selection["certificate"]
+                planned_explanation["control_status"] = "PLAN_ELIGIBLE"
+                first_progress = planned_explanation.get("prediction", {}).get("expected_progress")
+                item.update({
+                    "score_tuple": (
+                        3,
+                        *tuple(planner_selection["rank"]),
+                        -int(item["risk"]),
+                    ),
+                    "control_eligible": True,
+                    "eligibility": "PLAN_ELIGIBLE",
+                    "role": "causal-factorization-first-step",
+                    "expected_progress": first_progress,
+                    "explanation": planned_explanation,
+                })
+                break
         ranked.sort(key=lambda item: item["score_tuple"], reverse=True)
         if not ranked:
             return {"selected_action": int(fallback_action), "selected_command": None, "top_actions": [], "explanations": [], "current_explanation": None, "control_override": False}
@@ -2322,6 +2664,7 @@ class FrameSchemaObserver:
                     "explanation": current["binding_id"], "status": selected["eligibility"],
                 }),
                 "mode": "PROGRESS" if selected["eligibility"] == "PROGRESS_ELIGIBLE" else (
+                    "PLAN" if selected["eligibility"] == "PLAN_ELIGIBLE" else
                     "PROBE" if selected["eligibility"] == "PROBE_ELIGIBLE" else "INELIGIBLE"
                 ),
                 "status": selected["eligibility"],
@@ -2335,6 +2678,7 @@ class FrameSchemaObserver:
                 "mechanism": dict(current["mechanism"]),
                 "prediction": dict(current["prediction"]),
                 "successor_projection": deepcopy(current["successor_projection"]),
+                "plan_certificate": deepcopy(current.get("plan_certificate")),
                 "observable_checkpoint": dict(current["observable_checkpoint"]),
                 "invalidation_conditions": [
                     "actor correspondence is not UNIQUE",
@@ -2355,10 +2699,13 @@ class FrameSchemaObserver:
             "control_proposal": control_proposal,
             "identity_assessments": list(self.last_identity_assessments)[-8:],
             "role_hypotheses": role_hypotheses[:ROLE_GROUNDING_TOP_K],
+            "planner": deepcopy(self.last_planner_result),
+            "plan_certificate": deepcopy(self.last_plan_certificate),
+            "planner_metrics": dict(self.planner_metrics),
             "rejected_goal_proposals": list(self.last_rejected_goals),
             "grounded_abductions": list(self.last_abductive_bindings),
             "rejected_abductions": list(self.last_rejected_abductions),
-            "selection_rule": "hard gates: PROGRESS_ELIGIBLE > projection-discriminating PROBE_ELIGIBLE > INELIGIBLE; then desired delta, declared successor discrimination, no-change risk, stable action",
+            "selection_rule": "hard gates: supported bounded ControlFactorization > PROGRESS_ELIGIBLE > projection-discriminating PROBE_ELIGIBLE > INELIGIBLE; then lexicographic milestone/progress/invariants/support/risk/depth/stable-command",
         }
 
     def rank_authorized_policy(
@@ -2788,9 +3135,30 @@ class FrameSchemaObserver:
                 "potential": potential_settlement.get("status"),
             },
         }
+        plan = prediction.get("plan_certificate") if prediction is not None else None
+        if isinstance(plan, Mapping):
+            settlement["plan_settlement"] = settle_plan_certificate(
+                plan,
+                adjudication=adjudication,
+                identity_status=str(identity_settlement.get("status")),
+                mechanism_status=str(mechanism_settlement.get("status")),
+            )
+            confirmed = settlement["plan_settlement"]["first_step"] == "CONFIRMED"
+            self.planner_metrics["replans"] += 1
+            self.planner_metrics[
+                "first_step_confirmed" if confirmed else "first_step_refuted"
+            ] += 1
         if prediction is not None and actor_after is not None and target_after is not None:
+            settled_template = deepcopy(prediction)
+            if isinstance(plan, Mapping):
+                # The prospective continuation is dead after settlement.  A
+                # separately authorized fast path may still learn from this
+                # confirmed empirical edge, but it receives no plan/cached
+                # route and recomputes the next one-step successor itself.
+                settled_template.pop("plan_certificate", None)
+                settled_template["control_status"] = "PROGRESS_ELIGIBLE"
             self.fast_policy_state = {
-                "template": deepcopy(prediction),
+                "template": settled_template,
                 "actor": self._region_snapshot(actor_after),
                 "target": self._region_snapshot(target_after),
             }

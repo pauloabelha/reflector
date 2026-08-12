@@ -77,7 +77,9 @@ class FastPathAuthority:
             and preferred.get("advanced") is True
             and invariants.get("hold") is True
             and confidence >= self.confidence_threshold
-            and explanation.get("control_status") == "PROGRESS_ELIGIBLE"
+            and explanation.get("control_status") in {
+                "PROGRESS_ELIGIBLE", "PLAN_ELIGIBLE",
+            }
         )
         signature = self._signature(explanation)
         if not valid:
@@ -322,6 +324,7 @@ def controller_class(
                     None,
                 )
                 fast_mode = (r2_1.get("control_proposal") or {}).get("mode") == "FAST_PATH"
+                plan_mode = (r2_1.get("control_proposal") or {}).get("mode") == "PLAN"
                 if (
                     r2_1.get("execution_authorized", r2_1.get("control_override", False))
                     and (
@@ -341,9 +344,12 @@ def controller_class(
                         fallback_action_id=int(decision.fallback_action_id),
                         reason=(
                             "r2.1-bounded-fast-path"
-                            if fast_mode else "r2.1-control-v0-progress"
-                            if control_status == "PROGRESS_ELIGIBLE"
-                            or (not control_status and prediction.get("expected_progress", 0) and prediction["expected_progress"] > 0)
+                            if fast_mode else "r2.2-control-factorization"
+                            if plan_mode else "r2.1-control-v0-progress"
+                            if (
+                                control_status == "PROGRESS_ELIGIBLE"
+                                or (not control_status and prediction.get("expected_progress", 0) and prediction["expected_progress"] > 0)
+                            )
                             else "r2.1-control-v0-probe"
                         ),
                         template_hash=None,
@@ -519,6 +525,9 @@ def controller_class(
                 "advisory_selection_rule": advisory_selection_rule,
                 "predictions": [asdict(item) for item in selected],
                 "r2_1_explanation_control": r2_1,
+                "plan_certificate": (
+                    r2_1.get("plan_certificate") if r2_1 else None
+                ),
                 "repeated_identical_no_change_excluded": bool(repeated_no_change),
                 "one_external_action_only": True,
             }

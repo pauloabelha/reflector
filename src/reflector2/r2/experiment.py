@@ -44,6 +44,7 @@ RUNTIME = _local("runtime")
 FIRST_FRAME = _local("first_frame")
 R2_1 = _local("r2_1_adapter")
 MODEL_BACKEND = _local("model_backend")
+PLANNER_WIRING = _local("planner_wiring")
 
 
 def load_config() -> dict[str, Any]:
@@ -244,7 +245,14 @@ def active_runtime(runtime: Any | None = None) -> Any:
     if runtime is None:
         runtime = RUNTIME.LiveRuntime()
     if getattr(runtime, "schema_observer", None) is None:
-        runtime.set_schema_observer(R2_1.FrameSchemaObserver())
+        config = load_config()
+        planner_config = config.get("control", {}).get("planner", {})
+        runtime.set_schema_observer(R2_1.FrameSchemaObserver(
+            planner_config,
+            PLANNER_WIRING.build_planner_backend(
+                planner_config, config.get("model", {}),
+            ),
+        ))
     return runtime
 
 
