@@ -21,7 +21,8 @@
 | 006 | complete | Goal-independent mutual-unique effects learned and handed to later semantic control |
 | 007 | complete | Same-transition type evidence pooled; heterogeneous outcomes fail closed |
 | 008 | complete | Erupted semantic failure creates a durable, substantive revision obligation |
-| 009 | active | Measure repeated identical-scope heterogeneous rigid outcomes before inducing context |
+| 009 | complete | Read-only audit found no live context demand in 101 deduplicated transitions; no context induced |
+| 010 | active | Focus explicit semantic-failure turns without changing grounding or control authority |
 
 ## Current hypothesis
 

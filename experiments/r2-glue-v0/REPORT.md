@@ -252,7 +252,7 @@ completion or score gain is claimed.
 repeated identical command scopes reproduce heterogeneous rigid outcomes with
 an observable discriminator.
 
-## Checkpoint 009 (in progress)
+## Checkpoint 009
 
 Heterogeneous mutually unique rigid outcomes now emit a bounded
 `unresolved_effect_contexts` record. It preserves the command scope, intrinsic
@@ -264,3 +264,19 @@ sequence state, or spatial context. A synthetic transition verifies one
 invariant and one translated instance are reported while model support remains
 empty. Context induction is not yet authorized; repeated cross-transition
 evidence and an observable discriminator are still required.
+
+A committed read-only ledger audit then replayed R2's exact component,
+mutual-unique correspondence, rigidity, type-pooling, and command-scope logic
+over 101 deduplicated recorded transitions spanning AR25, BP35, CD82, CN04, and
+DC22. It found zero unresolved-context records and therefore zero repeated
+signatures. Identical live reruns were deduplicated by game, predecessor digest,
+successor digest, and action. The result contradicts any current claim that a
+sequence or spatial context factor is empirically demanded. Checkpoint 009 is
+complete with the telemetry retained and no context induced.
+
+**Next observed bottleneck:** DC22 Qwen calls 4–8 received an explicit semantic
+failure packet but repeated the same failed fit proposal and frame-0
+scratchpad. The ordinary revision turn asks the small local model to regenerate
+several unrelated products. Checkpoint 010 will test a focused repair transport
+while preserving the canonical turn, exact causal images, compiler validation,
+and R2-only grounding/control.

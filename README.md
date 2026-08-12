@@ -221,6 +221,12 @@ their entity counts, explicitly without control authority. This supplies the
 evidence needed to test future role/context factors without inventing them from
 a single game or transition.
 
+The committed read-only audit replayed this detector across 101 deduplicated
+AR25, BP35, CD82, CN04, and DC22 transitions and found zero live context-demand
+records. Accordingly, R2 has not induced a sequence, spatial, or role context
+factor. The synthetic conflict is a safety test, not evidence that such a
+factor exists in these games.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:
