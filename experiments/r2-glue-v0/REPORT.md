@@ -45,3 +45,30 @@ exact zero terminal, and fail-open behavior when the selected feature is empty.
 **Prospective:** Qwen will select a useful measurement in live play, R2 will
 ground the intended roles among distractors, and this will improve an action.
 None of those claims is established yet.
+
+## Checkpoint 002
+
+**Implemented:** semantic proposals now have a direct grammar-visible split
+between built-in and proposed measurements plus dependent compiler checks.
+Malformed siblings are quarantined without losing a valid frame-zero
+explanation. CAE geometry is summarized before the semantic context budget so
+rejection diagnostics survive truncation. Proposal identity includes
+compiler-owned defaults, and an unchanged failed proposal is retired after new
+evidence while independent scratchpad/alias updates survive.
+
+**Observed:** fresh AR25 runs reproduced malformed model output, the initial
+whole-response liveness failure, a valid-but-ungroundable custom measurement,
+and stale repetition. After repair, frame zero remained live, the bad candidate
+had no control authority, CAE promoted a seven-member motion group to SUPPORTED
+after opposite vertical probes, rejection feedback remained visible, and the
+repeated failed goal was cleared while play continued. The focused suite has
+143 passing tests.
+
+**Inferred:** the principal defect at this checkpoint was not missing domain
+knowledge. It was loss of typed dependency and failure information across
+generation, compilation, storage normalization, and bounded projection.
+
+**Prospective:** preserving this boundary should improve robustness on other
+games, but useful semantic-to-control pickup and score improvement remain
+unproven. Checkpoint 003 must use a case selected independently of AR25's
+negative-space affordance.

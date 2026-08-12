@@ -10,6 +10,9 @@ import json
 import re
 from typing import Any, Mapping
 
+from reflector2.r2.goal_contract import BUILTIN_GOAL_OBSERVABLES
+from reflector2.r2.semantic_measure import SemanticMeasureHypothesis
+
 
 MAX_SCRATCHPAD_TOKENS = 1024
 MAX_R2_SEMANTIC_PROJECTION_BYTES = 12000
@@ -254,9 +257,119 @@ def _canonical_action_id(value: Any) -> str | None:
     return None
 
 
+def _normalize_goal_proposal(proposal: Mapping[str, Any]) -> dict[str, Any]:
+    """Apply only compiler-owned defaults used in storage and identity."""
+
+    normalized = dict(proposal)
+    normalized.setdefault("local_terminal", {
+        "observable": proposal.get("observable", "unknown"),
+        "preferred_order": proposal.get("direction", "maintain"),
+        "relation": (
+            "minimum" if proposal.get("terminal_class") == "minimum" else
+            "maximum" if proposal.get("terminal_class") == "maximum" else "equals"
+        ),
+        "target": 0.0 if proposal.get("terminal_class") == "minimum" else None,
+    })
+    if "goal_contract" not in normalized:
+        normalized["goal_contract"] = None
+        normalized["goal_contract_reason"] = (
+            "insufficient environment-terminal basis"
+        )
+    elif normalized.get("goal_contract") is not None:
+        normalized.setdefault("goal_contract_reason", None)
+    else:
+        normalized.setdefault(
+            "goal_contract_reason", "insufficient environment-terminal basis",
+        )
+    return normalized
+
+
 def _canonical_goal_proposal_key(value: Any) -> str:
-    """Canonicalize Qwen's proposal without interpreting or repairing it."""
+    """Canonicalize semantic identity across raw and stored forms."""
+
+    if isinstance(value, Mapping):
+        value = _normalize_goal_proposal(value)
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
+def _goal_proposal_contract_error(proposal: Any) -> str | None:
+    """Validate dependent fields that JSON Schema cannot express compactly."""
+
+    if not isinstance(proposal, Mapping):
+        return "proposal-not-an-object"
+    roles = proposal.get("roles")
+    potential_roles = proposal.get("potential_roles")
+    if (
+        not isinstance(roles, list) or len(roles) < 2
+        or len(set(str(item) for item in roles)) != len(roles)
+    ):
+        return "roles-must-be-distinct"
+    role_names = {str(item) for item in roles}
+    if (
+        not isinstance(potential_roles, list) or len(potential_roles) != 2
+        or len(set(str(item) for item in potential_roles)) != 2
+        or not {str(item) for item in potential_roles}.issubset(role_names)
+    ):
+        return "potential-roles-must-be-two-distinct-declared-roles"
+    constraints = proposal.get("role_constraints")
+    if not isinstance(constraints, list):
+        return "role-constraints-must-be-an-array"
+    for constraint in constraints:
+        arguments = constraint.get("arguments") if isinstance(constraint, Mapping) else None
+        if (
+            not isinstance(arguments, list) or len(arguments) != 2
+            or len(set(str(item) for item in arguments)) != 2
+            or not {str(item) for item in arguments}.issubset(role_names)
+        ):
+            return "constraint-arguments-must-be-distinct-declared-roles"
+
+    observable = str(proposal.get("observable", ""))
+    raw_measurement = proposal.get("measurement_hypothesis")
+    if observable.startswith("proposed_"):
+        if not isinstance(raw_measurement, Mapping):
+            return "proposed-observable-requires-measurement-hypothesis"
+        try:
+            SemanticMeasureHypothesis.compile(observable, raw_measurement)
+        except (TypeError, ValueError) as error:
+            return f"invalid-measurement-hypothesis:{error}"
+    elif observable not in BUILTIN_GOAL_OBSERVABLES:
+        return "observable-must-be-built-in-or-proposed"
+    elif raw_measurement is not None:
+        return "built-in-observable-must-not-carry-measurement-hypothesis"
+
+    local_terminal = proposal.get("local_terminal")
+    if isinstance(local_terminal, Mapping):
+        if str(local_terminal.get("observable", "")) != observable:
+            return "local-terminal-observable-mismatch"
+        if str(local_terminal.get("preferred_order", "")) != str(proposal.get("direction", "")):
+            return "local-terminal-direction-mismatch"
+    return None
+
+
+def _quarantine_goal_proposals(
+    proposals: Any,
+) -> tuple[list[dict[str, Any]], set[str], list[dict[str, Any]]]:
+    """Normalize coherent proposals and isolate malformed siblings."""
+
+    accepted: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    rejected: list[dict[str, Any]] = []
+    for proposal_index, proposal in enumerate(proposals):
+        proposal_error = _goal_proposal_contract_error(proposal)
+        if proposal_error is not None:
+            rejected.append({
+                "reason": "goal-proposal-dependent-contract",
+                "proposal_index": proposal_index,
+                "detail": proposal_error,
+            })
+            continue
+        normalized_proposal = _normalize_goal_proposal(proposal)
+        key = _canonical_goal_proposal_key(normalized_proposal)
+        if key in seen:
+            continue
+        seen.add(key)
+        accepted.append(normalized_proposal)
+    return accepted, seen, rejected
 
 
 def _transition_evidence_ref(document: Mapping[str, Any]) -> str | None:
@@ -839,6 +952,77 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
     """Publish a bounded read-only attention cut for Semantic Qwen."""
     global _R2_SEMANTIC_PROJECTION
     candidate = copy.deepcopy(dict(projection))
+
+    # Causal entities can own thousands of cells. Semantic Qwen needs their
+    # induced membership, status, and action-conditioned transformations—not a
+    # second copy of raw geometry that evicts compiler feedback from context.
+    raw_induction = candidate.get("causal_entity_induction")
+    if isinstance(raw_induction, Mapping):
+        compact_bindings = []
+        for binding in raw_induction.get("bindings", ())[:8]:
+            if not isinstance(binding, Mapping):
+                continue
+            compact_bindings.append({
+                key: copy.deepcopy(binding[key])
+                for key in (
+                    "causal_entity_id", "member_binding_ids", "hole_count",
+                    "action_conditioned_transforms", "epistemic_status",
+                    "identity_status", "support", "contradictions",
+                    "evidence_refs", "internal_relation_residual",
+                )
+                if key in binding
+            })
+            compact_bindings[-1]["member_count"] = len(
+                binding.get("member_binding_ids", ())
+            )
+        candidate["causal_entity_induction"] = {
+            key: copy.deepcopy(raw_induction[key])
+            for key in (
+                "protocol", "candidates_generated", "candidates_retained",
+                "maximum_members", "fitting_time_ms", "global_transform",
+            )
+            if key in raw_induction
+        }
+        candidate["causal_entity_induction"]["bindings"] = compact_bindings
+    candidate["causal_entities"] = [
+        {
+            key: copy.deepcopy(item[key])
+            for key in (
+                "causal_entity_id", "member_binding_ids", "hole_count",
+                "action_conditioned_transforms", "epistemic_status",
+                "identity_status", "support", "contradictions",
+                "internal_relation_residual",
+            )
+            if key in item
+        }
+        for item in candidate.get("causal_entities", ())[:8]
+        if isinstance(item, Mapping)
+    ]
+    settlement = candidate.get("latest_settlement")
+    if isinstance(settlement, Mapping):
+        candidate["latest_settlement"] = {
+            key: copy.deepcopy(settlement[key])
+            for key in (
+                "explanation_binding_id", "adjudication", "actual_progress",
+                "identity", "mechanism", "potential", "preferred_order",
+                "protected_invariants",
+            )
+            if key in settlement
+        }
+    candidate["rejected_semantic_proposals"] = [
+        {
+            key: copy.deepcopy(item[key])
+            for key in (
+                "verb", "schema_name", "goal_family", "roles",
+                "potential_roles", "role_constraints", "observable",
+                "measurement_hypothesis", "direction", "terminal_class",
+                "r2_grounding_status", "reason",
+            )
+            if key in item
+        }
+        for item in candidate.get("rejected_semantic_proposals", ())[:4]
+        if isinstance(item, Mapping)
+    ]
     if len(json.dumps(candidate, sort_keys=True, separators=(",", ":"))) > MAX_R2_SEMANTIC_PROJECTION_BYTES:
         candidate["competing_explanations"] = candidate.get("competing_explanations", [])[:2]
         candidate["salient_structural_bindings"] = candidate.get("salient_structural_bindings", [])[:8]
@@ -868,6 +1052,11 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
                 for key in ("explanation_binding_id", "adjudication", "actual_progress")
                 if key in settlement
             } or None,
+            "rejected_semantic_proposals": candidate.get(
+                "rejected_semantic_proposals", []
+            )[:2],
+            "causal_entity_induction": candidate.get("causal_entity_induction"),
+            "causal_scope_residual": candidate.get("causal_scope_residual"),
             "schema_summary": candidate.get("schema_summary"),
             "categorical_comparisons": [
                 {key: item.get(key) for key in ("binding_id", "schema_id", "type")}
@@ -1173,7 +1362,7 @@ SEMANTIC COHERENCE:
   maximum; maintain requires invariant. Use open only with direction=unknown.
 - Existing verbs and built-in observables are defeasible priors, not fixed
   pairings. Available built-ins include fit_residual, centroid_distance,
-  boundary_gap, overlap_deficit, containment_violation, component_count, and
+  boundary_gap, overlap_area, overlap_deficit, containment_violation, and
   symmetry_residual. Use one only when its declared quantity expresses the
   proposed relation.
 - If evidence supports several verbs, retain up to three competing proposals
@@ -1426,7 +1615,7 @@ CAUSAL VISUAL UNIT:
         observable_symbol = {
             "type": "string", "pattern": "^[a-z][a-z0-9_]{0,63}$",
         }
-        measurement_hypothesis = {"anyOf": [{"type": "null"}, {
+        measurement_definition = {
             "type": "object", "additionalProperties": False,
             "required": [
                 "protocol", "left_source", "left_feature", "right_source",
@@ -1452,7 +1641,10 @@ CAUSAL VISUAL UNIT:
                 "coordinate_frame": {"enum": ["scene", "intrinsic"]},
                 "include_separation_gap": {"type": "boolean"},
             },
-        }]}
+        }
+        measurement_hypothesis = {
+            "anyOf": [{"type": "null"}, measurement_definition],
+        }
         verb_schema = {
             "type": "object", "additionalProperties": False,
             "required": ["verb", "schema_name", "goal_family", "roles", "role_constraints", "potential_roles", "observable", "measurement_hypothesis", "direction", "terminal_class", "terminal_condition"],
@@ -1461,7 +1653,7 @@ CAUSAL VISUAL UNIT:
                 "schema_name": {"type": "string", "maxLength": 80},
                 "goal_family": {"enum": ["alignment", "containment", "contact", "separation", "ordering", "symmetry", "multiplicity", "transformation", "unknown"]},
                 "roles": {"type": "array", "minItems": 2, "maxItems": 4, "uniqueItems": True, "items": {"enum": abstract_roles}},
-                "potential_roles": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"enum": abstract_roles}},
+                "potential_roles": {"type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": True, "items": {"enum": abstract_roles}},
                 "observable": observable_symbol,
                 "measurement_hypothesis": measurement_hypothesis,
                 "direction": {"enum": ["decrease", "increase", "maintain", "unknown"]},
@@ -1482,7 +1674,7 @@ CAUSAL VISUAL UNIT:
                     "required": ["predicate", "arguments", "modality"],
                     "properties": {
                         "predicate": {"enum": ["same_outline", "different_outline", "same_interior", "different_interior", "same_area", "different_area", "same_value", "different_value"]},
-                        "arguments": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"enum": abstract_roles}},
+                        "arguments": {"type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": True, "items": {"enum": abstract_roles}},
                         "modality": {"enum": ["required", "suggested", "anti-clue", "unknown"]},
                     },
                 }},
@@ -1511,6 +1703,30 @@ CAUSAL VISUAL UNIT:
                 "goal_contract_reason": {"type": ["string", "null"], "maxLength": 160},
             },
         }
+        # Keep the dependency at a direct oneOf boundary. The local structured
+        # generation backend does not reliably enforce nested allOf/oneOf
+        # combinations, while direct complete branches are grammar-visible.
+        verb_schema = {"oneOf": [
+            {
+                **verb_schema,
+                "properties": {
+                    **verb_schema["properties"],
+                    "observable": {"enum": list(BUILTIN_GOAL_OBSERVABLES)},
+                    "measurement_hypothesis": {"type": "null"},
+                },
+            },
+            {
+                **verb_schema,
+                "properties": {
+                    **verb_schema["properties"],
+                    "observable": {
+                        "type": "string",
+                        "pattern": "^proposed_[a-z0-9_]{1,54}$",
+                    },
+                    "measurement_hypothesis": measurement_definition,
+                },
+            },
+        ]}
         alias_branches = []
         for action_id, evidence_refs in action_evidence.items():
             alias_branches.append({
@@ -1812,18 +2028,6 @@ CAUSAL VISUAL UNIT:
                 ],
             }
         prior_projection = turn.document.get("prior_working_note") or {}
-        prior_prose_digest = prior_projection.get("prior_natural_language_digest")
-        if (
-            isinstance(prior_prose_digest, str)
-            and hashlib.sha256(scratchpad_text.encode("utf-8")).hexdigest() == prior_prose_digest
-        ):
-            return {
-                **compilation,
-                "rejected": [
-                    *compilation.get("rejected", ()),
-                    {"reason": "natural-language-scratchpad-not-revised"},
-                ],
-            }
         if note is None:
             return {**compilation, "rejected": [*compilation.get("rejected", ()), {"reason": "workspace-write-missing"}]}
         consolidation_task = turn.document.get("explanation_consolidation_task")
@@ -1900,29 +2104,11 @@ CAUSAL VISUAL UNIT:
                 "action_id": action_id, "alias": phrase,
                 "status": status, "evidence_refs": list(evidence_refs),
             })
-        unique_proposals = []
-        seen_proposals = set()
-        for proposal in note["goal_proposals"]:
-            key = _canonical_goal_proposal_key(proposal)
-            if key not in seen_proposals:
-                normalized_proposal = dict(proposal)
-                normalized_proposal.setdefault("local_terminal", {
-                    "observable": proposal.get("observable", "unknown"),
-                    "preferred_order": proposal.get("direction", "maintain"),
-                    "relation": (
-                        "minimum" if proposal.get("terminal_class") == "minimum" else
-                        "maximum" if proposal.get("terminal_class") == "maximum" else "equals"
-                    ),
-                    "target": 0.0 if proposal.get("terminal_class") == "minimum" else None,
-                })
-                if "goal_contract" not in normalized_proposal:
-                    normalized_proposal["goal_contract"] = None
-                    normalized_proposal["goal_contract_reason"] = "insufficient environment-terminal basis"
-                elif normalized_proposal.get("goal_contract") is not None:
-                    normalized_proposal.setdefault("goal_contract_reason", None)
-                else:
-                    normalized_proposal.setdefault("goal_contract_reason", "insufficient environment-terminal basis")
-                seen_proposals.add(key); unique_proposals.append(normalized_proposal)
+        # Goal proposals are independent, authority-free candidates. Quarantine
+        # malformed candidates without discarding valid semantic context.
+        unique_proposals, seen_proposals, proposal_rejections = (
+            _quarantine_goal_proposals(note["goal_proposals"])
+        )
         consolidation = None
         consolidation_write = None
         if isinstance(consolidation_task, Mapping):
@@ -2115,21 +2301,19 @@ CAUSAL VISUAL UNIT:
             and seen_proposals == prior_proposal_keys
         )
         if evidence_stale_exact_repetition:
-            return {
-                **compilation,
-                "rejected": [
-                    *compilation.get("rejected", ()),
-                    {
-                        "reason": "evidence-stale-goal-proposal-repetition",
-                        "new_transition_evidence_ref": current_evidence_ref,
-                        "prior_transition_evidence_ref": prior_evidence_ref,
-                        "proposal_digests": [
-                            hashlib.sha256(item.encode("utf-8")).hexdigest()[:20]
-                            for item in sorted(seen_proposals)
-                        ],
-                    },
+            proposal_rejections.append({
+                "reason": "evidence-stale-goal-proposal-repetition",
+                "new_transition_evidence_ref": current_evidence_ref,
+                "prior_transition_evidence_ref": prior_evidence_ref,
+                "proposal_digests": [
+                    hashlib.sha256(item.encode("utf-8")).hexdigest()[:20]
+                    for item in sorted(seen_proposals)
                 ],
-            }
+            })
+            # Retire the repeated failed candidates while preserving any valid
+            # scratchpad, alias, and abductive update in this response.
+            unique_proposals = []
+            seen_proposals = set()
         feedback = turn.document.get("scratchpad_context", {}).get("r2_semantic_projection") or {}
         available_schema_ids = {
             str(item.get("schema_id"))
@@ -2213,7 +2397,14 @@ CAUSAL VISUAL UNIT:
         if consolidation_write is not None:
             accepted.append(consolidation_write)
         accepted.append(write)
-        return {**compilation, "accepted": accepted, "working_note": payload}
+        return {
+            **compilation,
+            "accepted": accepted,
+            "rejected": [
+                *compilation.get("rejected", ()), *proposal_rejections,
+            ],
+            "working_note": payload,
+        }
 
     qc.build_turn = build_turn
     qc.response_schema = response_schema

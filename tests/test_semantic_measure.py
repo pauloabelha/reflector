@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -7,6 +8,11 @@ import pytest
 from reflector2.planner import BoundedBestFirstPlanner
 from reflector2.r2.goal_contract import canonicalize_goal_proposals
 from reflector2.r2.r2_1_adapter import FrameSchemaObserver
+from reflector2.r2.scratchpad import (
+    _goal_proposal_contract_error,
+    _quarantine_goal_proposals,
+    record_r2_semantic_projection,
+)
 from reflector2.r2.semantic_measure import (
     SEMANTIC_MEASURE_PROTOCOL,
     SemanticMeasureHypothesis,
@@ -176,6 +182,112 @@ def test_measurement_definition_is_part_of_control_identity():
     assert len(canonicalize_goal_proposals([first, second])) == 2
 
 
+def test_dependent_contract_separates_builtin_and_proposed_measurements():
+    builtin = proposed_goal(
+        observable="centroid_distance",
+        measurement_hypothesis=None,
+        local_terminal={
+            "observable": "centroid_distance", "preferred_order": "decrease",
+            "relation": "minimum", "target": 0.0,
+        },
+    )
+    assert _goal_proposal_contract_error(builtin) is None
+    assert _goal_proposal_contract_error(proposed_goal()) is None
+    assert _goal_proposal_contract_error({
+        **builtin, "measurement_hypothesis": negative_space_measure(),
+    }) == "built-in-observable-must-not-carry-measurement-hypothesis"
+    assert _goal_proposal_contract_error({
+        **proposed_goal(), "measurement_hypothesis": None,
+    }) == "proposed-observable-requires-measurement-hypothesis"
+    assert _goal_proposal_contract_error({
+        **builtin, "observable": "invented_distance",
+        "local_terminal": {
+            "observable": "invented_distance", "preferred_order": "decrease",
+            "relation": "minimum", "target": 0.0,
+        },
+    }) == "observable-must-be-built-in-or-proposed"
+
+
+def test_dependent_contract_rejects_incoherent_roles_and_terminals():
+    assert _goal_proposal_contract_error(proposed_goal(
+        potential_roles=["actor", "actor"],
+    )) == "potential-roles-must-be-two-distinct-declared-roles"
+    assert _goal_proposal_contract_error(proposed_goal(role_constraints=[{
+        "predicate": "different_outline",
+        "arguments": ["occluder", "occluder"],
+        "modality": "suggested",
+    }])) == "constraint-arguments-must-be-distinct-declared-roles"
+    assert _goal_proposal_contract_error(proposed_goal(local_terminal={
+        "observable": "centroid_distance", "preferred_order": "decrease",
+        "relation": "minimum", "target": 0.0,
+    })) == "local-terminal-observable-mismatch"
+
+
+def test_malformed_goal_is_quarantined_without_losing_valid_siblings():
+    malformed = proposed_goal(role_constraints=[{
+        "predicate": "different_outline",
+        "arguments": ["occluder", "occluder"],
+        "modality": "anti-clue",
+    }])
+    accepted, seen, rejected = _quarantine_goal_proposals([
+        malformed, proposed_goal(), proposed_goal(),
+    ])
+    assert len(accepted) == 1
+    assert len(seen) == 1
+    assert rejected == [{
+        "reason": "goal-proposal-dependent-contract",
+        "proposal_index": 0,
+        "detail": "constraint-arguments-must-be-distinct-declared-roles",
+    }]
+    assert accepted[0]["goal_contract"] is None
+
+    # Compiler-owned storage defaults do not make a repeated proposal novel.
+    normalized_copy = dict(accepted[0])
+    accepted, seen, rejected = _quarantine_goal_proposals([
+        proposed_goal(), normalized_copy,
+    ])
+    assert len(accepted) == len(seen) == 1
+    assert rejected == []
+
+
+def test_semantic_projection_keeps_rejection_feedback_over_raw_cae_geometry():
+    rejected = proposed_goal()
+    rejected.update({
+        "r2_grounding_status": "rejected-ungrounded",
+        "reason": "no measurable typed tuple satisfies schema-required constraints",
+    })
+    projection = record_r2_semantic_projection({
+        "protocol": "r2.1-semantic-projection-v1",
+        "rejected_semantic_proposals": [rejected],
+        "latest_settlement": {"adjudication": "untested", "raw": "x" * 20000},
+        "causal_entity_induction": {
+            "protocol": "r2-causal-entity-v0",
+            "candidates_generated": 1,
+            "bindings": [{
+                "causal_entity_id": "causal-entity:test",
+                "member_binding_ids": ["a", "b"],
+                "cells": [[index, index] for index in range(4000)],
+                "shape": [[index, 0] for index in range(4000)],
+                "action_conditioned_transforms": {
+                    "1": [{"kind": "translation", "parameters": [-1, 0]}],
+                },
+                "epistemic_status": "SUPPORTED",
+                "support": 2,
+            }],
+        },
+        "causal_entities": [{"cells": [[index, index] for index in range(4000)]}],
+    })
+    encoded = json.dumps(projection, sort_keys=True)
+    assert len(encoded) <= 12000
+    assert "cells" not in encoded
+    assert projection["rejected_semantic_proposals"][0]["reason"].startswith(
+        "no measurable typed tuple"
+    )
+    binding = projection["causal_entity_induction"]["bindings"][0]
+    assert binding["member_count"] == 2
+    assert binding["epistemic_status"] == "SUPPORTED"
+
+
 def test_prompt_source_contains_no_privileged_fit_mapping_or_game_tokens():
     source = (Path(__file__).parents[1] / "src/reflector2/r2/scratchpad.py").read_text()
     measure_source = (
@@ -185,6 +297,7 @@ def test_prompt_source_contains_no_privileged_fit_mapping_or_game_tokens():
     assert "fit should use fit_residual" not in lowered
     assert "fit normally decreases fit_residual" not in lowered
     assert "fit requires only" not in lowered
+    assert "natural-language-scratchpad-not-revised" not in source
     assert "r2-spatial-set-residual-v0" in source
     for forbidden in ("ar25", "yellow", "blue l", "action_1"):
         assert forbidden not in measure_source

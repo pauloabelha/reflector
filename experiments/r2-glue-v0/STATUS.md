@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase: first semantic-abduction intervention implemented and awaiting live evaluation.
+- Phase: semantic contract/feedback liveness verified; cross-game audit next.
 - Branch: `glue` at baseline `75600da`.
 - Production baseline: pushed to `origin/main`.
 - Focused baseline verification: 123 tests passed.
@@ -14,7 +14,7 @@
 |---|---|---|
 | 000 | complete | Main architecture promoted; live semantic-to-control seam isolated |
 | 001 | complete | Generic semantic measurement proposal and compiler; 135 focused tests pass |
-| 002 | pending | Live AR25 observation after intervention |
+| 002 | complete | Malformed goals quarantined; CAE feedback retained; stale failed goals retired |
 | 003 | pending | Cross-case/non-overfit audit |
 
 ## Current hypothesis
@@ -28,9 +28,7 @@ grounding and settlement authority.
 
 ## Next evidence
 
-1. Run live AR25 and inspect whether Qwen proposes a better explanation, whether
-   R2 compiles it, and whether it changes grounded action predictions.
-2. Run at least one additional game/capability case selected independently of
+1. Run at least one additional game/capability case selected independently of
    whether it favors spatial-set measurements.
-3. Reject the intervention if it merely improves language while leaving control
+2. Reject the intervention if it merely improves language while leaving control
    unchanged.

@@ -12,6 +12,15 @@ from reflector2.planner import GoalContractBasis
 
 GOAL_CONTRACT_PROTOCOL = "r2-goal-contract-v0"
 GOAL_CONTRACT_STATUSES = frozenset({"OPEN", "SUPPORTED", "REFUTED"})
+BUILTIN_GOAL_OBSERVABLES = (
+    "fit_residual",
+    "centroid_distance",
+    "boundary_gap",
+    "overlap_area",
+    "overlap_deficit",
+    "containment_violation",
+    "symmetry_residual",
+)
 
 
 @dataclass(frozen=True, slots=True)
