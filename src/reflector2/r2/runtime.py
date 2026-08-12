@@ -49,6 +49,7 @@ class LiveRuntime:
         self.qwen_latency_prior_seconds = float(qwen_latency_prior_seconds)
         self.schema_observer: Any | None = None
         self.observation_envelope_builder: Any | None = None
+        self._pending_action_publication: dict[str, Any] | None = None
         self.reset_requested = threading.Event()
         self.snapshot: dict[str, Any] = {
             "status": "idle", "frame": [], "observation_envelope": None,
@@ -253,6 +254,7 @@ class LiveRuntime:
                     "eta_samples": len(self.qwen_durations),
                 },
             }
+            self._pending_action_publication = None
             self.condition.notify_all()
             return self.read()
 
@@ -333,7 +335,10 @@ class LiveRuntime:
              "turn": turn, "cached": True, "fast_path": True, "elapsed_ms": 0.0}
             if fast_path else self.observe_schemas(frame, turn)
         )
-        self.update(
+        # Fit the successor now because controller settlement consumes that
+        # grounded workspace, but do not publish a half-transition.  The
+        # controller publishes these fields together with its settlement.
+        publication = dict(
             status="observing",
             frame=frame,
             observation_envelope=observation_envelope,
@@ -346,6 +351,18 @@ class LiveRuntime:
             settlement=controller.settlements[-1] if controller.settlements else None,
             fast_path=(controller.fast_path.document() if hasattr(controller, "fast_path") else None),
         )
+        with self.condition:
+            self._pending_action_publication = publication
+
+    def publish_action_settlement(self, settlement: Mapping[str, Any]) -> None:
+        """Publish successor observation and settlement as one UI snapshot."""
+        with self.condition:
+            if self.reset_requested.is_set():
+                return
+            publication = dict(self._pending_action_publication or {})
+            self._pending_action_publication = None
+            self.snapshot.update({**publication, "settlement": copy.deepcopy(dict(settlement))})
+            self.condition.notify_all()
 
     def after_retry_reset(self, successor: Any, controller: Any) -> None:
         """Publish a same-level RESET without routing it through action learning."""

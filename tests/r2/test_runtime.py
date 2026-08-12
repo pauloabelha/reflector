@@ -333,6 +333,36 @@ def test_live_runtime_keeps_exact_workspace_separate_from_ui_traces():
     assert snapshot["scratchpad"]["r2_action_traces"] == ["observed action"]
 
 
+def test_live_runtime_publishes_successor_and_settlement_atomically():
+    from reflector2.r2.runtime import LiveRuntime
+
+    class Observer:
+        def fit_frame(self, frame, *, turn=0):
+            return {"turn": turn, "frame_marker": frame[0][0]}
+
+    runtime = LiveRuntime()
+    runtime.set_schema_observer(Observer())
+    runtime.snapshot.update({"frame": [[1]], "turn": 0, "settlement": None})
+    successor = SimpleNamespace(
+        frame=[[2]], levels_completed=0, win_levels=1,
+    )
+    controller = SimpleNamespace(settlements=[], fast_path=SimpleNamespace(document=lambda: {}))
+
+    runtime.after_action(successor, controller)
+    staged = runtime.read()
+    assert staged["frame"] == [[1]]
+    assert staged["turn"] == 0
+    assert staged["settlement"] is None
+
+    settlement = {"action": 3, "observation_changed": True, "outcome": "changed"}
+    runtime.publish_action_settlement(settlement)
+    published = runtime.read()
+    assert published["frame"] == [[2]]
+    assert published["turn"] == 1
+    assert published["settlement"] == settlement
+    assert published["r2_1_schema_stats"]["frame_marker"] == 2
+
+
 def test_r22_openai_profile_changes_model_and_all_budget_dimensions(monkeypatch):
     from reflector2.r2 import experiment
 

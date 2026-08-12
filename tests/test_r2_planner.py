@@ -280,8 +280,12 @@ def test_arcade_planner_options_default_to_deterministic_and_are_allowlisted():
     options = browser_options(base)
     assert options["active"] == "bounded-best-first-v0"
     assert [item["id"] for item in options["choices"]] == [
-        "bounded-best-first-v0", "fallback-only-v0", "model-selected",
+        "prospect-planner-v0", "bounded-best-first-v0",
+        "fallback-only-v0", "model-selected",
     ]
+    assert resolve_browser_selection(
+        base, {"backend": "prospect-planner-v0"}, {"provider": "openai"}
+    )["backend"] == "prospect-planner-v0"
     deterministic = resolve_browser_selection(
         base, {"backend": "bounded-best-first-v0"}, {"provider": "openai"}
     )

@@ -85,11 +85,14 @@ modules. R2 adapts grounded explanations and supported command-scoped effects
 into a `ControlProblem`, injects any `PlannerBackend`, and remains the sole
 owner of evidence, settlement, and external action authority.
 
-Three backends implement the contract:
+Four backends implement the contract:
 
 - `NoPlanPlanner` preserves the original one-step controller;
 - `BoundedBestFirstPlanner` searches supported causal effects under explicit
   depth, frontier, expansion, confidence, and milestone budgets;
+- `ProspectPlanner` derives bounded `GoalProspect` values from an R2-owned
+  `GoalContract` and can justify a locally adverse first step only when an
+  explicitly supported terminal-reaching factorization exists;
 - `ModelPlanner` accepts either `QwenPlanningModel` or `LunaPlanningModel`
   through one structured model interface, then deterministically replays and
   validates every proposed edge.
@@ -107,13 +110,13 @@ worse divergence and was much slower. See the
 [`AR25 planner results`](experiments/r2-2-planner-ar25-v0/RESULTS.md) and the
 [`planner architecture note`](docs/R2_2_PLANNER_REPOSITORY_UNDERSTANDING.md).
 
-The current system connects situated verbs strongly to local predicted
-progress. Its remaining goal-level gap is explicit: the model's inferred
-`game_objective` is not yet a structured causal contract used by action
-ranking. A future evidence-cited goal contract and first-class shared
-explanation lock must connect local residual completion directly to beating a
-level. See [`R2_1.md`](R2_1.md) for the detailed implemented/prospective split
-and [`R2_2.md`](R2_2.md) for the production migration.
+R2.3 now implements the minimum structured `GoalContract` and derived
+`GoalProspect` path as an experimental backend. Model proposals remain OPEN;
+only cited environment settlements can support or refute a contract. Current
+real-game evidence has not yet demonstrated a useful planner divergence or a
+score gain, so R2.2 bounded search remains the production default. See
+[`R2_1.md`](R2_1.md), [`R2_2.md`](R2_2.md), and the
+[`R2.3 experiment`](experiments/r2-3-prospect-planner-v0/RESULTS.md).
 
 ## Shared semantic workspace
 
@@ -200,9 +203,10 @@ set +a
 The browser picker intentionally offers only **Qwen (local)** and **GPT-5.6
 Luna**, with server-owned safe defaults. The game, level, and model selectors
 share the run-control row with a planner selector. Deterministic bounded search
-is selected by default; original one-step R2 and model-validated planning with
-the selected Qwen/Luna model are explicit alternatives. The full right-hand
-Workspace panel presents goal
+is selected by default; **Goal prospect (R2.3)**, original one-step R2, and
+model-validated planning with the selected Qwen/Luna model are explicit
+alternatives. The full right-hand Workspace includes a dedicated
+**PLANNER · GOAL PROSPECT** box alongside goal
 proposals, abductive compositions, open questions, aliases, citations, and the
 exact model scratchpad; raw JSON remains available for audit.
 

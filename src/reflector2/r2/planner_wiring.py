@@ -33,6 +33,11 @@ def browser_options(planner_config: Mapping[str, Any]) -> dict[str, Any]:
         "active": active,
         "choices": [
             {
+                "id": "prospect-planner-v0",
+                "label": "Goal prospect (R2.3)",
+                "selection": {"backend": "prospect-planner-v0"},
+            },
+            {
                 "id": "bounded-best-first-v0",
                 "label": "Deterministic search (default)",
                 "selection": {"backend": "bounded-best-first-v0"},
@@ -62,7 +67,8 @@ def resolve_browser_selection(
         raise ValueError("planner selection must contain only backend")
     selected = str(selection.get("backend") or "").strip().lower()
     if selected not in {
-        "bounded-best-first-v0", "fallback-only-v0", "model-selected",
+        "prospect-planner-v0", "bounded-best-first-v0",
+        "fallback-only-v0", "model-selected",
     }:
         raise ValueError(f"unknown planner selection: {selected!r}")
     if selected == "model-selected":

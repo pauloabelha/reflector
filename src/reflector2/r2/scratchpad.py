@@ -1139,6 +1139,14 @@ put an environment action, direction, button, policy, or game identifier in
 either channel. Do not serialize a situated binding, attention table, or
 action policy.
 
+GOAL CONTRIBUTION HYPOTHESIS:
+A goal_proposal may optionally include one narrow goal_contract proposing that
+the verb terminal contributes to an observable level_completion,
+game_completion, or score_increase. This remains an OPEN hypothesis: never
+claim that the relation is supported or that completing the verb wins. State
+the countercondition as verb-terminal-without-environment-terminal. R2 compiles
+the proposal and only environment settlement may support or refute it.
+
 ACTION ALIASES:
 For an opaque ACTION_i with exposed R2 transition or causal-effect evidence,
 action_aliases may add a short cited phrase: move left, rotate, interact, or
@@ -1421,6 +1429,16 @@ CAUSAL VISUAL UNIT:
                 "direction": {"enum": ["decrease", "increase", "maintain", "unknown"]},
                 "terminal_class": {"enum": ["minimum", "maximum", "invariant", "open"]},
                 "terminal_condition": {"type": "string", "maxLength": 120},
+                "local_terminal": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["observable", "preferred_order", "relation", "target"],
+                    "properties": {
+                        "observable": {"enum": ["fit_residual", "centroid_distance", "boundary_gap", "overlap_deficit", "containment_violation", "component_count", "symmetry_residual", "unknown"]},
+                        "preferred_order": {"enum": ["decrease", "increase", "maintain"]},
+                        "relation": {"enum": ["equals", "minimum", "maximum"]},
+                        "target": {"type": ["number", "null"]},
+                    },
+                },
                 "role_constraints": {"type": "array", "maxItems": 6, "items": {
                     "type": "object", "additionalProperties": False,
                     "required": ["predicate", "arguments", "modality"],
@@ -1430,6 +1448,29 @@ CAUSAL VISUAL UNIT:
                         "modality": {"enum": ["required", "suggested", "anti-clue", "unknown"]},
                     },
                 }},
+                "goal_contract": {"anyOf": [{"type": "null"}, {
+                    "type": "object", "additionalProperties": False,
+                    "required": [
+                        "environment_terminal", "contributor_relation",
+                        "countercondition",
+                    ],
+                    "properties": {
+                        "environment_terminal": {
+                            "enum": [
+                                "level_completion", "game_completion",
+                                "score_increase",
+                            ],
+                        },
+                        "contributor_relation": {
+                            "enum": ["reached", "minimum", "maximum"],
+                        },
+                        "contributor_target": {"type": ["number", "null"]},
+                        "countercondition": {
+                            "const": "verb-terminal-without-environment-terminal",
+                        },
+                    },
+                }]},
+                "goal_contract_reason": {"type": ["string", "null"], "maxLength": 160},
             },
         }
         alias_branches = []
@@ -1826,7 +1867,24 @@ CAUSAL VISUAL UNIT:
         for proposal in note["goal_proposals"]:
             key = _canonical_goal_proposal_key(proposal)
             if key not in seen_proposals:
-                seen_proposals.add(key); unique_proposals.append(dict(proposal))
+                normalized_proposal = dict(proposal)
+                normalized_proposal.setdefault("local_terminal", {
+                    "observable": proposal.get("observable", "unknown"),
+                    "preferred_order": proposal.get("direction", "maintain"),
+                    "relation": (
+                        "minimum" if proposal.get("terminal_class") == "minimum" else
+                        "maximum" if proposal.get("terminal_class") == "maximum" else "equals"
+                    ),
+                    "target": 0.0 if proposal.get("terminal_class") == "minimum" else None,
+                })
+                if "goal_contract" not in normalized_proposal:
+                    normalized_proposal["goal_contract"] = None
+                    normalized_proposal["goal_contract_reason"] = "insufficient environment-terminal basis"
+                elif normalized_proposal.get("goal_contract") is not None:
+                    normalized_proposal.setdefault("goal_contract_reason", None)
+                else:
+                    normalized_proposal.setdefault("goal_contract_reason", "insufficient environment-terminal basis")
+                seen_proposals.add(key); unique_proposals.append(normalized_proposal)
         consolidation = None
         consolidation_write = None
         if isinstance(consolidation_task, Mapping):

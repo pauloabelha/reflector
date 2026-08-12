@@ -625,7 +625,11 @@ def controller_class(
                         outcome=settlement["outcome"], trace=trace,
                         settlement=r2_1_settlement,
                     )
-                runtime.update(settlement=settlement)
+                publish_settlement = getattr(runtime, "publish_action_settlement", None)
+                if callable(publish_settlement):
+                    publish_settlement(settlement)
+                else:
+                    runtime.update(settlement=settlement)
             return {**learning, "one_action_settlement": settlement}
 
         def observe_level_transition(self, action: int, before_grid: Any, after_grid: Any) -> dict[str, Any]:
@@ -660,7 +664,11 @@ def controller_class(
             self.fast_path.revoke("level-transition")
 
             if runtime is not None:
-                runtime.update(settlement=settlement)
+                publish_settlement = getattr(runtime, "publish_action_settlement", None)
+                if callable(publish_settlement):
+                    publish_settlement(settlement)
+                else:
+                    runtime.update(settlement=settlement)
             return {
                 "prospective_adjudication": None,
                 "one_action_settlement": settlement,

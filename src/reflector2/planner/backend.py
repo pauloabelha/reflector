@@ -63,6 +63,10 @@ def backend_from_name(name: str | None) -> PlannerBackend:
         return BoundedBestFirstPlanner()
     if normalized in {"fallback-only", "fallback-only-v0", "none", "original", "one-step"}:
         return NoPlanPlanner()
+    if normalized in {"prospect", "prospect-planner", "prospect-planner-v0"}:
+        from .prospect import ProspectPlanner
+
+        return ProspectPlanner()
     raise ValueError(f"unknown planner backend: {name!r}")
 
 

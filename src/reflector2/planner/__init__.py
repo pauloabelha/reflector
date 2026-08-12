@@ -11,6 +11,8 @@ from .certificate import plan_certificate, settle_plan_certificate
 from .factorization import (
     ControlFactorization,
     ControlProblem,
+    GoalContractBasis,
+    GoalProspect,
     MilestoneShadow,
     PlannerConfig,
     ProspectiveStep,
@@ -26,11 +28,14 @@ from .model import (
     QwenPlanningModel,
 )
 from .model_planner import ModelPlanner
+from .prospect import ProspectPlanner, search as prospect_search
 from .search import search
 
 __all__ = [
     "ControlFactorization",
     "ControlProblem",
+    "GoalContractBasis",
+    "GoalProspect",
     "BoundedBestFirstPlanner",
     "MilestoneShadow",
     "ModelPlanner",
@@ -41,6 +46,7 @@ __all__ = [
     "PlanningModel",
     "PlanningModelError",
     "ProspectiveStep",
+    "ProspectPlanner",
     "SearchResult",
     "SupportedCausalEffect",
     "QwenPlanningModel",
@@ -52,4 +58,5 @@ __all__ = [
     "require_backend",
     "settle_plan_certificate",
     "search",
+    "prospect_search",
 ]

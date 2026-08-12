@@ -1,0 +1,121 @@
+{
+  "archive_scope": "available tracked context-spinoff checkpoints",
+  "eligible_candidates": [],
+  "environment_interventions_authorized": 0,
+  "frozen_candidates": [],
+  "games_in_inventory": 11,
+  "negative_result": "No archived multi-game state satisfies the preregistered evidence requirements; no candidate was fabricated or executed.",
+  "protocol": "r2-3-multi-game-candidate-inventory-v0",
+  "records": [
+    {
+      "archived_opportunities": 372,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/ar25.json",
+      "eligible": false,
+      "game": "ar25",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 25,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/cd82.json",
+      "eligible": false,
+      "game": "cd82",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 0,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/cn04.json",
+      "eligible": false,
+      "game": "cn04",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 0,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/ft09.json",
+      "eligible": false,
+      "game": "ft09",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 0,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/ka59.json",
+      "eligible": false,
+      "game": "ka59",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 113,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/sb26.json",
+      "eligible": false,
+      "game": "sb26",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 0,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/sc25.json",
+      "eligible": false,
+      "game": "sc25",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 202,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/sp80.json",
+      "eligible": false,
+      "game": "sp80",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 0,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/su15.json",
+      "eligible": false,
+      "game": "su15",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 0,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/tu93.json",
+      "eligible": false,
+      "game": "tu93",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    },
+    {
+      "archived_opportunities": 0,
+      "artifact": "experiments/r2-25-game-context-spinoff-diagnostic/parallel-run/checkpoints/wa30.json",
+      "eligible": false,
+      "game": "wa30",
+      "has_active_grounded_verb_or_explanation": false,
+      "has_goal_contract": false,
+      "has_two_supported_causal_alternatives": false,
+      "reason": "archived diagnostic lacks frozen R2.2 grounded explanation, command-scoped effect table, and GoalContract"
+    }
+  ]
+}

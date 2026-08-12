@@ -1,0 +1,73 @@
+{
+  "atomic_only": {
+    "actor_binding_ids": [
+      "frame:e279d484f78d:region:4",
+      "frame:8cf4ec8be5d1:region:4"
+    ],
+    "changed_regions": 7,
+    "coverage": 0.5,
+    "explained_changed_regions": 1,
+    "status": "OBSERVED",
+    "unexplained_changed_regions": 6
+  },
+  "basis": {
+    "action_scope": "ACTION_2",
+    "frame_sha256": [
+      "e279d484f78d22b07378952ff8f11741761be483402fe3721f08cbfa15f16a09",
+      "8cf4ec8be5d125e27464138d094dc3b3423f4e416bc3e1e37eac9c7fb2d11cc2",
+      "44bfac350e9f7446b190026ff77930b043cdfe4e43959b1c5fb4441212033615"
+    ],
+    "game": "ar25",
+    "run_id": "run-1786496687295657139",
+    "status": "OBSERVED",
+    "transitions": 2,
+    "workspace": "generic_prospective--ar25--shared_live_qwen"
+  },
+  "causal_entity_lift": {
+    "common_transform": {
+      "kind": "translation",
+      "parameters": [
+        3.0,
+        0.0
+      ]
+    },
+    "contradictions": 0,
+    "coverage": 1.0,
+    "entity_id": "causal-entity:01eb43daa3a497307222bbfa",
+    "identity_status": "UNIQUE",
+    "internal_relation_residual": 0.0,
+    "member_count": 7,
+    "status": "INFERRED",
+    "support": 2,
+    "unexplained_changed_regions": 0
+  },
+  "divergences": {
+    "actor_granularity": "INFERRED: atomic 45-cell region -> supported 7-member causal entity",
+    "environment_settlement": "OBSERVED for member transformations; NOT_DEMONSTRATED for a live assembly-level prediction",
+    "first_command": "NOT_DEMONSTRATED",
+    "planner_route": "NOT_DEMONSTRATED",
+    "score": "NOT_DEMONSTRATED"
+  },
+  "held_constant": [
+    "same frozen predecessor/successor frames",
+    "same action scope",
+    "same primitive segmentation",
+    "same semantic proposal",
+    "same planner and budgets",
+    "no environment execution"
+  ],
+  "protocol": "r2-causal-entity-glue-matched-v0",
+  "runtime": {
+    "candidates_generated": 1,
+    "candidates_retained": 1,
+    "experiment_elapsed_ms": 15.576,
+    "last_induction_ms": 3.157,
+    "maximum_members": 7
+  },
+  "status_legend": {
+    "IMPLEMENTED": "executable production or test contract",
+    "INFERRED": "controlled consequence not yet executed live",
+    "NOT_DEMONSTRATED": "no evidence in this experiment",
+    "OBSERVED": "read from frozen environment/Arcade evidence"
+  }
+}
