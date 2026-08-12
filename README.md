@@ -205,13 +205,21 @@ or score improvement is claimed.
 
 Semantic revision is now an evidenced durable obligation. When a fresh
 settlement carries explicit unsupported R2 semantic failure, Qwen cannot clear
-the obligation by repeating or cosmetically rewording the prior state: a valid
+the obligation by repeating the prior state or changing only one explanatory
+phrase: a valid
 response must revise `notes` and at least one of `explanation`, `goal`, or
 `expectation`. The obligation survives rejected retries and failed-candidate
 retirement, but is absent when no failure is evidenced. On DC22, calls 4 and 7
 were denied fresh semantic status while grounded control continued. No DC22
 completion or score improvement is claimed. Current verification is 246
 full-suite passes plus the unchanged missing historical artifact failure.
+
+When mutually unique same-type entities have different rigid outcomes in one
+intervention, R2 now emits bounded `unresolved_effect_contexts` telemetry while
+learning no type-level effect. The record preserves the distinct deltas and
+their entity counts, explicitly without control authority. This supplies the
+evidence needed to test future role/context factors without inventing them from
+a single game or transition.
 
 ## Shared semantic workspace
 

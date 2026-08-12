@@ -1853,6 +1853,7 @@ class FrameSchemaObserver:
         successors: Sequence[dict[str, Any]],
         *,
         excluded_binding_ids: set[str] | None = None,
+        unresolved_contexts: list[dict[str, Any]] | None = None,
     ) -> list[dict[str, Any]]:
         """Learn goal-independent effects from mutual unique identity only.
 
@@ -1919,6 +1920,28 @@ class FrameSchemaObserver:
                 # transition. Do not average away the missing role or context
                 # factor, and do not let many invariant siblings outvote a
                 # moved instance from the same environment intervention.
+                if unresolved_contexts is not None:
+                    outcome_counts = Counter(
+                        delta for _source, _successor, delta in matches
+                    )
+                    unresolved_contexts.append({
+                        "context_demand_id": E.stable_id(
+                            "unresolved-effect-context", {
+                                "scope": effect_scope,
+                                "region_type": region_key,
+                                "outcomes": sorted(outcome_counts.items()),
+                            },
+                        ),
+                        "effect_scope": effect_scope,
+                        "region_type": E.stable_id("region-type", region_key),
+                        "outcomes": [
+                            {"delta": list(delta), "entity_count": count}
+                            for delta, count in sorted(outcome_counts.items())
+                        ],
+                        "evidence_unit": "one-environment-transition",
+                        "status": "INTRINSIC_TYPE_INSUFFICIENT",
+                        "authority": "telemetry-only-no-effect-learning",
+                    })
                 continue
             delta = next(iter(outcomes))
             self.action_effects[(effect_scope, region_key)][delta] += 1
@@ -3494,11 +3517,13 @@ class FrameSchemaObserver:
                     else predicted_changed_ids
                 )
                 bucket.update(support_ids)
+        unresolved_effect_contexts: list[dict[str, Any]] = []
         learned.extend(self._learn_unassigned_atomic_effects(
             action,
             predecessor_entities,
             after_regions,
             excluded_binding_ids=goal_tracked_binding_ids,
+            unresolved_contexts=unresolved_effect_contexts,
         ))
         transition_evidence_ref = E.stable_id("causal-scope-transition", {
             "before": before_digest,
@@ -3791,6 +3816,7 @@ class FrameSchemaObserver:
             "adjudication": adjudication, "actual_progress": actual_progress,
             "identity": identity_settlement, "mechanism": mechanism_settlement,
             "potential": potential_settlement, "learned_effects": learned,
+            "unresolved_effect_contexts": unresolved_effect_contexts[:16],
             "causal_scope_residual": deepcopy(self.last_causal_scope_residual),
             "causal_entity_induction": deepcopy(self.last_causal_entity_induction),
             "preferred_order": {

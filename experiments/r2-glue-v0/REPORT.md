@@ -251,3 +251,16 @@ completion or score gain is claimed.
 **Prospective:** checkpoint 009 returns to context induction, but only if
 repeated identical command scopes reproduce heterogeneous rigid outcomes with
 an observable discriminator.
+
+## Checkpoint 009 (in progress)
+
+Heterogeneous mutually unique rigid outcomes now emit a bounded
+`unresolved_effect_contexts` record. It preserves the command scope, intrinsic
+region type, distinct deltas, and per-outcome entity counts, with explicit
+`telemetry-only-no-effect-learning` authority. The effect model remains
+unchanged. This distinguishes “no correspondence evidence” from “intrinsic
+type was tested and proved insufficient” without prematurely inventing a role,
+sequence state, or spatial context. A synthetic transition verifies one
+invariant and one translated instance are reported while model support remains
+empty. Context induction is not yet authorized; repeated cross-transition
+evidence and an observable discriminator are still required.

@@ -21,7 +21,7 @@
 | 006 | complete | Goal-independent mutual-unique effects learned and handed to later semantic control |
 | 007 | complete | Same-transition type evidence pooled; heterogeneous outcomes fail closed |
 | 008 | complete | Erupted semantic failure creates a durable, substantive revision obligation |
-| 009 | active | Induce context only from repeated identical-scope heterogeneous rigid outcomes |
+| 009 | active | Measure repeated identical-scope heterogeneous rigid outcomes before inducing context |
 
 ## Current hypothesis
 

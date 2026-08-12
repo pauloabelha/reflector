@@ -526,6 +526,20 @@ def test_one_transition_pools_same_type_instances_and_rejects_heterogeneity():
     )
     assert rejected["learned_effects"] == []
     assert heterogeneous.action_effects == {}
+    assert rejected["unresolved_effect_contexts"] == [{
+        "context_demand_id": rejected["unresolved_effect_contexts"][0][
+            "context_demand_id"
+        ],
+        "effect_scope": 4,
+        "region_type": rejected["unresolved_effect_contexts"][0]["region_type"],
+        "outcomes": [
+            {"delta": [0.0, 0.0], "entity_count": 1},
+            {"delta": [0.0, 1.0], "entity_count": 1},
+        ],
+        "evidence_unit": "one-environment-transition",
+        "status": "INTRINSIC_TYPE_INSUFFICIENT",
+        "authority": "telemetry-only-no-effect-learning",
+    }]
 
 
 def test_later_goal_probes_identity_then_uses_exploration_learned_effect():
