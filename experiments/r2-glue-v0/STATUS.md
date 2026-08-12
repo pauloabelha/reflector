@@ -19,7 +19,8 @@
 | 004 | complete | Fresh settlement feedback and grounded nonprogress revision verified on CD82 |
 | 005 | complete | Semantic request duplication removed; CD82 crossed prior turn-9 context crash |
 | 006 | complete | Goal-independent mutual-unique effects learned and handed to later semantic control |
-| 007 | active | Diagnose sequence context and equivalent-role probe efficiency without game-specific rules |
+| 007 | complete | Same-transition type evidence pooled; heterogeneous outcomes fail closed |
+| 008 | active | Induce context only from repeated identical-scope heterogeneous rigid outcomes |
 
 ## Current hypothesis
 

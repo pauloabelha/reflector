@@ -194,6 +194,15 @@ while CAE independently retained a coherent three-member candidate. The full
 suite now has 244 passes plus the same historical artifact failure; no CN04
 completion or score improvement is claimed.
 
+Same-transition evidence is pooled by intrinsic entity type before updating
+the ordinary effect model. Agreeing instances add one observation with an
+auditable `entity_count`; heterogeneous same-type outcomes add none because a
+role or context factor is missing. On DC22 this reduced one settlement from 32
+entity-level records to 14 type-level records while retaining multiplicities
+11 and 8 and the real 2-cell translation. Current verification is 245
+full-suite passes plus the same historical artifact failure; no DC22 completion
+or score improvement is claimed.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

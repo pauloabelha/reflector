@@ -192,3 +192,31 @@ identity and authority gates.
 require observable state or predecessor-command context. Context will be added
 only for repeated identical command scopes and entity types with genuinely
 different mutually unique outcomes.
+
+## Checkpoint 007
+
+**Implemented:** unassigned rigid effects are now pooled by intrinsic entity
+type within one environment intervention. Agreeing instances contribute one
+model observation plus an `entity_count` audit field. If mutually unique rigid
+instances of the same type have different deltas, R2 records no type-level
+effect: the intrinsic type is proven insufficient, and invariant siblings
+cannot outvote a moved instance. Goal-bound role effects remain separately
+settled.
+
+**Observed:** the first DC22 transition originally emitted 32 entity-level
+effect records. On the exact rerun, pooling emitted 14 type-level records. One
+invariant record represented 11 agreeing entities and another represented 8;
+the genuine 2-cell translation remained separate. Synthetic tests verify that
+two agreeing instances increment model support once and that heterogeneous
+same-type outcomes add no model observation. The focused suite has 133 passes;
+the full suite has 245 passes and the unchanged missing historical artifact
+failure.
+
+**Inferred:** multiple objects in one scene are correlated witnesses to one
+intervention, not independent transition trials. Per-transition pooling avoids
+pseudo-replication and turns within-type heterogeneity into an explicit demand
+for a missing role or context factor.
+
+**Prospective:** checkpoint 008 will add such a factor only after repeated
+identical command scopes reproduce heterogeneous rigid outcomes with an
+observable discriminator. No game-specific state or action meaning is allowed.

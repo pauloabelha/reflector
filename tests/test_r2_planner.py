@@ -499,6 +499,35 @@ def test_exploration_does_not_encode_deformation_as_translation():
     assert observer.action_effects == {}
 
 
+def test_one_transition_pools_same_type_instances_and_rejects_heterogeneity():
+    def blocks(left_x: int, right_x: int) -> list[list[int]]:
+        frame = [[0] * 20 for _ in range(7)]
+        for start in (left_x, right_x):
+            for y in range(2, 5):
+                for x in range(start, start + 3):
+                    frame[y][x] = 2
+        return frame
+
+    consistent_before = blocks(1, 14)
+    consistent_after = blocks(2, 15)
+    observer = FrameSchemaObserver()
+    observer.fit_frame(consistent_before, turn=0)
+    settlement = observer.settle_action(4, consistent_before, consistent_after)
+    assert len(settlement["learned_effects"]) == 1
+    assert settlement["learned_effects"][0]["entity_count"] == 2
+    assert settlement["learned_effects"][0]["delta"] == [0.0, 1.0]
+    assert sum(next(iter(observer.action_effects.values())).values()) == 1
+
+    heterogeneous_after = blocks(2, 14)
+    heterogeneous = FrameSchemaObserver()
+    heterogeneous.fit_frame(consistent_before, turn=0)
+    rejected = heterogeneous.settle_action(
+        4, consistent_before, heterogeneous_after,
+    )
+    assert rejected["learned_effects"] == []
+    assert heterogeneous.action_effects == {}
+
+
 def test_later_goal_probes_identity_then_uses_exploration_learned_effect():
     before = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0],

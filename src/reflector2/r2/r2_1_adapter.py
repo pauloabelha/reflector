@@ -1866,7 +1866,9 @@ class FrameSchemaObserver:
 
         excluded = set(excluded_binding_ids or ())
         effect_scope = self._command_scope(action)
-        learned: list[dict[str, Any]] = []
+        matched_by_type: dict[
+            tuple[Any, ...], list[tuple[dict[str, Any], dict[str, Any], tuple[float, float]]]
+        ] = defaultdict(list)
         for source in predecessors:
             source_id = str(source.get("binding_id", ""))
             if not source_id or source_id in excluded:
@@ -1905,17 +1907,33 @@ class FrameSchemaObserver:
                 (float(successor["center2"][1]) - float(source["center2"][1])) / 2.0,
             )
             region_key = self._region_key(source)
+            matched_by_type[region_key].append((source, successor, delta))
+
+        learned: list[dict[str, Any]] = []
+        for region_key, matches in sorted(
+            matched_by_type.items(), key=lambda item: json.dumps(item[0], sort_keys=True),
+        ):
+            outcomes = {delta for _source, _successor, delta in matches}
+            if len(outcomes) != 1:
+                # The intrinsic type is not sufficient to predict this
+                # transition. Do not average away the missing role or context
+                # factor, and do not let many invariant siblings outvote a
+                # moved instance from the same environment intervention.
+                continue
+            delta = next(iter(outcomes))
             self.action_effects[(effect_scope, region_key)][delta] += 1
             self.level_action_effects[(effect_scope, region_key)][delta] += 1
             learned.append({
                 "trajectory_id": E.stable_id("unassigned-entity-transition", {
                     "scope": effect_scope,
-                    "source": source_id,
-                    "successor": successor.get("binding_id"),
+                    "region_type": region_key,
+                    "delta": delta,
                 }),
                 "role": "unassigned-entity",
                 "region_type": E.stable_id("region-type", region_key),
                 "delta": list(delta),
+                "entity_count": len(matches),
+                "evidence_unit": "one-environment-transition",
                 "support_kind": "mutual-unique-entity-correspondence",
             })
         return learned
