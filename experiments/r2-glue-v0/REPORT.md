@@ -403,3 +403,36 @@ model still named the hole-based residual `align`; the measurement, grounding,
 settlement, and control path—not lexical fluency—produced the observed local
 progress. Checkpoint 013 keeps the live run open until an environment terminal
 or a new evidenced bottleneck appears.
+
+## Checkpoint 013
+
+**Observed:** near residual 27, AR25 probing changed visible role structure.
+The semantic proposal remained byte-identical, but `control_goal_key` changed
+twice because it included the defeasible role candidate's structural ID.
+Progress confirmations reset from seven to zero and both role trajectories
+were discarded. The apparent jump to residual 7 was therefore a different
+grounding, not continuous progress of the tracked filler/receptacle pair.
+
+**Implemented:** semantic goal identity now contains only the semantic control
+objective: verb, observable, direction, formal potential ports, and role
+constraints. The frame-local candidate ID remains in the grounding hypothesis
+and ranking beam, but no longer namespaces goal evidence or trajectories. Once
+an intervention selects one candidate, environment settlement creates role
+trajectories under the semantic goal; later candidates are evaluated against
+that persistent identity through translation, overlap, occlusion, and visible
+structural change.
+
+**Live evidence:** an exact fresh AR25 replay reproduced the prior sequence.
+At the old reset point, a probe regressed the tracked residual from 27 to 30.
+The repaired build retained the same semantic goal key, the same actor and
+target trajectory IDs, and all seven progress confirmations. It then selected
+a causal-factorized action and recorded an eighth confirmation. By turn 19 it
+truthfully remained on the same pair at residual 30 and resumed discriminating
+probes; it did not claim the prior spurious residual-7 jump.
+
+The focused suite has 148 passes. The full suite has 252 passes and the one
+unchanged missing historical artifact failure.
+
+**Limit:** role continuity is repaired, but AR25 has not reached a local-zero,
+level, or score terminal. Checkpoint 014 must discover a further control factor
+or report the remaining plateau without changing goal identity.

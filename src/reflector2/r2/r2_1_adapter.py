@@ -1560,12 +1560,19 @@ class FrameSchemaObserver:
 
     @staticmethod
     def _goal_key(goal: dict[str, Any], candidate_binding_id: str | None = None) -> str:
+        """Identify the semantic control objective, not a frame-local tuple.
+
+        ``candidate_binding_id`` remains accepted for playback/API
+        compatibility but is deliberately excluded.  Candidate groundings are
+        separately represented and ranked; once one is selected, its role
+        trajectories must survive translation, overlap, occlusion, and other
+        visible structural changes under the same semantic objective.
+        """
         return E.stable_id("control-goal", {
             "verb": goal.get("verb"), "observable": goal.get("observable"),
             "direction": goal.get("direction"),
             "potential_roles": list(goal.get("potential_roles", ("actor", "target"))),
             "role_constraints": list(goal.get("role_constraints", ())),
-            "candidate_binding_id": candidate_binding_id,
         })
 
     @staticmethod

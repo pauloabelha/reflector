@@ -261,6 +261,14 @@ those failures, and AR25 grounded a hole-based occupancy/negative-space
 residual whose value decreased from 53 to 32 over six confirmed observations.
 That is local potential progress, not yet a level or score terminal.
 
+Semantic goal identity is independent of frame-local role-candidate identity.
+Grounding candidates remain separate hypotheses, but once a selected candidate
+settles into actor/target trajectories, overlap or occlusion cannot silently
+reset its evidence counters. On exact AR25 replay, the repaired build retained
+one goal key, both trajectories, and seven confirmations across the probe that
+previously fragmented them, then recorded an eighth confirmation. The honest
+tracked residual remained 30 rather than switching to an unrelated pair at 7.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

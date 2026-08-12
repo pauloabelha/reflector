@@ -461,6 +461,28 @@ def test_settlement_projection_exposes_fresh_nonprogress_without_lag():
     assert initial["current_explanation"]["epistemic_evaluation"]["nonprogress_observations"] == 0
 
 
+def test_semantic_goal_identity_survives_frame_local_grounding_change():
+    observer = FrameSchemaObserver()
+    goal = {
+        "verb": "fit",
+        "observable": "fit_residual",
+        "direction": "decrease",
+        "potential_roles": ["actor", "target"],
+        "role_constraints": [{
+            "predicate": "different_outline",
+            "arguments": ["actor", "target"],
+            "modality": "suggested",
+        }],
+    }
+    assert observer._goal_key(
+        goal, "defeasible-role-binding:before-occlusion",
+    ) == observer._goal_key(
+        goal, "defeasible-role-binding:during-occlusion",
+    )
+    revised = {**goal, "observable": "containment_violation"}
+    assert observer._goal_key(goal, "same") != observer._goal_key(revised, "same")
+
+
 def test_exploration_learns_atomic_effect_without_a_semantic_goal():
     before = [[0, 0, 0, 0, 0], [0, 2, 2, 0, 0], [0, 0, 0, 0, 0]]
     after = [[0, 0, 0, 0, 0], [0, 0, 2, 2, 0], [0, 0, 0, 0, 0]]
