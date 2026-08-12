@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase: semantic contract/feedback liveness verified; cross-game audit next.
+- Phase: cross-game safety transfer verified; control-efficiency audit active.
 - Branch: `glue` at baseline `75600da`.
 - Production baseline: pushed to `origin/main`.
 - Focused baseline verification: 123 tests passed.
@@ -15,7 +15,8 @@
 | 000 | complete | Main architecture promoted; live semantic-to-control seam isolated |
 | 001 | complete | Generic semantic measurement proposal and compiler; 135 focused tests pass |
 | 002 | complete | Malformed goals quarantined; CAE feedback retained; stale failed goals retired |
-| 003 | pending | Cross-case/non-overfit audit |
+| 003 | complete | bp35 selected independently; semantic probe grounded and settled without false authority |
+| 004 | active | Diagnose equivalent-role probe efficiency and action-conditioned collapse |
 
 ## Current hypothesis
 
@@ -28,7 +29,7 @@ grounding and settlement authority.
 
 ## Next evidence
 
-1. Run at least one additional game/capability case selected independently of
-   whether it favors spatial-set measurements.
-2. Reject the intervention if it merely improves language while leaving control
-   unchanged.
+1. Determine whether the 195-way bp35 role ambiguity contracts after grounded
+   parameterized probes or merely shifts among equivalent pairs.
+2. Require environment-confirmed potential progress before any score or control
+   improvement claim.

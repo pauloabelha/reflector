@@ -72,3 +72,26 @@ generation, compilation, storage normalization, and bounded projection.
 games, but useful semantic-to-control pickup and score improvement remain
 unproven. Checkpoint 003 must use a case selected independently of AR25's
 negative-space affordance.
+
+## Checkpoint 003
+
+**Implemented:** no new production mechanism was added. The existing checkpoint
+002 architecture was tested unchanged on `bp35`, selected by a predeclared
+lexical rule rather than expected compatibility.
+
+**Observed:** malformed frame-zero semantics were quarantined without halting.
+After one changed transition, Qwen supplied a valid custom boundary residual;
+R2 grounded it, authorized a discriminating probe, settled both role identities
+as UNIQUE, observed stationary effects and zero potential progress, and kept
+the planner at NO_PLAN. CAE generated no unsupported higher-order factor. A
+later coordinate action carried a complete observed-region payload and effect
+scope. The grounded role frontier contained 195 Pareto-equal candidates.
+
+**Inferred:** the repaired semantic boundary transfers as a safety and liveness
+property. It can also affect action selection through a genuinely grounded
+probe. It has not demonstrated efficient ambiguity collapse, progress control,
+level completion, or score gain.
+
+**Prospective:** action-conditioned settlement may reduce the equivalent-role
+frontier enough to yield a supported effect and useful control. Checkpoint 004
+must measure that rather than infer it from a single successful probe.
