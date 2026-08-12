@@ -24,7 +24,8 @@
 | 009 | complete | Read-only audit found no live context demand in 101 deduplicated transitions; no context induced |
 | 010 | complete | Focused repair revised failed semantics at 44% fewer prompt tokens; R2 authority unchanged |
 | 011 | complete | Failed goals lose control authority during repair; CD82 post-action context overflow repaired generically |
-| 012 | active | Measure whether surviving/revised hypotheses improve environment progress across games |
+| 012 | complete | Canonical binary ports compile across games; defeasible hole residual produced six confirmed AR25 improvements |
+| 013 | active | Test whether measured local progress reaches an environment terminal across games |
 
 ## Current hypothesis
 

@@ -251,6 +251,16 @@ request that exceeded local Qwen's context by 500 tokens; the replay integrated
 that update and the next one without removing causal visual evidence. These are
 control-safety and transport-liveness results, not score or completion claims.
 
+New measurable goals expose canonical binary formal ports (`actor,target`) to
+the constrained generator. This replaces unreliable cross-field role arrays,
+while the compiler remains backward-compatible with existing multi-role notes.
+Visual categorical relations are generated only as defeasible clues, never
+hard requirements. A ledger audit found 51 dependent-role failures across five
+games before this change. Fresh CD82 then compiled consecutive goals without
+those failures, and AR25 grounded a hole-based occupancy/negative-space
+residual whose value decreased from 53 to 32 over six confirmed observations.
+That is local potential progress, not yet a level or score terminal.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

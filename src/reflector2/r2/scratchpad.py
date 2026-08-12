@@ -24,6 +24,8 @@ MAX_CONSOLIDATION_PROPOSALS = 3
 MODEL_SCRATCHPAD_FIELDS = (
     "game_objective", "explanation", "goal", "expectation", "notes",
 )
+CONTROL_GOAL_ROLES = ("actor", "target")
+GENERATED_ROLE_MODALITIES = ("suggested", "anti-clue", "unknown")
 CONSOLIDATION_PROMPT = """You are the configured semantic model performing R2 explanation consolidation.
 Read model_scratchpad as the exact current shared workspace scratchpad used by
 ordinary semantic turns and Agent Arcade. Rewrite the same five-field object in
@@ -1527,9 +1529,12 @@ evidence requires a revision.
 R2 alone owns formal schema binding and action selection. Propose one to three
 action-free prospective verb schemas through goal_proposals. Each proposal
 names a reusable verb such as fit, touch, collect, avoid, reveal, or another
-verb justified by visible structure. Give it two to four abstract roles and a
-typed relation graph over those roles using only the allowed role predicates;
-never bind a role to a visible object yourself. Also give it a measurable
+verb justified by visible structure. The current measurable control interface
+has exactly two formal ports: roles and potential_roles must both be
+["actor","target"], and every binary role_constraint must use those two
+distinct arguments. Express semantic role meaning through the verb,
+schema_name, goal_family, and relation predicate; never bind a formal port to a
+visible object yourself. Also give it a measurable
 potential, preferred direction, typed terminal class, and terminal condition. R2 decides whether
 and how each proposal binds. Outside the optional action_aliases field, never
 put an environment action, direction, button, policy, or game identifier in
@@ -1906,8 +1911,11 @@ CAUSAL VISUAL UNIT:
                 "verb": {"type": "string", "pattern": "^[a-z][a-z0-9_]{0,39}$"},
                 "schema_name": {"type": "string", "maxLength": 80},
                 "goal_family": {"enum": ["alignment", "containment", "contact", "separation", "ordering", "symmetry", "multiplicity", "transformation", "unknown"]},
-                "roles": {"type": "array", "minItems": 2, "maxItems": 4, "uniqueItems": True, "items": {"enum": abstract_roles}},
-                "potential_roles": {"type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": True, "items": {"enum": abstract_roles}},
+                # Grammar-visible constants keep new generation inside the
+                # binary potential interface. The compiler remains backward
+                # compatible with previously stored multi-role notes.
+                "roles": {"const": list(CONTROL_GOAL_ROLES)},
+                "potential_roles": {"const": list(CONTROL_GOAL_ROLES)},
                 "observable": observable_symbol,
                 "measurement_hypothesis": measurement_hypothesis,
                 "direction": {"enum": ["decrease", "increase", "maintain", "unknown"]},
@@ -1928,8 +1936,11 @@ CAUSAL VISUAL UNIT:
                     "required": ["predicate", "arguments", "modality"],
                     "properties": {
                         "predicate": {"enum": ["same_outline", "different_outline", "same_interior", "different_interior", "same_area", "different_area", "same_value", "different_value"]},
-                        "arguments": {"type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": True, "items": {"enum": abstract_roles}},
-                        "modality": {"enum": ["required", "suggested", "anti-clue", "unknown"]},
+                        "arguments": {"const": list(CONTROL_GOAL_ROLES)},
+                        # Observable categorical relations are defeasible
+                        # compatibility clues, never universal verb typing.
+                        # Legacy required constraints remain compiler-readable.
+                        "modality": {"enum": list(GENERATED_ROLE_MODALITIES)},
                     },
                 }},
                 "goal_contract": {"anyOf": [{"type": "null"}, {

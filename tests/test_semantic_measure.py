@@ -9,6 +9,8 @@ from reflector2.planner import BoundedBestFirstPlanner
 from reflector2.r2.goal_contract import canonicalize_goal_proposals
 from reflector2.r2.r2_1_adapter import FrameSchemaObserver
 from reflector2.r2.scratchpad import (
+    CONTROL_GOAL_ROLES,
+    GENERATED_ROLE_MODALITIES,
     _action_evidence_refs,
     _begin_semantic_revision,
     _failed_semantic_state_repeated,
@@ -70,6 +72,12 @@ def proposed_goal(**changes: object) -> dict:
     }
     value.update(changes)
     return value
+
+
+def test_generated_control_goal_ports_are_canonical_binary_interfaces():
+    assert CONTROL_GOAL_ROLES == ("actor", "target")
+    assert "required" not in GENERATED_ROLE_MODALITIES
+    assert "suggested" in GENERATED_ROLE_MODALITIES
 
 
 def ring() -> dict:

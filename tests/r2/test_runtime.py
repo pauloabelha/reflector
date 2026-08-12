@@ -555,6 +555,9 @@ def test_evidenced_failure_has_a_focused_non_authoritative_revision_transport():
     assert "post-action-null-history-claim" in source
     assert "evidence-failed-goal-proposal-retired" in source
     assert "control_goal_proposals" in controller_source
+    assert '"roles": {"const": list(CONTROL_GOAL_ROLES)}' in source
+    assert '"arguments": {"const": list(CONTROL_GOAL_ROLES)}' in source
+    assert '"modality": {"enum": list(GENERATED_ROLE_MODALITIES)}' in source
     assert "independent learned aliases" in source
     assert 'properties["goal_proposals"]' in source
     assert '"minItems": 0, "maxItems": 2' in source

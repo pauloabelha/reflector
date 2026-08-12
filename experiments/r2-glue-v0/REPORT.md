@@ -360,3 +360,46 @@ unchanged failure caused by the absent historical
 **Limit:** this verifies authority withdrawal and context liveness, not a level
 completion, score increase, or general ARC competence. Checkpoint 012 must
 measure environment progress and hypothesis utility across games.
+
+## Checkpoint 012
+
+**Observed:** CD82 completed six semantic calls but quarantined every structured
+goal: Qwen generated repeated roles such as `actor,actor` or constraints over
+undeclared repeated `occluder` arguments. A read-only audit found 51 such
+dependent-role failures in recorded AR25, BP35, CD82, CN04, and DC22 runs (44
+invalid constraint arguments and 7 duplicate role arrays). JSON Schema's
+`uniqueItems` did not make these cross-field dependencies reliably generatable
+for the local constrained backend.
+
+**Implemented:** newly generated measurable goals now use one grammar-visible
+binary interface: `roles=[actor,target]`,
+`potential_roles=[actor,target]`, and constraint arguments use those same two
+ports. This is not a verb or game mapping. Semantic role meaning remains in the
+verb, schema name, goal family, and relation predicate; R2 still binds both
+ports to situated entities. The compiler remains backward-compatible with
+existing multi-role notes.
+
+New visual categorical constraints also cannot use `required`. Sameness,
+difference, outline, interior, area, and value are unverified compatibility
+clues, so generation may mark them `suggested`, `anti-clue`, or `unknown`.
+Legacy required constraints and consolidation applicability contracts remain
+readable. This prevents a Qwen visual guess from becoming a universal verb
+definition or hard control gate.
+
+**Live evidence:** fresh CD82 produced two consecutive valid goals with
+canonical ports and zero compiler rejections, then validly abstained after
+nonprogress. On AR25, Qwen proposed a spatial-set residual comparing occupancy
+with enclosed negative space. With `same_outline` downgraded from a hard gate
+to a suggestion, R2 grounded the differently shaped pair. The residual fell
+from 53 to 32 over six environment-confirmed progress observations. Control
+advanced from `PROBE_ELIGIBLE` to `PLAN_ELIGIBLE`; selected actions were backed
+by causal-factorization plans rather than the verb label.
+
+The focused suite has 147 passes. The full suite has 251 passes and one
+unchanged missing historical artifact failure.
+
+**Limit:** no AR25 level or score terminal has yet been observed. The semantic
+model still named the hole-based residual `align`; the measurement, grounding,
+settlement, and control path—not lexical fluency—produced the observed local
+progress. Checkpoint 013 keeps the live run open until an environment terminal
+or a new evidenced bottleneck appears.
