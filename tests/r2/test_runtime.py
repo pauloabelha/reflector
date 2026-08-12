@@ -547,6 +547,8 @@ def test_evidenced_failure_has_a_focused_non_authoritative_revision_transport():
     assert "one observed transition" in update_prompt
     assert "r2 alone grounds roles" in update_prompt
     assert '"protocol": "focused-semantic-revision-v0"' in source
+    assert '"supported-goal-plateau"' in source
+    assert "_merge_supported_goal_proposals" in source
     assert '"semantic_view": "focused-failure-repair"' in source
     assert "if post_action_update" in source
     assert '"abductive_compositions": "empty"' in source

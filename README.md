@@ -269,6 +269,18 @@ one goal key, both trajectories, and seven confirmations across the probe that
 previously fragmented them, then recorded an eighth confirmation. The honest
 tracked residual remained 30 rather than switching to an unrelated pair at 7.
 
+Supported goals now distinguish lifetime evidence from controller-frontier
+stagnation. R2 tracks the best observed potential for each semantic goal and
+counts measured steps since that best improved; a recovery to an old best does
+not reset the count. Four no-new-best steps request one focused complementary
+abduction while preserving the proven goal, role trajectories, and mechanisms.
+The compiler keeps the prior goal if the model abstains and may append only a
+valid distinct refinement. An accepted repair acknowledges that exact
+goal/frontier epoch, so ordinary semantic updates continue without repeatedly
+raising the same plateau. Exact AR25 replay triggered one such repair at best
+27 with eight confirmations and retained the original hole-based goal. This is
+control-loop repair, not a level or score result.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

@@ -69,6 +69,13 @@ or return no goal proposal when the evidence does not support one. Never repeat
 the exact failed proposal set. Keep summary and objective_hypothesis consistent
 with the revised scratchpad.
 
+If semantic_revision_task.revision_mode is supported-goal-plateau, the prior
+goal has real progress support and is not refuted. Preserve it as a candidate;
+use the observed steps since its best potential last improved to add one
+distinct complementary or refined action-free hypothesis when the evidence
+supports one, or abstain from adding one. Never turn a plateau into claimed
+failure, success, or action advice.
+
 Qwen proposes semantics only. R2 alone grounds roles, measures potentials,
 selects interventions, and adjudicates support. Do not prescribe an action,
 directional button, route, coordinate, game identifier, palette-specific rule,
@@ -111,6 +118,7 @@ _R2_ACTION_TRACES: list[str] = []
 _R2_SEMANTIC_PROJECTION: dict[str, Any] | None = None
 _R2_TRANSITION_OBSERVATION: dict[str, Any] | None = None
 _PENDING_SEMANTIC_REVISION: dict[str, Any] | None = None
+_ACKNOWLEDGED_SEMANTIC_PLATEAUS: set[str] = set()
 CONTROL_PAYLOAD_KINDS = frozenset({"action_proposal", "action_settlement", "action_trace", "transition"})
 ACTION_PROPOSAL = re.compile(
     r"\b(?:action\s*(?:#?\d+|id\b)|button|press|click|execute\s+(?:an?\s+)?action|"
@@ -510,6 +518,37 @@ def _quarantine_goal_proposals(
         seen.add(key)
         accepted.append(normalized_proposal)
     return accepted, seen, rejected
+
+
+def _merge_supported_goal_proposals(
+    prior: Sequence[Mapping[str, Any]],
+    candidates: Sequence[Mapping[str, Any]],
+    *,
+    max_items: int = 3,
+) -> list[dict[str, Any]]:
+    """Preserve valid supported goals while admitting distinct refinements.
+
+    A recent plateau is evidence about the current controller, not evidence
+    that erases a goal whose potential previously improved.  The compiler,
+    rather than model prose, therefore retains canonical prior proposals and
+    appends only valid, semantically distinct candidates.  Prior-first ordering
+    makes the bounded merge conservative when the candidate budget is full.
+    """
+
+    merged: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for proposal in (*prior, *candidates):
+        if _goal_proposal_contract_error(proposal) is not None:
+            continue
+        normalized = _normalize_goal_proposal(proposal)
+        key = _canonical_goal_proposal_key(normalized)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(normalized)
+        if len(merged) >= max_items:
+            break
+    return merged
 
 
 def _transition_evidence_ref(document: Mapping[str, Any]) -> str | None:
@@ -1021,6 +1060,23 @@ def _semantic_failure_signals(document: Mapping[str, Any]) -> tuple[dict[str, An
             "threshold": 2,
             "mechanism_authority": "preserve-independently",
         })
+    active = feedback.get("active_explanation")
+    plateau_epoch = _semantic_plateau_epoch(document)
+    if (
+        isinstance(active, Mapping)
+        and progress_confirmations(active) > 0
+        and int(active.get("frontier_stagnation_steps") or 0) >= 4
+        and plateau_epoch not in _ACKNOWLEDGED_SEMANTIC_PLATEAUS
+    ):
+        signals.append({
+            "kind": "r2-goal-potential-plateau",
+            "count": int(active.get("frontier_stagnation_steps") or 0),
+            "threshold": 4,
+            "best_observed_potential": active.get("best_observed_potential"),
+            "prior_progress_confirmations": progress_confirmations(active),
+            "goal_authority": "preserve-supported-candidate",
+            "mechanism_authority": "preserve-independently",
+        })
     rejected = [
         item for item in feedback.get("rejected_semantic_proposals", ())
         if isinstance(item, Mapping)
@@ -1044,6 +1100,45 @@ def _semantic_failure_signals(document: Mapping[str, Any]) -> tuple[dict[str, An
     if settlement.get("adjudication") == "refuted" and not supported:
         signals.append({"kind": "environment-prediction-refuted"})
     return tuple(signals)
+
+
+def _semantic_plateau_epoch(document: Mapping[str, Any]) -> str | None:
+    """Identify one goal/frontier plateau without using a situated binding."""
+
+    active = (
+        document.get("scratchpad_context", {})
+        .get("r2_semantic_projection", {})
+        .get("active_explanation")
+    )
+    if not isinstance(active, Mapping):
+        return None
+    goal_key = active.get("control_goal_key")
+    best = active.get("best_observed_potential")
+    if not goal_key or not isinstance(best, (int, float)):
+        return None
+    return hashlib.sha256(json.dumps({
+        "control_goal_key": str(goal_key),
+        "best_observed_potential": float(best),
+    }, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()[:20]
+
+
+def _acknowledge_semantic_plateau(document: Mapping[str, Any]) -> None:
+    """Make an accepted repair one-shot until the goal frontier advances."""
+
+    epoch = _semantic_plateau_epoch(document)
+    if epoch is not None:
+        _ACKNOWLEDGED_SEMANTIC_PLATEAUS.add(epoch)
+
+
+def _semantic_failure_suspends_goal(
+    signals: Sequence[Mapping[str, Any]],
+) -> bool:
+    """Plateau requests alternatives without revoking proven goal authority."""
+
+    return any(
+        item.get("kind") != "r2-goal-potential-plateau"
+        for item in signals
+    )
 
 
 def _failed_semantic_state_repeated(
@@ -1078,7 +1173,9 @@ def _minimal_support_fields(explanation: Mapping[str, Any]) -> dict[str, Any]:
         key: explanation[key]
         for key in (
             "control_status", "confirmations", "progress_confirmations",
-            "nonprogress_observations",
+            "control_goal_key",
+            "nonprogress_observations", "best_observed_potential",
+            "frontier_stagnation_steps",
         )
         if key in explanation
     }
@@ -1088,7 +1185,9 @@ def _minimal_support_fields(explanation: Mapping[str, Any]) -> dict[str, Any]:
             key: evaluation[key]
             for key in (
                 "confirmations", "progress_confirmations",
-                "nonprogress_observations",
+                "control_goal_key",
+                "nonprogress_observations", "best_observed_potential",
+                "frontier_stagnation_steps",
             )
             if key in evaluation
         }
@@ -1355,6 +1454,7 @@ def reset_episode_context() -> None:
     _R2_ACTION_TRACES.clear()
     _R2_SEMANTIC_PROJECTION = None
     _R2_TRANSITION_OBSERVATION = None
+    _ACKNOWLEDGED_SEMANTIC_PLATEAUS.clear()
     _finish_semantic_revision()
 
 
@@ -1364,6 +1464,7 @@ def advance_level_context() -> None:
     _R2_ACTION_TRACES.clear()
     _R2_SEMANTIC_PROJECTION = None
     _R2_TRANSITION_OBSERVATION = None
+    _ACKNOWLEDGED_SEMANTIC_PLATEAUS.clear()
     _finish_semantic_revision()
 
 
@@ -1733,10 +1834,21 @@ CAUSAL VISUAL UNIT:
                 stored_scratchpad,
                 current_evidence_ref,
                 failure_signals,
-                prior.payload.get("goal_proposals", ()),
+                (
+                    prior.payload.get("goal_proposals", ())
+                    if _semantic_failure_suspends_goal(failure_signals)
+                    else ()
+                ),
             )
             pending_revision = _PENDING_SEMANTIC_REVISION
         if failure_signals or pending_revision:
+            effective_signals = (
+                failure_signals
+                or tuple((pending_revision or {}).get("explicit_failure_signals", ()))
+            )
+            plateau_only = bool(effective_signals) and not (
+                _semantic_failure_suspends_goal(effective_signals)
+            )
             prior_keys = sorted({
                 _canonical_goal_proposal_key(item)
                 for item in prior.payload.get("goal_proposals", ())
@@ -1757,6 +1869,13 @@ CAUSAL VISUAL UNIT:
                     (pending_revision or {}).get("trigger_evidence_ref")
                 ),
                 "instruction": (
+                    "A historically supported goal has not improved its best "
+                    "observed potential for several measured steps. Preserve it "
+                    "as a supported candidate and propose a distinct complementary "
+                    "or refined action-free hypothesis when evidence warrants one; "
+                    "otherwise abstain. Rewrite notes and at least one explanatory "
+                    "field to state the plateau."
+                    if plateau_only else
                     "R2 or environment failure evidence is available. Revise the "
                     "semantic state from the latest transition. Rewrite notes to "
                     "state the changed assessment, and also revise at least one of "
@@ -1778,8 +1897,19 @@ CAUSAL VISUAL UNIT:
             # compile-time evidence checks.
             document["model_scratchpad"] = copy.deepcopy(stored_scratchpad)
         if failure_signals or pending_revision:
+            effective_signals = (
+                failure_signals
+                or tuple((pending_revision or {}).get("explicit_failure_signals", ()))
+            )
+            plateau_only = bool(effective_signals) and not (
+                _semantic_failure_suspends_goal(effective_signals)
+            )
             document["semantic_revision_task"] = {
                 "protocol": "focused-semantic-revision-v0",
+                "revision_mode": (
+                    "supported-goal-plateau" if plateau_only
+                    else "unsupported-semantic-failure"
+                ),
                 "trigger_evidence_ref": (
                     current_evidence_ref
                     or (pending_revision or {}).get("trigger_evidence_ref")
@@ -1795,7 +1925,10 @@ CAUSAL VISUAL UNIT:
                     ],
                 },
                 "workspace_products": {
-                    "goal_proposals": "revise-replace-or-abstain",
+                    "goal_proposals": (
+                        "preserve-and-add-refine-or-abstain" if plateau_only
+                        else "revise-replace-or-abstain"
+                    ),
                     "abductive_compositions": "empty",
                     "action_aliases": "empty",
                     "cited_ids": "empty",
@@ -2382,7 +2515,11 @@ CAUSAL VISUAL UNIT:
                 scratchpad,
                 turn_evidence_ref,
                 failure_signals,
-                prior_note.get("goal_proposals", ()),
+                (
+                    prior_note.get("goal_proposals", ())
+                    if _semantic_failure_suspends_goal(failure_signals)
+                    else ()
+                ),
             )
             return {
                 **compilation,
@@ -2492,6 +2629,23 @@ CAUSAL VISUAL UNIT:
         unique_proposals, seen_proposals, proposal_rejections = (
             _quarantine_goal_proposals(note["goal_proposals"])
         )
+        revision_task = turn.document.get("semantic_revision_task")
+        if (
+            isinstance(revision_task, Mapping)
+            and revision_task.get("revision_mode") == "supported-goal-plateau"
+        ):
+            unique_proposals = _merge_supported_goal_proposals(
+                tuple(
+                    item
+                    for item in prior_projection.get("goal_proposals", ())
+                    if isinstance(item, Mapping)
+                ),
+                unique_proposals,
+            )
+            seen_proposals = {
+                _canonical_goal_proposal_key(item)
+                for item in unique_proposals
+            }
         suspended_keys = set(
             (_PENDING_SEMANTIC_REVISION or {})
             .get("suspended_goal_proposal_keys", ())
@@ -2706,7 +2860,9 @@ CAUSAL VISUAL UNIT:
             bool(current_evidence_ref)
             and current_evidence_ref != prior_evidence_ref
             and bool(prior_proposal_keys)
-            and bool(_semantic_failure_signals(turn.document))
+            and _semantic_failure_suspends_goal(
+                _semantic_failure_signals(turn.document)
+            )
             and seen_proposals == prior_proposal_keys
         )
         if evidence_stale_exact_repetition:
@@ -2806,6 +2962,12 @@ CAUSAL VISUAL UNIT:
         if consolidation_write is not None:
             accepted.append(consolidation_write)
         accepted.append(write)
+        revision_task = turn.document.get("semantic_revision_task")
+        if (
+            isinstance(revision_task, Mapping)
+            and revision_task.get("revision_mode") == "supported-goal-plateau"
+        ):
+            _acknowledge_semantic_plateau(turn.document)
         _finish_semantic_revision()
         return {
             **compilation,

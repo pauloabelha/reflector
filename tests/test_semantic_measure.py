@@ -12,17 +12,21 @@ from reflector2.r2.scratchpad import (
     CONTROL_GOAL_ROLES,
     GENERATED_ROLE_MODALITIES,
     _action_evidence_refs,
+    _acknowledge_semantic_plateau,
     _begin_semantic_revision,
     _failed_semantic_state_repeated,
     _finish_semantic_revision,
     _goal_proposal_contract_error,
+    _merge_supported_goal_proposals,
     _pending_semantic_revision_unsatisfied,
     _post_action_null_history_claim,
     _semantic_revision_is_substantive,
     _quarantine_goal_proposals,
     _semantic_failure_signals,
+    _semantic_failure_suspends_goal,
     control_goal_proposals,
     record_r2_semantic_projection,
+    reset_episode_context,
 )
 from reflector2.r2.semantic_measure import (
     SEMANTIC_MEASURE_PROTOCOL,
@@ -450,6 +454,66 @@ def test_pending_revision_suspends_only_failed_goal_control_authority():
     finally:
         _finish_semantic_revision()
     assert control_goal_proposals([failed]) == [failed]
+
+
+def test_supported_recent_plateau_requests_revision_without_suspension():
+    document = {
+        "scratchpad_context": {
+            "r2_semantic_projection": {
+                "active_explanation": {
+                    "control_goal_key": "control-goal:supported",
+                    "control_status": "PROBE_ELIGIBLE",
+                    "progress_confirmations": 7,
+                    "nonprogress_observations": 9,
+                    "best_observed_potential": 27.0,
+                    "frontier_stagnation_steps": 4,
+                },
+                "competing_explanations": [],
+                "rejected_semantic_proposals": [],
+            },
+        },
+    }
+    signals = _semantic_failure_signals(document)
+    assert [item["kind"] for item in signals] == [
+        "r2-goal-potential-plateau",
+    ]
+    assert not _semantic_failure_suspends_goal(signals)
+    _acknowledge_semantic_plateau(document)
+    assert not _semantic_failure_signals(document)
+    new_frontier = json.loads(json.dumps(document))
+    new_frontier["scratchpad_context"]["r2_semantic_projection"][
+        "active_explanation"
+    ]["best_observed_potential"] = 24.0
+    assert _semantic_failure_signals(new_frontier)
+    reset_episode_context()
+    progressed = json.loads(json.dumps(document))
+    progressed["scratchpad_context"]["r2_semantic_projection"][
+        "active_explanation"
+    ]["frontier_stagnation_steps"] = 0
+    assert not _semantic_failure_signals(progressed)
+
+
+def test_supported_plateau_merge_preserves_prior_and_adds_only_distinct_goals():
+    prior = proposed_goal()
+    alternative = proposed_goal(
+        verb="contain",
+        schema_name="candidate containment",
+        observable="proposed_containment_residual",
+        local_terminal={
+            "observable": "proposed_containment_residual",
+            "preferred_order": "decrease",
+            "relation": "equals",
+            "target": 0.0,
+        },
+    )
+    normalized_prior = _quarantine_goal_proposals([prior])[0][0]
+    normalized_alternative = _quarantine_goal_proposals([alternative])[0][0]
+    assert _merge_supported_goal_proposals([prior], []) == [normalized_prior]
+    assert _merge_supported_goal_proposals([prior], [prior]) == [normalized_prior]
+    assert _merge_supported_goal_proposals([prior], [alternative]) == [
+        normalized_prior,
+        normalized_alternative,
+    ]
 
 
 def test_post_action_scratchpad_cannot_deny_authoritative_history():

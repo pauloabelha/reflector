@@ -436,6 +436,8 @@ class FrameSchemaObserver:
         self.explanation_refutations: Counter[str] = Counter()
         self.goal_progress_confirmations: Counter[str] = Counter()
         self.goal_nonprogress: Counter[str] = Counter()
+        self.goal_best_potential: dict[str, float] = {}
+        self.goal_frontier_stagnation: Counter[str] = Counter()
         self.pending_prediction: dict[str, Any] | None = None
         self.last_store: Any | None = None
         self.last_workspace: Any | None = None
@@ -586,9 +588,14 @@ class FrameSchemaObserver:
             self.goal_nonprogress[goal_key]
             if goal_key else evaluation.get("nonprogress_observations", 0)
         )
+        frontier_stagnation = (
+            self.goal_frontier_stagnation[goal_key]
+            if goal_key else evaluation.get("frontier_stagnation_steps", 0)
+        )
         return {
             "binding_id": explanation.get("binding_id"),
             "schema_id": explanation.get("schema_id"),
+            "control_goal_key": goal_key or None,
             "verb": explanation.get("verb"),
             "epistemic_status": explanation.get("epistemic_status"),
             "verb_status": explanation.get("verb_status"),
@@ -620,6 +627,11 @@ class FrameSchemaObserver:
             "progress_confirmations": progress_confirmations,
             "refutations": refutations,
             "nonprogress_observations": nonprogress,
+            "best_observed_potential": (
+                self.goal_best_potential.get(goal_key)
+                if goal_key else evaluation.get("best_observed_potential")
+            ),
+            "frontier_stagnation_steps": frontier_stagnation,
         }
 
     def semantic_projection(
@@ -3814,6 +3826,25 @@ class FrameSchemaObserver:
                         self.explanation_refutations[prediction["schema_id"]] += 1
                     if actual_progress <= 0.0:
                         self.goal_nonprogress[goal_key] += 1
+                    prior_best = self.goal_best_potential.get(goal_key)
+                    if prior_best is None:
+                        prior_best = float(before_value)
+                        self.goal_best_potential[goal_key] = prior_best
+                    frontier_advanced = (
+                        direction == "decrease"
+                        and float(after_value) < prior_best - 1e-9
+                    ) or (
+                        direction == "increase"
+                        and float(after_value) > prior_best + 1e-9
+                    )
+                    if frontier_advanced:
+                        self.goal_best_potential[goal_key] = float(after_value)
+                        self.goal_frontier_stagnation[goal_key] = 0
+                    else:
+                        # A local recovery back to an old best is not new
+                        # evidence of control progress.  This catches bounded
+                        # oscillations without depending on a game or verb.
+                        self.goal_frontier_stagnation[goal_key] += 1
 
         self.pending_prediction = None
         settlement = {

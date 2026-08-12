@@ -26,7 +26,8 @@
 | 011 | complete | Failed goals lose control authority during repair; CD82 post-action context overflow repaired generically |
 | 012 | complete | Canonical binary ports compile across games; defeasible hole residual produced six confirmed AR25 improvements |
 | 013 | complete | Semantic goal identity no longer fragments when situated role structure changes |
-| 014 | active | Discover the next evidenced control factor without losing the persistent fit trajectory |
+| 014 | complete | Supported-goal frontier plateau requests one bounded complementary repair without losing proven control |
+| 015 | active | Falsify the goal/frontier/repair lifecycle on structurally different games |
 
 ## Current hypothesis
 
@@ -39,10 +40,9 @@ grounding and settlement authority.
 
 ## Next evidence
 
-1. Determine whether equivalent-role ambiguity can be quotiented by generic
-   symmetry and intervention evidence without losing causal alternatives.
-2. Test whether stationary single-action effects conceal an interaction state
-   established by the preceding command, using transition evidence rather than
-   action-token semantics.
+1. Run structurally different games as falsification tests for the generic
+   frontier/repair lifecycle.
+2. Compare semantic pickup, measurable progress, frontier resets, repair modes,
+   and environment terminals without changing per-game code or prompts.
 3. Require environment-confirmed potential progress before any score or control
    improvement claim.

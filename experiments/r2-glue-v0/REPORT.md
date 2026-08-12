@@ -436,3 +436,31 @@ unchanged missing historical artifact failure.
 **Limit:** role continuity is repaired, but AR25 has not reached a local-zero,
 level, or score terminal. Checkpoint 014 must discover a further control factor
 or report the remaining plateau without changing goal identity.
+
+## Checkpoint 014
+
+**Observed:** the supported AR25 goal oscillated between residuals 27 and 30.
+Lifetime confirmations correctly prevented false failure retirement, but a
+consecutive-nonprogress counter was reset by every 30 → 27 recovery. Positive
+local movement therefore concealed the absence of a new best frontier.
+
+**Implemented:** R2 now tracks the best observed potential per semantic goal
+and steps since that best improved. Four no-new-best steps on a goal with prior
+progress request a focused complementary semantic hypothesis without
+suspending the goal. The compiler preserves the canonical supported proposal
+and appends only valid distinct alternatives. Accepted repair acknowledges one
+goal/frontier epoch; rejected repair remains durable, while a later new best
+permits a new plateau epoch.
+
+**Live evidence:** exact fresh AR25 reached best 27 with seven confirmations,
+then accumulated four no-new-best steps across the 27/30 oscillation. A locally
+positive 30 → 27 return produced confirmation eight but did not reset frontier
+stagnation. The focused action-17 request carried both plateau markers, kept the
+same goal control-eligible, and retained it when Qwen abstained from a second
+structured goal. The action-18 request carried neither plateau marker, proving
+the accepted epoch was not redundantly repaired. The focused suite has 111
+passes; the full suite has 254 passes and the unchanged missing historical
+artifact failure.
+
+**Limit:** no AR25 environment terminal or score improvement is claimed.
+Checkpoint 015 uses other games to try to falsify this generic lifecycle.

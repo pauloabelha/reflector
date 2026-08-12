@@ -444,6 +444,7 @@ def test_settlement_projection_exposes_fresh_nonprogress_without_lag():
             ranking=ranking, settlement=settlement,
         )
         assert projection["active_explanation"]["nonprogress_observations"] == turn
+        assert projection["active_explanation"]["frontier_stagnation_steps"] == turn
 
     active = projection["active_explanation"]
     assert active["progress_confirmations"] == 0
@@ -459,6 +460,34 @@ def test_settlement_projection_exposes_fresh_nonprogress_without_lag():
     assert other["nonprogress_observations"] == 0
 
     assert initial["current_explanation"]["epistemic_evaluation"]["nonprogress_observations"] == 0
+
+
+def test_frontier_stagnation_survives_local_recovery_to_an_old_best():
+    before = [[0, 0, 0, 0, 0, 0], [0, 2, 0, 0, 3, 0], [0, 0, 0, 0, 0, 0]]
+    best = [[0, 0, 0, 0, 0, 0], [0, 0, 2, 0, 3, 0], [0, 0, 0, 0, 0, 0]]
+    goal = {
+        "verb": "align", "schema_name": "Compatible entities converge",
+        "goal_family": "alignment", "observable": "centroid_distance",
+        "direction": "decrease", "terminal_condition": "minimum",
+        "role_constraints": ["two distinct visible entities"],
+    }
+    observer = FrameSchemaObserver()
+    observer.fit_frame(before, turn=0)
+    observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
+    observer.settle_action(4, before, best)
+
+    observer.fit_frame(best, turn=1)
+    observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
+    observer.settle_action(4, best, before)
+
+    observer.fit_frame(before, turn=2)
+    ranking = observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
+    settlement = observer.settle_action(4, before, best)
+    projection = observer.semantic_projection(ranking=ranking, settlement=settlement)
+    active = projection["active_explanation"]
+    assert settlement["actual_progress"] > 0
+    assert active["best_observed_potential"] == pytest.approx(2.0)
+    assert active["frontier_stagnation_steps"] == 2
 
 
 def test_semantic_goal_identity_survives_frame_local_grounding_change():
