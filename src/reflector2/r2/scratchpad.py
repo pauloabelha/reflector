@@ -843,15 +843,44 @@ def _semantic_failure_signals(document: Mapping[str, Any]) -> tuple[dict[str, An
         feedback.get("active_explanation"),
         *feedback.get("competing_explanations", ()),
     ]
+    def progress_confirmations(item: Mapping[str, Any]) -> int:
+        evaluation = item.get("epistemic_evaluation") or {}
+        if "progress_confirmations" in item:
+            return int(item.get("progress_confirmations") or 0)
+        if "progress_confirmations" in evaluation:
+            return int(evaluation.get("progress_confirmations") or 0)
+        # Backward-compatible interpretation for stored projections produced
+        # before mechanism and goal-potential support were separated.
+        return max(
+            int(item.get("confirmations") or 0),
+            int(evaluation.get("confirmations") or 0),
+        )
+
     supported = any(
         isinstance(item, Mapping)
         and (
             item.get("control_status") == "PROGRESS_ELIGIBLE"
-            or int(item.get("confirmations") or 0) > 0
-            or int((item.get("epistemic_evaluation") or {}).get("confirmations") or 0) > 0
+            or progress_confirmations(item) > 0
         )
         for item in explanations
     )
+    repeated_nonprogress = [
+        item for item in explanations
+        if isinstance(item, Mapping)
+        and item.get("control_status") != "PROGRESS_ELIGIBLE"
+        and int(item.get("nonprogress_observations") or 0) >= 2
+        and progress_confirmations(item) == 0
+    ]
+    # Revision is note-wide, while the current stale-repetition guard retires a
+    # canonical proposal set as a unit.  Do not let a weak competitor erase a
+    # simultaneously progress-supported proposal.
+    if repeated_nonprogress and not supported:
+        signals.append({
+            "kind": "r2-goal-potential-nonprogress",
+            "count": len(repeated_nonprogress),
+            "threshold": 2,
+            "mechanism_authority": "preserve-independently",
+        })
     rejected = [
         item for item in feedback.get("rejected_semantic_proposals", ())
         if isinstance(item, Mapping)
@@ -882,14 +911,24 @@ def _minimal_support_fields(explanation: Mapping[str, Any]) -> dict[str, Any]:
 
     retained = {
         key: explanation[key]
-        for key in ("control_status", "confirmations")
+        for key in (
+            "control_status", "confirmations", "progress_confirmations",
+            "nonprogress_observations",
+        )
         if key in explanation
     }
     evaluation = explanation.get("epistemic_evaluation")
-    if isinstance(evaluation, Mapping) and "confirmations" in evaluation:
-        retained["epistemic_evaluation"] = {
-            "confirmations": evaluation["confirmations"],
+    if isinstance(evaluation, Mapping):
+        compact_evaluation = {
+            key: evaluation[key]
+            for key in (
+                "confirmations", "progress_confirmations",
+                "nonprogress_observations",
+            )
+            if key in evaluation
         }
+        if compact_evaluation:
+            retained["epistemic_evaluation"] = compact_evaluation
     return retained
 
 
@@ -1408,6 +1447,9 @@ R2.2 FEEDBACK:
 - Preserve a useful grounded verb when only its mechanism failed. Revise or
   replace proposals when their grounding repeatedly fails or their predictions
   are refuted. Open shadows are explicit unresolved questions.
+- A learned mechanism and a useful goal are separate hypotheses. When R2
+  reports repeated uniquely grounded nonprogress for a potential, preserve the
+  action effect but revise or replace that goal proposal.
 - Never declare your own revision grounded, verified, or action-authoritative.
   Return revised abstract verb schemas through goal_proposals; R2 must bind and
   adjudicate them again.

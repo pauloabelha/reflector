@@ -154,10 +154,20 @@ assembly but do not cause one to exist. A six-transition held-out replay from a
 live AR25 trace formed and supported two different coherent assemblies,
 retained inverse action-conditioned effects, and refuted the larger assembly
 when a member broke away. This verifies the mechanism, not improved control or
-score. The focused CAE/runtime/planner/Arcade suite currently passes 123 tests;
-the full repository suite still has two unrelated failures caused by
-pre-existing deleted experiment score artifacts. See the detailed evidence
-boundary in [`R2_2.md`](R2_2.md).
+score.
+
+Semantic settlement also separates two claims that were previously conflated:
+an action effect may be confirmed even when the proposed goal potential never
+improves. R2 retains the learned mechanism, counts uniquely grounded
+nonprogress independently, and asks the semantic abductor to revise an
+unsupported goal only after repeated observations. Just-settled counters are
+projected immediately rather than through the pre-action ranking snapshot.
+The rule contains no game, action, object, color, or verb-specific branch.
+
+The current full suite has 239 passes and one unrelated failure caused by the
+pre-existing missing historical experiment artifact
+`parallel-cognitive-workspace-v1-16/artifacts/SUMMARY.json`. See the detailed
+evidence boundary in [`R2_2.md`](R2_2.md).
 
 ## Shared semantic workspace
 

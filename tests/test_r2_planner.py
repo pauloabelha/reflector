@@ -422,6 +422,45 @@ def test_observer_plans_from_learned_effects_without_incrementing_support_then_s
     assert observer.planner_backend is backend
 
 
+def test_settlement_projection_exposes_fresh_nonprogress_without_lag():
+    before = [[0, 0, 0, 0, 0, 0], [0, 2, 0, 0, 3, 0], [0, 0, 0, 0, 0, 0]]
+    moved = [[0, 0, 0, 0, 0, 0], [0, 0, 2, 0, 3, 0], [0, 0, 0, 0, 0, 0]]
+    goal = {
+        "verb": "align", "schema_name": "Compatible entities converge",
+        "goal_family": "alignment", "observable": "centroid_distance",
+        "direction": "decrease", "terminal_condition": "minimum",
+        "role_constraints": ["two distinct visible entities"],
+    }
+    observer = FrameSchemaObserver()
+    observer.fit_frame(before, turn=0)
+    initial = observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
+    observer.settle_action(4, before, moved)
+
+    for turn in (1, 2):
+        observer.fit_frame(moved, turn=turn)
+        ranking = observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
+        settlement = observer.settle_action(4, moved, moved)
+        projection = observer.semantic_projection(
+            ranking=ranking, settlement=settlement,
+        )
+        assert projection["active_explanation"]["nonprogress_observations"] == turn
+
+    active = projection["active_explanation"]
+    assert active["progress_confirmations"] == 0
+    assert active["confirmations"] == observer.explanation_confirmations[active["schema_id"]]
+    assert active["refutations"] == observer.explanation_refutations[active["schema_id"]]
+
+    different_grounding = deepcopy(ranking)
+    different_grounding["current_explanation"] = {
+        **different_grounding["current_explanation"],
+        "control_goal_key": "control-goal:different-grounding",
+    }
+    other = observer.semantic_projection(ranking=different_grounding)["active_explanation"]
+    assert other["nonprogress_observations"] == 0
+
+    assert initial["current_explanation"]["epistemic_evaluation"]["nonprogress_observations"] == 0
+
+
 def test_settled_plan_edges_can_earn_fresh_fast_path_authority_without_route_reuse():
     authority = FastPathAuthority({"minimum_confirmations": 2})
     explanation = {

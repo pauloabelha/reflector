@@ -16,7 +16,7 @@
 | 001 | complete | Generic semantic measurement proposal and compiler; 135 focused tests pass |
 | 002 | complete | Malformed goals quarantined; CAE feedback retained; stale failed goals retired |
 | 003 | complete | bp35 selected independently; semantic probe grounded and settled without false authority |
-| 004 | active | Diagnose equivalent-role probe efficiency and action-conditioned collapse |
+| 004 | active | Mechanism/goal evidence split implemented; BP35/CD82 live transfer audit continues |
 
 ## Current hypothesis
 
@@ -29,7 +29,9 @@ grounding and settlement authority.
 
 ## Next evidence
 
-1. Determine whether the 195-way bp35 role ambiguity contracts after grounded
-   parameterized probes or merely shifts among equivalent pairs.
-2. Require environment-confirmed potential progress before any score or control
-   improvement claim.
+1. Complete the repeated uniquely grounded BP35 nonprogress sequence and verify
+   that the semantic proposal is revised while its learned effect remains.
+2. Run `cd82`, predeclared as the next lexical game, without an intervening code
+   change; treat it as a falsification test, not a tuning case.
+3. Determine whether equivalent-role ambiguity can be quotiented by generic
+   symmetry and intervention evidence without losing causal alternatives.

@@ -434,6 +434,8 @@ class FrameSchemaObserver:
         self.action_uses: Counter[Any] = Counter()
         self.explanation_confirmations: Counter[str] = Counter()
         self.explanation_refutations: Counter[str] = Counter()
+        self.goal_progress_confirmations: Counter[str] = Counter()
+        self.goal_nonprogress: Counter[str] = Counter()
         self.pending_prediction: dict[str, Any] | None = None
         self.last_store: Any | None = None
         self.last_workspace: Any | None = None
@@ -477,6 +479,8 @@ class FrameSchemaObserver:
             "action_uses": self.action_uses,
             "explanation_confirmations": self.explanation_confirmations,
             "explanation_refutations": self.explanation_refutations,
+            "goal_progress_confirmations": self.goal_progress_confirmations,
+            "goal_nonprogress": self.goal_nonprogress,
             "goal_contracts": self.goal_contracts,
             "goal_contract_by_verb": self.goal_contract_by_verb,
             "goal_contract_settlements": self.goal_contract_settlements,
@@ -553,13 +557,35 @@ class FrameSchemaObserver:
         """Clear failed-attempt grounding without learning RESET as mechanics."""
         self.advance_level()
 
-    @staticmethod
-    def _semantic_explanation(explanation: dict[str, Any]) -> dict[str, Any]:
+    def _semantic_explanation(self, explanation: dict[str, Any]) -> dict[str, Any]:
         """Loss-bounded projection of one executable explanation for Qwen."""
         ports = explanation.get("ports", {})
         goal = explanation.get("goal", {})
         prediction = explanation.get("prediction", {})
         evaluation = explanation.get("epistemic_evaluation", {})
+        schema_id = str(explanation.get("schema_id") or "")
+        goal_key = str(explanation.get("control_goal_key") or "")
+        # ``ranking`` is produced before the external action.  Settlement can
+        # then update these judgments before the same ranking is projected to
+        # Semantic Qwen.  Read the observer-owned counters here so the
+        # projection represents the just-settled evidence rather than a
+        # one-decision-old candidate snapshot.
+        confirmations = (
+            self.explanation_confirmations[schema_id]
+            if schema_id else evaluation.get("confirmations", 0)
+        )
+        progress_confirmations = (
+            self.goal_progress_confirmations[goal_key]
+            if goal_key else evaluation.get("progress_confirmations", 0)
+        )
+        refutations = (
+            self.explanation_refutations[schema_id]
+            if schema_id else evaluation.get("refutations", 0)
+        )
+        nonprogress = (
+            self.goal_nonprogress[goal_key]
+            if goal_key else evaluation.get("nonprogress_observations", 0)
+        )
         return {
             "binding_id": explanation.get("binding_id"),
             "schema_id": explanation.get("schema_id"),
@@ -590,8 +616,10 @@ class FrameSchemaObserver:
             "role_grounding": dict(explanation.get("role_grounding", {})),
             "desired_delta": dict(explanation.get("desired_delta", {})),
             "open_shadow_ids": list(explanation.get("prospective_shadow_ids", ()))[:8],
-            "confirmations": evaluation.get("confirmations", 0),
-            "refutations": evaluation.get("refutations", 0),
+            "confirmations": confirmations,
+            "progress_confirmations": progress_confirmations,
+            "refutations": refutations,
+            "nonprogress_observations": nonprogress,
         }
 
     def semantic_projection(
@@ -2424,7 +2452,9 @@ class FrameSchemaObserver:
             "epistemic_evaluation": {
                 "mechanism_confidence": round(min(float(actor_model["confidence"]), float(target_model["confidence"])), 3),
                 "confirmations": self.explanation_confirmations[schema_id],
+                "progress_confirmations": self.goal_progress_confirmations[goal_key],
                 "refutations": self.explanation_refutations[schema_id],
+                "nonprogress_observations": self.goal_nonprogress[goal_key],
                 "causal_coverage": round(float(coverage), 6),
                 "unexplained_causal_scope": round(1.0 - float(coverage), 6),
             },
@@ -3644,9 +3674,13 @@ class FrameSchemaObserver:
                     elif abs(float(expected) - actual_progress) <= 0.01:
                         adjudication = "confirmed"
                         self.explanation_confirmations[prediction["schema_id"]] += 1
+                        if actual_progress > 0.0:
+                            self.goal_progress_confirmations[goal_key] += 1
                     else:
                         adjudication = "refuted"
                         self.explanation_refutations[prediction["schema_id"]] += 1
+                    if actual_progress <= 0.0:
+                        self.goal_nonprogress[goal_key] += 1
 
         self.pending_prediction = None
         settlement = {

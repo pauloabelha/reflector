@@ -95,3 +95,26 @@ level completion, or score gain.
 **Prospective:** action-conditioned settlement may reduce the equivalent-role
 frontier enough to yield a supported effect and useful control. Checkpoint 004
 must measure that rather than infer it from a single successful probe.
+
+## Checkpoint 004 (active)
+
+**Implemented:** mechanism confirmation and positive goal-progress
+confirmation are now distinct evidence channels. Repeated uniquely grounded
+nonprogress can request semantic goal revision without deleting the learned
+action effect. Settlement projections read fresh observer counters, removing a
+one-decision feedback lag. A supported competing explanation suppresses
+note-wide retirement.
+
+**Observed:** the targeted semantic/planner/Qwen suite has 43 passes. The full
+suite has 239 passes and the unchanged missing historical `SUMMARY.json`
+failure. In fresh BP35 play, Qwen again proposed a generic alignment objective,
+R2 grounded it as probe-only, and the first attempted settlement broke identity;
+it correctly contributed no nonprogress evidence.
+
+**Inferred:** the earlier bp35 failure was not only a weak semantic proposal.
+R2 conflated evidence for an action mechanism with evidence for the usefulness
+of the goal and projected settlement counters from a stale candidate snapshot.
+
+**Prospective:** a repeated uniquely grounded zero-progress sequence will cause
+proposal revision while preserving mechanism support. This still requires live
+verification. `cd82` is fixed as the next no-code-change transfer case.

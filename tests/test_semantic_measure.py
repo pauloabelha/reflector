@@ -11,6 +11,7 @@ from reflector2.r2.r2_1_adapter import FrameSchemaObserver
 from reflector2.r2.scratchpad import (
     _goal_proposal_contract_error,
     _quarantine_goal_proposals,
+    _semantic_failure_signals,
     record_r2_semantic_projection,
 )
 from reflector2.r2.semantic_measure import (
@@ -286,6 +287,41 @@ def test_semantic_projection_keeps_rejection_feedback_over_raw_cae_geometry():
     binding = projection["causal_entity_induction"]["bindings"][0]
     assert binding["member_count"] == 2
     assert binding["epistemic_status"] == "SUPPORTED"
+
+
+def test_repeated_nonprogress_revises_goal_without_refuting_mechanism():
+    def document(
+        count: int, confirmations: int = 0, progress_confirmations: int = 0,
+    ) -> dict:
+        return {"scratchpad_context": {"r2_semantic_projection": {
+            "active_explanation": {
+                "control_status": "PROBE_ELIGIBLE",
+                "confirmations": confirmations,
+                "progress_confirmations": progress_confirmations,
+                "nonprogress_observations": count,
+                "mechanism": {"confidence": 1.0},
+            },
+            "competing_explanations": [],
+            "rejected_semantic_proposals": [],
+        }}}
+
+    assert _semantic_failure_signals(document(1)) == ()
+    assert _semantic_failure_signals(document(2)) == ({
+        "kind": "r2-goal-potential-nonprogress",
+        "count": 1,
+        "threshold": 2,
+        "mechanism_authority": "preserve-independently",
+    },)
+    # Confirming a stationary mechanism does not support the goal potential.
+    assert _semantic_failure_signals(document(2, confirmations=1))
+    assert _semantic_failure_signals(document(2, progress_confirmations=1)) == ()
+
+    mixed = document(2)
+    mixed["scratchpad_context"]["r2_semantic_projection"]["competing_explanations"] = [{
+        "control_status": "PROGRESS_ELIGIBLE",
+        "progress_confirmations": 1,
+    }]
+    assert _semantic_failure_signals(mixed) == ()
 
 
 def test_prompt_source_contains_no_privileged_fit_mapping_or_game_tokens():
