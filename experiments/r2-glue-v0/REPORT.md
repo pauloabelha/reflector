@@ -314,3 +314,49 @@ failure.
 **Limit:** no DC22 completion or score improvement is claimed. Checkpoint 011
 must test whether subsequent revised hypotheses reduce grounded nonprogress or
 improve probe efficiency, including on another game.
+
+## Checkpoint 011
+
+**Observed:** an exact DC22 replay on the pushed checkpoint-010 build reached
+six nonprogress observations while focused Qwen repairs remained rejected. The
+durable failed alignment note was correctly retained for revision, but the same
+goal still entered every subsequent action ranking. Semantic repair therefore
+did not yet imply control repair. A cross-game CD82 run then exposed a separate
+transport failure: its second post-action request occupied 16,884 tokens in a
+16,384-token context. Shrinking the dependency-closed graph frontier could not
+help because its mandatory closure was only 59 tokens; the fixed prompt and
+causal visual transport dominated the request.
+
+**Implemented:** a durable semantic-revision obligation now records the exact
+canonical keys of the proposals whose grounded potential produced explicit
+failure evidence. While the obligation is pending, the controller filters only
+those proposals from action ranking. The note remains visible for audit and
+Qwen revision, unrelated proposals remain eligible, and learned causal effects
+are untouched. An accepted repair cannot silently reinsert an exact suspended
+proposal; it is retired independently with an evidence-linked reason. The
+suspension clears with the accepted revision or existing episode/level reset.
+
+Ordinary post-action semantic updates now use a compact, generic instruction
+surface rather than replaying the complete frame-zero architecture tutorial.
+The strict response schema, prior five-field scratchpad, canonical turn,
+dependency-closed evidence, ordered predecessor/successor images, compiler
+checks, and R2-only action authority remain unchanged.
+
+**Live evidence:** on fresh DC22, failure threshold was reached at turn 3.
+While call 4 was in flight and again after call 5 was rejected, the durable
+alignment proposal stayed visible but the R2 control projection had no active
+explanation, zero controller explanations, and `execution_authorized=false`.
+Action selection returned to the generic information role rather than adding
+three more probes to the failed potential. On fresh CD82, the pre-repair second
+call failed admission by 500 tokens. The repaired replay completed and
+integrated that call and the following call, continued through turn 3, and had
+no context error. Its post-action text transports were 27.5k and 22.1k
+characters while retaining both causal images.
+
+The focused suite has 146 passes. The full suite has 250 passes and the one
+unchanged failure caused by the absent historical
+`parallel-cognitive-workspace-v1-16/artifacts/SUMMARY.json`.
+
+**Limit:** this verifies authority withdrawal and context liveness, not a level
+completion, score increase, or general ARC competence. Checkpoint 012 must
+measure environment progress and hypothesis utility across games.

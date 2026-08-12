@@ -19,6 +19,7 @@ from reflector2.r2.scratchpad import (
     _semantic_revision_is_substantive,
     _quarantine_goal_proposals,
     _semantic_failure_signals,
+    control_goal_proposals,
     record_r2_semantic_projection,
 )
 from reflector2.r2.semantic_measure import (
@@ -406,6 +407,41 @@ def test_evidenced_semantic_revision_obligation_survives_transient_signal():
     finally:
         _finish_semantic_revision()
     assert not _pending_semantic_revision_unsatisfied(scratchpad)
+
+
+def test_pending_revision_suspends_only_failed_goal_control_authority():
+    scratchpad = {
+        "game_objective": "Infer completion",
+        "explanation": "One relation may matter",
+        "goal": "Test the relation",
+        "expectation": "The residual may decrease",
+        "notes": "Uncertain",
+    }
+    failed = {
+        "verb": "align",
+        "observable": "alignment_residual",
+        "direction": "decrease",
+        "terminal_condition": "zero",
+    }
+    alternative = {
+        "verb": "contain",
+        "observable": "negative_space_residual",
+        "direction": "decrease",
+        "terminal_condition": "zero",
+    }
+    _finish_semantic_revision()
+    try:
+        _begin_semantic_revision(
+            scratchpad,
+            "r2-transition:trigger",
+            ({"kind": "r2-goal-potential-nonprogress", "count": 3},),
+            (failed,),
+        )
+        assert control_goal_proposals([failed]) == []
+        assert control_goal_proposals([failed, alternative]) == [alternative]
+    finally:
+        _finish_semantic_revision()
+    assert control_goal_proposals([failed]) == [failed]
 
 
 def test_post_action_scratchpad_cannot_deny_authoritative_history():

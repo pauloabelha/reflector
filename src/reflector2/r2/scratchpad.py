@@ -8,7 +8,7 @@ import copy
 import hashlib
 import json
 import re
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from reflector2.r2.goal_contract import BUILTIN_GOAL_OBSERVABLES
 from reflector2.r2.semantic_measure import SemanticMeasureHypothesis
@@ -74,6 +74,28 @@ or situated object identity. Existing verbs and observables are defeasible
 priors, never fixed mappings. Keep uncertainty explicit and prose terse.
 
 FOCUSED SEMANTIC REVISION INPUT:
+"""
+SEMANTIC_UPDATE_PROMPT = """You are the configured semantic model updating R2 semantics after one observed transition.
+
+The supplied causal visual unit is ordered predecessor then successor and is
+authoritative. Read model_scratchpad as the exact prior shared semantic state,
+then revise it in place to state what the latest observation established,
+contradicted, or left open. Do not deny prior history on a post-action turn.
+
+Return only the normal strict JSON contract. workspace_write contains compact,
+defeasible, action-free semantic proposals. Preserve a useful proposal when
+the evidence remains compatible; refine, replace, or abstain when it does not.
+Roles are abstract, relation constraints use only the supplied vocabulary, and
+measurement hypotheses are declarative tests rather than facts. Keep aliases
+cautious and evidence-cited when the schema requests them.
+
+Qwen proposes semantics only. R2 alone grounds roles, measures potentials,
+selects interventions, and adjudicates support. Do not prescribe an action,
+directional button, route, coordinate, game identifier, palette-specific rule,
+or situated object identity. Existing verbs and observables are defeasible
+priors, never fixed mappings. Keep uncertainty explicit and prose terse.
+
+BOUNDED POST-ACTION SEMANTIC INPUT:
 """
 MANDATORY_NUISANCE_DIMENSIONS = (
     "absolute_coordinates",
@@ -145,14 +167,20 @@ def model_scratchpad_text(value: Any) -> str:
 def _begin_semantic_revision(
     scratchpad: Mapping[str, str], evidence_ref: str | None,
     signals: tuple[dict[str, Any], ...],
+    goal_proposals: Sequence[Mapping[str, Any]] = (),
 ) -> None:
-    """Keep an evidenced revision obligation alive across rejected retries."""
+    """Keep revision and failed-goal suspension alive across rejected retries."""
 
     global _PENDING_SEMANTIC_REVISION
     _PENDING_SEMANTIC_REVISION = {
         "prior_scratchpad": dict(scratchpad),
         "trigger_evidence_ref": evidence_ref,
         "explicit_failure_signals": [dict(item) for item in signals],
+        "suspended_goal_proposal_keys": sorted({
+            _canonical_goal_proposal_key(item)
+            for item in goal_proposals
+            if isinstance(item, Mapping)
+        }),
     }
 
 
@@ -184,6 +212,29 @@ def _pending_semantic_revision_unsatisfied(
 def _finish_semantic_revision() -> None:
     global _PENDING_SEMANTIC_REVISION
     _PENDING_SEMANTIC_REVISION = None
+
+
+def control_goal_proposals(value: Any) -> Any:
+    """Remove only evidence-failed semantic goals while revision is pending.
+
+    This is a control-authority filter, not forgetting.  The durable note and
+    learned action-effect mechanisms remain intact so Qwen can revise against
+    them, while a contradicted goal cannot keep licensing interventions during
+    rejected or slow semantic retries.
+    """
+
+    suspended = set(
+        (_PENDING_SEMANTIC_REVISION or {})
+        .get("suspended_goal_proposal_keys", ())
+    )
+    if not suspended or value is None:
+        return value
+    proposals = [value] if isinstance(value, Mapping) else list(value)
+    return [
+        item for item in proposals
+        if not isinstance(item, Mapping)
+        or _canonical_goal_proposal_key(item) not in suspended
+    ]
 
 
 def has_transport_metadata_leak(value: Any) -> bool:
@@ -1668,6 +1719,18 @@ CAUSAL VISUAL UNIT:
         else:
             failure_signals = ()
         pending_revision = _PENDING_SEMANTIC_REVISION
+        if failure_signals and pending_revision is None and prior is not None:
+            # Start the obligation before the external semantic call returns.
+            # Controller ticks may continue while that call is in flight; the
+            # goal whose grounded potential produced explicit failure evidence
+            # must not retain authority during that interval.
+            _begin_semantic_revision(
+                stored_scratchpad,
+                current_evidence_ref,
+                failure_signals,
+                prior.payload.get("goal_proposals", ()),
+            )
+            pending_revision = _PENDING_SEMANTIC_REVISION
         if failure_signals or pending_revision:
             prior_keys = sorted({
                 _canonical_goal_proposal_key(item)
@@ -2128,6 +2191,15 @@ CAUSAL VISUAL UNIT:
         compact_document = dict(turn.document)
         consolidation_task = compact_document.get("explanation_consolidation_task")
         revision_task = compact_document.get("semantic_revision_task")
+        transition_observation = (
+            (compact_document.get("scratchpad_context") or {})
+            .get("r2_transition_observation")
+            or {}
+        )
+        post_action_update = bool(
+            compact_document.get("model_scratchpad")
+            and transition_observation.get("evidence_ref")
+        )
         if isinstance(consolidation_task, Mapping):
             # The successor level is a future test context, not evidence for
             # the abstraction.  Transport only the completed-context packet;
@@ -2191,6 +2263,8 @@ CAUSAL VISUAL UNIT:
             if isinstance(consolidation_task, Mapping)
             else SEMANTIC_REVISION_PROMPT
             if isinstance(revision_task, Mapping)
+            else SEMANTIC_UPDATE_PROMPT
+            if post_action_update
             else qc.PROMPT
         )
         compact_text = prompt + json.dumps(
@@ -2292,8 +2366,12 @@ CAUSAL VISUAL UNIT:
             }
         if _failed_semantic_state_repeated(turn.document, scratchpad):
             failure_signals = _semantic_failure_signals(turn.document)
+            prior_note = turn.document.get("prior_working_note") or {}
             _begin_semantic_revision(
-                scratchpad, turn_evidence_ref, failure_signals,
+                scratchpad,
+                turn_evidence_ref,
+                failure_signals,
+                prior_note.get("goal_proposals", ()),
             )
             return {
                 **compilation,
@@ -2403,6 +2481,32 @@ CAUSAL VISUAL UNIT:
         unique_proposals, seen_proposals, proposal_rejections = (
             _quarantine_goal_proposals(note["goal_proposals"])
         )
+        suspended_keys = set(
+            (_PENDING_SEMANTIC_REVISION or {})
+            .get("suspended_goal_proposal_keys", ())
+        )
+        if suspended_keys:
+            retained_proposals = []
+            for proposal in unique_proposals:
+                key = _canonical_goal_proposal_key(proposal)
+                if key in suspended_keys:
+                    proposal_rejections.append({
+                        "reason": "evidence-failed-goal-proposal-retired",
+                        "proposal_digest": hashlib.sha256(
+                            key.encode("utf-8")
+                        ).hexdigest()[:20],
+                        "trigger_evidence_ref": (
+                            (_PENDING_SEMANTIC_REVISION or {})
+                            .get("trigger_evidence_ref")
+                        ),
+                    })
+                else:
+                    retained_proposals.append(proposal)
+            unique_proposals = retained_proposals
+            seen_proposals = {
+                _canonical_goal_proposal_key(item)
+                for item in unique_proposals
+            }
         consolidation = None
         consolidation_write = None
         if isinstance(consolidation_task, Mapping):

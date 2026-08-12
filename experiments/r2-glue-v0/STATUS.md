@@ -2,7 +2,7 @@
 
 ## Current state
 
-- Phase: cross-game semantic revision verified; control-efficiency audit active.
+- Phase: failed-goal authority suspended; cross-game control-efficiency audit active.
 - Branch: `glue` at baseline `75600da`.
 - Production baseline: pushed to `origin/main`.
 - Focused baseline verification: 123 tests passed.
@@ -23,7 +23,8 @@
 | 008 | complete | Erupted semantic failure creates a durable, substantive revision obligation |
 | 009 | complete | Read-only audit found no live context demand in 101 deduplicated transitions; no context induced |
 | 010 | complete | Focused repair revised failed semantics at 44% fewer prompt tokens; R2 authority unchanged |
-| 011 | active | Test whether revised hypotheses improve grounded probe efficiency across games |
+| 011 | complete | Failed goals lose control authority during repair; CD82 post-action context overflow repaired generically |
+| 012 | active | Measure whether surviving/revised hypotheses improve environment progress across games |
 
 ## Current hypothesis
 

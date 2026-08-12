@@ -289,14 +289,24 @@ def controller_class(
                     latest_note if isinstance(latest_note, Mapping)
                     else runtime_snapshot.get("current_explanation") or {}
                 )
+                semantic_goals = (
+                    semantic_explanation.get("goal_proposals")
+                    or semantic_explanation.get("goal_proposal")
+                )
+                scratchpad = (
+                    sys.modules.get("one_action_scratchpad")
+                    or sys.modules.get("reflector2.r2.scratchpad")
+                )
+                filter_control_goals = getattr(
+                    scratchpad, "control_goal_proposals", None,
+                )
+                if callable(filter_control_goals):
+                    semantic_goals = filter_control_goals(semantic_goals)
                 r2_1 = rank_actions(
                     legal,
                     fallback_action=int(decision.action_id),
                     action_commands=commands,
-                    semantic_goal=(
-                        semantic_explanation.get("goal_proposals")
-                        or semantic_explanation.get("goal_proposal")
-                    ),
+                    semantic_goal=semantic_goals,
                     semantic_abductions=semantic_explanation.get("abductive_compositions") or (),
                     same_frame_no_change={
                         item.command_id: self.command_no_change.get(

@@ -236,6 +236,21 @@ focused prompts used about 44% fewer tokens, two insufficient repairs were
 rejected, and the accepted revision acknowledged nonprogress while its repeated
 goal proposal was retired. This is not a level-completion or score claim.
 
+A failed semantic proposal now also loses action authority while its
+evidence-based revision is pending. This is selective suspension, not
+forgetting: the exact note remains visible to Qwen and Arcade, unrelated
+proposals remain eligible, and independently learned action effects remain
+available. A DC22 replay stopped controlling from the failed alignment
+potential at three nonprogress observations instead of continuing through six
+while repair retries were rejected.
+
+Post-action semantic updates use a bounded generic instruction surface while
+retaining the exact prior scratchpad, ordered predecessor/successor images,
+strict response schema, and canonical compiler checks. This repaired a CD82
+request that exceeded local Qwen's context by 500 tokens; the replay integrated
+that update and the next one without removing causal visual evidence. These are
+control-safety and transport-liveness results, not score or completion claims.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

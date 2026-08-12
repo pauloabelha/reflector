@@ -535,19 +535,26 @@ def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
 
 
 def test_evidenced_failure_has_a_focused_non_authoritative_revision_transport():
-    from reflector2.r2 import scratchpad
+    from reflector2.r2 import controller, scratchpad
 
     source = Path(scratchpad.__file__).read_text(encoding="utf-8")
+    controller_source = Path(controller.__file__).read_text(encoding="utf-8")
     prompt = scratchpad.SEMANTIC_REVISION_PROMPT.lower()
+    update_prompt = scratchpad.SEMANTIC_UPDATE_PROMPT.lower()
     assert "focused repair turn" in prompt
     assert "r2 alone grounds roles" in prompt
     assert "return no goal proposal" in prompt
+    assert "one observed transition" in update_prompt
+    assert "r2 alone grounds roles" in update_prompt
     assert '"protocol": "focused-semantic-revision-v0"' in source
     assert '"semantic_view": "focused-failure-repair"' in source
+    assert "if post_action_update" in source
     assert '"abductive_compositions": "empty"' in source
     assert '"action_aliases": "empty"' in source
     assert '"cited_ids": "empty"' in source
     assert "post-action-null-history-claim" in source
+    assert "evidence-failed-goal-proposal-retired" in source
+    assert "control_goal_proposals" in controller_source
     assert "independent learned aliases" in source
     assert 'properties["goal_proposals"]' in source
     assert '"minItems": 0, "maxItems": 2' in source
