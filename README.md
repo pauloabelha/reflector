@@ -227,6 +227,15 @@ records. Accordingly, R2 has not induced a sequence, spatial, or role context
 factor. The synthetic conflict is a safety test, not evidence that such a
 factor exists in these games.
 
+Explicit semantic failures use a focused repair transport. It keeps the exact
+causal pair and R2 settlement, but does not make the semantic model regenerate
+unrelated aliases, citations, or abductive diagrams. Previously compiled
+evidence-cited aliases survive independently; goal proposals may be revised,
+replaced, or omitted, and R2 still exclusively grounds and controls. On DC22,
+focused prompts used about 44% fewer tokens, two insufficient repairs were
+rejected, and the accepted revision acknowledged nonprogress while its repeated
+goal proposal was retired. This is not a level-completion or score claim.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

@@ -280,3 +280,37 @@ scratchpad. The ordinary revision turn asks the small local model to regenerate
 several unrelated products. Checkpoint 010 will test a focused repair transport
 while preserving the canonical turn, exact causal images, compiler validation,
 and R2-only grounding/control.
+
+## Checkpoint 010
+
+**Observed:** ordinary DC22 semantic turns carried about 30.8k prompt
+characters and 8.6k model tokens while requiring Qwen to regenerate aliases,
+citations, abductive composition, goal proposals, and the five-field scratchpad.
+After explicit nonprogress, the small local model repeatedly copied the failed
+state.
+
+**Implemented:** explicit semantic failure now selects a focused repair
+transport. It retains the canonical turn and exact causal images locally for
+validation, but sends the prior scratchpad, latest transition/R2 settlement,
+failure obligation, and bounded semantic projection with unrelated sparse-cut
+and output products omitted. The response schema forces aliases, citations,
+and abductive compositions empty for generation and allows goal-proposal
+abstention. The compiler preserves already-settled evidence-cited aliases,
+still quarantines repeated or malformed goal proposals, and admits a repair
+only after `notes` plus one explanatory field change. A generic temporal
+coherence gate also rejects any post-action scratchpad that asserts there is no
+prior state/history while an exact transition evidence reference exists.
+
+**Live evidence:** focused DC22 requests were 15.35–15.93k characters and
+4,843–5,102 prompt tokens, versus 30.8k characters and 8,610 tokens for the
+preceding ordinary turn (about 44% fewer prompt tokens). Two insufficient
+repairs were rejected. The next repair acknowledged the prior alignment state
+and latest displacement, was accepted as context, and had its repeated goal
+proposal separately retired. `goal_proposals` became empty while the prior
+evidence-cited action alias survived. The focused suite has 137 passes; the
+full suite has 249 passes and the unchanged missing historical artifact
+failure.
+
+**Limit:** no DC22 completion or score improvement is claimed. Checkpoint 011
+must test whether subsequent revised hypotheses reduce grounded nonprogress or
+improve probe efficiency, including on another game.

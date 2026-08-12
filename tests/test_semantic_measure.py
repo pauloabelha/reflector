@@ -15,6 +15,7 @@ from reflector2.r2.scratchpad import (
     _finish_semantic_revision,
     _goal_proposal_contract_error,
     _pending_semantic_revision_unsatisfied,
+    _post_action_null_history_claim,
     _semantic_revision_is_substantive,
     _quarantine_goal_proposals,
     _semantic_failure_signals,
@@ -405,6 +406,33 @@ def test_evidenced_semantic_revision_obligation_survives_transient_signal():
     finally:
         _finish_semantic_revision()
     assert not _pending_semantic_revision_unsatisfied(scratchpad)
+
+
+def test_post_action_scratchpad_cannot_deny_authoritative_history():
+    document = {
+        "scratchpad_context": {
+            "r2_transition_observation": {
+                "evidence_ref": "r2-transition:observed",
+            },
+        },
+    }
+    coherent = {
+        "game_objective": "Open",
+        "explanation": "The latest transition moved one entity",
+        "goal": "Revise the relation hypothesis",
+        "expectation": "A fresh relation should predict change",
+        "notes": "The prior hypothesis did not progress",
+    }
+    assert not _post_action_null_history_claim(document, coherent)
+    contradictory = {
+        **coherent,
+        "notes": "No prior state to compare against",
+    }
+    assert _post_action_null_history_claim(document, contradictory)
+    assert not _post_action_null_history_claim(
+        {"scratchpad_context": {"r2_transition_observation": None}},
+        contradictory,
+    )
 
 
 def test_action_alias_evidence_uses_single_canonical_prior_note_projection():

@@ -534,6 +534,25 @@ def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
     assert 'vocabulary.pop("delta_codec", None)' in source
 
 
+def test_evidenced_failure_has_a_focused_non_authoritative_revision_transport():
+    from reflector2.r2 import scratchpad
+
+    source = Path(scratchpad.__file__).read_text(encoding="utf-8")
+    prompt = scratchpad.SEMANTIC_REVISION_PROMPT.lower()
+    assert "focused repair turn" in prompt
+    assert "r2 alone grounds roles" in prompt
+    assert "return no goal proposal" in prompt
+    assert '"protocol": "focused-semantic-revision-v0"' in source
+    assert '"semantic_view": "focused-failure-repair"' in source
+    assert '"abductive_compositions": "empty"' in source
+    assert '"action_aliases": "empty"' in source
+    assert '"cited_ids": "empty"' in source
+    assert "post-action-null-history-claim" in source
+    assert "independent learned aliases" in source
+    assert 'properties["goal_proposals"]' in source
+    assert '"minItems": 0, "maxItems": 2' in source
+
+
 def test_arcade_picker_validates_custom_budgets_and_restores_environment(monkeypatch):
     monkeypatch.setenv("R2_MODEL_PROFILE", "local")
     selection = {

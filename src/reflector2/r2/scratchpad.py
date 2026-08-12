@@ -50,6 +50,31 @@ field terse. Return only the required JSON contract.
 
 CONSOLIDATION DIGEST:
 """
+SEMANTIC_REVISION_PROMPT = """You are the configured semantic model repairing an R2 semantic hypothesis after explicit failure evidence.
+
+The supplied causal visual unit and R2 transition settlement are authoritative.
+Read model_scratchpad as the exact prior semantic state. Read
+semantic_revision_task for the evidenced failure and required revision. This is
+a focused repair turn: do not regenerate action aliases, abductive diagrams, or
+citations; their arrays must be empty.
+
+Return the normal strict JSON contract. In scratchpad, rewrite notes to state
+what the latest evidence changed, and also revise at least one of explanation,
+goal, or expectation. The game objective may remain unchanged if it is still
+open and plausible. Do not describe a post-action frame as having no prior
+state. In workspace_write, revise or replace the failed action-free goal schema,
+or return no goal proposal when the evidence does not support one. Never repeat
+the exact failed proposal set. Keep summary and objective_hypothesis consistent
+with the revised scratchpad.
+
+Qwen proposes semantics only. R2 alone grounds roles, measures potentials,
+selects interventions, and adjudicates support. Do not prescribe an action,
+directional button, route, coordinate, game identifier, palette-specific rule,
+or situated object identity. Existing verbs and observables are defeasible
+priors, never fixed mappings. Keep uncertainty explicit and prose terse.
+
+FOCUSED SEMANTIC REVISION INPUT:
+"""
 MANDATORY_NUISANCE_DIMENSIONS = (
     "absolute_coordinates",
     "palette_values",
@@ -85,6 +110,11 @@ TRANSPORT_METADATA_LEAK = re.compile(
     r"\bdelta\s+codec\b|\bordered\s+(?:lossless\s+)?projection(?:s)?\b|"
     r"\blossy\s+(?:event\s+)?summar(?:y|ies)\b|"
     r"\btransport\s+projection\b|\bevent\s+compression\b",
+    re.IGNORECASE,
+)
+NULL_HISTORY_CLAIM = re.compile(
+    r"\b(?:no|without)\s+(?:prior|previous|preceding)\s+"
+    r"(?:state|frame|observation|history|evidence)\b",
     re.IGNORECASE,
 )
 
@@ -164,6 +194,18 @@ def has_transport_metadata_leak(value: Any) -> bool:
     if isinstance(value, (list, tuple)):
         return any(has_transport_metadata_leak(item) for item in value)
     return isinstance(value, str) and bool(TRANSPORT_METADATA_LEAK.search(value))
+
+
+def _post_action_null_history_claim(
+    document: Mapping[str, Any], scratchpad: Mapping[str, str],
+) -> bool:
+    """Reject a null-history assertion when an exact transition is present."""
+
+    evidence_ref = _transition_evidence_ref(document)
+    return bool(
+        evidence_ref
+        and any(NULL_HISTORY_CLAIM.search(value) for value in scratchpad.values())
+    )
 
 
 def current_transition_evidence_ref() -> str | None:
@@ -1667,6 +1709,31 @@ CAUSAL VISUAL UNIT:
             # retains only the structured fields needed for revision and
             # compile-time evidence checks.
             document["model_scratchpad"] = copy.deepcopy(stored_scratchpad)
+        if failure_signals or pending_revision:
+            document["semantic_revision_task"] = {
+                "protocol": "focused-semantic-revision-v0",
+                "trigger_evidence_ref": (
+                    current_evidence_ref
+                    or (pending_revision or {}).get("trigger_evidence_ref")
+                ),
+                "explicit_failure_signals": (
+                    [dict(item) for item in failure_signals]
+                    or list((pending_revision or {}).get("explicit_failure_signals", ()))
+                ),
+                "required_scratchpad_changes": {
+                    "assessment": ["notes"],
+                    "at_least_one_explanatory_field": [
+                        "explanation", "goal", "expectation",
+                    ],
+                },
+                "workspace_products": {
+                    "goal_proposals": "revise-replace-or-abstain",
+                    "abductive_compositions": "empty",
+                    "action_aliases": "empty",
+                    "cited_ids": "empty",
+                },
+                "authority": "semantic-proposal-only-r2-grounds-and-controls",
+            }
         if consolidation_task is not None:
             document["explanation_consolidation_task"] = consolidation_task
         vocabulary = dict(document.get("allowed_vocabulary", {}))
@@ -1686,6 +1753,7 @@ CAUSAL VISUAL UNIT:
     def note_schema(turn: Any) -> dict[str, Any]:
         _index, visible = qc._v14_visible(turn)
         consolidation_task = turn.document.get("explanation_consolidation_task")
+        revision_task = turn.document.get("semantic_revision_task")
         consolidation_sources = (
             set(consolidation_task.get("source_evidence_refs", ()))
             if isinstance(consolidation_task, Mapping) else set()
@@ -1903,6 +1971,23 @@ CAUSAL VISUAL UNIT:
                     "items": cited_item,
                 },
         }
+        if isinstance(revision_task, Mapping):
+            properties["goal_proposals"] = {
+                **properties["goal_proposals"], "minItems": 0, "maxItems": 2,
+            }
+            properties["abductive_compositions"] = {
+                **properties["abductive_compositions"], "minItems": 0,
+                "maxItems": 0,
+            }
+            properties["action_aliases"] = {
+                **properties["action_aliases"], "minItems": 0, "maxItems": 0,
+            }
+            properties["cited_ids"] = {
+                **properties["cited_ids"], "minItems": 0, "maxItems": 0,
+            }
+            properties["open_questions"] = {
+                **properties["open_questions"], "maxItems": 1,
+            }
         if isinstance(consolidation_task, Mapping):
             source_refs = list(consolidation_task.get("source_evidence_refs", ()))
             role_relation = {
@@ -2042,6 +2127,7 @@ CAUSAL VISUAL UNIT:
         # response validation still uses the untouched full turn.
         compact_document = dict(turn.document)
         consolidation_task = compact_document.get("explanation_consolidation_task")
+        revision_task = compact_document.get("semantic_revision_task")
         if isinstance(consolidation_task, Mapping):
             # The successor level is a future test context, not evidence for
             # the abstraction.  Transport only the completed-context packet;
@@ -2060,6 +2146,33 @@ CAUSAL VISUAL UNIT:
                 "authority": "canonical-turn-retained-for-response-validation",
                 "semantic_view": "completed-context-only",
             }
+        elif isinstance(revision_task, Mapping):
+            context = compact_document.get("scratchpad_context") or {}
+            compact_document = {
+                key: compact_document[key]
+                for key in (
+                    "protocol", "request_id", "workspace_ref",
+                    "allowed_vocabulary", "model_scratchpad",
+                    "prior_working_note", "semantic_revision_task",
+                )
+                if key in compact_document
+            }
+            compact_document["scratchpad_context"] = {
+                key: copy.deepcopy(context[key])
+                for key in (
+                    "r2_action_traces", "r2_semantic_projection",
+                    "r2_transition_observation", "semantic_stagnation",
+                )
+                if key in context
+            }
+            compact_document["transport_projection"] = {
+                "omitted_unrelated_semantic_products": [
+                    "sparse_cut", "full_materialization", "object_index",
+                    "ordered_lossless_deltas",
+                ],
+                "authority": "canonical-turn-retained-for-response-validation",
+                "semantic_view": "focused-failure-repair",
+            }
         omitted = []
         for field in (
             "full_materialization", "object_index", "ordered_lossless_deltas",
@@ -2076,6 +2189,8 @@ CAUSAL VISUAL UNIT:
         prompt = (
             CONSOLIDATION_PROMPT
             if isinstance(consolidation_task, Mapping)
+            else SEMANTIC_REVISION_PROMPT
+            if isinstance(revision_task, Mapping)
             else qc.PROMPT
         )
         compact_text = prompt + json.dumps(
@@ -2147,6 +2262,17 @@ CAUSAL VISUAL UNIT:
                         "reason": "stale-epistemic-scratchpad-basis",
                         "turn_evidence_ref": turn_evidence_ref,
                         "latest_evidence_ref": latest_evidence_ref,
+                    },
+                ],
+            }
+        if _post_action_null_history_claim(turn.document, scratchpad):
+            return {
+                **compilation,
+                "rejected": [
+                    *compilation.get("rejected", ()),
+                    {
+                        "reason": "post-action-null-history-claim",
+                        "transition_evidence_ref": turn_evidence_ref,
                     },
                 ],
             }
@@ -2260,6 +2386,18 @@ CAUSAL VISUAL UNIT:
                 "action_id": action_id, "alias": phrase,
                 "status": status, "evidence_refs": list(evidence_refs),
             })
+        if (
+            isinstance(turn.document.get("semantic_revision_task"), Mapping)
+            and not action_aliases
+        ):
+            # Focused repair deliberately does not make Qwen regenerate
+            # independent learned aliases. Preserve the already compiled,
+            # evidence-cited values from the canonical prior note.
+            action_aliases = [
+                dict(item)
+                for item in prior_projection.get("action_aliases", ())
+                if isinstance(item, Mapping)
+            ][:8]
         # Goal proposals are independent, authority-free candidates. Quarantine
         # malformed candidates without discarding valid semantic context.
         unique_proposals, seen_proposals, proposal_rejections = (

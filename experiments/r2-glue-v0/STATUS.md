@@ -22,7 +22,8 @@
 | 007 | complete | Same-transition type evidence pooled; heterogeneous outcomes fail closed |
 | 008 | complete | Erupted semantic failure creates a durable, substantive revision obligation |
 | 009 | complete | Read-only audit found no live context demand in 101 deduplicated transitions; no context induced |
-| 010 | active | Focus explicit semantic-failure turns without changing grounding or control authority |
+| 010 | complete | Focused repair revised failed semantics at 44% fewer prompt tokens; R2 authority unchanged |
+| 011 | active | Test whether revised hypotheses improve grounded probe efficiency across games |
 
 ## Current hypothesis
 
