@@ -490,3 +490,31 @@ and the unchanged missing historical artifact failure.
 let Qwen project a novel relational/dynamic abduction below the top-level goal
 contract. Checkpoint 016 opens that boundary with typed, zero-authority schema
 hypotheses rather than game-specific language.
+
+## Checkpoint 016
+
+**Observed:** natural-language analogies could remain in Qwen's scratchpad while
+the control path consumed only a top-level measurable goal. Existing abductive
+compositions required known stable schema IDs, so no novel explanation was
+recursively projected into entity and action bindings.
+
+**Implemented:** `schema_hypotheses` links one bounded relational/dynamic
+abduction to one measurable goal. The compiler resets support to zero and maps
+model confidence to attention only. R2 creates an ordinary recursive schema,
+grounds it over primitive or CAE `SpatialEntity` roles, projects it onto each
+exact legal command, and independently settles declared dynamics and
+counterconditions from the environment successor.
+
+**Live evidence:** without a concept-specific example, local Qwen emitted one
+low-confidence dynamic alignment hypothesis. R2 compiled and grounded it, then
+left its contact and containment predictions OPEN because the first command was
+not diagnostic. The schema received neither false support nor false
+refutation. In a separate fresh trace the linked goal advanced 65 → 62 and its
+movement mechanism was confirmed, while schema authority remained independent.
+The focused aggregate has 155 passes; the full suite has 260 passes and the
+unchanged missing historical artifact failure.
+
+**Limit:** the live hypothesis was weak and no cross-game control benefit is
+claimed. Checkpoint 017 runs the unchanged architecture across structurally
+different games and measures whether diagnostic schema settlement improves
+later decisions.

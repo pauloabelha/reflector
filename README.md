@@ -290,6 +290,19 @@ but supplies neither new goal support nor a frontier reset. Live AR25 recorded
 a strict 38 → 35 frontier advance and separately confirmed the observed
 three-cell mechanism. This is evidence separation, not a completion claim.
 
+Semantic models can now project a novel relation or dynamic below the goal
+layer through a bounded `schema_hypotheses` contract. Each hypothesis links to
+one independently measurable goal, uses canonical spatial ports, declares
+structural predictions and counterconditions, and enters R2 with zero support.
+R2 recursively binds it to primitive or CAE entities and exact legal commands;
+model confidence affects only attention tie-breaks. Environment settlement
+then supports, refutes, or leaves the explanatory schema open independently of
+entity identity, mechanism, goal-frontier, CAE, and environment-terminal
+evidence. Fresh local Qwen used this channel without a concept-specific prompt,
+and R2 correctly left its first contact/containment hypothesis open because the
+observed command was not diagnostic. No semantic-quality, score, or transfer
+improvement is inferred.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

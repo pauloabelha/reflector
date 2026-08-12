@@ -28,23 +28,23 @@
 | 013 | complete | Semantic goal identity no longer fragments when situated role structure changes |
 | 014 | complete | Supported-goal frontier plateau requests one bounded complementary repair without losing proven control |
 | 015 | complete | Goal-frontier progress and action-mechanism evidence settle independently |
-| 016 | active | Project novel Qwen abductions into typed, defeasible, groundable schema hypotheses |
+| 016 | complete | Novel Qwen relations/dynamics project into zero-support entity/action schemas and settle independently |
+| 017 | active | Falsify semantic schema projection and diagnostic settlement across structurally different games |
 
 ## Current hypothesis
 
-R2 is not mainly missing another planner. It is losing useful semantic
-abductions at the boundary between Qwen prose and R2-measurable schemas. The
-closed response contract can supply a measurable top-level goal, while the
-abduction channel can only compose existing stable schema IDs. Opening that
-boundary safely should let Qwen propose a novel typed relation or dynamic,
-project it onto candidate entities and actions, and receive environment
-settlement without giving model confidence evidential authority.
+The language-to-epistemic boundary now has one complete vertical slice: a novel
+Qwen relation/dynamic compiles at zero support, grounds over primitive or CAE
+spatial entities, projects onto exact legal commands, and receives its own
+environment settlement. The next uncertainty is empirical: whether varied
+games elicit useful competing hypotheses and whether R2 reaches diagnostic
+interventions efficiently enough for schema evidence to improve later control.
 
 ## Next evidence
 
-1. Define one generic, bounded `schema_hypotheses` contract with typed roles,
-   measurable relations/dynamics, predictions, and counterconditions.
-2. Compile proposals at zero support, enumerate grounded bindings over primitive
-   and CAE spatial entities, and let R2 choose discriminating interventions.
-3. Require environment settlement before promotion, and falsify the interface
-   on structurally different games without changing prompts or per-game code.
+1. Run the unchanged build and prompt on structurally different games selected
+   before observation.
+2. Compare hypothesis diversity, grounding, diagnostic-command rate,
+   schema-specific support/refutation, revision behavior, and action efficiency.
+3. Reject any apparent improvement that depends on a game ID, palette, fixed
+   route, action alias, or threshold tuned after seeing a target game.

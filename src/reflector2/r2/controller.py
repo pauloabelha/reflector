@@ -302,6 +302,14 @@ def controller_class(
                 )
                 if callable(filter_control_goals):
                     semantic_goals = filter_control_goals(semantic_goals)
+                project_schema_hypotheses = getattr(
+                    scratchpad, "project_schema_hypotheses_to_goals", None,
+                )
+                if callable(project_schema_hypotheses):
+                    semantic_goals = project_schema_hypotheses(
+                        semantic_goals,
+                        semantic_explanation.get("schema_hypotheses") or (),
+                    )
                 r2_1 = rank_actions(
                     legal,
                     fallback_action=int(decision.action_id),

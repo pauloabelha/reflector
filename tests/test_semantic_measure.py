@@ -22,9 +22,11 @@ from reflector2.r2.scratchpad import (
     _post_action_null_history_claim,
     _semantic_revision_is_substantive,
     _quarantine_goal_proposals,
+    _quarantine_schema_hypotheses,
     _semantic_failure_signals,
     _semantic_failure_suspends_goal,
     control_goal_proposals,
+    project_schema_hypotheses_to_goals,
     record_r2_semantic_projection,
     reset_episode_context,
 )
@@ -73,6 +75,27 @@ def proposed_goal(**changes: object) -> dict:
             "relation": "equals",
             "target": 0.0,
         },
+    }
+    value.update(changes)
+    return value
+
+
+def schema_hypothesis(**changes: object) -> dict:
+    value = {
+        "local_ref": "schema_hypothesis_1",
+        "kind": "relational_dynamic",
+        "relation_family": "coupling",
+        "claim": "the two roles may form one coupled relation",
+        "roles": ["actor", "target"],
+        "goal_proposal_index": 0,
+        "predicted_dynamics": [
+            "changes_relative_position", "coherent_motion",
+        ],
+        "counterconditions": [
+            "goal_residual_not_improved", "coherent_motion_absent",
+        ],
+        "confidence": "high",
+        "confidence_basis": "visible_structure",
     }
     value.update(changes)
     return value
@@ -148,6 +171,208 @@ def test_adapter_compiles_a_model_proposal_without_granting_authority():
         for record in observer.last_potential_states.values()
         if record["observable"] == "proposed_spatial_completion_residual"
     )
+
+
+def test_schema_hypothesis_confidence_compiles_only_as_attention_prior():
+    raw_goal = proposed_goal()
+    goals, _seen, _rejected = _quarantine_goal_proposals([raw_goal])
+    hypotheses, rejected = _quarantine_schema_hypotheses(
+        [schema_hypothesis()], [raw_goal], goals,
+    )
+    assert rejected == []
+    assert len(hypotheses) == 1
+    hypothesis = hypotheses[0]
+    assert hypothesis["attention_priority"] == 3
+    assert hypothesis["empirical_support"] == 0
+    assert hypothesis["authority"] == "attention-prior-only"
+    assert hypothesis["epistemic_status"] == (
+        "ungrounded-semantic-schema-hypothesis"
+    )
+
+    projected = project_schema_hypotheses_to_goals(goals, hypotheses)
+    assert projected[0]["_semantic_schema_hypotheses"] == hypotheses
+
+
+def test_schema_hypothesis_must_reference_an_accepted_measurable_goal():
+    invalid_goal = proposed_goal(measurement_hypothesis=None)
+    goals, _seen, _rejected = _quarantine_goal_proposals([invalid_goal])
+    hypotheses, rejected = _quarantine_schema_hypotheses(
+        [schema_hypothesis()], [invalid_goal], goals,
+    )
+    assert hypotheses == []
+    assert rejected == [{
+        "reason": "schema-hypothesis-goal-not-accepted",
+        "hypothesis_index": 0,
+    }]
+
+
+def test_schema_hypothesis_projects_to_entities_and_commands_at_zero_support():
+    frame = [[0] * 12 for _ in range(12)]
+    for y, x in ring()["cells"]:
+        frame[y][x] = 2
+    frame[8][8] = 1
+    raw_goal = proposed_goal()
+    goals, _seen, _rejected = _quarantine_goal_proposals([raw_goal])
+    hypotheses, rejected = _quarantine_schema_hypotheses(
+        [schema_hypothesis()], [raw_goal], goals,
+    )
+    assert rejected == []
+    projected_goals = project_schema_hypotheses_to_goals(goals, hypotheses)
+
+    observer = FrameSchemaObserver({"enabled": False})
+    observer.fit_frame(frame)
+    ranking = observer.rank_actions(
+        (1,), fallback_action=1, semantic_goal=projected_goals,
+    )
+    explanation = next(
+        item for item in ranking["explanations"]
+        if item.get("schema_hypothesis_projections")
+    )
+    projection = explanation["schema_hypothesis_projections"][0]
+    assert set(projection["entity_projection"]["role_bindings"]) == {
+        "actor", "target",
+    }
+    assert projection["action_projection"]["command_id"] == "legacy-action:1"
+    assert projection["action_projection"]["status"] == "open-effect-probe"
+    assert projection["empirical_support"] == 0
+    assert projection["model_confidence"] == "high"
+    assert explanation["semantic_attention_priority"] == 3
+    assert explanation["control_status"] != "PROGRESS_ELIGIBLE"
+    semantic_facts = [
+        fact for fact in observer.last_workspace.facts.values()
+        if fact.predicate.startswith("SemanticSchemaProjection:")
+    ]
+    assert semantic_facts
+    assert {fact.authority for fact in semantic_facts} == {"semantic-proposal"}
+
+
+def _distance_goal() -> dict:
+    return proposed_goal(
+        verb="approach",
+        schema_name="candidate relational approach",
+        goal_family="contact",
+        observable="centroid_distance",
+        measurement_hypothesis=None,
+        role_constraints=[{
+            "predicate": "different_value",
+            "arguments": ["actor", "target"],
+            "modality": "suggested",
+        }],
+        terminal_condition="centroid_distance=0",
+        local_terminal={
+            "observable": "centroid_distance",
+            "preferred_order": "decrease",
+            "relation": "minimum",
+            "target": 0.0,
+        },
+    )
+
+
+def _two_role_frame(actor: tuple[int, int]) -> list[list[int]]:
+    frame = [[0] * 9 for _ in range(9)]
+    frame[actor[0]][actor[1]] = 1
+    for y, x in ((1, 1), (1, 2), (2, 1), (2, 2)):
+        frame[y][x] = 2
+    return frame
+
+
+def test_schema_dynamic_support_is_settled_separately_from_goal_support():
+    raw_goal = _distance_goal()
+    goals, _seen, _rejected = _quarantine_goal_proposals([raw_goal])
+    hypotheses, rejected = _quarantine_schema_hypotheses([
+        schema_hypothesis(
+            relation_family="connection",
+            predicted_dynamics=["changes_relative_position"],
+            counterconditions=["goal_residual_not_improved"],
+        ),
+    ], [raw_goal], goals)
+    assert rejected == []
+    observer = FrameSchemaObserver({"enabled": False})
+    before = _two_role_frame((7, 7))
+    after = _two_role_frame((6, 7))
+    observer.fit_frame(before)
+    observer.rank_actions(
+        (1,), fallback_action=1,
+        semantic_goal=project_schema_hypotheses_to_goals(goals, hypotheses),
+    )
+    settlement = observer.settle_action(1, before, after)
+    schema_settlement = settlement["schema_hypotheses"][0]
+    assert schema_settlement["status"] == "SUPPORTED"
+    assert schema_settlement["empirical_support"] == 1
+    assert schema_settlement["authority"] == "environment-successor-settlement"
+    assert settlement["potential"]["frontier_advanced"] is True
+    assert settlement["mechanism"]["status"] == "OBSERVED"
+
+
+def test_goal_nonprogress_can_refute_schema_without_erasing_observed_dynamic():
+    raw_goal = _distance_goal()
+    goals, _seen, _rejected = _quarantine_goal_proposals([raw_goal])
+    hypotheses, rejected = _quarantine_schema_hypotheses([
+        schema_hypothesis(
+            predicted_dynamics=["changes_relative_position"],
+            counterconditions=["goal_residual_not_improved"],
+        ),
+    ], [raw_goal], goals)
+    assert rejected == []
+    observer = FrameSchemaObserver({"enabled": False})
+    before = _two_role_frame((6, 6))
+    after = _two_role_frame((7, 6))
+    observer.fit_frame(before)
+    observer.rank_actions(
+        (1,), fallback_action=1,
+        semantic_goal=project_schema_hypotheses_to_goals(goals, hypotheses),
+    )
+    settlement = observer.settle_action(1, before, after)
+    schema_settlement = settlement["schema_hypotheses"][0]
+    assert any(
+        item["status"] == "SUPPORTS"
+        for item in schema_settlement["dynamic_judgments"]
+    )
+    assert any(
+        item["countercondition"] == "goal_residual_not_improved"
+        and item["consequence"] == "REFUTES"
+        for item in schema_settlement["countercondition_judgments"]
+    )
+    assert schema_settlement["status"] == "REFUTED"
+    assert schema_settlement["empirical_support"] == 0
+    assert schema_settlement["empirical_refutations"] == 1
+
+
+def test_scene_wide_coherent_motion_does_not_support_coupling_schema():
+    observer = FrameSchemaObserver({"enabled": False})
+    actor_before = entity("actor-before", {(2, 2)})
+    target_before = entity("target-before", {(4, 4)})
+    actor_after = entity("actor-after", {(3, 2)})
+    target_after = entity("target-after", {(5, 4)})
+    for item in (actor_before, target_before, actor_after, target_after):
+        cells = item["cells"]
+        item.update({
+            "area": 1,
+            "shape": ((0, 0),),
+            "outline": ((0, 0),),
+            "center2": (2.0 * cells[0][0], 2.0 * cells[0][1]),
+        })
+    settlement = observer._settle_schema_hypotheses({
+        "schema_hypothesis_projections": [{
+            "local_ref": "schema_hypothesis_1",
+            "schema_id": "schema:coupling",
+            "binding_id": "binding:coupling",
+            "predicted_dynamics": ["coherent_motion"],
+            "counterconditions": [],
+            "action_projection": {
+                "declared_dynamic_predictions": {"coherent_motion": True},
+            },
+        }],
+    }, actor_before=actor_before, target_before=target_before,
+       actor_after=actor_after, target_after=target_after,
+       identity_status="UNIQUE", mechanism_status="CONFIRMED",
+       actual_progress=0.0, evidence_ref="transition:global",
+       global_transform={"delta": [1.0, 0.0]})[0]
+    assert settlement["status"] == "OPEN"
+    assert settlement["dynamic_judgments"][0]["reason"] == (
+        "global-reference-frame-confound"
+    )
+    assert settlement["empirical_support"] == 0
 
 
 def test_custom_observable_requires_a_measurement_and_conflicts_fail_closed():

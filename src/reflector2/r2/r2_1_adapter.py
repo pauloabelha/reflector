@@ -438,6 +438,8 @@ class FrameSchemaObserver:
         self.goal_nonprogress: Counter[str] = Counter()
         self.goal_best_potential: dict[str, float] = {}
         self.goal_frontier_stagnation: Counter[str] = Counter()
+        self.schema_hypothesis_confirmations: Counter[str] = Counter()
+        self.schema_hypothesis_refutations: Counter[str] = Counter()
         self.pending_prediction: dict[str, Any] | None = None
         self.last_store: Any | None = None
         self.last_workspace: Any | None = None
@@ -483,6 +485,10 @@ class FrameSchemaObserver:
             "explanation_refutations": self.explanation_refutations,
             "goal_progress_confirmations": self.goal_progress_confirmations,
             "goal_nonprogress": self.goal_nonprogress,
+            "schema_hypothesis_confirmations": (
+                self.schema_hypothesis_confirmations
+            ),
+            "schema_hypothesis_refutations": self.schema_hypothesis_refutations,
             "goal_contracts": self.goal_contracts,
             "goal_contract_by_verb": self.goal_contract_by_verb,
             "goal_contract_settlements": self.goal_contract_settlements,
@@ -592,6 +598,29 @@ class FrameSchemaObserver:
             self.goal_frontier_stagnation[goal_key]
             if goal_key else evaluation.get("frontier_stagnation_steps", 0)
         )
+        schema_hypothesis_projections = []
+        for item in explanation.get("schema_hypothesis_projections", ())[:2]:
+            candidate = deepcopy(item)
+            schema_hypothesis_id = str(candidate.get("schema_id", ""))
+            support = self.schema_hypothesis_confirmations[
+                schema_hypothesis_id
+            ] if schema_hypothesis_id else 0
+            refutations = self.schema_hypothesis_refutations[
+                schema_hypothesis_id
+            ] if schema_hypothesis_id else 0
+            candidate["empirical_support"] = support
+            candidate["empirical_refutations"] = refutations
+            if refutations:
+                candidate["epistemic_status"] = "environment-refuted"
+            elif support:
+                candidate["epistemic_status"] = "environment-supported"
+            evidence = dict(candidate.get("environment_evidence", {}))
+            evidence.update({
+                "schema_confirmations": support,
+                "schema_refutations": refutations,
+            })
+            candidate["environment_evidence"] = evidence
+            schema_hypothesis_projections.append(candidate)
         return {
             "binding_id": explanation.get("binding_id"),
             "schema_id": explanation.get("schema_id"),
@@ -622,6 +651,10 @@ class FrameSchemaObserver:
             "role_identity": dict(explanation.get("identity", {})),
             "role_grounding": dict(explanation.get("role_grounding", {})),
             "desired_delta": dict(explanation.get("desired_delta", {})),
+            "schema_hypothesis_projections": schema_hypothesis_projections,
+            "semantic_attention_priority": int(
+                explanation.get("semantic_attention_priority", 0)
+            ),
             "open_shadow_ids": list(explanation.get("prospective_shadow_ids", ()))[:8],
             "confirmations": confirmations,
             "progress_confirmations": progress_confirmations,
@@ -1249,6 +1282,88 @@ class FrameSchemaObserver:
         self.last_digest, self.last_stats = digest, stats
         return stats
 
+    def _fit_semantic_schema_hypotheses(
+        self,
+        goal: Mapping[str, Any],
+        *,
+        role_schema: Any,
+        role_atom: Any,
+        potential_schema: Any,
+        potential_atom: Any,
+    ) -> list[dict[str, Any]]:
+        """Project semantic abductions into ordinary zero-support bindings."""
+
+        if self.last_store is None or self.last_workspace is None:
+            return []
+        projected: list[dict[str, Any]] = []
+        for raw in list(goal.get("_semantic_schema_hypotheses", ()))[:2]:
+            if not isinstance(raw, Mapping):
+                continue
+            local_ref = str(raw.get("local_ref", ""))
+            kind = str(raw.get("kind", ""))
+            relation_family = str(raw.get("relation_family", ""))
+            attention_priority = raw.get("attention_priority")
+            if (
+                re.fullmatch(r"schema_hypothesis_[0-9]{1,2}", local_ref) is None
+                or re.fullmatch(r"[a-z][a-z0-9_]{0,39}", kind) is None
+                or re.fullmatch(r"[a-z][a-z0-9_]{0,39}", relation_family) is None
+                or raw.get("roles") != ["actor", "target"]
+                or raw.get("authority") != "attention-prior-only"
+                or raw.get("empirical_support") != 0
+                or not isinstance(attention_priority, int)
+                or isinstance(attention_priority, bool)
+                or attention_priority not in {1, 2, 3}
+            ):
+                continue
+            definition_digest = E.stable_id("semantic-schema-definition", {
+                "kind": kind,
+                "relation_family": relation_family,
+                "predicted_dynamics": list(raw.get("predicted_dynamics", ())),
+                "counterconditions": list(raw.get("counterconditions", ())),
+            }).split(":")[-1][:16]
+            predicate = f"SemanticSchemaProjection:{definition_digest}"
+            schema = self.last_store.add(E.Schema.create(
+                (
+                    E.Port("roles", "verb-role-binding"),
+                    E.Port("potential", "potential-binding"),
+                ),
+                (E.Relation(predicate, ("roles", "potential")),),
+                components=(role_schema.schema_id, potential_schema.schema_id),
+                kind="semantic-schema-hypothesis",
+                output_type="semantic-schema-hypothesis-binding",
+            ))
+            fact = self._add_fact(
+                predicate,
+                (role_atom.atom_id, potential_atom.atom_id),
+                ("verb-role-binding", "potential-binding"),
+                authority="semantic-proposal",
+            )
+            atom = self._fit_atom(schema, (fact,), assignments={
+                "roles": role_atom.atom_id,
+                "potential": potential_atom.atom_id,
+            })
+            if atom is None:
+                continue
+            projected.append({
+                "local_ref": local_ref,
+                "kind": kind,
+                "relation_family": relation_family,
+                "claim": str(raw.get("claim", "")),
+                "model_confidence": str(raw.get("confidence", "low")),
+                "confidence_basis": str(raw.get("confidence_basis", "uncertain")),
+                "attention_priority": attention_priority,
+                "predicted_dynamics": list(raw.get("predicted_dynamics", ()))[:4],
+                "counterconditions": list(raw.get("counterconditions", ()))[:4],
+                "schema_id": schema.schema_id,
+                "binding_id": atom.atom_id,
+                "role_binding_id": role_atom.atom_id,
+                "potential_binding_id": potential_atom.atom_id,
+                "empirical_support": 0,
+                "authority": "semantic-proposal-only",
+                "epistemic_status": "grounded-open-dynamic",
+            })
+        return projected
+
     def _bind_verb_schemas(self, goals: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
         """Fit telic schemas recursively: roles -> potential -> verb -> open completion."""
         if self.last_store is None or self.last_workspace is None:
@@ -1378,6 +1493,16 @@ class FrameSchemaObserver:
                     "situated_roles": dict(role_map), "prospective": False,
                 }
 
+                semantic_schema_bindings = (
+                    self._fit_semantic_schema_hypotheses(
+                        goal,
+                        role_schema=role_schema,
+                        role_atom=role_atom,
+                        potential_schema=potential_schema,
+                        potential_atom=potential_atom,
+                    )
+                )
+
                 verb_predicate = f"AdmissibleVerb:{verb}"
                 verb_schema = self.last_store.add(E.Schema.create(
                     (E.Port("potential", "potential-binding"),),
@@ -1422,6 +1547,7 @@ class FrameSchemaObserver:
                     "situated_roles": dict(role_map),
                     "current_potential": float(current_value),
                     "role_grounding": dict(grounding),
+                    "semantic_schema_bindings": semantic_schema_bindings,
                 }
                 self.last_verb_bindings[verb_atom.atom_id] = {
                     **record, "verb": verb, "observable": observable,
@@ -1444,6 +1570,11 @@ class FrameSchemaObserver:
             goal["r2_role_bindings"] = tuple(item["situated_roles"] for item in situated)
             goal["r2_role_groundings"] = tuple(item["role_grounding"] for item in situated)
             goal["r2_situated_verb_bindings"] = tuple(situated)
+            goal["r2_schema_hypothesis_bindings"] = tuple(
+                binding
+                for item in situated
+                for binding in item.get("semantic_schema_bindings", ())
+            )
             goal["r2_open_shadows"] = tuple(
                 shadow_id for item in situated
                 for shadow_id in item["preferred_completion_shadow_ids"]
@@ -2382,6 +2513,240 @@ class FrameSchemaObserver:
             })
         return chain
 
+    @staticmethod
+    def _schema_dynamic_observations(
+        actor_before: Mapping[str, Any] | None,
+        target_before: Mapping[str, Any] | None,
+        actor_after: Mapping[str, Any] | None,
+        target_after: Mapping[str, Any] | None,
+    ) -> dict[str, bool | None]:
+        """Measure generic relational dynamics over one grounded role pair."""
+
+        if not all(isinstance(item, Mapping) for item in (
+            actor_before, target_before, actor_after, target_after,
+        )):
+            return {
+                name: None for name in (
+                    "changes_component_count", "changes_contact_state",
+                    "changes_containment_state", "changes_relative_position",
+                    "coherent_motion", "intrinsic_geometry_preserved",
+                )
+            }
+        assert actor_before is not None and target_before is not None
+        assert actor_after is not None and target_after is not None
+
+        def delta(before: Mapping[str, Any], after: Mapping[str, Any]) -> tuple[float, float]:
+            return (
+                (float(after["center2"][0]) - float(before["center2"][0])) / 2.0,
+                (float(after["center2"][1]) - float(before["center2"][1])) / 2.0,
+            )
+
+        def touches(left: Mapping[str, Any], right: Mapping[str, Any]) -> bool:
+            left_cells = set(left["cells"])
+            right_cells = set(right["cells"])
+            return bool(left_cells & right_cells) or any(
+                abs(ly - ry) + abs(lx - rx) == 1
+                for ly, lx in left_cells for ry, rx in right_cells
+            )
+
+        def containment(left: Mapping[str, Any], right: Mapping[str, Any]) -> tuple[bool, bool]:
+            left_cells = set(left["cells"])
+            right_cells = set(right["cells"])
+            return left_cells <= right_cells, right_cells <= left_cells
+
+        def member_count(value: Mapping[str, Any]) -> int:
+            members = value.get("primitive_member_ids")
+            return len(members) if isinstance(members, (list, tuple)) else 1
+
+        actor_delta = delta(actor_before, actor_after)
+        target_delta = delta(target_before, target_after)
+        relative_before = (
+            float(actor_before["center2"][0]) - float(target_before["center2"][0]),
+            float(actor_before["center2"][1]) - float(target_before["center2"][1]),
+        )
+        relative_after = (
+            float(actor_after["center2"][0]) - float(target_after["center2"][0]),
+            float(actor_after["center2"][1]) - float(target_after["center2"][1]),
+        )
+        moved = any(
+            abs(value) > SUCCESSOR_SHADOW_TOLERANCE
+            for value in (*actor_delta, *target_delta)
+        )
+        coherent = moved and all(
+            abs(left - right) <= SUCCESSOR_SHADOW_TOLERANCE
+            for left, right in zip(actor_delta, target_delta, strict=True)
+        )
+        preserved = all(
+            (
+                int(before["area"]), tuple(before["shape"]),
+                tuple(before["outline"]),
+            ) == (
+                int(after["area"]), tuple(after["shape"]),
+                tuple(after["outline"]),
+            )
+            for before, after in (
+                (actor_before, actor_after), (target_before, target_after),
+            )
+        )
+        return {
+            "changes_component_count": (
+                (member_count(actor_before), member_count(target_before))
+                != (member_count(actor_after), member_count(target_after))
+            ),
+            "changes_contact_state": (
+                touches(actor_before, target_before)
+                != touches(actor_after, target_after)
+            ),
+            "changes_containment_state": (
+                containment(actor_before, target_before)
+                != containment(actor_after, target_after)
+            ),
+            "changes_relative_position": any(
+                abs(left - right) > SUCCESSOR_SHADOW_TOLERANCE
+                for left, right in zip(
+                    relative_before, relative_after, strict=True,
+                )
+            ),
+            "coherent_motion": coherent,
+            "intrinsic_geometry_preserved": preserved,
+        }
+
+    def _settle_schema_hypotheses(
+        self,
+        prediction: Mapping[str, Any],
+        *,
+        actor_before: Mapping[str, Any] | None,
+        target_before: Mapping[str, Any] | None,
+        actor_after: Mapping[str, Any] | None,
+        target_after: Mapping[str, Any] | None,
+        identity_status: str,
+        mechanism_status: str,
+        actual_progress: float | None,
+        evidence_ref: str,
+        global_transform: Mapping[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Settle declared dynamics without borrowing goal/mechanism support."""
+
+        actual = self._schema_dynamic_observations(
+            actor_before, target_before, actor_after, target_after,
+        )
+        settlements: list[dict[str, Any]] = []
+        for projection in prediction.get("schema_hypothesis_projections", ())[:2]:
+            if not isinstance(projection, Mapping):
+                continue
+            schema_id = str(projection.get("schema_id", ""))
+            if not schema_id:
+                continue
+            predicted = (
+                projection.get("action_projection", {})
+                .get("declared_dynamic_predictions", {})
+            )
+            judgments = []
+            supports = 0
+            refutes = 0
+            for dynamic in projection.get("predicted_dynamics", ())[:4]:
+                dynamic = str(dynamic)
+                observed_value = actual.get(dynamic)
+                predicted_value = (
+                    predicted.get(dynamic)
+                    if isinstance(predicted, Mapping) else None
+                )
+                if dynamic == "unknown" or observed_value is None:
+                    status = "OPEN"
+                    reason = "dynamic-not-measurable"
+                elif (
+                    dynamic == "coherent_motion"
+                    and observed_value is True
+                    and isinstance(global_transform, Mapping)
+                ):
+                    status = "OPEN"
+                    reason = "global-reference-frame-confound"
+                elif predicted_value is True:
+                    status = "SUPPORTS" if observed_value is True else "REFUTES"
+                    reason = "command-projected-dynamic-settled"
+                elif predicted_value is None and observed_value is True:
+                    status = "SUPPORTS"
+                    reason = "novel-declared-dynamic-observed"
+                else:
+                    # A command that does not instantiate a declared dynamic
+                    # is not negative evidence about the reusable hypothesis.
+                    status = "OPEN"
+                    reason = "command-not-diagnostic-for-dynamic"
+                supports += int(status == "SUPPORTS")
+                refutes += int(status == "REFUTES")
+                judgments.append({
+                    "dynamic": dynamic,
+                    "predicted_for_command": predicted_value,
+                    "observed": observed_value,
+                    "status": status,
+                    "reason": reason,
+                })
+
+            countercondition_judgments = []
+            for condition in projection.get("counterconditions", ())[:4]:
+                condition = str(condition)
+                triggered: bool | None = None
+                consequence = "OPEN"
+                if condition == "goal_residual_not_improved":
+                    triggered = (
+                        actual_progress is not None and actual_progress <= 0.0
+                    )
+                    consequence = "REFUTES" if triggered else "NOT_TRIGGERED"
+                elif condition == "mechanism_conflict":
+                    triggered = mechanism_status == "REFUTED"
+                    consequence = "REFUTES" if triggered else "NOT_TRIGGERED"
+                elif condition == "role_identity_ambiguous":
+                    triggered = identity_status != "UNIQUE"
+                    consequence = "BLOCKS_TEST" if triggered else "NOT_TRIGGERED"
+                elif condition == "coherent_motion_absent":
+                    projected_coherence = (
+                        predicted.get("coherent_motion")
+                        if isinstance(predicted, Mapping) else None
+                    )
+                    triggered = (
+                        projected_coherence is True
+                        and actual.get("coherent_motion") is False
+                    )
+                    consequence = "REFUTES" if triggered else "NOT_TRIGGERED"
+                elif condition == "structural_invariant_violated":
+                    triggered = actual.get("intrinsic_geometry_preserved") is False
+                    consequence = "REFUTES" if triggered else "NOT_TRIGGERED"
+                if consequence == "REFUTES":
+                    refutes += 1
+                countercondition_judgments.append({
+                    "countercondition": condition,
+                    "triggered": triggered,
+                    "consequence": consequence,
+                })
+
+            if identity_status != "UNIQUE":
+                status = "UNSETTLED"
+            elif refutes:
+                status = "REFUTED"
+                self.schema_hypothesis_refutations[schema_id] += 1
+            elif supports:
+                status = "SUPPORTED"
+                self.schema_hypothesis_confirmations[schema_id] += 1
+            else:
+                status = "OPEN"
+            settlements.append({
+                "local_ref": projection.get("local_ref"),
+                "schema_id": schema_id,
+                "binding_id": projection.get("binding_id"),
+                "status": status,
+                "dynamic_judgments": judgments,
+                "countercondition_judgments": countercondition_judgments,
+                "empirical_support": self.schema_hypothesis_confirmations[
+                    schema_id
+                ],
+                "empirical_refutations": self.schema_hypothesis_refutations[
+                    schema_id
+                ],
+                "evidence_ref": evidence_ref,
+                "authority": "environment-successor-settlement",
+            })
+        return settlements
+
     def _candidate(
         self, actor: dict[str, Any], target: dict[str, Any], action: Any,
         semantic_goal: dict[str, Any], situated: dict[str, Any],
@@ -2501,6 +2866,78 @@ class FrameSchemaObserver:
             for item in self.last_causal_entities
         ]
         coverage = causal_coverage_for(actor, supported_causal_entities)
+        schema_hypothesis_projections = []
+        for binding in situated.get("semantic_schema_bindings", ()):
+            predicted_dynamics = self._schema_dynamic_observations(
+                actor, target, projected, projected_target,
+            )
+            declared_dynamic_predictions = {
+                name: predicted_dynamics.get(name)
+                for name in binding.get("predicted_dynamics", ())
+            }
+            projection_status = (
+                "grounded-action-prediction"
+                if models_supported and simulation_status == "computed"
+                else "grounded-open-action-effect"
+            )
+            schema_hypothesis_projections.append({
+                **dict(binding),
+                "epistemic_status": projection_status,
+                "entity_projection": {
+                    "status": "grounded-candidate",
+                    "role_bindings": dict(situated_roles),
+                    "role_identity": {
+                        actor_role: actor_identity.get("status"),
+                        target_role: target_identity.get("status"),
+                    },
+                },
+                "action_projection": {
+                    "status": (
+                        "predicted-from-supported-effects"
+                        if models_supported and simulation_status == "computed"
+                        else "open-effect-probe"
+                    ),
+                    "command_id": self._command_id(action),
+                    "actor_delta": list(delta) if delta is not None else None,
+                    "target_delta": (
+                        list(target_delta) if target_delta is not None else None
+                    ),
+                    "residual_before": residual,
+                    "residual_after": predicted,
+                    "expected_progress": progress,
+                    "declared_dynamic_predictions": (
+                        declared_dynamic_predictions
+                    ),
+                },
+                "environment_evidence": {
+                    "goal_frontier_advances": self.goal_progress_confirmations[
+                        goal_key
+                    ],
+                    "mechanism_confirmations": self.explanation_confirmations[
+                        schema_id
+                    ],
+                    "mechanism_refutations": self.explanation_refutations[
+                        schema_id
+                    ],
+                    "schema_confirmations": (
+                        self.schema_hypothesis_confirmations[
+                            str(binding.get("schema_id", ""))
+                        ]
+                    ),
+                    "schema_refutations": (
+                        self.schema_hypothesis_refutations[
+                            str(binding.get("schema_id", ""))
+                        ]
+                    ),
+                },
+            })
+        semantic_attention_priority = max(
+            (
+                int(item.get("attention_priority", 0))
+                for item in schema_hypothesis_projections
+            ),
+            default=0,
+        )
         return {
             "kind": "situated-control-explanation",
             "epistemic_status": (
@@ -2521,6 +2958,8 @@ class FrameSchemaObserver:
                 "progress": chain.get("progress_binding_id"),
             },
             "semantic_source": "qwen-goal-proposal",
+            "schema_hypothesis_projections": schema_hypothesis_projections,
+            "semantic_attention_priority": semantic_attention_priority,
             "r2_goal_contract_id": semantic_goal.get("r2_goal_contract_id"),
             **({
                 "explanation_projection": {
@@ -3105,7 +3544,9 @@ class FrameSchemaObserver:
                     item["epistemic_evaluation"].get("causal_coverage", 0.0),
                     -item["epistemic_evaluation"].get("unexplained_causal_scope", 1.0),
                     item["prediction"]["expected_progress"],
-                    item["epistemic_evaluation"]["mechanism_confidence"], item["binding_id"],
+                    item["epistemic_evaluation"]["mechanism_confidence"],
+                    int(item.get("semantic_attention_priority", 0)),
+                    item["binding_id"],
                 ), default=None,
             )
             if best is None and probe_candidates:
@@ -3118,6 +3559,7 @@ class FrameSchemaObserver:
                         float(item.get("role_grounding", {}).get(
                             "residual_vector", {},
                         ).get("semantic_clue_residual", 1.0)),
+                        -int(item.get("semantic_attention_priority", 0)),
                         item["binding_id"],
                     ),
                 )
@@ -3128,8 +3570,18 @@ class FrameSchemaObserver:
                         item["epistemic_evaluation"].get("causal_coverage", 0.0),
                         -item["epistemic_evaluation"].get("unexplained_causal_scope", 1.0),
                         item["prediction"]["expected_progress"],
-                        item["epistemic_evaluation"]["mechanism_confidence"], item["binding_id"],
-                    ), default=(candidates[0] if candidates else None),
+                        item["epistemic_evaluation"]["mechanism_confidence"],
+                        int(item.get("semantic_attention_priority", 0)),
+                        item["binding_id"],
+                    ), default=(
+                        max(
+                            candidates,
+                            key=lambda item: (
+                                int(item.get("semantic_attention_priority", 0)),
+                                item["binding_id"],
+                            ),
+                        ) if candidates else None
+                    ),
                 )
             raw_progress = None if best is None else best["prediction"]["expected_progress"]
             progress = None if raw_progress is None else float(raw_progress)
@@ -3142,6 +3594,10 @@ class FrameSchemaObserver:
             information = declared_information / (
                 1.0 + self.action_uses[self._command_scope(action)]
             )
+            semantic_attention = (
+                int(best.get("semantic_attention_priority", 0))
+                if best is not None else 0
+            )
             eligibility = (
                 "PROGRESS_ELIGIBLE" if progress_candidates else
                 "PROBE_ELIGIBLE" if probe_candidates else
@@ -3152,6 +3608,7 @@ class FrameSchemaObserver:
                 2 if control_eligible else (1 if eligibility == "PROBE_ELIGIBLE" else 0),
                 progress if progress is not None else 0.0,
                 information,
+                semantic_attention,
                 -risk,
                 1 if action_id == int(fallback_action) else 0,
                 -command_index,
@@ -3207,6 +3664,10 @@ class FrameSchemaObserver:
             "role": item["role"], "eligibility": item["eligibility"],
             "expected_progress": item["expected_progress"],
             "information_value": item["information_value"], "risk": item["risk"],
+            "semantic_attention_priority": (
+                int(item["explanation"].get("semantic_attention_priority", 0))
+                if item["explanation"] else 0
+            ),
             "explanation_binding_id": item["explanation"]["binding_id"] if item["explanation"] else None,
             "successor_discrimination": (
                 dict(item["explanation"].get("successor_projection", {}).get("discrimination", {}))
@@ -3486,6 +3947,7 @@ class FrameSchemaObserver:
         potential_settlement: dict[str, Any] = {
             "status": "UNSETTLED", "expected": None, "observed": None,
         }
+        schema_hypothesis_settlement: list[dict[str, Any]] = []
 
         before_digest = sha256(json.dumps(
             [[int(cell) for cell in row] for row in before], separators=(",", ":"),
@@ -3855,6 +4317,25 @@ class FrameSchemaObserver:
                     if actual_progress <= 0.0:
                         self.goal_nonprogress[goal_key] += 1
 
+            schema_hypothesis_settlement = self._settle_schema_hypotheses(
+                prediction,
+                actor_before=actor_before,
+                target_before=target_before,
+                actor_after=actor_after,
+                target_after=target_after,
+                identity_status=identity_status,
+                mechanism_status=str(mechanism_settlement.get("status", "UNSETTLED")),
+                actual_progress=(
+                    None if actual_progress is None else float(actual_progress)
+                ),
+                evidence_ref=transition_evidence_ref,
+                global_transform=(
+                    (self.last_causal_entity_induction or {}).get(
+                        "global_transform"
+                    )
+                ),
+            )
+
         self.pending_prediction = None
         settlement = {
             "proposal_id": (self.last_control_proposal or {}).get("proposal_id"),
@@ -3863,6 +4344,7 @@ class FrameSchemaObserver:
             "adjudication": adjudication, "actual_progress": actual_progress,
             "identity": identity_settlement, "mechanism": mechanism_settlement,
             "potential": potential_settlement, "learned_effects": learned,
+            "schema_hypotheses": schema_hypothesis_settlement,
             "unresolved_effect_contexts": unresolved_effect_contexts[:16],
             "causal_scope_residual": deepcopy(self.last_causal_scope_residual),
             "causal_entity_induction": deepcopy(self.last_causal_entity_induction),

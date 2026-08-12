@@ -26,6 +26,29 @@ MODEL_SCRATCHPAD_FIELDS = (
 )
 CONTROL_GOAL_ROLES = ("actor", "target")
 GENERATED_ROLE_MODALITIES = ("suggested", "anti-clue", "unknown")
+SCHEMA_HYPOTHESIS_KINDS = (
+    "relational", "dynamic", "relational_dynamic",
+)
+SCHEMA_RELATION_FAMILIES = (
+    "alignment", "connection", "contact", "containment", "correspondence",
+    "coupling", "ordering", "separation", "symmetry", "transformation",
+    "unknown",
+)
+SCHEMA_PREDICTED_DYNAMICS = (
+    "changes_component_count", "changes_contact_state",
+    "changes_containment_state", "changes_relative_position",
+    "coherent_motion", "intrinsic_geometry_preserved", "unknown",
+)
+SCHEMA_COUNTERCONDITIONS = (
+    "coherent_motion_absent", "goal_residual_not_improved",
+    "mechanism_conflict", "predicted_relation_absent",
+    "role_identity_ambiguous", "structural_invariant_violated",
+)
+SCHEMA_CONFIDENCE_LEVELS = {"low": 1, "medium": 2, "high": 3}
+SCHEMA_CONFIDENCE_BASES = (
+    "analogy", "r2_grounding_feedback", "transition_evidence",
+    "uncertain", "visible_structure",
+)
 CONSOLIDATION_PROMPT = """You are the configured semantic model performing R2 explanation consolidation.
 Read model_scratchpad as the exact current shared workspace scratchpad used by
 ordinary semantic turns and Agent Arcade. Rewrite the same five-field object in
@@ -57,8 +80,8 @@ SEMANTIC_REVISION_PROMPT = """You are the configured semantic model repairing an
 The supplied causal visual unit and R2 transition settlement are authoritative.
 Read model_scratchpad as the exact prior semantic state. Read
 semantic_revision_task for the evidenced failure and required revision. This is
-a focused repair turn: do not regenerate action aliases, abductive diagrams, or
-citations; their arrays must be empty.
+a focused repair turn: do not regenerate action aliases, schema hypotheses,
+abductive diagrams, or citations; their arrays must be empty.
 
 Return the normal strict JSON contract. In scratchpad, rewrite notes to state
 what the latest evidence changed, and also revise at least one of explanation,
@@ -518,6 +541,147 @@ def _quarantine_goal_proposals(
         seen.add(key)
         accepted.append(normalized_proposal)
     return accepted, seen, rejected
+
+
+def _quarantine_schema_hypotheses(
+    hypotheses: Any,
+    raw_goal_proposals: Sequence[Mapping[str, Any]],
+    accepted_goal_proposals: Sequence[Mapping[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Compile model abductions as zero-authority schema projections.
+
+    A schema hypothesis references one measurable goal proposal rather than
+    duplicating its potential language. Model confidence becomes a bounded
+    attention prior only. Grounding, empirical support, and action authority
+    remain absent until R2 and the environment supply them.
+    """
+
+    accepted_by_key = {
+        _canonical_goal_proposal_key(item): index
+        for index, item in enumerate(accepted_goal_proposals)
+    }
+    exact_fields = {
+        "local_ref", "kind", "relation_family", "claim", "roles",
+        "goal_proposal_index", "predicted_dynamics", "counterconditions",
+        "confidence", "confidence_basis",
+    }
+    output: list[dict[str, Any]] = []
+    rejected: list[dict[str, Any]] = []
+    seen_refs: set[str] = set()
+    seen_cores: set[str] = set()
+    values = hypotheses if isinstance(hypotheses, list) else ()
+    for hypothesis_index, raw in enumerate(values[:2]):
+        reason = None
+        if not isinstance(raw, Mapping) or set(raw) != exact_fields:
+            reason = "schema-hypothesis-contract"
+        else:
+            item = dict(raw)
+            local_ref = item.get("local_ref")
+            goal_index = item.get("goal_proposal_index")
+            predicted = item.get("predicted_dynamics")
+            counterconditions = item.get("counterconditions")
+            claim = item.get("claim")
+            if (
+                not isinstance(local_ref, str)
+                or re.fullmatch(r"schema_hypothesis_[0-9]{1,2}", local_ref) is None
+                or local_ref in seen_refs
+            ):
+                reason = "schema-hypothesis-local-ref"
+            elif item.get("kind") not in SCHEMA_HYPOTHESIS_KINDS:
+                reason = "schema-hypothesis-kind"
+            elif item.get("relation_family") not in SCHEMA_RELATION_FAMILIES:
+                reason = "schema-hypothesis-relation"
+            elif item.get("roles") != list(CONTROL_GOAL_ROLES):
+                reason = "schema-hypothesis-role-interface"
+            elif (
+                not isinstance(goal_index, int) or isinstance(goal_index, bool)
+                or goal_index < 0 or goal_index >= len(raw_goal_proposals)
+            ):
+                reason = "schema-hypothesis-goal-reference"
+            elif (
+                not isinstance(claim, str) or not claim.strip()
+                or len(claim) > 160
+            ):
+                reason = "schema-hypothesis-claim"
+            elif (
+                not isinstance(predicted, list) or not predicted
+                or len(predicted) > 4 or len(predicted) != len(set(predicted))
+                or not set(predicted).issubset(SCHEMA_PREDICTED_DYNAMICS)
+            ):
+                reason = "schema-hypothesis-prediction"
+            elif (
+                not isinstance(counterconditions, list) or not counterconditions
+                or len(counterconditions) > 4
+                or len(counterconditions) != len(set(counterconditions))
+                or not set(counterconditions).issubset(SCHEMA_COUNTERCONDITIONS)
+            ):
+                reason = "schema-hypothesis-countercondition"
+            elif item.get("confidence") not in SCHEMA_CONFIDENCE_LEVELS:
+                reason = "schema-hypothesis-confidence"
+            elif item.get("confidence_basis") not in SCHEMA_CONFIDENCE_BASES:
+                reason = "schema-hypothesis-confidence-basis"
+            else:
+                goal_key = _canonical_goal_proposal_key(
+                    raw_goal_proposals[goal_index]
+                )
+                accepted_goal_index = accepted_by_key.get(goal_key)
+                if accepted_goal_index is None:
+                    reason = "schema-hypothesis-goal-not-accepted"
+                else:
+                    core = json.dumps({
+                        key: item[key]
+                        for key in exact_fields - {"local_ref", "goal_proposal_index"}
+                    }, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+                    if core in seen_cores:
+                        reason = "schema-hypothesis-duplicate"
+                    else:
+                        seen_refs.add(local_ref)
+                        seen_cores.add(core)
+                        output.append({
+                            **item,
+                            "claim": claim.strip(),
+                            "goal_proposal_index": accepted_goal_index,
+                            "goal_proposal_digest": hashlib.sha256(
+                                goal_key.encode("utf-8")
+                            ).hexdigest()[:20],
+                            "attention_priority": SCHEMA_CONFIDENCE_LEVELS[
+                                str(item["confidence"])
+                            ],
+                            "empirical_support": 0,
+                            "epistemic_status": (
+                                "ungrounded-semantic-schema-hypothesis"
+                            ),
+                            "authority": "attention-prior-only",
+                        })
+        if reason is not None:
+            rejected.append({
+                "reason": reason,
+                "hypothesis_index": hypothesis_index,
+            })
+    return output, rejected
+
+
+def project_schema_hypotheses_to_goals(
+    goals: Any, hypotheses: Any,
+) -> list[dict[str, Any]]:
+    """Attach compiled hypotheses to their surviving measurable goal schema."""
+
+    source_goals = [goals] if isinstance(goals, Mapping) else list(goals or ())
+    projected = [dict(item) for item in source_goals if isinstance(item, Mapping)]
+    by_digest = {
+        hashlib.sha256(
+            _canonical_goal_proposal_key(goal).encode("utf-8")
+        ).hexdigest()[:20]: goal
+        for goal in projected
+    }
+    for hypothesis in hypotheses if isinstance(hypotheses, (list, tuple)) else ():
+        if not isinstance(hypothesis, Mapping):
+            continue
+        goal = by_digest.get(str(hypothesis.get("goal_proposal_digest", "")))
+        if goal is None:
+            continue
+        goal.setdefault("_semantic_schema_hypotheses", []).append(dict(hypothesis))
+    return projected
 
 
 def _merge_supported_goal_proposals(
@@ -1312,7 +1476,7 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
             for key in (
                 "explanation_binding_id", "adjudication", "actual_progress",
                 "identity", "mechanism", "potential", "preferred_order",
-                "protected_invariants",
+                "protected_invariants", "schema_hypotheses",
             )
             if key in settlement
         }
@@ -1349,9 +1513,28 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
             "active_explanation": {
                 **{
                     key: active.get(key)
-                    for key in ("binding_id", "verb", "epistemic_status", "verb_status", "potential", "mechanism")
+                    for key in (
+                        "binding_id", "verb", "epistemic_status",
+                        "verb_status", "potential", "mechanism",
+                        "semantic_attention_priority",
+                    )
                     if key in active
                 },
+                "schema_hypothesis_projections": [
+                    {
+                        key: item.get(key)
+                        for key in (
+                            "local_ref", "kind", "relation_family",
+                            "model_confidence", "confidence_basis",
+                            "attention_priority", "empirical_support",
+                            "epistemic_status", "schema_id", "binding_id",
+                        )
+                    }
+                    for item in active.get(
+                        "schema_hypothesis_projections", ()
+                    )[:2]
+                    if isinstance(item, Mapping)
+                ],
                 **_minimal_support_fields(active),
             },
             "latest_settlement": {
@@ -1380,9 +1563,23 @@ def record_r2_semantic_projection(projection: Mapping[str, Any]) -> dict[str, An
         candidate["active_explanation"] = {
             **{
                 key: active.get(key)
-                for key in ("binding_id", "verb", "epistemic_status")
+                for key in (
+                    "binding_id", "verb", "epistemic_status",
+                    "semantic_attention_priority",
+                )
                 if key in active
             },
+            "schema_hypothesis_projections": [
+                {
+                    key: item.get(key)
+                    for key in (
+                        "local_ref", "relation_family", "model_confidence",
+                        "attention_priority", "epistemic_status",
+                    )
+                }
+                for item in active.get("schema_hypothesis_projections", ())[:2]
+                if isinstance(item, Mapping)
+            ],
             **_minimal_support_fields(active),
         }
     _R2_SEMANTIC_PROJECTION = candidate
@@ -1642,6 +1839,21 @@ put an environment action, direction, button, policy, or game identifier in
 either channel. Do not serialize a situated binding, attention table, or
 action policy.
 
+SCHEMA HYPOTHESES:
+When an analogy or explanatory concept suggests a relation or dynamic that is
+not yet represented by an existing schema, put it in schema_hypotheses. Link it
+to exactly one goal_proposal by index. State only a typed relational/dynamic
+claim over actor and target, predicted structural changes, explicit
+counterconditions, and calibrated confidence with its evidence basis. A
+semantic label is shorthand for those predictions, never a fact or ontology.
+Do not prescribe an action or bind a visible entity. R2 will project the
+hypothesis onto candidate entities, measurable potentials, and legal commands.
+Model confidence changes bounded attention priority only; it supplies zero
+empirical support and cannot make a command control-eligible. Prefer one
+minimal hypothesis and at most two genuinely competing explanations. Abstain
+with an empty array when the concept adds no falsifiable structure beyond the
+goal proposal.
+
 GOAL CONTRIBUTION HYPOTHESIS:
 A goal_proposal may optionally include one narrow goal_contract proposing that
 the verb terminal contributes to an observable level_completion,
@@ -1796,6 +2008,9 @@ CAUSAL VISUAL UNIT:
                 "object_id": prior.object_id,
                 "basis_revision": prior.payload.get("basis_revision"),
                 "goal_proposals": list(prior.payload.get("goal_proposals", ())),
+                "schema_hypotheses": list(
+                    prior.payload.get("schema_hypotheses", ())
+                ),
                 "action_aliases": list(prior.payload.get("action_aliases", ())),
                 "open_questions": list(prior.payload.get("open_questions", ())),
                 "cited_ids": list(prior.payload.get("cited_ids", ())),
@@ -1930,6 +2145,7 @@ CAUSAL VISUAL UNIT:
                         else "revise-replace-or-abstain"
                     ),
                     "abductive_compositions": "empty",
+                    "schema_hypotheses": "empty",
                     "action_aliases": "empty",
                     "cited_ids": "empty",
                 },
@@ -2125,6 +2341,41 @@ CAUSAL VISUAL UNIT:
                 },
             },
         ]}
+        schema_hypothesis_schema = {
+            "type": "object", "additionalProperties": False,
+            "required": [
+                "local_ref", "kind", "relation_family", "claim", "roles",
+                "goal_proposal_index", "predicted_dynamics",
+                "counterconditions", "confidence", "confidence_basis",
+            ],
+            "properties": {
+                "local_ref": {
+                    "type": "string",
+                    "pattern": "^schema_hypothesis_[0-9]{1,2}$",
+                },
+                "kind": {"enum": list(SCHEMA_HYPOTHESIS_KINDS)},
+                "relation_family": {"enum": list(SCHEMA_RELATION_FAMILIES)},
+                "claim": {
+                    "type": "string", "minLength": 1, "maxLength": 160,
+                },
+                "roles": {"const": list(CONTROL_GOAL_ROLES)},
+                "goal_proposal_index": {
+                    "type": "integer", "minimum": 0, "maximum": 2,
+                },
+                "predicted_dynamics": {
+                    "type": "array", "minItems": 1, "maxItems": 4,
+                    "uniqueItems": True,
+                    "items": {"enum": list(SCHEMA_PREDICTED_DYNAMICS)},
+                },
+                "counterconditions": {
+                    "type": "array", "minItems": 1, "maxItems": 4,
+                    "uniqueItems": True,
+                    "items": {"enum": list(SCHEMA_COUNTERCONDITIONS)},
+                },
+                "confidence": {"enum": list(SCHEMA_CONFIDENCE_LEVELS)},
+                "confidence_basis": {"enum": list(SCHEMA_CONFIDENCE_BASES)},
+            },
+        }
         alias_branches = []
         for action_id, evidence_refs in action_evidence.items():
             alias_branches.append({
@@ -2153,7 +2404,7 @@ CAUSAL VISUAL UNIT:
                 {"type": "object", "additionalProperties": False, "maxProperties": 0}
             ),
         }
-        required = ["summary", "objective_hypothesis", "goal_proposals", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"]
+        required = ["summary", "objective_hypothesis", "goal_proposals", "schema_hypotheses", "abductive_compositions", "action_aliases", "open_questions", "cited_ids"]
         properties = {
                 "summary": {"type": "string", "maxLength": 360},
                 "objective_hypothesis": {"type": "string", "maxLength": 240},
@@ -2161,6 +2412,10 @@ CAUSAL VISUAL UNIT:
                     "type": "array", "minItems": 1,
                     "maxItems": 2 if len(stable_schema_ids) >= 2 else 3,
                     "items": verb_schema,
+                },
+                "schema_hypotheses": {
+                    "type": "array", "minItems": 0, "maxItems": 2,
+                    "uniqueItems": True, "items": schema_hypothesis_schema,
                 },
                 "abductive_compositions": {
                     "type": "array", "minItems": 1 if len(stable_schema_ids) >= 2 else 0,
@@ -2184,6 +2439,10 @@ CAUSAL VISUAL UNIT:
             }
             properties["abductive_compositions"] = {
                 **properties["abductive_compositions"], "minItems": 0,
+                "maxItems": 0,
+            }
+            properties["schema_hypotheses"] = {
+                **properties["schema_hypotheses"], "minItems": 0,
                 "maxItems": 0,
             }
             properties["action_aliases"] = {
@@ -2541,8 +2800,8 @@ CAUSAL VISUAL UNIT:
         consolidation_task = turn.document.get("explanation_consolidation_task")
         ordinary_required = {
             "summary", "objective_hypothesis", "goal_proposals",
-            "abductive_compositions", "action_aliases", "open_questions",
-            "cited_ids",
+            "schema_hypotheses", "abductive_compositions", "action_aliases",
+            "open_questions", "cited_ids",
         }
         consolidation_required = {
             "summary", "objective_hypothesis", "goal_proposals",
@@ -2558,6 +2817,7 @@ CAUSAL VISUAL UNIT:
         if isinstance(consolidation_task, Mapping):
             note = {
                 **dict(note),
+                "schema_hypotheses": [],
                 "abductive_compositions": [],
                 "action_aliases": [],
                 "open_questions": [],
@@ -2879,6 +3139,13 @@ CAUSAL VISUAL UNIT:
             # scratchpad, alias, and abductive update in this response.
             unique_proposals = []
             seen_proposals = set()
+        schema_hypotheses, schema_hypothesis_rejections = (
+            _quarantine_schema_hypotheses(
+                note["schema_hypotheses"],
+                note["goal_proposals"],
+                unique_proposals,
+            )
+        )
         feedback = turn.document.get("scratchpad_context", {}).get("r2_semantic_projection") or {}
         available_schema_ids = {
             str(item.get("schema_id"))
@@ -2903,6 +3170,7 @@ CAUSAL VISUAL UNIT:
         payload = {
             **dict(note),
             "goal_proposals": unique_proposals,
+            "schema_hypotheses": schema_hypotheses,
             "abductive_compositions": abductions,
             "action_aliases": action_aliases,
             "model_scratchpad": dict(scratchpad),
@@ -2944,6 +3212,7 @@ CAUSAL VISUAL UNIT:
                 "claim": note["objective_hypothesis"],
                 "summary": note["summary"],
                 "goal_proposals": unique_proposals,
+                "schema_hypotheses": schema_hypotheses,
                 "abductive_compositions": abductions,
                 "open_questions": list(note["open_questions"]),
                 "status": "unverified",
@@ -2974,6 +3243,7 @@ CAUSAL VISUAL UNIT:
             "accepted": accepted,
             "rejected": [
                 *compilation.get("rejected", ()), *proposal_rejections,
+                *schema_hypothesis_rejections,
             ],
             "working_note": payload,
         }
