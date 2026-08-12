@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict, deque
 from copy import deepcopy
+from dataclasses import replace
 from hashlib import sha256
 import importlib.util
 from itertools import islice, permutations, product
@@ -27,6 +28,17 @@ from reflector2.planner import (
     plan_certificate,
     require_backend,
     settle_plan_certificate,
+)
+from reflector2.r2.goal_contract import (
+    GoalContract,
+    compile_goal_contract,
+    settle_goal_contract,
+)
+from reflector2.r2.causal_entity import (
+    CausalEntityBinding,
+    CausalEntityInducer,
+    TransformSignature,
+    causal_coverage_for,
 )
 
 
@@ -151,6 +163,14 @@ class DefeasibleRoleGrounder:
             1, int(actor.get("hole_count", 0)), int(target.get("hole_count", 0)),
         )
         measurable = self.measure(observable, actor, target)
+        def identity_residual(region: Mapping[str, Any]) -> float:
+            return (
+                0.0
+                if region.get("kind") == "causal-entity-binding"
+                and region.get("epistemic_status") == "SUPPORTED"
+                and region.get("identity_status") == "UNIQUE"
+                else 0.5
+            )
         return {
             "type_compatibility_residual": 0.0,
             "structural_residual": round(structural, 6),
@@ -165,7 +185,9 @@ class DefeasibleRoleGrounder:
             "evidence_mass_residual": round(
                 1.0 - min(float(actor["area"]), float(target["area"])) / self.maximum_area, 6,
             ),
-            "identity_continuity_residual": 0.5,
+            "identity_continuity_residual": round(
+                (identity_residual(actor) + identity_residual(target)) / 2.0, 6,
+            ),
             "value_relation": "same" if int(actor["value"]) == int(target["value"]) else "different",
             "measured_potential": None if measurable is None else float(measurable),
         }
@@ -222,7 +244,7 @@ class DefeasibleRoleGrounder:
         ):
             assignment = dict(zip(roles, assignment_tuple))
             actor, target = assignment[potential_roles[0]], assignment[potential_roles[1]]
-            if actor is target:
+            if actor is target or FrameSchemaObserver._primitive_support_ids(actor) & FrameSchemaObserver._primitive_support_ids(target):
                 continue
             features = self._features(actor, target, observable)
             if features["spatial_measurability_residual"] > 0:
@@ -276,11 +298,35 @@ class DefeasibleRoleGrounder:
         # Rank aggregation is deliberately fixed and generic.  Semantic clues
         # break otherwise-equal comparisons but cannot erase a Pareto-plausible
         # structural candidate.
-        front.sort(key=lambda item: (
+        rank_key = lambda item: (
             sum(float(item["residual_vector"][key]) for key in dimensions),
             float(item["semantic_clue_residual"]), item["candidate_binding_id"],
-        ))
+        )
+        front.sort(key=rank_key)
         bounded = front[:ROLE_GROUNDING_TOP_K]
+        # A causally supported identity must be genuinely role-eligible, not
+        # silently lost because many visually simpler atomic tuples fill the
+        # presentation beam. Reserve bounded frontier slots—not preference or
+        # control authority—for the best Pareto-plausible tuple containing each
+        # supported entity. Ordinary residual ranking still orders the result.
+        supported_entities = sorted({
+            str(region["binding_id"])
+            for region in self.regions
+            if region.get("kind") == "causal-entity-binding"
+            and region.get("epistemic_status") == "SUPPORTED"
+            and region.get("identity_status") == "UNIQUE"
+        })[:ROLE_GROUNDING_TOP_K]
+        reserved: list[dict[str, Any]] = []
+        for entity_id in supported_entities:
+            candidate = next((
+                item for item in front
+                if entity_id in item["situated_roles"].values()
+            ), None)
+            if candidate is not None and candidate not in bounded:
+                reserved.append(candidate)
+        if reserved:
+            keep = max(0, ROLE_GROUNDING_TOP_K - len(reserved))
+            bounded = sorted([*bounded[:keep], *reserved], key=rank_key)[:ROLE_GROUNDING_TOP_K]
         for rank, item in enumerate(bounded, start=1):
             item["pareto_rank"] = 1
             item["bounded_rank"] = rank
@@ -368,6 +414,14 @@ class FrameSchemaObserver:
         self.last_digest: str | None = None
         self.last_stats: dict[str, Any] | None = None
         self.last_regions: list[dict[str, Any]] = []
+        self.predecessor_regions: list[dict[str, Any]] = []
+        self.predecessor_digest: str | None = None
+        self.last_causal_entities: list[dict[str, Any]] = []
+        self.last_causal_scope_residual: dict[str, Any] | None = None
+        self.last_causal_entity_induction: dict[str, Any] | None = None
+        self.causal_entity_inducer = CausalEntityInducer()
+        self.pending_causal_bindings: tuple[CausalEntityBinding, ...] = ()
+        self.last_settled_successor_regions: list[dict[str, Any]] = []
         self.last_region_descriptors: dict[str, dict[str, Any]] = {}
         self.last_relation_bindings: dict[tuple[str, tuple[str, ...]], str] = {}
         self.action_effects: dict[tuple[Any, tuple[Any, ...]], Counter[tuple[float, float]]] = defaultdict(Counter)
@@ -401,6 +455,9 @@ class FrameSchemaObserver:
         self.last_plan_certificate: dict[str, Any] | None = None
         self.last_planner_result: dict[str, Any] | None = None
         self.planner_metrics: Counter[str] = Counter()
+        self.goal_contracts: dict[str, GoalContract] = {}
+        self.goal_contract_by_verb: dict[str, str] = {}
+        self.goal_contract_settlements: list[dict[str, Any]] = []
 
     def reset_episode(self) -> None:
         """Start with a genuinely fresh epistemic workspace.
@@ -418,10 +475,75 @@ class FrameSchemaObserver:
             "action_uses": self.action_uses,
             "explanation_confirmations": self.explanation_confirmations,
             "explanation_refutations": self.explanation_refutations,
+            "goal_contracts": self.goal_contracts,
+            "goal_contract_by_verb": self.goal_contract_by_verb,
+            "goal_contract_settlements": self.goal_contract_settlements,
         }
         self.__init__(self.planner_config.document(), self.planner_backend)
         for name, value in retained.items():
             setattr(self, name, value)
+
+    def propose_goal_contract(
+        self,
+        proposal: Mapping[str, Any],
+        *,
+        contributor_verb: str,
+        contributor_observable: str,
+        contributor_target: float | None = 0.0,
+        proposal_citations: Sequence[str] = (),
+        provenance: Sequence[str] = ("semantic-proposal",),
+        preferred_order: str = "decrease",
+        role_interfaces: Sequence[str] = ("SpatialEntity", "SpatialEntity"),
+        required_invariants: Sequence[str] = (),
+    ) -> GoalContract:
+        """Compile a semantic proposal without granting it empirical support."""
+
+        candidate = compile_goal_contract(
+            proposal,
+            contributor_verb=contributor_verb,
+            contributor_observable=contributor_observable,
+            contributor_target=contributor_target,
+            proposal_citations=proposal_citations,
+            provenance=provenance,
+            preferred_order=preferred_order,
+            role_interfaces=role_interfaces,
+            required_invariants=required_invariants,
+        )
+        existing = self.goal_contracts.get(candidate.contract_id)
+        contract = existing or candidate
+        self.goal_contracts[contract.contract_id] = contract
+        self.goal_contract_by_verb[contract.contributor_verb] = contract.contract_id
+        return contract
+
+    def adjudicate_goal_contract(
+        self,
+        contract_id: str,
+        *,
+        verb_terminal_observed: bool,
+        environment_terminal_observed: bool,
+        evidence_ref: str,
+        causal_boundary_closed: bool = True,
+    ) -> GoalContract:
+        """Apply an exact environment-cited support/refutation settlement."""
+
+        current = self.goal_contracts[str(contract_id)]
+        settled = settle_goal_contract(
+            current,
+            verb_terminal_observed=verb_terminal_observed,
+            environment_terminal_observed=environment_terminal_observed,
+            evidence_ref=evidence_ref,
+            causal_boundary_closed=causal_boundary_closed,
+        )
+        self.goal_contracts[settled.contract_id] = settled
+        self.goal_contract_settlements.append({
+            "contract_id": settled.contract_id,
+            "status_before": current.status,
+            "status_after": settled.status,
+            "verb_terminal_observed": bool(verb_terminal_observed),
+            "environment_terminal_observed": bool(environment_terminal_observed),
+            "evidence_ref": str(evidence_ref),
+        })
+        return settled
 
     def retry_level(self) -> None:
         """Clear failed-attempt grounding without learning RESET as mechanics."""
@@ -541,6 +663,15 @@ class FrameSchemaObserver:
                 "identity_assessments": [dict(item) for item in self.last_identity_assessments[-8:]],
                 "claim": "identity-gated horizon-1 successor evaluation",
             },
+            "goal_contracts": [
+                contract.document()
+                for contract in sorted(
+                    self.goal_contracts.values(), key=lambda item: item.contract_id,
+                )
+            ][:4],
+            "causal_entity_induction": deepcopy(self.last_causal_entity_induction),
+            "causal_scope_residual": deepcopy(self.last_causal_scope_residual),
+            "causal_entities": [dict(item) for item in self.last_causal_entities[:8]],
         }
 
     def _definitions(self) -> tuple[Any, Any, dict[str, Any]]:
@@ -926,6 +1057,16 @@ class FrameSchemaObserver:
         if digest == self.last_digest and self.last_stats is not None:
             return {**self.last_stats, "turn": int(turn), "cached": True}
 
+        # Settlement is called after the successor has been fitted.  Preserve
+        # the predecessor's primitive situated bindings so causal coverage can
+        # be audited over the whole transition rather than only selected roles.
+        self.predecessor_regions = [
+            deepcopy(region) for region in self.last_regions
+            if region.get("kind") != "causal-entity-binding"
+        ]
+        self.predecessor_digest = self.last_digest
+        self.last_causal_entities = []
+
         self.last_potential_states = {}
         self.last_verb_bindings = {}
         self.last_action_atoms = {}
@@ -997,6 +1138,27 @@ class FrameSchemaObserver:
         self.last_store, self.last_workspace = store, workspace
         self.last_atom_ids = tuple(atom_ids)
         self.last_digest = digest
+        if self.last_settled_successor_regions:
+            aliases: dict[str, str] = {}
+            unmatched = list(self.last_regions)
+            for provisional in self.last_settled_successor_regions:
+                successor = next((
+                    item for item in unmatched
+                    if int(item["value"]) == int(provisional["value"])
+                    and tuple(item["cells"]) == tuple(provisional["cells"])
+                ), None)
+                if successor is not None:
+                    aliases[str(provisional["binding_id"])] = str(successor["binding_id"])
+                    unmatched.remove(successor)
+            self.causal_entity_inducer.remap_bindings(aliases)
+            remapped = tuple(replace(
+                binding,
+                member_binding_ids=tuple(aliases.get(item, item) for item in binding.member_binding_ids),
+                primitive_member_ids=tuple(aliases.get(item, item) for item in binding.primitive_member_ids),
+            ) for binding in self.pending_causal_bindings)
+            self._install_causal_entities(remapped)
+            self.pending_causal_bindings = ()
+            self.last_settled_successor_regions = []
         categorical = self._fit_categorical_comparisons()
 
         partial_by_level: Counter[int] = Counter()
@@ -1063,6 +1225,7 @@ class FrameSchemaObserver:
             direction = str(goal.get("direction", "unknown"))
             terminal_class = str(goal.get("terminal_class", self._terminal_class(direction)))
             terminal = str(goal.get("terminal_condition", "")).lower().replace(" ", "")
+            local_terminal = goal.get("local_terminal")
             minimizing_terminal = any(token in terminal for token in ("<", "minimum", "minimal", "==0", "=0", "zero"))
             maximizing_terminal = any(token in terminal for token in (">", "maximum", "maximal"))
             expected_by_verb = {
@@ -1077,7 +1240,14 @@ class FrameSchemaObserver:
                 "reveal": {"component_count": "increase"},
             }.get(verb, {})
             rejection = None
-            if terminal_class != self._terminal_class(direction):
+            if isinstance(local_terminal, Mapping) and str(local_terminal.get("observable", "")) != observable:
+                rejection = "local terminal observable must equal the measurable potential"
+            elif (
+                "=" in terminal
+                and terminal.split("=", 1)[0].strip("<>") not in {observable, "minimum", "maximum", "zero"}
+            ):
+                rejection = "terminal condition names an unrelated observable"
+            elif terminal_class != self._terminal_class(direction):
                 rejection = f"{direction} requires terminal_class={self._terminal_class(direction)}"
             elif verb == "fit" and str(goal.get("goal_family")) == "separation":
                 rejection = "fit cannot use a separation goal family"
@@ -1236,7 +1406,10 @@ class FrameSchemaObserver:
 
     @staticmethod
     def _region_key(region: dict[str, Any]) -> tuple[Any, ...]:
-        return int(region["value"]), int(region["area"]), tuple(region["shape"])
+        return (
+            str(region.get("kind", "region-binding")),
+            int(region["value"]), int(region["area"]), tuple(region["shape"]),
+        )
 
     @staticmethod
     def _command_action(command: Any) -> int:
@@ -1276,7 +1449,77 @@ class FrameSchemaObserver:
         }
         if region.get("binding_id") is not None:
             snapshot["binding_id"] = str(region["binding_id"])
+        for key in (
+            "kind", "spatial_interface", "causal_entity_id",
+            "member_binding_ids", "primitive_member_ids", "epistemic_status",
+            "identity_status", "support", "contradictions", "evidence_refs",
+            "internal_relation_residual",
+        ):
+            if key in region:
+                snapshot[key] = deepcopy(region[key])
         return snapshot
+
+    @staticmethod
+    def _primitive_support_ids(region: Mapping[str, Any]) -> set[str]:
+        members = region.get("primitive_member_ids")
+        if isinstance(members, (list, tuple)):
+            return {str(item) for item in members}
+        binding_id = region.get("binding_id")
+        return {str(binding_id)} if binding_id is not None else set()
+
+    def _install_causal_entities(
+        self, bindings: Sequence[CausalEntityBinding],
+    ) -> list[dict[str, Any]]:
+        """Reify supported CAEs in the ordinary recursive workspace.
+
+        The compatibility output remains ``region-binding`` because that is
+        the current adapter's spatial port type; the descriptor explicitly
+        implements ``SpatialEntity`` and the generic geometry path consumes
+        its union occupancy.  This avoids placing ontology in the planner.
+        """
+        if self.last_store is None or self.last_workspace is None:
+            return []
+        installed: list[dict[str, Any]] = []
+        known_entities = {
+            str(item.get("causal_entity_id")) for item in self.last_causal_entities
+        }
+        for binding in bindings:
+            if binding.status != "SUPPORTED" or binding.identity_status != "UNIQUE":
+                continue
+            if binding.entity_id in known_entities:
+                continue
+            ports = tuple(
+                E.Port(f"member_{index}", "region-binding")
+                for index, _member in enumerate(binding.member_binding_ids)
+            )
+            arguments = tuple(port.name for port in ports)
+            predicate = f"CausalEntityCoherence:{len(ports)}"
+            schema = self.last_store.add(E.Schema.create(
+                ports, (E.Relation(predicate, arguments),),
+                kind="causal-entity", output_type="region-binding",
+            ))
+            assignments = {
+                f"member_{index}": member
+                for index, member in enumerate(binding.member_binding_ids)
+            }
+            fact = self._add_fact(
+                predicate, binding.member_binding_ids,
+                tuple("region-binding" for _member in binding.member_binding_ids),
+                authority="environment-transition",
+            )
+            atom = self._fit_atom(schema, (fact,), assignments=assignments)
+            if atom is None:
+                continue
+            descriptor = {**dict(binding.document()), "binding_id": atom.atom_id}
+            installed.append(descriptor)
+            known_entities.add(binding.entity_id)
+            self.last_region_descriptors[atom.atom_id] = descriptor
+        if installed:
+            self.last_regions.extend(installed)
+            self.last_causal_entities.extend(installed)
+            self.last_atom_ids = tuple((*self.last_atom_ids, *(item["binding_id"] for item in installed)))
+            self._refresh_recursive_stats()
+        return installed
 
     @staticmethod
     def _goal_key(goal: dict[str, Any], candidate_binding_id: str | None = None) -> str:
@@ -1528,10 +1771,31 @@ class FrameSchemaObserver:
     ) -> dict[str, Any]:
         store = self.level_action_effects if current_context_only else self.action_effects
         observations = store.get((self._command_scope(action), self._region_key(region)))
+        if not observations and region.get("kind") == "causal-entity-binding":
+            # CAE effects are environment-settled observations attached to the
+            # situated entity, not planner inventions.  Only translations (and
+            # invariance) implement the adapter's translation simulator.
+            raw_effects = region.get("action_conditioned_transforms", {})
+            scoped = (
+                raw_effects.get(str(self._command_scope(action)), ())
+                if isinstance(raw_effects, Mapping) else ()
+            )
+            causal_observations: Counter[tuple[float, float]] = Counter()
+            for transform in scoped if isinstance(scoped, (list, tuple)) else ():
+                if not isinstance(transform, Mapping):
+                    continue
+                kind = str(transform.get("kind", ""))
+                parameters = tuple(float(value) for value in transform.get("parameters", ()))
+                if kind == "invariant":
+                    causal_observations[(0.0, 0.0)] += 1
+                elif kind == "translation" and len(parameters) == 2:
+                    causal_observations[(parameters[0], parameters[1])] += 1
+            observations = causal_observations or None
         if not observations:
             return {
                 "status": "UNKNOWN", "delta": None, "support": 0,
                 "contradictions": 0, "confidence": 0.0,
+                "source": "no-settled-effect",
             }
         delta, count = sorted(observations.items(), key=lambda item: (-item[1], item[0]))[0]
         total = sum(observations.values())
@@ -1540,6 +1804,12 @@ class FrameSchemaObserver:
             "status": "SUPPORTED" if count >= 1 and confidence >= 0.6 else "CONTESTED",
             "delta": delta, "support": int(count), "contradictions": int(total - count),
             "confidence": confidence,
+            "source": (
+                "causal-entity-settlement"
+                if region.get("kind") == "causal-entity-binding" and not store.get(
+                    (self._command_scope(action), self._region_key(region))
+                ) else "atomic-role-settlement"
+            ),
         }
 
     @staticmethod
@@ -1988,7 +2258,10 @@ class FrameSchemaObserver:
             if projected is not None and projected_target is not None:
                 static_cells = {
                     cell for region in self.last_regions
-                    if region["binding_id"] not in {actor["binding_id"], target["binding_id"]}
+                    if region.get("kind") != "causal-entity-binding"
+                    and not self._primitive_support_ids(region) & (
+                        self._primitive_support_ids(actor) | self._primitive_support_ids(target)
+                    )
                     for cell in region["cells"]
                 }
                 if set(projected["cells"]) & static_cells:
@@ -2042,6 +2315,22 @@ class FrameSchemaObserver:
             identities_unique and models_supported and simulation_status == "computed"
             and progress is not None and progress > 0 and "explanation_binding_id" in chain
         )
+        supported_causal_entities = [
+            CausalEntityBinding(
+                binding_id=str(item["binding_id"]),
+                entity_id=str(item["causal_entity_id"]),
+                cells=tuple(item["cells"]),
+                member_binding_ids=tuple(item.get("member_binding_ids", ())),
+                primitive_member_ids=tuple(item.get("primitive_member_ids", ())),
+                transform=TransformSignature("grounded-history"),
+                status="SUPPORTED", identity_status=str(item.get("identity_status", "UNIQUE")),
+                support=int(item.get("support", 0)), contradictions=int(item.get("contradictions", 0)),
+                evidence=tuple(item.get("evidence_refs", ())),
+                internal_relation_residual=float(item.get("internal_relation_residual", 0.0)),
+            )
+            for item in self.last_causal_entities
+        ]
+        coverage = causal_coverage_for(actor, supported_causal_entities)
         return {
             "kind": "situated-control-explanation",
             "epistemic_status": (
@@ -2062,6 +2351,7 @@ class FrameSchemaObserver:
                 "progress": chain.get("progress_binding_id"),
             },
             "semantic_source": "qwen-goal-proposal",
+            "r2_goal_contract_id": semantic_goal.get("r2_goal_contract_id"),
             **({
                 "explanation_projection": {
                     "mode": semantic_goal["projection_mode"],
@@ -2129,6 +2419,8 @@ class FrameSchemaObserver:
                 "mechanism_confidence": round(min(float(actor_model["confidence"]), float(target_model["confidence"])), 3),
                 "confirmations": self.explanation_confirmations[schema_id],
                 "refutations": self.explanation_refutations[schema_id],
+                "causal_coverage": round(float(coverage), 6),
+                "unexplained_causal_scope": round(1.0 - float(coverage), 6),
             },
             "observable_checkpoint": {
                 "actor_correspondence": "UNIQUE",
@@ -2175,6 +2467,7 @@ class FrameSchemaObserver:
             )
             return (
                 best.get("control_status") == "PROGRESS_ELIGIBLE",
+                float(best.get("epistemic_evaluation", {}).get("causal_coverage", 0.0)),
                 float(best.get("prediction", {}).get("expected_progress") or 0.0),
                 float(best.get("mechanism", {}).get("confidence") or 0.0),
                 group_key,
@@ -2239,11 +2532,12 @@ class FrameSchemaObserver:
             if not effects:
                 continue
 
-            controlled_ids = {actor_id, target_id}
+            controlled_support = self._primitive_support_ids(actor) | self._primitive_support_ids(target)
             static_cells = frozenset(
                 tuple(cell)
                 for region in self.last_regions
-                if str(region.get("binding_id")) not in controlled_ids
+                if region.get("kind") != "causal-entity-binding"
+                and not self._primitive_support_ids(region) & controlled_support
                 for cell in region.get("cells", ())
             )
             initial_state = {
@@ -2341,6 +2635,18 @@ class FrameSchemaObserver:
                     "actor-topology", "target-topology", "mechanism-applicability",
                 ),
             )
+            contract_id = str(seed.get("r2_goal_contract_id", ""))
+            contract = self.goal_contracts.get(contract_id)
+            identity_values = [
+                value.get("status")
+                for key, value in seed.get("identity", {}).items()
+                if key != "control_eligible" and isinstance(value, Mapping)
+            ]
+            identity_risk = (
+                "hard" if any(value == "BROKEN" for value in identity_values)
+                else "ambiguous" if any(value != "UNIQUE" for value in identity_values)
+                else "none-known"
+            )
             problem = ControlProblem(
                 explanation_id=str(seed.get("binding_id", "")),
                 verb=str(seed.get("verb", "")),
@@ -2358,6 +2664,12 @@ class FrameSchemaObserver:
                     "actor-role-identity", "target-role-identity",
                     "actor-topology", "target-topology", "mechanism-applicability",
                 ),
+                goal_contract=(contract.planner_basis() if contract is not None else None),
+                unresolved_requirements=(
+                    ("verb-terminal-to-environment-terminal-relation-open",)
+                    if contract is not None and contract.status == "OPEN" else ()
+                ),
+                identity_risk=identity_risk,
                 model_view={
                     "actor": model_region(actor),
                     "target": model_region(target),
@@ -2376,6 +2688,12 @@ class FrameSchemaObserver:
                 "expansions": result.expansions,
                 "generated": result.generated,
                 "maximum_depth_reached": result.maximum_depth_reached,
+                "goal_contract_id": contract_id or None,
+                "goal_contract_status": contract.status if contract is not None else None,
+                "goal_prospect": (
+                    result.current_goal_prospect.document()
+                    if result.current_goal_prospect is not None else None
+                ),
             })
             self.planner_metrics["expansions"] += result.expansions
             self.planner_metrics["generated"] += result.generated
@@ -2416,6 +2734,7 @@ class FrameSchemaObserver:
             self.planner_metrics["no_plan"] += 1
             self.last_planner_result = {
                 "status": "NO_PLAN", "backend": self.planner_backend.name,
+                "prospect_planner_invoked": self.planner_backend.name == "prospect-planner-v0",
                 "limits": self.planner_config.document(),
                 "attempts": search_attempts,
             }
@@ -2433,7 +2752,57 @@ class FrameSchemaObserver:
             "maximum_depth_reached": result.maximum_depth_reached,
             "elapsed_ms": result.elapsed_ms,
             "limits": result.config.document(),
+            "prospect_planner_invoked": self.planner_backend.name == "prospect-planner-v0",
+            "goal_contract_id": (
+                result.factorization and selected["certificate"].get(
+                    "goal_contract_basis", {},
+                ).get("contract_id")
+            ),
+            "goal_contract_status": selected["certificate"].get(
+                "goal_contract_basis", {},
+            ).get("status"),
+            "terminal_reachable": (
+                result.current_goal_prospect is not None
+                and result.current_goal_prospect.terminal_status in {"reached", "reachable"}
+            ),
+            "terminal_depth": (
+                result.current_goal_prospect.best_supported_depth
+                if result.current_goal_prospect is not None else None
+            ),
+            "factorization_count": (
+                result.current_goal_prospect.terminal_reaching_factorizations
+                if result.current_goal_prospect is not None else None
+            ),
+            "minimum_path_support": (
+                result.current_goal_prospect.minimum_edge_support
+                if result.current_goal_prospect is not None else None
+            ),
+            "minimum_path_confidence": (
+                result.current_goal_prospect.minimum_edge_confidence
+                if result.current_goal_prospect is not None else None
+            ),
+            "unresolved_requirements": (
+                list(result.current_goal_prospect.unresolved_preconditions)
+                if result.current_goal_prospect is not None else []
+            ),
+            "selected_local_orientation": (
+                result.successor_goal_prospect.expected_local_verb_orientation
+                if result.successor_goal_prospect is not None else None
+            ),
+            "current_local_orientation": (
+                result.current_goal_prospect.expected_local_verb_orientation
+                if result.current_goal_prospect is not None else None
+            ),
+            "prospect_improvement_kind": result.prospect_improvement_kind,
+            "plan_depth": len(result.factorization.steps),
+            "first_command": selected["command_id"],
         }
+        if (
+            result.successor_goal_prospect is not None
+            and result.successor_goal_prospect.expected_local_verb_orientation == "adverse"
+        ):
+            self.planner_metrics["locally_adverse_authorized_actions"] += 1
+            self.planner_metrics["prospect_justified_adverse_actions"] += 1
         return selected
 
     def rank_actions(
@@ -2454,6 +2823,31 @@ class FrameSchemaObserver:
             [semantic_goal] if isinstance(semantic_goal, dict) else
             list(semantic_goal or ())
         )
+        prepared_goals = []
+        for raw_goal in semantic_goals:
+            goal = dict(raw_goal)
+            contract_proposal = goal.get("goal_contract")
+            if isinstance(contract_proposal, Mapping):
+                direction = str(goal.get("direction", ""))
+                target = contract_proposal.get(
+                    "contributor_target",
+                    0.0 if direction == "decrease" else None,
+                )
+                contract = self.propose_goal_contract(
+                    contract_proposal,
+                    contributor_verb=str(goal.get("verb", "")).strip().lower(),
+                    contributor_observable=str(goal.get("observable", "")),
+                    contributor_target=(None if target is None else float(target)),
+                    proposal_citations=tuple(
+                        str(item) for item in contract_proposal.get("evidence_refs", ())
+                    ),
+                    preferred_order=direction,
+                    role_interfaces=tuple("SpatialEntity" for _role in goal.get("potential_roles", ("actor", "target"))),
+                    required_invariants=("role-identity", "topology", "mechanism-applicability"),
+                )
+                goal["r2_goal_contract_id"] = contract.contract_id
+            prepared_goals.append(goal)
+        semantic_goals = prepared_goals
         semantic_goals = self._bind_verb_schemas(semantic_goals)
         self._compile_abductions(list(semantic_abductions or ()))
         candidates_by_action: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -2532,6 +2926,8 @@ class FrameSchemaObserver:
             best = max(
                 progress_candidates,
                 key=lambda item: (
+                    item["epistemic_evaluation"].get("causal_coverage", 0.0),
+                    -item["epistemic_evaluation"].get("unexplained_causal_scope", 1.0),
                     item["prediction"]["expected_progress"],
                     item["epistemic_evaluation"]["mechanism_confidence"], item["binding_id"],
                 ), default=None,
@@ -2553,6 +2949,8 @@ class FrameSchemaObserver:
                 best = max(
                     predictive,
                     key=lambda item: (
+                        item["epistemic_evaluation"].get("causal_coverage", 0.0),
+                        -item["epistemic_evaluation"].get("unexplained_causal_scope", 1.0),
                         item["prediction"]["expected_progress"],
                         item["epistemic_evaluation"]["mechanism_confidence"], item["binding_id"],
                     ), default=(candidates[0] if candidates else None),
@@ -2702,6 +3100,21 @@ class FrameSchemaObserver:
             "planner": deepcopy(self.last_planner_result),
             "plan_certificate": deepcopy(self.last_plan_certificate),
             "planner_metrics": dict(self.planner_metrics),
+            "prospect_divergence_metrics": {
+                "locally_adverse_authorized": self.planner_metrics.get(
+                    "locally_adverse_authorized_actions", 0,
+                ),
+                "prospect_justified": self.planner_metrics.get(
+                    "prospect_justified_adverse_actions", 0,
+                ),
+                "confirmed": self.planner_metrics.get(
+                    "confirmed_prospect_divergences", 0,
+                ),
+                "useful": self.planner_metrics.get("useful_prospect_divergences", 0),
+                "score_changing": self.planner_metrics.get(
+                    "score_changing_prospect_divergences", 0,
+                ),
+            },
             "rejected_goal_proposals": list(self.last_rejected_goals),
             "grounded_abductions": list(self.last_abductive_bindings),
             "rejected_abductions": list(self.last_rejected_abductions),
@@ -2860,7 +3273,18 @@ class FrameSchemaObserver:
 
     def settle_action(self, action: Any, before: Sequence[Sequence[int]], after: Sequence[Sequence[int]]) -> dict[str, Any]:
         """Settle identity before attributing a mechanism to controlling roles."""
-        after_regions = _components(after)
+        after_digest = sha256(json.dumps(
+            [[int(cell) for cell in row] for row in after], separators=(",", ":"),
+        ).encode()).hexdigest()[:16]
+        after_regions = [
+            {
+                **region,
+                "binding_id": E.stable_id("settled-successor-region", {
+                    "frame": after_digest, "cells": region["cells"], "value": region["value"],
+                }),
+            }
+            for region in _components(after)
+        ]
         action_id = self._command_action(action)
         command_id = self._command_id(action)
         effect_scope = self._command_scope(action)
@@ -2886,6 +3310,111 @@ class FrameSchemaObserver:
         potential_settlement: dict[str, Any] = {
             "status": "UNSETTLED", "expected": None, "observed": None,
         }
+
+        before_digest = sha256(json.dumps(
+            [[int(cell) for cell in row] for row in before], separators=(",", ":"),
+        ).encode()).hexdigest()[:16]
+        if self.predecessor_digest == before_digest:
+            # Live Arcade fits the successor before controller settlement.
+            # ``predecessor_regions`` is the snapshot fit_frame deliberately
+            # retained before replacing the workspace with that successor.
+            predecessor_entities = deepcopy(self.predecessor_regions)
+        elif self.last_digest == before_digest:
+            # Headless/canonical paths may settle before fitting the successor.
+            predecessor_entities = [
+                deepcopy(region) for region in self.last_regions
+                if region.get("kind") != "causal-entity-binding"
+            ]
+        else:
+            # Never silently compare a successor to itself.  If an integration
+            # did not fit either boundary, build a bounded primitive snapshot
+            # directly from the supplied predecessor observation.
+            predecessor_entities = [
+                {
+                    **region,
+                    "binding_id": E.stable_id("transition-predecessor-region", {
+                        "frame": before_digest, "cells": region["cells"],
+                        "value": region["value"],
+                    }),
+                }
+                for region in _components(before)
+            ]
+        predicted_changed_ids: set[str] = set()
+        predicted_invariant_ids: set[str] = set()
+        if prediction is not None:
+            snapshots = dict(prediction.get("predecessor_binding_snapshots", {}))
+            for port_name, delta_name in (("actor", "actor_delta"), ("target", "target_delta")):
+                binding_id = str(prediction.get("ports", {}).get(port_name, ""))
+                snapshot = snapshots.get(binding_id, {})
+                support_ids = self._primitive_support_ids(
+                    snapshot if isinstance(snapshot, Mapping) else {"binding_id": binding_id}
+                )
+                delta = prediction.get("prediction", {}).get(delta_name)
+                if delta is None:
+                    continue
+                bucket = (
+                    predicted_invariant_ids
+                    if all(abs(float(value)) <= SUCCESSOR_SHADOW_TOLERANCE for value in delta)
+                    else predicted_changed_ids
+                )
+                bucket.update(support_ids)
+        transition_evidence_ref = E.stable_id("causal-scope-transition", {
+            "before": before_digest,
+            "after": after_digest, "command": command_id,
+        })
+        induction = self.causal_entity_inducer.observe_transition(
+            predecessor_entities, after_regions,
+            action_scope=effect_scope,
+            evidence_ref=transition_evidence_ref,
+            explained_binding_ids=predicted_changed_ids,
+            predicted_changed_ids=predicted_changed_ids,
+            predicted_invariant_ids=predicted_invariant_ids,
+            # Demand is established by the structured residual itself.  An
+            # open information probe may reveal a coherent unexplained scope
+            # before any role-level prediction exists; accommodation remains
+            # bounded and is still suppressed for global motion.
+            demand=True,
+        )
+        # If the successor workspace already exists (the live ordering), map
+        # provisional transition IDs onto its grounded atoms and reify before
+        # the next ranking call.  Otherwise defer only the mapping/install step
+        # until fit_frame(successor); induction itself is already settled.
+        successor_is_fitted = self.last_digest == after_digest
+        if successor_is_fitted:
+            aliases: dict[str, str] = {}
+            unmatched = [
+                region for region in self.last_regions
+                if region.get("kind") != "causal-entity-binding"
+            ]
+            for provisional in after_regions:
+                successor = next((
+                    item for item in unmatched
+                    if int(item["value"]) == int(provisional["value"])
+                    and tuple(item["cells"]) == tuple(provisional["cells"])
+                ), None)
+                if successor is not None:
+                    aliases[str(provisional["binding_id"])] = str(successor["binding_id"])
+                    unmatched.remove(successor)
+            self.causal_entity_inducer.remap_bindings(aliases)
+            remapped = tuple(replace(
+                binding,
+                member_binding_ids=tuple(aliases.get(item, item) for item in binding.member_binding_ids),
+                primitive_member_ids=tuple(aliases.get(item, item) for item in binding.primitive_member_ids),
+            ) for binding in induction.bindings)
+            induction = replace(induction, bindings=remapped)
+            installed_causal_entities = self._install_causal_entities(remapped)
+            after_regions.extend(deepcopy(installed_causal_entities))
+            self.pending_causal_bindings = ()
+            self.last_settled_successor_regions = []
+        else:
+            self.pending_causal_bindings = induction.bindings
+            self.last_settled_successor_regions = deepcopy(after_regions)
+            after_regions.extend(
+                dict(binding.document()) for binding in induction.bindings
+                if binding.status == "SUPPORTED" and binding.identity_status == "UNIQUE"
+            )
+        self.last_causal_scope_residual = induction.residual.document()
+        self.last_causal_entity_induction = induction.document()
 
         if prediction is not None:
             goal_key = str(prediction.get("control_goal_key") or "")
@@ -3116,6 +3645,8 @@ class FrameSchemaObserver:
             "adjudication": adjudication, "actual_progress": actual_progress,
             "identity": identity_settlement, "mechanism": mechanism_settlement,
             "potential": potential_settlement, "learned_effects": learned,
+            "causal_scope_residual": deepcopy(self.last_causal_scope_residual),
+            "causal_entity_induction": deepcopy(self.last_causal_entity_induction),
             "preferred_order": {
                 "advanced": actual_progress is not None and float(actual_progress) > 0.0,
                 "relation": (
@@ -3136,6 +3667,48 @@ class FrameSchemaObserver:
             },
         }
         plan = prediction.get("plan_certificate") if prediction is not None else None
+        contract_basis = plan.get("goal_contract_basis") if isinstance(plan, Mapping) else None
+        contract_id = (
+            str(contract_basis.get("contract_id", ""))
+            if isinstance(contract_basis, Mapping) else
+            str(prediction.get("r2_goal_contract_id", ""))
+            if prediction is not None else ""
+        )
+        contract = self.goal_contracts.get(contract_id)
+        observed_value = potential_settlement.get("observed")
+        # GoalContract settlement is an R2 concern, not a planner side effect:
+        # the same countercondition is checked after a one-step decision too.
+        if contract is not None and observed_value is not None:
+            target = contract.contributor_target
+            verb_terminal_observed = (
+                target is not None
+                and (
+                    abs(float(observed_value) - target) <= 0.01
+                    if contract.contributor_relation == "reached"
+                    else float(observed_value) <= target + 0.01
+                    if contract.contributor_relation == "minimum"
+                    else float(observed_value) >= target - 0.01
+                )
+            )
+            if verb_terminal_observed:
+                evidence_ref = E.stable_id("goal-contract-environment-settlement", {
+                    "predecessor": self.last_digest,
+                    "command": command_id,
+                    "observed_potential": float(observed_value),
+                    "environment_terminal": False,
+                })
+                settled_contract = self.adjudicate_goal_contract(
+                    contract_id,
+                    verb_terminal_observed=True,
+                    environment_terminal_observed=False,
+                    evidence_ref=evidence_ref,
+                )
+                settlement["goal_contract_settlement"] = {
+                    "contract_id": contract_id,
+                    "status": settled_contract.status,
+                    "evidence_ref": evidence_ref,
+                    "countercondition_observed": True,
+                }
         if isinstance(plan, Mapping):
             settlement["plan_settlement"] = settle_plan_certificate(
                 plan,
@@ -3148,6 +3721,21 @@ class FrameSchemaObserver:
             self.planner_metrics[
                 "first_step_confirmed" if confirmed else "first_step_refuted"
             ] += 1
+            if self.last_planner_result is not None:
+                self.last_planner_result["settlement"] = (
+                    "confirmed" if confirmed else "invalidated"
+                )
+                self.last_planner_result["replan_reason"] = (
+                    "environment-successor-settled"
+                    if confirmed else ",".join(
+                        settlement["plan_settlement"].get("invalidation_reasons", ())
+                    )
+                )
+            if (
+                confirmed
+                and plan.get("immediate_orientation") == "adverse"
+            ):
+                self.planner_metrics["confirmed_prospect_divergences"] += 1
         if prediction is not None and actor_after is not None and target_after is not None:
             settled_template = deepcopy(prediction)
             if isinstance(plan, Mapping):

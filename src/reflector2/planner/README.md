@@ -22,7 +22,9 @@ observer = FrameSchemaObserver(
 )
 ```
 
-`BoundedBestFirstPlanner` is the default. `NoPlanPlanner` delegates every
+`BoundedBestFirstPlanner` is the default. `ProspectPlanner` adds deterministic
+goal-respecting factorization when R2 supplies a frozen `GoalContractBasis`;
+without one it preserves the bounded-search behavior. `NoPlanPlanner` delegates every
 decision to the host's original controller, so `backend: fallback-only-v0` and
 `backend: bounded-best-first-v0` are direct old/new configuration choices.
 Alternate implementations must honor
@@ -52,6 +54,7 @@ The Qwen/Luna choice is an adapter choice; endpoints and credentials continue
 to come from R2's existing resolved model profile.
 
 The stable interchange types are `ControlProblem`, `SupportedCausalEffect`,
-`MilestoneShadow`, `ControlFactorization`, `SearchResult`, and `PlannerConfig`.
+`MilestoneShadow`, `GoalContractBasis`, derived read-only `GoalProspect`,
+`ControlFactorization`, `SearchResult`, and `PlannerConfig`.
 All controller-specific semantics enter through the problem's transition,
 measure, invariant, and state-key callbacks.

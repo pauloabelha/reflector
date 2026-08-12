@@ -11,7 +11,7 @@ from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
 
-ARCADE_UI_VERSION = "pretty-workspace-v20"
+ARCADE_UI_VERSION = "pretty-workspace-v25-causal-entity"
 
 
 def resolve_model_choice(
@@ -196,7 +196,7 @@ PAGE = PAGE.replace(
 )
 PAGE = PAGE.replace(
     '<section class=stack>',
-    '<section class="panel workspace-column"><h2>DURABLE WORKSPACE OBJECT · MODEL WRITE</h2><div id=workspace><div class=workspace-empty>Waiting for a durable workspace write.</div></div><div class=workspace-legacy hidden>',
+    '<section class="panel workspace-column"><section class=planner-prospect-panel><h2>PLANNER · NEXT MOVE <span class=planner-version>GOAL PROSPECT R2.3</span></h2><div id=planner-prospect><div class=workspace-empty>Waiting for planner telemetry.</div></div></section><section class=cae-panel><h2>CAUSAL ENTITY INDUCTION <span class=planner-version>CAE V0</span></h2><div id=causal-entity><div class=workspace-empty>Waiting for a settled transition.</div></div></section><section class=durable-workspace-panel><h2>DURABLE WORKSPACE OBJECT · MODEL WRITE</h2><div id=workspace><div class=workspace-empty>Waiting for a durable workspace write.</div></div></section><div class=workspace-legacy hidden>',
 )
 PAGE = PAGE.replace("</section></main>", "</div></section></main>")
 PAGE = PAGE.replace(
@@ -234,6 +234,33 @@ addEventListener('resize',fitArcadeBoard); fitArcadeBoard();
 </script></body>""",
 )
 
+# CAE is rendered between grounded control and planning so the user can audit
+# why a higher-order role is (or is not) allowed into the planner.
+PAGE = PAGE.replace(
+    "</head>",
+    """<style>
+.cae-panel{padding:13px 0;border-bottom:2px solid #375149}.cae-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.cae-stat{padding:8px;background:#0b1210;border:1px solid var(--line);border-radius:6px}.cae-stat strong{display:block;color:var(--cyan);font-size:15px}.cae-stat small{font-size:8px;letter-spacing:.07em}.cae-bar{height:6px;margin:8px 0;background:#202a26;border-radius:99px;overflow:hidden}.cae-bar span{display:block;height:100%;background:var(--lime)}.cae-card{margin-top:7px;padding:8px;border:1px solid var(--line);border-left:3px solid #e8d36a;border-radius:6px;background:#0b1210}.cae-card.supported{border-left-color:var(--lime)}.cae-card.refuted{border-left-color:#ff7d87}.cae-card-head{display:flex;justify-content:space-between;gap:5px;font-size:10px;font-weight:800}.cae-members{margin-top:5px;color:#aebbb5;font-size:9px;line-height:1.45}.cae-note{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.45}
+</style></head>""",
+)
+PAGE = PAGE.replace(
+    "</body>",
+    """<script>
+function causalEntityCard(){
+  const feedback=data.r2_semantic_projection||{}, settlement=data.settlement?.r2_1_explanation_adjudication||{};
+  const induction=feedback.causal_entity_induction||settlement.causal_entity_induction||null;
+  const residual=feedback.causal_scope_residual||settlement.causal_scope_residual||induction?.causal_scope_residual||null;
+  if(!induction&&!residual)return '<div class=workspace-empty>Waiting for a settled action-conditioned transition.</div>';
+  const coverage=Math.max(0,Math.min(1,Number(residual?.coverage??1))), entities=induction?.bindings||feedback.causal_entities||[];
+  const global=induction?.global_transform;
+  const cards=entities.map(entity=>{const status=String(entity.epistemic_status||'OPEN').toUpperCase(), cls=status==='SUPPORTED'?'supported':status==='REFUTED'?'refuted':'';const transform=entity.transform||{};return `<div class="cae-card ${cls}"><div class=cae-card-head><span>${esc(status)} · ${esc(entity.identity_status||'OPEN')} IDENTITY</span><span>${Number(entity.support||0)}+ / ${Number(entity.contradictions||0)}−</span></div><div class=cae-members>${Number((entity.member_binding_ids||[]).length)} members · ${esc(transform.kind||'open')} ${(transform.parameters||[]).map(esc).join(', ')}<br>layout residual ${esc(entity.internal_relation_residual??'?')}<br>${(entity.member_binding_ids||[]).map(id=>workspaceChip(id,'id')).join('')}</div></div>`}).join('');
+  const accommodation=residual?.accommodation_required?'ASSEMBLY ACCOMMODATION REQUESTED':global?'GLOBAL/REFERENCE-FRAME ALTERNATIVE PREFERRED':'NO UNNECESSARY GROUPING';
+  return `<div class=cae-overview><div class=cae-stat><strong>${Math.round(coverage*100)}%</strong><small>CAUSAL COVERAGE</small></div><div class=cae-stat><strong>${Number(residual?.unexplained_changed_entities||0)}</strong><small>UNEXPLAINED CHANGES</small></div><div class=cae-stat><strong>${Number(induction?.candidates_retained||entities.length)}</strong><small>RETAINED FACTORS</small></div></div><div class=cae-bar title="explained causal support"><span style="width:${coverage*100}%"></span></div><div class=cae-note>${esc(accommodation)} · generated ${Number(induction?.candidates_generated||0)} · max ${Number(induction?.maximum_members||0)} members · ${esc(induction?.fitting_time_ms??0)} ms</div>${cards||'<div class=cae-note>No supported higher-order entity is control-eligible yet. Atomic bindings remain available.</div>'}<details class=planner-audit><summary>TECHNICAL AUDIT · RESIDUAL VECTOR AND FRONTIER</summary>${pretty({causal_scope_residual:residual,induction})}</details>`;
+}
+const renderWithCausalEntity=render;
+render=function(){renderWithCausalEntity();const box=document.querySelector('#causal-entity');if(box)box.innerHTML=causalEntityCard()};
+</script></body>""",
+)
+
 # Explanations are organized by prospective verbs. Give each verb a stable
 # visual identity shared by the current explanation and the salient frontier.
 PAGE = PAGE.replace(
@@ -245,7 +272,7 @@ PAGE = PAGE.replace(
 PAGE = PAGE.replace(
     "</body>",
     """<script>
-const expectedArcadeUiVersion='pretty-workspace-v20';
+const expectedArcadeUiVersion='pretty-workspace-v25-causal-entity';
 const versionedApiBase=api;
 api=async function(path,body){
   const value=await versionedApiBase(path,body);
@@ -414,13 +441,11 @@ function workspaceComposition(value,index){
   const residuals=(value.preferred_residual_changes||[]).map(item=>workspaceChip(`${item.dimension||'?'} ${item.direction||'?'}`,'good')).join('');
   return `<article class=workspace-card><div class=workspace-card-head><span class=workspace-card-title>${esc(value.local_ref||`composition ${index+1}`)}</span><span class=workspace-count>${(value.component_schema_ids||[]).length} components</span></div><div>${(value.component_schema_ids||[]).map(item=>workspaceChip(item,'id')).join('')}</div>${morphisms?`<ul class=workspace-list>${morphisms}</ul>`:''}${residuals?`<div>${residuals}</div>`:''}${(value.open_questions||[]).length?`<div style="margin-top:6px">${workspaceList(value.open_questions)}</div>`:''}${workspaceRaw(value)}</article>`;
 }
-function workspaceScratchpad(value){return `<div class=workspace-scratch>${['game_objective','explanation','goal','expectation','notes'].filter(name=>name in value).map(name=>`<div class=workspace-scratch-row><small>${esc(name.replaceAll('_',' '))}</small><div>${esc(value[name])}</div></div>`).join('')}</div>${workspaceRaw(value)}`}
 function workspaceAliases(value){return value.length?value.map(item=>`<article class=workspace-card><div class=workspace-card-head>${workspaceChip(item.action_id,'good')}<span class=workspace-chip ${item.status==='confirmed'?'good':'warn'}>${esc(item.status||'open')}</span></div><div class=workspace-prose>${esc(item.alias||'No alias')}</div><div>${(item.evidence_refs||[]).map(ref=>workspaceChip(ref,'id')).join('')}</div></article>`).join(''):'<span class=workspace-empty-value>None</span>'}
 function workspaceField(name,value){
   let body;
   if(name==='goal_proposals'&&Array.isArray(value))body=value.map(workspaceGoal).join('')||'<span class=workspace-empty-value>None</span>';
   else if(name==='abductive_compositions'&&Array.isArray(value))body=value.map(workspaceComposition).join('')||'<span class=workspace-empty-value>None</span>';
-  else if(name==='model_scratchpad'&&value&&typeof value==='object')body=workspaceScratchpad(value);
   else if(name==='action_aliases'&&Array.isArray(value))body=workspaceAliases(value);
   else if(name==='open_questions'&&Array.isArray(value))body=workspaceList(value);
   else if(name==='cited_ids'&&Array.isArray(value))body=value.map(item=>workspaceChip(item,'id')).join('')||'<span class=workspace-empty-value>None</span>';
@@ -432,9 +457,10 @@ function workspaceField(name,value){
 function renderWorkspaceObject(){
   const workspace=data.workspace;
   if(!workspace||typeof workspace!=='object')return '<div class=workspace-empty>Waiting for a durable workspace write.</div>';
-  const preferred=['summary','objective_hypothesis','goal_proposals','abductive_compositions','open_questions','action_aliases','model_scratchpad','natural_language','cited_ids'];
+  const preferred=['summary','objective_hypothesis','goal_proposals','abductive_compositions','open_questions','action_aliases','natural_language','cited_ids'];
   const metadata=['workspace_ref','basis_revision','verified','token_count','token_budget','transition_evidence_ref'];
-  const known=new Set([...preferred,...metadata]);
+  const hiddenRight=new Set(['model_scratchpad']);
+  const known=new Set([...preferred,...metadata,...hiddenRight]);
   const ordered=[...preferred.filter(name=>name in workspace),...Object.keys(workspace).filter(name=>!known.has(name)),...metadata.filter(name=>name in workspace)];
   const stats=`<div class=workspace-overview><div class=workspace-stat><strong>${esc(workspace.basis_revision??'—')}</strong><small>REVISION</small></div><div class=workspace-stat><strong>${esc(workspace.token_count??'—')}/${esc(workspace.token_budget??'—')}</strong><small>TOKENS</small></div><div class=workspace-stat><strong>${workspace.verified?'YES':'NO'}</strong><small>VERIFIED</small></div></div>`;
   return stats+ordered.map(name=>workspaceField(name,workspace[name])).join('');
@@ -469,7 +495,7 @@ PAGE = PAGE.replace(
 async function refreshModelPicker(){
   const options=await api('/api/options');
   $('#model-choice').innerHTML=options.models.choices.map(x=>`<option value="${esc(x.id)}">${esc(x.label)}</option>`).join('');
-  $('#planner-choice').innerHTML=options.planners.choices.map(x=>`<option value="${esc(x.id)}">${esc(x.label)}</option>`).join('');
+  $('#planner-choice').innerHTML=options.planners.choices.map(x=>`<option value="${esc(x.id)}"${x.id===options.planners.active?' selected':''}>${esc(x.label)}</option>`).join('');
 }
 refreshModelPicker().catch(error=>{$('#model-note').textContent=error.message});
 </script></body>""",
@@ -643,6 +669,49 @@ document.querySelector('#log-follow').onclick=event=>{arcadeLogFollow=!arcadeLog
 PAGE = PAGE.replace(
     "</head>",
     """<style>.log-fast{--log-color:#f4d94c;background:#111309}</style></head>""",
+)
+PAGE = PAGE.replace(
+    "</head>",
+    """<style>
+.planner-prospect-panel{padding-bottom:13px;border-bottom:2px solid #375149}.durable-workspace-panel{padding-top:13px}.planner-version{float:right;color:var(--muted);font-size:8px;letter-spacing:.05em}.planner-now{padding:11px;background:#09110e;border:1px solid #476238;border-radius:8px}.planner-eyebrow{display:block;margin-bottom:6px;color:var(--muted);font-size:9px;letter-spacing:.1em}.planner-action{font-size:17px;font-weight:900}.planner-now-note{margin-top:7px;color:#aebbb5;font-size:10px;line-height:1.45}.planner-effect{margin-top:8px;padding:8px;background:#0b1210;border-left:3px solid var(--lime);font-size:11px;line-height:1.5}.planner-effect.adverse{border-left-color:#ff9f5a}.planner-effect.open{border-left-color:#e8d36a}.planner-readout{display:grid;gap:6px;margin-top:8px}.planner-readable-row{padding:8px;border:1px solid var(--line);border-radius:6px}.planner-readable-row strong{display:block;margin-bottom:3px;color:var(--cyan);font-size:9px;letter-spacing:.08em}.planner-readable-row div{font-size:10px;line-height:1.45}.planner-state{display:inline-block;padding:2px 5px;border-radius:4px;background:#202824;color:#d9e4de;font-size:9px;font-weight:800}.planner-state.good{background:#203414;color:var(--lime)}.planner-state.warn{background:#342f14;color:#f5dd71}.planner-state.bad{background:#35171b;color:#ff8c97}.planner-factorization{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-top:6px}.planner-edge{padding:4px 6px;border:1px solid #3a4c45;border-radius:4px;background:#080d0b}.planner-arrow{color:var(--muted)}.planner-audit{margin-top:9px;border-top:1px solid var(--line);padding-top:7px}.planner-audit summary{cursor:pointer;color:var(--muted);font-size:9px;letter-spacing:.08em}.planner-audit pre{margin-top:7px;max-height:260px;overflow:auto;font-size:9px}.planner-glossary{margin-top:8px;color:#93a19b;font-size:9px;line-height:1.45}.planner-glossary b{color:#c8d2cd}
+</style></head>""",
+)
+PAGE = PAGE.replace(
+    "</body>",
+    """<script>
+function plannerProspectCard(){
+  const decision=data.decision||data.executed_decision||{}, control=decision.r2_1_explanation_control||{};
+  const planner=control.planner||{}, certificate=control.plan_certificate||decision.plan_certificate||null;
+  const settlement=data.settlement?.r2_1_explanation_adjudication?.plan_settlement||null;
+  if(!planner.backend&&!certificate)return '<div class=workspace-empty>Waiting for planner telemetry.</div>';
+  const projectedContracts=data.r2_semantic_projection?.goal_contracts||data.semantic_projection?.goal_contracts||[];
+  const contract=certificate?.goal_contract_basis||projectedContracts[0]||{}, current=certificate?.current_goal_prospect||{}, successor=certificate?.successor_goal_prospect||{};
+  const route=certificate?.factorization||certificate?.predicted_causal_composition||[];
+  const first=certificate?.chosen_first_command||certificate?.first_command||certificate?.first_successor_prediction?.command||route[0]?.command||null;
+  const firstAction=first?.action_id??route[0]?.command?.action_id??decision.selected_action;
+  const plannerChose=planner.status==='PLAN_FOUND'&&firstAction!=null;
+  const firstStep=route[0]||{}, before=firstStep.potential_before, after=firstStep.potential_after;
+  const measure=certificate?.current_potential?.measure||decision.current_explanation?.goal?.measure||'active potential';
+  const direction=certificate?.current_potential?.preferred_direction||decision.current_explanation?.goal?.direction||'open';
+  let orientation=String(certificate?.immediate_orientation||'open').toLowerCase();
+  if(orientation==='open'&&Number.isFinite(before)&&Number.isFinite(after))orientation=before===after?'stable':((direction==='decrease'&&after<before)||(direction==='increase'&&after>before))?'preferred':'adverse';
+  const improvement=Number.isFinite(before)&&Number.isFinite(after)?Math.abs(after-before):null;
+  const effect=improvement===null?'No immediate potential change is predicted yet.':`${measure} ${before} → ${after} · ${orientation==='preferred'?'improves':'changes'} by ${improvement}`;
+  const grouped=[];
+  for(const edge of route){const action=edge.command?.action_id??edge.action_id, key=action==null?String(edge.command_id||'?'):`ACTION_${action}`;const last=grouped[grouped.length-1];if(last&&last.key===key)last.count++;else grouped.push({key,action,count:1,support:edge.causal_support,confidence:edge.causal_confidence})}
+  const edges=grouped.length?grouped.map((edge,index)=>`${index?'<span class=planner-arrow>→</span>':''}<span class=planner-edge title="weakest edge support ${esc(edge.support??'?')} · confidence ${esc(edge.confidence??'?')}">${edge.action==null?esc(edge.key):actionBadge(edge.action)}${edge.count>1?` × ${edge.count}`:''}</span>`).join(''):'<span class=workspace-empty-value>No simulated route.</span>';
+  const contractStatus=String(contract.status||'').toUpperCase();
+  const linkClass=contractStatus==='SUPPORTED'?'good':contractStatus==='REFUTED'?'bad':'warn';
+  const linkText=!contract.contract_id?'MISSING — no tested link from this local goal to level completion.':contractStatus==='SUPPORTED'?`SUPPORTED — environment evidence links ${contract.candidate_contributor?.verb||'the local goal'} to ${contract.environment_terminal}.`:contractStatus==='REFUTED'?'REFUTED — reaching this local goal did not produce the expected environment result.':`HYPOTHESIS ONLY — ${contract.candidate_contributor?.verb||'local completion'} may lead to ${contract.environment_terminal}, but the environment has not confirmed it.`;
+  const settlementText=settlement?.first_step==='CONFIRMED'?'CONFIRMED — the previous planned move matched its prediction.':settlement?.first_step==='REFUTED'?'INVALIDATED — the previous move did not match; the route was discarded.':'AWAITING — the next real observation will confirm or invalidate this move.';
+  const why=!plannerChose?`No supported planner route was found. R2 selected this as a ${String(decision.selection_role||'fallback').replaceAll('-',' ')}.`:orientation==='adverse'?`This move is locally worse, but it starts a supported route toward the contracted terminal.`:contract.contract_id?`This move advances the best supported route toward the contracted terminal.`:`A learned local effect moves ${measure} in its preferred direction. It is not yet linked to completing the level.`;
+  const prospectText=!contract.contract_id?'Unavailable until R2 has an explicit GoalContract.':`${successor.terminal_status||current.terminal_status||'open'} · best remaining depth ${successor.best_supported_depth??current.best_supported_depth??'—'} · ${successor.terminal_reaching_factorizations??current.terminal_reaching_factorizations??0} retained route(s).`;
+  const audit={backend:planner.backend,search_status:planner.status,selection_role:decision.selection_role,first_command_id:first?.command_id||planner.first_command,goal_contract_id:contract.contract_id||null,goal_contract_status:contract.status||null,planned_depth:certificate?.planned_depth??planner.plan_depth??null,orientation,weakest_support:certificate?.minimum_edge_support??planner.minimum_path_support??null,weakest_confidence:certificate?.minimum_edge_confidence??planner.minimum_path_confidence??null,limits:planner.limits,simulated_factorization:route};
+  return `<div class=planner-now><span class=planner-eyebrow>${plannerChose?'PLANNER RECOMMENDS NOW':'R2 CHOOSES NOW · PLANNER HAS NO ROUTE'}</span><div class=planner-action>${firstAction==null?'NO ACTION YET':actionBadge(firstAction)}</div><div class=planner-now-note>${plannerChose?'Only this one action is authorized. After observing the real board, R2 discards the remaining simulation and replans.':'This action comes from R2’s ordinary one-step/probe policy, not Goal Prospect.'}</div></div><div class="planner-effect ${esc(orientation)}"><strong>PREDICTED IMMEDIATE EFFECT</strong><br>${esc(effect)}</div><div class=planner-readout><div class=planner-readable-row><strong>WHY THIS MOVE</strong><div>${esc(why)}</div></div><div class=planner-readable-row><strong>LINK TO LEVEL COMPLETION <span class="planner-state ${linkClass}">${esc(contractStatus||'MISSING')}</span></strong><div>${esc(linkText)}</div></div><div class=planner-readable-row><strong>SIMULATED ROUTE · NOT QUEUED ACTIONS</strong><div>${edges}</div><div class=planner-glossary>${esc(prospectText)}</div></div><div class=planner-readable-row><strong>LAST PLAN CHECK</strong><div>${esc(settlementText)}</div></div></div><details class=planner-audit><summary>TECHNICAL AUDIT · IDS, SEARCH LIMITS, FULL FACTORIZATION</summary>${pretty(audit)}</details><div class=planner-glossary><b>Next move</b> (formerly “first command”) = the only environment action recommended now. <b>GoalContract</b> = a testable claim that a local terminal causes level progress. <b>GoalProspect</b> = a simulated estimate derived from supported effects; it is not evidence.</div>`;
+}
+const renderWithPlannerProspect=render;
+render=function(){renderWithPlannerProspect();const box=document.querySelector('#planner-prospect');if(box)box.innerHTML=plannerProspectCard()};
+</script></body>""",
 )
 
 

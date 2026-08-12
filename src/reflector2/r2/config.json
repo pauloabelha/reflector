@@ -91,6 +91,7 @@
       "max_frontier": 64,
       "max_expansions": 256,
       "max_milestones": 4,
+      "max_goal_factorizations": 8,
       "minimum_effect_support": 1,
       "minimum_effect_confidence": 0.6
     },

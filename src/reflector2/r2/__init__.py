@@ -8,6 +8,15 @@ from __future__ import annotations
 
 from typing import Any, Sequence
 
+from .causal_entity import (
+    CausalEntityBinding,
+    CausalEntityInducer,
+    CausalScopeResidual,
+    RegionBinding,
+    SpatialEntity,
+    fit_residual,
+)
+
 
 def main(argv: Sequence[str] | None = None) -> int:
     from .experiment import main as run
@@ -21,4 +30,7 @@ def run_game(*args: Any, **kwargs: Any) -> dict[str, Any]:
     return run(*args, **kwargs)
 
 
-__all__ = ["main", "run_game"]
+__all__ = [
+    "CausalEntityBinding", "CausalEntityInducer", "CausalScopeResidual",
+    "RegionBinding", "SpatialEntity", "fit_residual", "main", "run_game",
+]

@@ -18,6 +18,7 @@ class PlannerConfig:
     max_frontier: int = 64
     max_expansions: int = 256
     max_milestones: int = 4
+    max_goal_factorizations: int = 8
     minimum_effect_support: int = 1
     minimum_effect_confidence: float = 0.6
 
@@ -30,6 +31,9 @@ class PlannerConfig:
             max_frontier=max(1, int(raw.get("max_frontier", 64))),
             max_expansions=max(1, int(raw.get("max_expansions", 256))),
             max_milestones=max(1, int(raw.get("max_milestones", 4))),
+            max_goal_factorizations=max(
+                1, int(raw.get("max_goal_factorizations", 8)),
+            ),
             minimum_effect_support=max(1, int(raw.get("minimum_effect_support", 1))),
             minimum_effect_confidence=float(raw.get("minimum_effect_confidence", 0.6)),
         )
@@ -41,6 +45,7 @@ class PlannerConfig:
             "max_frontier": self.max_frontier,
             "max_expansions": self.max_expansions,
             "max_milestones": self.max_milestones,
+            "max_goal_factorizations": self.max_goal_factorizations,
             "minimum_effect_support": self.minimum_effect_support,
             "minimum_effect_confidence": self.minimum_effect_confidence,
         }
@@ -87,6 +92,77 @@ class MilestoneShadow:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class GoalContractBasis:
+    """Frozen controller projection of one evidence-bounded goal hypothesis.
+
+    The planner cannot change this status or its evidence.  It only uses the
+    projection to distinguish verb-terminal reachability from hypothesized
+    environment-terminal relevance.
+    """
+
+    contract_id: str
+    environment_terminal: str
+    contributor_verb: str
+    contributor_observable: str
+    contributor_relation: str
+    contributor_target: float | None
+    status: str
+    evidence: tuple[str, ...] = ()
+    countercondition: str = "verb-terminal-without-environment-terminal"
+    provenance: tuple[str, ...] = ()
+
+    def document(self) -> dict[str, Any]:
+        return {
+            "contract_id": self.contract_id,
+            "environment_terminal": self.environment_terminal,
+            "candidate_contributor": {
+                "verb": self.contributor_verb,
+                "observable": self.contributor_observable,
+                "relation": self.contributor_relation,
+                "target": self.contributor_target,
+            },
+            "status": self.status,
+            "evidence": list(self.evidence),
+            "countercondition": self.countercondition,
+            "provenance": list(self.provenance),
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class GoalProspect:
+    """Derived bounded planning summary; never observation or evidence."""
+
+    terminal_status: str
+    best_supported_depth: int | None
+    terminal_reaching_factorizations: int
+    minimum_edge_support: int | None
+    minimum_edge_confidence: float | None
+    unresolved_preconditions: tuple[str, ...]
+    protected_invariants: tuple[str, ...]
+    identity_risk: str
+    expected_local_verb_orientation: str
+    search_budget_basis: Mapping[str, Any]
+    option_preserving_first_commands: int = 0
+    epistemic_status: str = "derived-prospective-summary-not-evidence"
+
+    def document(self) -> dict[str, Any]:
+        return {
+            "terminal_status": self.terminal_status,
+            "best_supported_depth": self.best_supported_depth,
+            "terminal_reaching_factorizations": self.terminal_reaching_factorizations,
+            "minimum_edge_support": self.minimum_edge_support,
+            "minimum_edge_confidence": self.minimum_edge_confidence,
+            "unresolved_preconditions": list(self.unresolved_preconditions),
+            "protected_invariants": list(self.protected_invariants),
+            "identity_risk": self.identity_risk,
+            "expected_local_verb_orientation": self.expected_local_verb_orientation,
+            "search_budget_basis": dict(self.search_budget_basis),
+            "option_preserving_first_commands": self.option_preserving_first_commands,
+            "epistemic_status": self.epistemic_status,
+        }
+
+
 Transition = Callable[[Any, SupportedCausalEffect], Any | None]
 Measure = Callable[[Any, str], float | None]
 Invariant = Callable[[Any], bool]
@@ -108,6 +184,9 @@ class ControlProblem:
     invariants_hold: Invariant = field(repr=False, compare=False)
     state_key: StateKey = field(repr=False, compare=False)
     protected_invariants: tuple[str, ...] = ()
+    goal_contract: GoalContractBasis | None = None
+    unresolved_requirements: tuple[str, ...] = ()
+    identity_risk: str = "none-known"
     model_view: Any | None = field(default=None, repr=False, compare=False)
 
 
@@ -163,3 +242,6 @@ class SearchResult:
     elapsed_ms: float
     config: PlannerConfig
     reason: str | None = None
+    current_goal_prospect: GoalProspect | None = None
+    successor_goal_prospect: GoalProspect | None = None
+    prospect_improvement_kind: str | None = None

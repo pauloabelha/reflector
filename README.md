@@ -85,11 +85,14 @@ modules. R2 adapts grounded explanations and supported command-scoped effects
 into a `ControlProblem`, injects any `PlannerBackend`, and remains the sole
 owner of evidence, settlement, and external action authority.
 
-Three backends implement the contract:
+Four backends implement the contract:
 
 - `NoPlanPlanner` preserves the original one-step controller;
 - `BoundedBestFirstPlanner` searches supported causal effects under explicit
   depth, frontier, expansion, confidence, and milestone budgets;
+- `ProspectPlanner` derives bounded `GoalProspect` values from an R2-owned
+  `GoalContract` and can justify a locally adverse first step only when an
+  explicitly supported terminal-reaching factorization exists;
 - `ModelPlanner` accepts either `QwenPlanningModel` or `LunaPlanningModel`
   through one structured model interface, then deterministically replays and
   validates every proposed edge.
@@ -107,13 +110,54 @@ worse divergence and was much slower. See the
 [`AR25 planner results`](experiments/r2-2-planner-ar25-v0/RESULTS.md) and the
 [`planner architecture note`](docs/R2_2_PLANNER_REPOSITORY_UNDERSTANDING.md).
 
-The current system connects situated verbs strongly to local predicted
-progress. Its remaining goal-level gap is explicit: the model's inferred
-`game_objective` is not yet a structured causal contract used by action
-ranking. A future evidence-cited goal contract and first-class shared
-explanation lock must connect local residual completion directly to beating a
-level. See [`R2_1.md`](R2_1.md) for the detailed implemented/prospective split
-and [`R2_2.md`](R2_2.md) for the production migration.
+R2.3 now implements the minimum structured `GoalContract` and derived
+`GoalProspect` path as an experimental backend. Model proposals remain OPEN;
+only cited environment settlements can support or refute a contract. Current
+real-game evidence has not yet demonstrated a useful planner divergence or a
+score gain, so R2.2 bounded search remains the production default. See
+[`R2_1.md`](R2_1.md), [`R2_2.md`](R2_2.md), and the
+[`R2.3 experiment`](experiments/r2-3-prospect-planner-v0/RESULTS.md).
+
+## Causal entity induction
+
+R2 can now induce a bounded `CausalEntityBinding` when several visible regions
+repeatedly undergo one coherent action-conditioned transformation while
+preserving their relative layout. This closes the gap between atomic visual
+segmentation and control: an induced assembly implements the same
+`SpatialEntity` geometry interface as an atomic region, so ordinary potentials,
+explanations, effects, and planners can consume its union geometry without
+learning a second object representation.
+
+Induction is deliberately defeasible. A candidate needs two independent,
+environment-cited settlements before it becomes `SUPPORTED` and uniquely
+role-eligible. Opposite or state-dependent effects under different opaque
+actions do not destroy entity identity; a member breaking away from the shared
+transformation does. Scene-wide motion is retained as a competing reference-
+frame explanation instead of being promoted automatically. Support grants one
+bounded role-grounding reservation, not preference, planner authority, or
+permission to act.
+
+The production lifecycle preserves the true predecessor regions and digest
+until the action settles. This matters because Agent Arcade fits the successor
+before controller settlement, whereas some headless callers settle first. Both
+orders now compare the real before/after boundary, and a supported entity is
+remapped to the fitted successor atoms and installed immediately. Its
+action-conditioned translation or invariance is then available through the
+ordinary effect model before the next rank/plan cycle. The browser publishes
+the successor frame, settlement, and CAE audit atomically, so it never displays
+a new frame beside an old settlement.
+
+The inducer contains no game name, action token, direction name, member count,
+color, or FIT-specific rule. `FIT` and `fit_residual` remain generic,
+hand-authored ontology outside entity formation; they may consume a supported
+assembly but do not cause one to exist. A six-transition held-out replay from a
+live AR25 trace formed and supported two different coherent assemblies,
+retained inverse action-conditioned effects, and refuted the larger assembly
+when a member broke away. This verifies the mechanism, not improved control or
+score. The focused CAE/runtime/planner/Arcade suite currently passes 123 tests;
+the full repository suite still has two unrelated failures caused by
+pre-existing deleted experiment score artifacts. See the detailed evidence
+boundary in [`R2_2.md`](R2_2.md).
 
 ## Shared semantic workspace
 
@@ -200,11 +244,14 @@ set +a
 The browser picker intentionally offers only **Qwen (local)** and **GPT-5.6
 Luna**, with server-owned safe defaults. The game, level, and model selectors
 share the run-control row with a planner selector. Deterministic bounded search
-is selected by default; original one-step R2 and model-validated planning with
-the selected Qwen/Luna model are explicit alternatives. The full right-hand
-Workspace panel presents goal
-proposals, abductive compositions, open questions, aliases, citations, and the
-exact model scratchpad; raw JSON remains available for audit.
+is selected by default; **Goal prospect (R2.3)**, original one-step R2, and
+model-validated planning with the selected Qwen/Luna model are explicit
+alternatives. The full right-hand Workspace includes a dedicated
+**PLANNER · GOAL PROSPECT** box and a separate **CAUSAL ENTITY INDUCTION** audit
+box alongside goal proposals, abductive compositions, open questions, aliases,
+citations, and the exact model scratchpad. Frame and settlement publication is
+atomic, preventing transient mixed-boundary UI states; raw JSON remains
+available for audit.
 
 Arbitrary supported models and explicit budget experiments remain available
 through the CLI and Kaggle runner. They are intentionally not exposed as a

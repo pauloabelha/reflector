@@ -11,7 +11,8 @@ from arcade.agent import (
 
 
 def test_agent_arcade_mirrors_all_canonical_scratchpad_fields():
-    assert ARCADE_UI_VERSION == "pretty-workspace-v20"
+    assert ARCADE_UI_VERSION == "pretty-workspace-v25-causal-entity"
+    assert f"const expectedArcadeUiVersion='{ARCADE_UI_VERSION}'" in PAGE
     assert "MODEL SCRATCHPAD · WORKSPACE MIRROR · UNVERIFIED" in PAGE
     assert "Waiting for the configured model." in PAGE
     assert "ACTION ALIASES · MODEL GLOSS, NOT CONTROL" in PAGE
@@ -20,6 +21,24 @@ def test_agent_arcade_mirrors_all_canonical_scratchpad_fields():
     assert '<select id=planner-choice>' in PAGE
     assert "model_choice:$('#model-choice').value" in PAGE
     assert "planner_choice:$('#planner-choice').value" in PAGE
+    assert "PLANNER · NEXT MOVE" in PAGE
+    assert "GOAL PROSPECT R2.3" in PAGE
+    assert "plannerProspectCard" in PAGE
+    assert "minimum_edge_confidence" in PAGE
+    assert "CAUSAL ENTITY INDUCTION" in PAGE
+    assert "causalEntityCard" in PAGE
+    assert "CAUSAL COVERAGE" in PAGE
+    assert PAGE.index("PLANNER · NEXT MOVE") < PAGE.index("CAUSAL ENTITY INDUCTION")
+    assert PAGE.index("CAUSAL ENTITY INDUCTION") < PAGE.index(
+        "DURABLE WORKSPACE OBJECT · MODEL WRITE"
+    )
+    for planner_copy in (
+        "PLANNER RECOMMENDS NOW", "Only this one action is authorized",
+        "PREDICTED IMMEDIATE EFFECT", "WHY THIS MOVE",
+        "LINK TO LEVEL COMPLETION", "SIMULATED ROUTE · NOT QUEUED ACTIONS",
+        "TECHNICAL AUDIT", "formerly “first command”",
+    ):
+        assert planner_copy in PAGE
     assert "model-context" not in PAGE
     for heading in ("Game Objective", "Explanation", "Goal", "Expectation", "Notes"):
         assert f"scratchField('{heading}'" in PAGE
@@ -45,15 +64,20 @@ def test_agent_arcade_has_full_right_workspace_object_panel():
     assert "const workspace=data.workspace" in PAGE
     assert "ordered.map(name=>workspaceField(name,workspace[name]))" in PAGE
     assert "renderWithWorkspaceObject" in PAGE
+    assert PAGE.index("PLANNER · NEXT MOVE") < PAGE.index(
+        "DURABLE WORKSPACE OBJECT · MODEL WRITE"
+    )
 
 
 def test_workspace_panel_pretty_prints_semantic_field_shapes():
     for marker in (
         "workspace-overview", "workspaceGoal", "workspaceComposition",
-        "workspaceScratchpad", "workspaceAliases", "workspaceList",
+        "workspaceAliases", "workspaceList",
         "RAW JSON", "preferred=['summary','objective_hypothesis'",
     ):
         assert marker in PAGE
+    assert "workspaceScratchpad" not in PAGE
+    assert "hiddenRight=new Set(['model_scratchpad'])" in PAGE
     assert "Object.entries(workspace).map(([name,value])=>workspaceField" not in PAGE
 
 
