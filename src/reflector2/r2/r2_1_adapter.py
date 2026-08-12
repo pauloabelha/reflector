@@ -3806,26 +3806,6 @@ class FrameSchemaObserver:
                         "expected": predicted_value, "observed": float(after_value),
                         "before": float(before_value), "actual_progress": float(actual_progress),
                     }
-                    observed_actor_delta = next(
-                        (item["delta"] for item in learned if item["role"] in role_results and situated_roles.get(item["role"]) == actor_binding),
-                        None,
-                    )
-                    mechanism_settlement = {
-                        "status": "OBSERVED" if expected is None else "CONFIRMED" if abs(float(expected) - actual_progress) <= 0.01 else "REFUTED",
-                        "predicted": expected_actor, "observed": observed_actor_delta,
-                    }
-                    if expected is None:
-                        adjudication = "mechanism-observed"
-                    elif abs(float(expected) - actual_progress) <= 0.01:
-                        adjudication = "confirmed"
-                        self.explanation_confirmations[prediction["schema_id"]] += 1
-                        if actual_progress > 0.0:
-                            self.goal_progress_confirmations[goal_key] += 1
-                    else:
-                        adjudication = "refuted"
-                        self.explanation_refutations[prediction["schema_id"]] += 1
-                    if actual_progress <= 0.0:
-                        self.goal_nonprogress[goal_key] += 1
                     prior_best = self.goal_best_potential.get(goal_key)
                     if prior_best is None:
                         prior_best = float(before_value)
@@ -3840,11 +3820,40 @@ class FrameSchemaObserver:
                     if frontier_advanced:
                         self.goal_best_potential[goal_key] = float(after_value)
                         self.goal_frontier_stagnation[goal_key] = 0
+                        # Goal evidence is settled by the measured potential,
+                        # independently of whether the action mechanism was
+                        # already predictable.
+                        self.goal_progress_confirmations[goal_key] += 1
                     else:
                         # A local recovery back to an old best is not new
                         # evidence of control progress.  This catches bounded
                         # oscillations without depending on a game or verb.
                         self.goal_frontier_stagnation[goal_key] += 1
+                    potential_settlement.update({
+                        "frontier_before": float(prior_best),
+                        "frontier_after": float(
+                            self.goal_best_potential[goal_key]
+                        ),
+                        "frontier_advanced": bool(frontier_advanced),
+                    })
+                    observed_actor_delta = next(
+                        (item["delta"] for item in learned if item["role"] in role_results and situated_roles.get(item["role"]) == actor_binding),
+                        None,
+                    )
+                    mechanism_settlement = {
+                        "status": "OBSERVED" if expected is None else "CONFIRMED" if abs(float(expected) - actual_progress) <= 0.01 else "REFUTED",
+                        "predicted": expected_actor, "observed": observed_actor_delta,
+                    }
+                    if expected is None:
+                        adjudication = "mechanism-observed"
+                    elif abs(float(expected) - actual_progress) <= 0.01:
+                        adjudication = "confirmed"
+                        self.explanation_confirmations[prediction["schema_id"]] += 1
+                    else:
+                        adjudication = "refuted"
+                        self.explanation_refutations[prediction["schema_id"]] += 1
+                    if actual_progress <= 0.0:
+                        self.goal_nonprogress[goal_key] += 1
 
         self.pending_prediction = None
         settlement = {

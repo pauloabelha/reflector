@@ -47,6 +47,12 @@ rebound to its existing one-step explanation. The existing
 `commit_prediction()` seam remains the sole point that makes that prediction
 settleable.
 
+Potential progress and mechanism support are separate settlement dimensions.
+A strict new best for the same grounded semantic goal supplies goal evidence
+even when the responsible command effect is only now being observed. Matching
+an already predicted entity displacement supplies mechanism evidence. Neither
+record substitutes for the other, and both remain environment-owned.
+
 ## Existing objects to reuse
 
 - `ActionCommand` is the exact intervention identity and payload authority.

@@ -281,6 +281,15 @@ raising the same plateau. Exact AR25 replay triggered one such repair at best
 27 with eight confirmations and retained the original hole-based goal. This is
 control-loop repair, not a level or score result.
 
+Goal support is now settled from strict improvement of the measured semantic
+potential, independently of whether R2 already predicted the action mechanism.
+A novel useful intervention can therefore advance the goal frontier while its
+entity displacement is learned as a new effect; mechanism confirmation updates
+separate explanation evidence. Returning to an old best remains local progress
+but supplies neither new goal support nor a frontier reset. Live AR25 recorded
+a strict 38 → 35 frontier advance and separately confirmed the observed
+three-cell mechanism. This is evidence separation, not a completion claim.
+
 ## Shared semantic workspace
 
 Each semantic response has two separate products:

@@ -447,7 +447,7 @@ def test_settlement_projection_exposes_fresh_nonprogress_without_lag():
         assert projection["active_explanation"]["frontier_stagnation_steps"] == turn
 
     active = projection["active_explanation"]
-    assert active["progress_confirmations"] == 0
+    assert active["progress_confirmations"] == 1
     assert active["confirmations"] == observer.explanation_confirmations[active["schema_id"]]
     assert active["refutations"] == observer.explanation_refutations[active["schema_id"]]
 
@@ -474,7 +474,9 @@ def test_frontier_stagnation_survives_local_recovery_to_an_old_best():
     observer = FrameSchemaObserver()
     observer.fit_frame(before, turn=0)
     observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
-    observer.settle_action(4, before, best)
+    first = observer.settle_action(4, before, best)
+    assert first["mechanism"]["status"] == "OBSERVED"
+    assert first["potential"]["frontier_advanced"] is True
 
     observer.fit_frame(best, turn=1)
     observer.rank_actions((4,), fallback_action=4, semantic_goal=goal)
@@ -486,8 +488,10 @@ def test_frontier_stagnation_survives_local_recovery_to_an_old_best():
     projection = observer.semantic_projection(ranking=ranking, settlement=settlement)
     active = projection["active_explanation"]
     assert settlement["actual_progress"] > 0
+    assert settlement["potential"]["frontier_advanced"] is False
     assert active["best_observed_potential"] == pytest.approx(2.0)
     assert active["frontier_stagnation_steps"] == 2
+    assert active["progress_confirmations"] == 1
 
 
 def test_semantic_goal_identity_survives_frame_local_grounding_change():

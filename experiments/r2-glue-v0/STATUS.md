@@ -27,22 +27,24 @@
 | 012 | complete | Canonical binary ports compile across games; defeasible hole residual produced six confirmed AR25 improvements |
 | 013 | complete | Semantic goal identity no longer fragments when situated role structure changes |
 | 014 | complete | Supported-goal frontier plateau requests one bounded complementary repair without losing proven control |
-| 015 | active | Falsify the goal/frontier/repair lifecycle on structurally different games |
+| 015 | complete | Goal-frontier progress and action-mechanism evidence settle independently |
+| 016 | active | Project novel Qwen abductions into typed, defeasible, groundable schema hypotheses |
 
 ## Current hypothesis
 
 R2 is not mainly missing another planner. It is losing useful semantic
 abductions at the boundary between Qwen prose and R2-measurable schemas. The
-closed prompt/schema supplies a meaning for FIT before observation, while the
+closed response contract can supply a measurable top-level goal, while the
 abduction channel can only compose existing stable schema IDs. Opening that
-boundary safely may let Qwen propose why a goal matters while preserving R2's
-grounding and settlement authority.
+boundary safely should let Qwen propose a novel typed relation or dynamic,
+project it onto candidate entities and actions, and receive environment
+settlement without giving model confidence evidential authority.
 
 ## Next evidence
 
-1. Run structurally different games as falsification tests for the generic
-   frontier/repair lifecycle.
-2. Compare semantic pickup, measurable progress, frontier resets, repair modes,
-   and environment terminals without changing per-game code or prompts.
-3. Require environment-confirmed potential progress before any score or control
-   improvement claim.
+1. Define one generic, bounded `schema_hypotheses` contract with typed roles,
+   measurable relations/dynamics, predictions, and counterconditions.
+2. Compile proposals at zero support, enumerate grounded bindings over primitive
+   and CAE spatial entities, and let R2 choose discriminating interventions.
+3. Require environment settlement before promotion, and falsify the interface
+   on structurally different games without changing prompts or per-game code.

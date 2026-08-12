@@ -464,3 +464,29 @@ artifact failure.
 
 **Limit:** no AR25 environment terminal or score improvement is claimed.
 Checkpoint 015 uses other games to try to falsify this generic lifecycle.
+
+## Checkpoint 015
+
+**Observed:** potential progress was credited only when an already predicted
+action mechanism was confirmed. A novel command could improve a grounded goal
+and reveal a new effect, yet the goal received no support because R2 did not
+already know why the command worked. Goal validity and mechanism validity were
+therefore accidentally coupled.
+
+**Implemented:** strict improvement of the best observed potential now settles
+goal evidence independently of mechanism status. Mechanism confirmation updates
+only explanation evidence. Returning to an old best remains local progress but
+does not add goal support or reset frontier stagnation. Settlement exposes the
+old frontier, new frontier, and strict-advance flag.
+
+**Live evidence:** on fresh AR25 turn 8, action 2 reduced the selected residual
+38 → 35. Settlement recorded `frontier_advanced=true` and goal support five,
+while separately confirming the learned three-cell actor displacement. The
+same transition retained a supported seven-member CAE composite across eight
+settlements. The focused suite has 143 passes; the full suite has 254 passes
+and the unchanged missing historical artifact failure.
+
+**Limit:** this makes novel successful interventions learnable but does not yet
+let Qwen project a novel relational/dynamic abduction below the top-level goal
+contract. Checkpoint 016 opens that boundary with typed, zero-authority schema
+hypotheses rather than game-specific language.
