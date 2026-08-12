@@ -968,7 +968,11 @@ def _action_evidence_refs(document: Mapping[str, Any]) -> dict[str, tuple[str, .
         mechanism = explanation.get("mechanism") or {}
         add(mechanism.get("action"), mechanism.get("causal_effect_binding_id"))
 
-    prior = context.get("qwen_note") or {}
+    # The prior note already has one canonical top-level projection.  Older
+    # turns duplicated it inside scratchpad_context, which eventually made the
+    # mandatory Qwen request exceed the model window.  Accept that legacy form
+    # on replay, but read the canonical form for new turns.
+    prior = document.get("prior_working_note") or context.get("qwen_note") or {}
     for alias in prior.get("action_aliases", ()):
         if isinstance(alias, Mapping):
             add(alias.get("action_id"), *alias.get("evidence_refs", ()))
@@ -1517,16 +1521,9 @@ CAUSAL VISUAL UNIT:
                     "notes": str(prior.payload.get("natural_language") or "Open."),
                 }
                 stored_scratchpad = canonical_model_scratchpad(stored_scratchpad)
-            scratchpad_text = model_scratchpad_text(stored_scratchpad)
             projection = {
                 "object_id": prior.object_id,
                 "basis_revision": prior.payload.get("basis_revision"),
-                "scratchpad": copy.deepcopy(stored_scratchpad),
-                "summary": prior.payload.get("summary", ""),
-                "prior_natural_language_digest": hashlib.sha256(
-                    scratchpad_text.encode("utf-8")
-                ).hexdigest(),
-                "objective_hypothesis": prior.payload.get("objective_hypothesis", ""),
                 "goal_proposals": list(prior.payload.get("goal_proposals", ())),
                 "action_aliases": list(prior.payload.get("action_aliases", ())),
                 "open_questions": list(prior.payload.get("open_questions", ())),
@@ -1538,7 +1535,6 @@ CAUSAL VISUAL UNIT:
                 "verified": False,
             }
         scratchpad_context = {
-            "qwen_note": projection,
             "r2_action_traces": list(_R2_ACTION_TRACES),
             "r2_semantic_projection": copy.deepcopy(_R2_SEMANTIC_PROJECTION),
             "r2_transition_observation": copy.deepcopy(_R2_TRANSITION_OBSERVATION),
@@ -1585,7 +1581,10 @@ CAUSAL VISUAL UNIT:
         if projection is not None:
             # One canonical WYSIWYG object shared by ordinary semantic turns,
             # explanation consolidation, the durable workspace, and Arcade.
-            document["model_scratchpad"] = copy.deepcopy(projection["scratchpad"])
+            # It appears exactly once in the model request; prior_working_note
+            # retains only the structured fields needed for revision and
+            # compile-time evidence checks.
+            document["model_scratchpad"] = copy.deepcopy(stored_scratchpad)
         if consolidation_task is not None:
             document["explanation_consolidation_task"] = consolidation_task
         vocabulary = dict(document.get("allowed_vocabulary", {}))

@@ -9,6 +9,7 @@ from reflector2.planner import BoundedBestFirstPlanner
 from reflector2.r2.goal_contract import canonicalize_goal_proposals
 from reflector2.r2.r2_1_adapter import FrameSchemaObserver
 from reflector2.r2.scratchpad import (
+    _action_evidence_refs,
     _goal_proposal_contract_error,
     _quarantine_goal_proposals,
     _semantic_failure_signals,
@@ -322,6 +323,34 @@ def test_repeated_nonprogress_revises_goal_without_refuting_mechanism():
         "progress_confirmations": 1,
     }]
     assert _semantic_failure_signals(mixed) == ()
+
+
+def test_action_alias_evidence_uses_single_canonical_prior_note_projection():
+    document = {
+        "prior_working_note": {
+            "action_aliases": [{
+                "action_id": "ACTION_4",
+                "alias": "interact?",
+                "status": "tentative",
+                "evidence_refs": ["r2-transition:prior"],
+            }],
+        },
+        "scratchpad_context": {
+            "r2_transition_observation": {
+                "action": 4,
+                "evidence_ref": "r2-transition:current",
+                "prediction_settlement": {},
+            },
+            "r2_semantic_projection": {},
+        },
+    }
+
+    assert _action_evidence_refs(document) == {
+        "ACTION_4": (
+            "r2-transition:current",
+            "r2-transition:prior",
+        ),
+    }
 
 
 def test_prompt_source_contains_no_privileged_fit_mapping_or_game_tokens():

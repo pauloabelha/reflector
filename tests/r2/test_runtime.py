@@ -521,7 +521,7 @@ def test_both_semantic_paths_receive_the_workspace_scratchpad_verbatim():
     from reflector2.r2 import scratchpad
 
     source = Path(scratchpad.__file__).read_text(encoding="utf-8")
-    assert 'document["model_scratchpad"] = copy.deepcopy(projection["scratchpad"])' in source
+    assert 'document["model_scratchpad"] = copy.deepcopy(stored_scratchpad)' in source
     assert '"allowed_vocabulary", "model_scratchpad",' in source
     assert '"model_scratchpad": dict(scratchpad)' in source
     assert '"game_objective", "explanation", "goal", "expectation", "notes"' in source

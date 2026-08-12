@@ -17,7 +17,8 @@
 | 002 | complete | Malformed goals quarantined; CAE feedback retained; stale failed goals retired |
 | 003 | complete | bp35 selected independently; semantic probe grounded and settled without false authority |
 | 004 | complete | Fresh settlement feedback and grounded nonprogress revision verified on CD82 |
-| 005 | active | Diagnose sequence context and equivalent-role probe efficiency without game-specific rules |
+| 005 | complete | Semantic request duplication removed; CD82 crossed prior turn-9 context crash |
+| 006 | active | Diagnose sequence context and equivalent-role probe efficiency without game-specific rules |
 
 ## Current hypothesis
 

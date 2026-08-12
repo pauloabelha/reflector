@@ -164,7 +164,7 @@ unsupported goal only after repeated observations. Just-settled counters are
 projected immediately rather than through the pre-action ranking snapshot.
 The rule contains no game, action, object, color, or verb-specific branch.
 
-The current full suite has 239 passes and one unrelated failure caused by the
+The current full suite has 240 passes and one unrelated failure caused by the
 pre-existing missing historical experiment artifact
 `parallel-cognitive-workspace-v1-16/artifacts/SUMMARY.json`. See the detailed
 evidence boundary in [`R2_2.md`](R2_2.md).
@@ -175,6 +175,14 @@ replaced the failed outline hypothesis with a distinct interior-compatible
 alternative and ultimately retired the goal list when that alternative gained
 no support. The level was not completed, so this is evidence of causal hygiene
 and liveness, not competence or score.
+
+The same long trace revealed that the semantic request duplicated its durable
+working note across three transport fields and could overflow local Qwen's
+context even at the mandatory graph closure. The request now contains one exact
+model scratchpad plus a compact structured prior for validation. An exact CD82
+rerun crossed the old turn-9 crash, completed Qwen call 10, settled action 10,
+and began call 11. Current verification is 240 full-suite passes plus the one
+pre-existing missing historical score artifact failure.
 
 ## Shared semantic workspace
 

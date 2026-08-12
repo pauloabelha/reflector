@@ -129,3 +129,30 @@ control or completion.
 explained by observationally equivalent role hypotheses and latent interaction
 context across command sequences. Neither representation may contain game or
 action-token semantics.
+
+## Checkpoint 005
+
+**Implemented:** each semantic turn now carries one exact `model_scratchpad`
+instead of duplicating the same durable note inside `prior_working_note` and
+again as `scratchpad_context.qwen_note`. The compact prior projection retains
+goal proposals, action aliases and their evidence, open questions, citations,
+transition basis, and consolidation state. Compile-time alias evidence accepts
+the new canonical location and legacy duplicated replays.
+
+**Observed:** the first CD82 trace crashed at turn 9 because the exact mandatory
+request occupied 16,678 tokens in a 16,384-token window. Removing the nested
+note reduced a subsequent overflow to 50 tokens, proving the source but not yet
+restoring liveness. Removing the remaining scratchpad duplicate reduced a
+representative action-10 request from the earlier 47,964-byte envelope to
+44,812 bytes. In the exact rerun, Qwen call 10 was admitted, completed, action
+10 settled, and call 11 began without context error. The focused suite has 86
+passes; the full suite has 240 passes and the same missing historical artifact
+failure.
+
+**Inferred:** the crash was accumulated transport duplication, not an
+insufficient model window or a need to discard causal evidence. Single-copy
+projection restores bounded semantic-loop liveness while preserving the
+authoritative ledger and all current settlement evidence.
+
+**Prospective:** checkpoint 006 returns to sequence-conditioned mechanisms and
+equivalent-role efficiency. No competence or score gain is claimed.
